@@ -1,0 +1,970 @@
+$ checking rule data flow
+'pragmat'module="drules".
+$ HEADER ****************************************************** $
+$ second pass, check the data flow
+$
+'a'd check rule+>ruletag.
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("display","disc","types","tags").
+
+$ check the data flow of a rule
+$ Several checks are made simultaneously.
+$  1) do affixes have the correct number and type; 
+$     implicit coercing is made explicit ( st --> +st*st[>>st] )
+$  2) formal/local variables are set when used
+$  3) wether the value of a formal/local changed
+$  4) does the rule has side effects
+$  5) is each member reachable (data flow in strict sense)
+$  6) jump semantics (no continuation after return)
+$  7) no trivial infinite loops (betwen the label and the
+$      jump there is at least one executable construct)
+$
+$   formal and local affixes, labels in LLOC
+$ LLOC:   (flag,repr,type,tag)
+$   starting with formal affixes, followed by the rule as Ilabel
+$   followed by locals and labels (stack-like storage)
+$      flag:   Lused:   the affix has been used
+$              LTset:   set when leaving with true (rule,region)
+$              LFset:   set when leaving with false
+$              LTmod:   modified when leaving with true
+$              LFmod:   modified when leaving with false
+$              Lvararg: out affix in the repeat block (formal only)
+$   repeat affix: 
+$              LTset/LFset: out affixes in the repeat block are set
+$              LTmod/LFmod: true if the repeat block is not empty
+$      repr: for labels region pointer in RULE where it belongs
+$      type: Iformal XXXX, Ilabel, Ilocal
+$      tag:  formal: LADM entry corresponding to the formal
+$            label:  LADM entry with tag field
+$
+$ When two program branches join, L?set values are AND-ed, L?mod values
+$   are OR-ed. As an effect of a jump, LTset migh decrease, and LTmod
+$   might increase. (LTset for out affixes in the repeat block is
+$   reset by "shift affix block". LTmod for repeat affix is cleared
+$   on the false branch of "shift affix block". LTset for repeat affix
+$   is set if * is an actual affix - and then affixes in the repeat
+$   block are treated as well.)
+$
+$ When entering a member, formal/local flags LTset and LTmod are OK,
+$ When leaving, flags are OK only if the member can succeed (fail).
+$
+$ Each member (including compound members) has the following fags:
+$   canT, canF   - can exit with true/false
+$   modT, modF   - if yes, does it have (global) side effect
+$
+$ Each compound block stores flags for each formal/local:
+$   1) flags when entering the block (this might change by a jump -- 2 bits)
+$   2) flags when leaving the block (4 bits)
+$   3) flags at the start of the next alternative (2 bits)
+$   4) Fset/Fmod flags for each alternative tail (2 bits)
+$
+$ When an alternative tail ends, LT/LF flags of formals/locals
+$   reflect the value of these flags for the whole alternative
+$   (to be compatible with the single member alternative).
+$
+$ RULE: (flag,data)
+$    the status of formal and local affixes are saved
+$        
+$ Redo: doing a jump might change the entry flags of formals/locals:
+$    a formal might have changed (LTmod goes up), or be unset (LTset
+$    goes down). To decide jump correctness, we must know if the block
+$    can succeed/fail. In those cases the whole region is scanned again.
+$    This method is exponential in the worst case as each subregion
+$    should be redone repeatedly.
+
+$ ----------------------------------- $
+$ flags for LLOC
+'constant'
+   Lused           = 0x0001,   $ used
+   LTset           = 0x0002,   $ set when T
+   LFset           = 0x0004,   $ set when F
+   LTmod           = 0x0008,   $ modified when T
+   LFmod           = 0x0010,   $ modified when F
+   Lvararg         = 0x1000.   $ formal out in the repeat block
+'q'is local flag+>loc+>flag-x:
+   bool and+flag*LLOC[loc]+flag+x,x!=0.
+'a'set local flag+>loc+>flag:
+   bool or+flag*LLOC[loc]+flag+flag*LLOC[loc].
+'a'clear local flag+>loc+>flag:
+   bool invert+flag+flag,bool and+flag*LLOC[loc]+flag+flag*LLOC[loc].
+'a'copy local Tflag to F-ptr:
+   $ Tset/Tmod values for all formal/local are copied to Fset/Fmod
+   $ this gives the correct values for an actual rule or -
+   >>LLOC->ptr,(nxt:ptr<<<LLOC;
+    (is local flag+ptr+LTset,set local flag+ptr+LFset;
+      clear local flag+ptr+LFset),
+    (is local flag+ptr+LTmod,set local flag+ptr+LFmod;
+      clear local flag+ptr+LFmod),
+    previous+LLOC+ptr,:nxt).
+$ -------------------------------------------------- $
+'table'MESSAGE=(
+ "%p: formal out affix %p was not set":repeat block out formal not set,
+ "rule %p: no pending repeat affixes" :no pending repeat block,
+ "label %p: infinite loop"            :unshielded jump
+).
+
+'a'reset affix block flags+>rtag-ptr-clear:
+   $ "shift affix block" was called; check if out affixes in the 
+   $ block are set; clear if not set globally
+   <<LLOC->ptr,1->clear,(nxt:ptr>>>LLOC;
+     type*LLOC[ptr]=Ilabel; $rule, end of formal affixes
+     (type*LLOC[ptr]=Iformal repeat,
+        (is local flag+ptr+LTmod;warning+4+no pending repeat block+rtag),
+        (is local flag+ptr+LTset,0->clear;+),$ are out affixes set globally?
+         $ if fails, out locals are set and no pending blocks
+         clear local flag+ptr+LFmod,set local flag+ptr+LFset;
+      (is local flag+ptr+Lvararg,is+clear),
+        $ not, check if set, and then clear
+        (is local flag+ptr+LTset,clear local flag+ptr+LTset;
+         error+repeat block out formal not set+rtag+tag*LLOC[ptr]);
+      +),
+     next+LLOC+ptr,:nxt).
+
+$ if the tag is local, mark is as used
+'p'Ltag+tag>:
+   Qtag+tag,(was+LLOC+tag,set local flag+tag+Lused;+).
+'a'must Ltag+tag>:
+   must Qtag+tag,(was+LLOC+tag,set local flag+tag+Lused;+).
+$ ----------------------------------- $
+$ create the LLOC stack entries for the formals:
+$   fill calibre and ssel for lists
+$   set LTset/LTmod/Lvararg flags
+'a'setup formal stack+>rtag-formal-repeat block:
+   scratch+LLOC,0->repeat block,get adm+rtag+formal,
+   (nxt:formal=0;
+     (* LTset->flag,0->repr,type*LADM[formal]->type,formal->tag,
+        0->calibre->ssel *)LLOC,
+     set formal affix+repeat block,get adm+formal+formal,:nxt).
+'a'setup label+label>:
+   Q+Dlabel,must Qtag+label,
+     (*0->repr,Ilabel->type,label->tag,0->flag->orepr->otype*)LLOC,
+     >>LLOC->label;
+   0->label.
+'a'setup locals-local:
+  Q+Dlocal,(nxt: Q+Dcolon;
+    must Qtag+local,
+    (* 0->flag,compound level->repr,Ilocal->type,
+              local->tag,0->orepr->otype *)LLOC,
+    :nxt);
+  +.
+'a'set formal affix+>flag>:
+   $ flag indicates if we are in a repeat block
+   $ for list types recover calibre and ssel
+   $    calibre=-1 when no formal field list
+   $ for repeat affix: 
+   $    LTset means all repeat out affixes are set (no)
+   $    LTmod means there are pending blocks (yes)
+   $ for out affix: mark if it is in the repeat block
+   =type*LLOC=
+    [Iformal stack;Iformal table],
+      get formal calibre+tag*LLOC+calibre*LLOC,
+      get formal ssel+tag*LLOC+ssel*LLOC;
+    [Iformal repeat],clear local flag+>>LLOC+LTset,
+      set local flag+>>LLOC+LTmod,1->flag;
+    [Iformal out],clear local flag+>>LLOC+LTset,
+      (is+flag,set local flag+>>LLOC+Lvararg;+);
+    +.
+'f'get local calibre+>tag+x>: calibre*LLOC[tag]->x.
+'f'get local ssel+>tag+x>:    ssel*LLOC[tag]->x.
+
+$ ----------------------------------- $
+$ stack for saving formal/local flags in regions.
+$ used also to check the extension block
+'stack'[1](flag,data=RULE)RULE.
+$  flags for RULE - storing flags for a region
+'constant'
+  $ final flags of the region
+  UTset		= 0x0001,       $ set on TRUE exit, NEGATED
+  UFset		= 0x0002,	$ set on FALSE exit NEGATED
+  UTmod		= 0x0004,	$ modified on TRUE
+  UFmod		= 0x0008,	$ modified on FALSE
+  $ flags when entering the region - they might cange
+  UETset	= 0x0010,	$ Tset when entering
+  UETmod	= 0x0020,	$ Tmod when entering
+  $ flags for the head of the next laternative
+  Ualtset	= 0x0100,	$ Tset for the next head
+  Ualtmod	= 0x0200,	$ Tmod for the next head
+  $ false flags for the rest of the alternative tail
+  UtailFset	= 0x0400,	$ NEGATED (collecting)
+  UtailFmod	= 0x0800,	$ (collecting)
+  $ if some entry flag changes, redo the whole region
+  Ujump		= 0x1000,	$ there was a jump for this label
+  UTcan		= 0x2000,	$ region can succeed
+  UFcan		= 0x4000,	$ region can fail
+  Uredo		= 0x8000,	$ redo the region
+  $ shield between label and jump
+  Ushield	=0x10000,  
+    Uallset	= UETset|Ualtset,      $ entering the region with Tset
+    Uallmod	= UETmod|Ualtmod,      $ entering the region with Tmod
+    UtailBits	= UtailFset|UtailFmod.
+$ - - - - - - - - - - - - - - - - - - - - $
+'a'push RULE+>data:
+   (* 0->flag, data->data *)RULE.
+'a'set RULE flag+>ptr+>flag:
+   bool or+flag*RULE[ptr]+flag+flag*RULE[ptr].
+'q'is RULE flag+>ptr+>flag-x:
+   bool and+flag*RULE[ptr]+flag+x,x!=0.
+'a'clear RULE flag+>ptr+>flag-mask:
+   bool invert+flag+mask,bool and+flag*RULE[ptr]+mask+flag*RULE[ptr].
+$ - - - - - - - - - - - - - - - - - - - - $
+# d start region
+'a'open region+>modT-ptr:
+   $ called after locals are pushed to LLOC. Original modT
+   $ for the block, LTset/LTmod for formals
+   <<LLOC->ptr,push RULE+0,          $ border $
+   (is+modT,set RULE flag+>>RULE+UETmod;+), $ modT for the region $
+   (nxt: >>LLOC > ptr;
+      (type*LLOC[ptr]=Ilabel;
+       push RULE+ptr,
+         $ how they entered the region $
+         (is local flag+ptr+LTset,set RULE flag+>>RULE+Uallset;+),
+         (is local flag+ptr+LTmod,set RULE flag+>>RULE+Uallmod;+)),
+      next+LLOC+ptr,:nxt).
+'a'recompute RULE flags+>ptr-set-mod-loc:
+   $ reset RULE flags as stored in UETset/UETmod
+   (is RULE flag+ptr+UETset,1->set;0->set),
+   (is RULE flag+ptr+UETmod,1->mod;0->mod),
+   0->flag*RULE[ptr],data*RULE[ptr]->loc,
+   (is+set,set RULE flag+ptr+Uallset,set local flag+loc+LTset;
+      clear local flag+loc+LTset),
+   (is+mod,set RULE flag+ptr+Uallmod,set local flag+loc+LTmod;
+      clear local flag+loc+LTmod).
+'a'add label+>label+>ptr:
+   $ the label comes after RULE block;
+   $ to get the label tag add <>RULE to the block pointer
+   is+label,push RULE+tag*LLOC[label],ptr->repr*LLOC[label];
+   +.
+'p'redo region+>optr+>canT+>canF+modT>-ptr:
+   $ check if UTcan,UFcan flags changed (for jumps)
+   $ if redo, set modT to the modified one; reset all LTset/LTmod flags
+   optr->ptr,(nxt: data*RULE[ptr]=0; previous+RULE+ptr,:nxt),
+   (canT=0;is RULE flag+ptr+UTcan;
+    set RULE flag+ptr+UTcan,(is RULE flag+ptr+Ujump,set RULE flag+ptr+Uredo;+)),
+   (canF=0;is RULE flag+ptr+UFcan;
+    set RULE flag+ptr+UFcan,(is RULE flag+ptr+Ujump,set RULE flag+ptr+Uredo;+)),
+   is RULE flag+ptr+Uredo,clear RULE flag+ptr+Uredo,
+      (is RULE flag+ptr+UETmod,1->modT; 0->modT),
+      (nxt:optr<=ptr;next+RULE+ptr,recompute RULE flags+ptr,:nxt).
+'a'check label shield+>label-ptr:
+   $ check if there is a shield between the label and the jump
+   repr*LLOC[label]->ptr,(nxt:
+     is RULE flag+ptr+Ushield; $ found
+     ptr>=>>RULE,error+unshielded jump+label;
+     next+RULE+ptr,:nxt).
+'a'set rule jump+>modT+>ptr+jumpT>+jumpF>-loc-redo:
+   $ ptr is the end of the region, a jump was made here
+   $ recompute all formal/local flags of the region: LTmod can 
+   $   increase, LTset can decrease (shift affix block)
+   $ jT,jF indicates if the region can succeed/fail
+   0->redo,ptr->jumpT->jumpF,(nxt: data*RULE[ptr]->loc,
+    (loc=0, $ this comes at the end $
+           set RULE flag+ptr+Ujump, $ we have a jump to here $
+           (is RULE flag+ptr+UTcan;0->jumpT),
+           (is RULE flag+ptr+UFcan;0->jumpF),
+           (is RULE flag+ptr+UETmod;
+            is+modT,set RULE flag+ptr+UETmod,1->redo;+),
+            $ the block has global side effect
+           (is+redo,set RULE flag+ptr+Uredo;+);
+     (is local flag+loc+LTmod, $ LTmod might increase $
+           (is RULE flag+ptr+UETmod;
+            set RULE flag+ptr+UETmod,1->redo);+),
+     (is local flag+loc+LTset; $ LTset might decrease $
+      is RULE flag+ptr+UETset,clear RULE flag+ptr+UETset,1->redo;+),
+     previous+RULE+ptr,:nxt)).
+# setup rule alt head
+'a'setup alt head flags+>ptr-loc:
+   $ the next alternative starts, setup all flags using Ualtset, Ualtmod
+   $ for classification: these bits are set when entering the region
+   data*RULE[ptr]->loc,(loc=0;
+     (is RULE flag+ptr+Ualtset,set local flag+loc+LTset;
+        clear local flag+loc+LTset),
+     (is RULE flag+ptr+Ualtmod,set local flag+loc+LTmod;
+        clear local flag+loc+LTmod),
+     previous+RULE+ptr,:setup alt head flags).
+# save rule alt head
+'a'store alt head flags+>ptr:
+   $ after the head of an alternative compute Ualtset and Ualtmod
+   $  for the head of the next alternative
+   data*RULE[ptr]=0;
+   (is local flag+data*RULE[ptr]+LFset,set RULE flag+ptr+Ualtset;
+         clear RULE flag+ptr+Ualtset),
+   (is local flag+data*RULE[ptr]+LFmod,set RULE flag+ptr+Ualtmod;
+         clear RULE flag+ptr+Ualtmod),
+   previous+RULE+ptr,:store alt head flags.
+# setup rule alt sequence
+'a'close region+>ptr-loc:
+   $ the regions is closed; compute final flags for all formal/local
+   $ and release RULE stack
+   data*RULE[ptr]->loc,(loc=0,previous+RULE+ptr,unstack to+RULE+ptr;
+   (is RULE flag+ptr+UTset,clear local flag+loc+LTset;
+      set local flag+loc+LTset),
+   (is RULE flag+ptr+UFset,clear local flag+loc+LFset;
+      set local flag+loc+LFset),
+   (is RULE flag+ptr+UTmod,set local flag+loc+LTmod;
+      clear local flag+loc+LTmod),
+   (is RULE flag+ptr+UFmod,set local flag+loc+LFmod;
+      clear local flag+loc+LFmod),
+   previous+RULE+ptr,:close region).
+# save rule alt sequence
+'a'merge alt sequence flags+>ptr+>canT+>canF-loc:
+   $ at the end of an alternative: collect Tset/Tmod and Fset/Fmod
+   $  to the UTset/UTmod, UFset/UFmod bits
+   data*RULE[ptr]->loc,(loc=0;
+     (is+canT,(is local flag+loc+LTset;set RULE flag+ptr+UTset),
+              (is local flag+loc+LTmod,set RULE flag+ptr+UTmod;+);+),
+     (is+canF,(is local flag+loc+LFset;set RULE flag+ptr+UFset),
+              (is local flag+loc+LFmod,set RULE flag+ptr+UFmod;+);+),
+     previous+RULE+ptr,:merge alt sequence flags).
+# clear rule tail Fbits
+'a'clear tail Fbits+>ptr:
+   $ clear UtailFset/Fmod bits at the beginning of region
+   data*RULE[ptr]=0;
+   clear RULE flag+ptr+UtailBits,previous+RULE+ptr,:clear tail Fbits.
+# update rule tail Fbits
+'a'merge tail Fbits+>ptr:
+   $ merge Fset/Fmod bits to Utail bits
+   data*RULE[ptr]=0;
+   (is local flag+data*RULE[ptr]+LFset; $ it has set
+      set RULE flag+ptr+UtailFset),     $ it was not
+   (is local flag+data*RULE[ptr]+LFmod,
+      set RULE flag+ptr+UtailFmod;+),
+   previous+RULE+ptr,:merge tail Fbits.
+# setup rule tail Fbits
+'a'use tail Fbits+>ptr-loc:
+   $ using Utail bits recompute LFset/LFmod
+   data*RULE[ptr]->loc,(loc=0;
+    (is RULE flag+ptr+UtailFset,clear local flag+loc+LFset;
+        set local flag+loc+LFset),
+    (is RULE flag+ptr+UtailFmod,set local flag+loc+LFmod;
+        clear local flag+loc+LFmod),
+    previous+RULE+ptr,:use tail Fbits).
+
+$ ------------------------------------------------ $
+'table'MESSAGE=(
+$ prefix where the error occurred
+ "%*"             :in class,
+ "extension %p: " :in extension,
+ "rule %p: "      :in rule,
+$
+ """%p"" not defined" :not defined,
+$ messages using location
+ "%m""%p"" must be a table or stack (%p)" :must be list,
+ "%mno standard selector for ""%p"""      :undefined standard selector,
+ "%mselector %p not defined"              :undefined selector
+).
+$ rtag=0/list/rule; cnt=0/affixno, 
+'f'where+>rtag+>cnt+w>:
+   rtag=0,in class->w;
+   cnt=0, in extension->w;
+   in rule->w.
+
+$ ---------------------------------------------------- $
+'q'has list type+>tag-type:
+   get type+tag+type,(=type=
+     [Itable;Istack;Istatic stack;Iformal table;Iformal stack],+;
+     -).
+'a'must be of list type+>rtag+>cnt+>atag-type-w:
+   $ atag must be a list, give error message
+   get type+atag+type,
+      (type=Iempty,error+not defined+atag;
+       where+rtag+cnt+w,error+must be list+w+rtag+atag+type).
+'a'check ssel+>rtag+>cnt+>tag-x-w:
+   $ tag must have a standard selector, if not, error message
+   get type+tag+x,(=x=
+     [Itable;Istack;Istatic stack],get ssel+tag+x;
+     get local ssel+tag+x),
+   (x>0;
+    where+rtag+cnt+w,error+undefined standard selector+w+rtag+tag).
+'a'read selector+>rtag+>cnt+x>-tag-w:
+   $ retrieve selector; if not defined, error
+   $  (x=0: not defined; x=-1: not existing standard selector
+   Qcons+x;
+   must Qtag+tag,get repr+tag+x,(x>0;
+     where+rtag+cnt+w,error+undefined selector+w+rtag+tag).
+'a'skip source:
+   Qcons+#;
+   (Q+Dlwb;Q+Dupb;Q+Dvlwb;Q+Dvupb;Q+Dcalibre),must Qtag+#;
+   Q+Dsub,skip source,mustQ+Dbus,must Qtag+#,(Qcons+#;must Qtag+#);
+   Q+Dnoarg;
+   must Qtag+#.
+'a'skip affixes:
+   Q+Dplus,skip source,:skip affixes;
+   +.
+$ ------------------------------------------------ $
+$ matching formal and actual types
+$  E    error
+$  G    global side effect
+$  M    set LTmod flag (formal affix)
+$  T    set LTset
+$  chk  check if it has LTset
+$
+$  actual        file   table  stack  in    out  inout  < formal
+$
+$   file          .       E     E      E     E     E
+$   ffile         .       E     E      E     E     E
+$   table         E       .     E      .     E     E
+$   ftable        E       .     E      .     E     E
+$   stack         E       .    .G      .    .G     .G
+$   fstack        E       .    .MG     .    .MG    .MG
+$   const         E       E     E      .     E     E
+$   LWB,UPB,etc   E       E     E      .     E     E
+$   #             E       E     E      E     .     E
+$   var           E       E     E      .    .G     .G
+$   T[]           E       E     E      .     E     E
+$   fT[]          E       E     E      .     E     E
+$   s[]           E       E     E      .    .G     .G
+$   fs[]          E       E     E      .    .MG    .MG
+$   in            E       E     E      .    .M     .M
+$   out,local     E       E     E     chk   .TM    chk,M
+$   inout         E       E     E      .    .M     .M
+
+'table'MESSAGE=(
+ "%msyntax error"                  :syntax error,
+ "%m""%p"" has wrong type %p"      :wrong affix type,
+ "%m""%p"" unitialized"            :affix no value,
+ "%mcannot be a constant"          :cannot be constant,
+ "%mlimit with ""%p"" cannot be used":limit cannot be used,
+ "%m""%p"" is not compatible (%l)" :provides wrong type,
+ "%mdummy affix cannot be used here":wrong dummy affix,
+ "%m""%p"" maybe wrong index"       :maybe wrong index,
+
+ "rule %p: affix ""%p"" has calibre different from %d" :actual calibre different,
+ "rule %p: standard selector of ""%p"" is different" :actual ssel different,
+
+ "rule %p: the last actual affix must be *" :missing repeat affix,
+ "rule %p: cannot modify in affix %p in a macro rule":cannot modify read only macro,
+$ ---------------- $
+ "FATAL: match formal actual: wrong formal type %p":wrong formal type
+).
+$ rtag: actual rule
+$ cnt:  affix number
+$ atag: 0 if tag is missing, otherwise the tag
+$ xtype: expected type, can be zero
+'a'affix type error+>rtag+>cnt+>atag-atype-w:
+   atag=0,where+rtag+cnt+w,error+syntax error+w+rtag;
+   get type+atag+atype,
+     (atype=Iempty,error+not defined+atag;
+      where+rtag+cnt+w,
+         error+wrong affix type+w+rtag+atag+atype).
+'a'affix uninitialized error+>rtag+>cnt+>atag-w:
+   where+rtag+cnt+w,error+affix no value+w+rtag+atag.
+'a'constant affix error+>rtag+>cnt-w:
+   where+rtag+cnt+w,error+cannot be constant+w+rtag.
+'a'dest list type error+>rtag+>cnt+>atag-w:
+   where+rtag+cnt+w,error+limit cannot be used+w+rtag+atag.
+'a'dest type error+>rtag+>cnt+>atag-w-dl:
+   where+rtag+cnt+w,get defline+atag+dl,
+     error+provides wrong type+w+rtag+atag+dl.
+'a'dummy affix error+>rtag+>cnt-w:
+   where+rtag+cnt+w,error+wrong dummy affix+w+rtag.
+$ ------------------------------------------------------ $
+$ formal: file
+'a'ffile affix+>rtag+>cnt-atag-type:
+   Ltag+atag,get type+atag+type,(=type=
+     [Iformal file;Ichar file;Idata file],+;
+     affix type error+rtag+cnt+atag);
+   affix type error+rtag+cnt+0,skip source.
+$ if a formal list has selectors, the actual affix must match
+'a'check calibre+>rtag+>formal+>actual-x-atype-acalibre-assel:
+   get formal calibre+formal+x,(x<0; $ formal has no field list $
+     get type+actual+atype,
+     ((atype=Iformal table;atype=Iformal stack),
+         get local calibre+actual+acalibre,(acalibre>=0;1->acalibre),
+         get local ssel+actual+assel;
+      get calibre+actual+acalibre,get ssel+actual+assel),
+     (x=acalibre;warning+7+actual calibre different+rtag+actual+x),
+     get formal ssel+formal+x,
+     (x=assel;warning+7+actual ssel different+rtag+actual)
+   ).
+$ formal: table
+'a'ftable affix+>rtag+>cnt+>formal-atag:
+  Ltag+atag,(has list type+atag,check calibre+rtag+formal+atag;
+     affix type error+rtag+cnt+atag);
+  affix type error+rtag+cnt+0,skip source.
+$ formal: stack
+'a'fstack affix+>rtag+>cnt+>formal-atag-atype:
+  Ltag+atag,get type+atag+atype,(=atype=
+    [Istatic stack],
+       (is tag flag+atag+timported,affix type error+rtag+cnt+atag;
+        check calibre+rtag+formal+atag);
+    [Iformal stack],set local flag+atag+LTmod,
+        check calibre+rtag+formal+atag;
+    [Istack],check calibre+rtag+formal+atag;
+    affix type error+rtag+cnt+atag);
+  affix type error+rtag+cnt+0,skip source.
+$ formal: shift
+'a'fshift affix+>rtag+>cnt-atag-atype:
+   Ltag+atag,get type+atag+atype,
+     (atype=Iformal repeat;error+missing repeat affix+rtag);
+   error+missing repeat affix+rtag,skip source.
+$ ---------------------------------------------------- $
+$ destination type
+'constant'
+    Uout	=0x452300,	$  x>
+    Uinout	=0x452301,	$ >x>
+    Uin		=0x452302,	$ >x
+    Uslice	=0x452303.	$ [x]
+$ read only types: Uin and Uslice
+'q'u read only+>utype: utype>=Uin.
+$ utype: Uin,Uout,Uinout,Uslice
+$  rtag: actual rule, extension (formal/local stack), 0 (box)
+$   cnt: affix position, 0 for extension and box
+$ sets local/formal flags LTset and LTmod
+$ mod: 0/1 for global side effect
+'f'get ftype+>tag+type>:
+   $ determine if a static stack/variable is read only
+   get type+tag+type,
+     (type=Istatic stack,
+       (is tag flag+tag+timported,Itable->type;Istack->type);
+      type=Istatic var,
+       (is tag flag+tag+timported,Iconstant->type;Ivariable->type);
+      +).
+
+'a'fsimple affix+>rtag+>cnt+>utype+mod>-atag-type:
+   Q cons+#,0->mod, $ contant cannot be an index (Uslice)
+      (utype=Uin;constant affix error+rtag+cnt);
+   (Q+Dvlwb;Q+Dvupb;Q+Dlwb;Q+Dupb),0->mod,must Ltag+atag,
+     (has list type+atag;must be of list type+rtag+cnt+atag),
+     (u read only+utype;dest list type error+rtag+cnt+atag);
+   Q+Dcalibre,0->mod,must Ltag+atag,
+     (has list type+atag;must be of list type+rtag+cnt+atag),
+     (utype=Uin;dest list type error+rtag+cnt+atag);
+   Q+Dsub,fsimple affix+rtag+cnt+Uslice+mod,
+     mustQ+Dbus,must Ltag+atag,read selector+rtag+cnt+#,
+     get ftype+atag+type,(=type=
+       [Itable;Iformal table],
+          (u read only+utype;dest type error+rtag+cnt+atag);
+       [Istack],(u read only+utype;1->mod);
+       [Iformal stack],
+          (u read only+utype;1->mod,set local flag+atag+LTmod);
+       must be of list type+rtag+cnt+atag);
+   Q+Dnoarg,0->mod,(utype=Uout;dummy affix error+rtag+cnt);
+   0->mod,must Qtag+atag,
+     (was+LLOC+atag,(utype=Uout;set local flag+atag+Lused);+),
+     get ftype+atag+type,(=type=
+     [Itable;Iformal table],check ssel+rtag+cnt+atag,
+        (u read only+utype;dest type error+rtag+cnt+atag);
+     [Istack],check ssel+rtag+cnt+atag,(u read only+utype;1->mod);
+     [Iformal stack],check ssel+rtag+cnt+atag,
+        (u read only+utype;1->mod,set local flag+atag+LTmod);
+     [Iconstant],(-w:utype=Uin;
+         utype=Uslice,where+rtag+cnt+w,warning+2+maybe wrong index+w+rtag+atag;
+         dest type error+rtag+cnt+atag);
+     [Ipointer constant],(u read only+utype;dest type error+rtag+cnt+atag);
+     [Ivariable],(u read only+utype;1->mod);
+     [Iformal in],(u read only+utype;
+         set local flag+atag+LTmod,
+           (is tag flag+rule compiled+rmacro,
+               error+cannot modify read only macro+rtag+atag;+));
+     [Iformal inout],(u read only+utype;set local flag+atag+LTmod);
+     [Iformal out;Ilocal],
+         (utype=Uout,set local flag+atag+LTset;
+          is local flag+atag+LTset;
+          affix uninitialized error+rtag+cnt+atag),
+         (u read only+utype;type=Ilocal;set local flag+atag+LTmod);
+     affix type error+rtag+cnt+atag
+   ).
+$ -------------------------------------------- $
+'a'match formal actual+>rtag+>cnt+>formal+mod>-ftype:
+  get type+formal+ftype,(=ftype=
+  [Iformal file],     ffile affix+rtag+cnt,0->mod;
+  [Iformal table],    ftable affix+rtag+cnt+formal,0->mod;
+  [Iformal stack],    fstack affix+rtag+cnt+formal,1->mod;
+  [Iformal shift],    fshift affix+rtag+cnt,0->mod;
+  [Iformal in],       fsimple affix+rtag+cnt+Uin+mod;
+  [Iformal out],      fsimple affix+rtag+cnt+Uout+mod;
+  [Iformal inout],    fsimple affix+rtag+cnt+Uinout+mod;
+  internal error+wrong formal type+ftype).
+$ ================================================================ $
+'table'MESSAGE=(
+ "rule %p: repeat block size mismatch (%l)":repeat block size mismatch,
+ "rule %p: repeat block type mismatch for affix %p, required: %p, given: %p (%l)"
+                                           :repeat block type mismatch,
+ "rule %p: a macro rule cannot call itself":recursive macro,
+ "a macro rule cannot call ""%p"""         :macro cannot call,
+ """%p"" is %p, not a rule (%l)"           :undefined rule,
+ "rule %p: additional actual affixes (%l)" :additional affix,
+ "rule %p: missing actual affixes (%l)"    :missing affix
+).
+
+$ matching rule for affix block pairs:
+$  formal: parameters of the called rule (require)
+$  actual: formal affixes of "rule compiled" (provide)
+$    E - error
+$    M - set LTmod on actual
+$    G - global side effect
+$    T - set LTset on actual
+$
+$  actual         file   table  stack  in    out  inout    < formal
+$  file           .       E      E     E     E     E
+$  table          E       .      E     E     E     E
+$  stack          E       .      .MG   E     E     E
+$  in             E       E      E     .     E     .M
+$  out            E       E      E     E     .MT   E
+$  inout          E       E      E     .     E     .M
+$
+
+$ check if the types in a repeat block are compatible
+'q'compatible repeat block types+>provide+>require:
+  require=provide;
+  require=Iformal table,provide=Iformal stack;
+  require=Iformal in,provide=Iformal inout;
+  require=Iformal inout,provide=Iformal in.
+$ rtag: actual rule whose last affix is +*,
+$  actual: the formal * affix in "rule compiled" (LLOC)
+$  formal: the formal * affix in rtag (LADM)
+'a'match repeat affixes+>rtag+>actual+>formal+>modT>-type-ftype-dl:
+   get defline+rtag+dl,(nxt:
+   get adm+formal+formal,next+LLOC+actual,get type+actual+type,
+     (formal=0,(type=Ilabel;
+                error+repeat block size mismatch+rtag+dl);
+      type=Ilabel,error+repeat block size mismatch+rtag+dl;
+      get type+formal+ftype,
+        (compatible repeat block types+type+ftype,
+           set local flag+actual+Lused,
+           (ftype=Iformal stack,1->modT,set local flag+actual+LTmod;
+            ftype=Iformal out,set local flag+actual+LTmod,
+                   set local flag+actual+LTset;
+            ftype=Iformal inout,set local flag+actual+LTmod;
+            +),:nxt;
+         error+repeat block type mismatch+rtag+actual+type+ftype+dl))).
+$ we have an actual * matching a formal one. All affix blocks are
+$  passed to "rtag" with strict type checking (see above)
+'p'actual repeat affix+>rtag+>fml+>modT>-dpos-dline-tag-type:
+   save disc position+dpos+dline,
+    ((Q+Dplus,Qtag+tag,get type+tag+type,type=Iformal repeat),
+       $ this is the last actual affix
+       set local flag+tag+Lused,set local flag+tag+LTset,
+       $ LTset indicates that all out affixes are set
+       (is local flag+tag+LTmod;warning+4+no pending repeat block+rtag+tag),
+       match repeat affixes+rtag+tag+fml+modT;
+     restore disc position+dpos+dline,-).
+$ if a rule is specified as macro, it cannot call itself,
+$ and cannot call "shift affix block"
+'a'check macro rule+>rtag:
+   is tag flag+rule compiled+rmacro,
+     (rtag=rule compiled,error+recursive macro+rtag;
+      rtag=Xshift affix,error+macro cannot call+rtag;
+      +);
+   +.
+$  canT: rule can succeed
+$  canF: rule can fail
+$  modT: has global side effect when returns
+$ if the rule is "shift affix block", call "reset affix block flags"
+$ local/formal affixes have correct flags at entry, update them
+'a'actual rule+canT>+canF>+>modT>
+    -rtag-type-formal-repeat-cnt-lmod-dl:
+   1->canT->canF,must Qtag+rtag,get type+rtag+type,get defline+rtag+dl,
+     (type=Iempty,error+not defined+rtag,skip affixes;
+      type!=Irule,error+undefined rule+rtag+type+dl,skip affixes;
+      check macro rule+rtag,
+      (rtag=Xshift affix,reset affix block flags+rtag;+),
+      (is tag flag+rtag+rno return,0->canT;+),
+      (is tag flag+rtag+rcan fail;0->canF),
+      (is tag flag+rtag+rside effect,1->modT;+),
+      get adm+rtag+formal,0->repeat,1->cnt,
+      (nxt:formal=0,
+            (Qahead+Dplus,
+               (repeat=0,error+additional affix+rtag+dl,skip affixes;
+                actual repeat affix+rtag+repeat+modT;
+                get adm+repeat+formal,:nxt);
+             +);
+           get type+formal+type,
+             (type=Iformal repeat, $ no actual instance or * $
+                   (actual repeat affix+rtag+formal+modT;
+                    formal->repeat,get adm+formal+formal,:nxt);
+              Q+Dplus,match formal actual+rtag+cnt+formal+lmod,
+                   (is+lmod,1->modT;+),
+                   incr+cnt,get adm+formal+formal,:nxt;
+              error+missing affix+rtag+dl))
+     ).
+
+$ EXTENSION ------------------------------------------ $
+
+'table'MESSAGE=(
+ "extension %p: must be a stack (%p)":stack expected,
+ "extension %p: field #%d defined twice":field doubly filled,
+ "extension %p: wrong field list" :wrong extension block,
+ "extension %p: field list is (%d) shorter than calibre (%d)":short extension block,
+$ internal error
+ "Fatal: transport dest, calibre=%d < selector=%d":wrong selector in transport
+).
+'a'extend+[]T[]+>x: (* x->T *)T.
+
+'a'check extension block+>tag+>calibre-ptr-cnt1-cnt:
+   subtr+>>RULE+calibre+ptr,incr+ptr,0->cnt,
+   (RULE[ptr]=0,error+wrong extension block+tag;
+               $ extension block does not end at the highes value
+    (nxt:calibre<=cnt;RULE[ptr]=0;incr+ptr,incr+cnt,:nxt),
+    cnt->cnt1,
+    (nxt:calibre<=cnt;RULE[ptr]=0,incr+ptr,incr+cnt,:nxt;+),
+    (cnt<calibre,error+wrong extension block+tag;
+                $ not a single block at the end
+     cnt1<cnt,warning+3+short extension block+tag+cnt1+calibre;
+     +)).
+
+'a'transport dest+>tag+>calibre-x-ptr:
+   Q+Dto,read selector+tag+0+x,
+    (x<=0;
+     calibre<x,internal error+wrong selector in transport+calibre+x;
+      $ go back x blocks and mark it
+     subtr+>>RULE+x+ptr,incr+ptr,
+       (RULE[ptr]=0;error+field doubly filled+tag+x),
+       1->RULE[ptr]),
+    :transport dest;
+  +.
+'a'transport+>tag+>calibre-rptr-cnt:
+   $ adding calibre many zeroes to RULE
+   >>RULE->rptr,calibre->cnt,(nxt:extend+RULE+0,decr+cnt,(cnt>0,:nxt;+)),
+   (nxt:fsimple affix+tag+0+Uin+#,transport dest+tag+calibre,
+        (Q+Dend;Q+Dextension;:nxt)),
+   check extension block+tag+calibre,
+   unstack to+RULE+rptr.
+
+'a'extension-tag-type-calibre:
+   must Ltag+tag,get type+tag+type,(=type=
+     [Istack],get calibre+tag+calibre,transport+tag+calibre;
+     [Iformal stack],get local calibre+tag+calibre,
+        $ calibre=-1 when no formal field list
+        (calibre>0;1->calibre),
+        transport+tag+calibre,set local flag+tag+LTmod;
+     [Iempty],error+not defined+tag,Qskip+Dextension;
+        error+stack expected+tag+type,Qskip+Dextension).
+
+$ CLASSIFICATION ----------------------------------------- $
+'table'MESSAGE=(
+  "%p: no external constant or list in zone":no external in zone,
+  "%p: has wrong type %p in zone (%l)": zone type,
+  "cannot reach this alternative":cannot reach this alternative
+).
+
+'a'read box:
+   fsimple affix+0+0+Uin+#,mustQ+Dbox.
+'a'check zone member+>tag+>list-type-dl:
+   tag=0; $ constant or missing
+   get type+tag+type,get defline+tag+dl,
+     (type=Iempty,error+not defined+tag;
+      is tag flag+tag+texternal,error+no external in zone+tag;
+      type=Iconstant;
+      type=Ipointer constant;
+      (is+list,(type=Itable;type=Istack;type=Istatic stack));
+      error+zone type+tag+type+dl).
+'a'check zone interval+>l+>r:
+    check zone member+l+0,check zone member+r+0.
+'a'classifier+>empty>-tag1-tag2-cnt:
+   $ empty=1 if one of the zones is empty
+   0->tag1->tag2->cnt,
+   (Qcons+#;Qtag+tag1;incr+cnt),
+   (Q+Dcolon,(Qcons+#;Qtag+tag2;incr+cnt),check zone interval+tag1+tag2;
+    check zone member+tag1+1), 
+   (cnt<2;1->empty),
+   (Q+Dsemicolon,:classifier;mustQ+Dzone).
+
+'a'classification+>rloc+canT>+canF>+>modT>+modF>+jumpT>+jumpF>
+   $ exactly one of the alternatives are chosen,
+      -lT-lF-mT-mF-jT-jF-empty-nextMod:
+   0->canT->canF->jumpT->jumpF,0->modF,modT->nextMod,
+   (nxt:0->empty,must Q+Dzone,classifier+empty,
+        1->lT,0->jT,nextMod->mT,clear RULE flag+rloc+Ushield,
+        alt tail+rloc+lT+lF+mT+mF+jT+jF,
+        (is+lT,1->canT,max+mT+modT;+),(is+lF,1->canF,max+mF+modF;+),
+        (jT=0;rloc<=jT;jumpT=0,jT->jumpT;min+jT+jumpT),
+        (jF=0;rloc<=jF;jumpF=0,jF->jumpF;min+jF+jumpF),
+        merge alt sequence flags+rloc+lT+lF,
+        (Q+Dsemicolon,setup alt head flags+rloc,
+          (is+empty,error+cannot reach this alternative;+),:nxt;
+         +)).
+'a'compound member+canT>+canF>+>modT>+modF>+jumpT>+jumpF>:
+    incr+compound level,
+    rule body+canT+canF+modT+modF+jumpT+jumpF,
+    mustQ+Dclose,
+    decr+compound level.
+
+$ MEMBER ------------------------------------------------ $
+'table'MESSAGE=(
+  "cannot reach this member" :cannot reach this member,
+  "wrong jump to label %p"   :wrong jump to
+).
+
+$ canT: the member can succeed 0/1. If 1, LTset flags are OK
+$ canF: the member can fail 0/1. If 1, LFset flags are OK
+$ modT: side effect when succeeds (only if canT)
+$ modF: side effect when fails (only if canF)
+$ jumpT: outermost jump for TRUE (no next member on TRUE branch)
+$ jumpF: outermost jump for FALSE (no next member on FALSE branch)
+$  jumpT/jumpF are either zero, or pointer to the last element of
+$  the RULE block it is defined (the next RULE contains reference
+$  to the label's LLOC entry)
+$ formal/local variables: LTset, LTmod are set on entry
+$  on exit: LTset/LTmod if canT; LFset/LFmod if canF
+'a'member+>rloc+canT>+canF>+>modT>+modF>+jumpT>+jumpF>-label:
+   0->jumpT->jumpF->canF,1->canT,modT->modF,
+   (Q+Dopen,compound member+canT+canF+modT+modF+jumpT+jumpF;
+    Q+Dextension,extension,1->modT,set RULE flag+rloc+Ushield; $ cannot fail $
+    Q+Djump,must Ltag+label,0->canT,check label shield+label,
+       set rule jump+modT+repr*LLOC[label]+jumpT+jumpF;
+    Q+Dplus;
+    Q+Dminus,copy local Tflag to F,1->canF,0->canT;
+    copy local Tflag to F,actual rule+canT+canF+modT,set RULE flag+rloc+Ushield
+       $ an actual rule does't have side effect when fails,
+       $ but can leave a set affix unset (shift affix block)
+   ).
+
+'a'alt tail+>rloc+>canT>+canF>+>modT>+modF>+>jumpT>+jumpF>-lF-mT-mF-jF:
+   0->canF->modF,modT->mT,0->jumpF,clear tail Fbits+rloc,
+   $ tail Fbits collect the LFset/LFmod bits for the end
+   (nxt:Q+Dcomma,
+      (canT=0,0->mT,error+cannot reach this member;+),
+      (jumpT=0;rloc<jumpT; $figure out the label $
+       next+RULE+jumpT,error+wrong jump to+data*RULE[jumpT]),
+      member+rloc+canT+lF+mT+mF+jumpT+jF,
+      ((is+canT,is+mT),1->modT;+),
+      (is+lF,max+mF+modF,merge tail Fbits+rloc,1->canF;+),
+      (jF=0;rloc<jF;jumpF=0,jF->jumpF;min+jF+jumpF),
+      :nxt;
+   +),
+   $ if can fail, set LFset/LFmod bits
+   (is+canF,use tail Fbits+rloc;+).
+
+'a'alt sequence+>rloc+canT>+canF>+>modT>+modF>+jumpT>+jumpF>
+   $ alternative sequence: RULE stack has been set by "open region"
+   $ at exit the UT/UF flags in RULE stack are OK
+      -lT-lF-mT-mF-jT-jF-nextAlt-nextMod-nextJump:
+   0->canT->canF->jumpT->jumpF,0->modF,modT->nextMod,
+   (nxt:
+     $ LTset, LTmod flags are OK, head of this alternative
+     nextMod->mT,member+rloc+lT+nextAlt+mT+mF+jT+nextJump,
+     $ save LFset and LFmod flags for the head of next alternative
+     (is+nextAlt,mF->nextMod,store alt head flags+rloc;+),
+     $        >lT> + >mT> + >lJ> 
+     alt tail+rloc+lT+lF+mT+mF+jT+jF,
+     (is+lT,1->canT,max+mT+modT;+),(is+lF,1->canF,max+mF+modF;+),
+     $ set if there was a jump
+     (jT=0;rloc<=jT;jumpT=0,jT->jumpT;min+jT+jumpT),
+     (jF=0;rloc<=jF;jumpF=0,jF->jumpF;min+jF+jumpF),
+     merge alt sequence flags+rloc+lT+lF,
+     (is+nextAlt,setup alt head flags+rloc;+),
+     (Q+Dsemicolon,
+        (is+nextAlt;error+cannot reach this alternative),
+        (nextJump=0;rloc<nextJump;
+         next+RULE+nextJump,error+wrong jump to+data*RULE[nextJump]),
+        :nxt;
+      +)),
+   $ no more alternatives, see if we can fail
+   (nextJump=0;rloc<=nextJump;jumpF=0,nextJump->jumpF;min+nextJump+jumpF),
+   (is+nextAlt,1->canF,max+nextMod+modF,
+     copy local Tflag to F,merge alt sequence flags+rloc+0+1;+).
+
+$ ----------------------------------------------------------- $
+'table'MESSAGE=(
+"local affix %p: not used" :local affix not used,
+"label %p: not used"       :label not used
+).
+
+'variable' rule compiled=0,compound level=0.
+
+$ compute modT and local LTset/LTmod flags. Rescan if necessary
+'a'rule body+canT>+canF>+>modT>+modF>+jumpT>+jumpF>
+      -loc-label-rloc-dpos-dnum:
+   >>LLOC->loc,setup label+label,setup locals,
+   open region+modT,>>RULE->rloc,add label+label+rloc,
+   save disc position+dpos+dnum,
+   (again-old:
+     clear local error+old,
+$ TODO: WARNINGS ARE DUPLICATED WHEN REPEATING THIS LOOP
+     (Q+Dbox,read box,classification+rloc+canT+canF+modT+modF+jumpT+jumpF;
+      alt sequence+rloc+canT+canF+modT+modF+jumpT+jumpF),
+     $ check if we should redo it again
+     $ do it if there were no errors
+     (was local error+old;
+      redo region+rloc+canT+canF+modT,restore disc position+dpos+dnum,:again;
+      +)),
+   close region+rloc, $ set flags for all formal/local
+   (is+canT;0->modT),(is+canF;0->modF),
+   $ check local affixes and the label for usage
+   (nxt: >>LLOC<=loc;
+     (is local flag+>>LLOC+Lused;
+      (type*LLOC=Ilabel,(compound level=0;warning+4+label not used+tag*LLOC);
+       warning+4+local affix not used+tag*LLOC),
+     unstack+LLOC,:nxt).
+
+$ ----------------------------------------------------------- $
+$ if the rule not used at all, give warning (level 3), but
+$  check it, but don't generate code later
+'table'MESSAGE=(
+ "rule %p: not used"                    :ruletag not used,
+ "rule %p: exit rule can return"        :exit rule can return,
+ "rule %p: cannot succeed"              :rule cannot succeed,
+ "rule %p: can fail"                    :rule can fail,
+ "rule %p: cannot fail"                 :rule cannot fail,
+ "rule %p: has global side effect"      :rule has global side effect,
+ "rule %p: has no global side effect"   :rule has no side effect,
+ "rule %p: can have global side effect when fails"   :fail and rule side effect,
+ "rule %p: local or formal affix %p not used"        :local or formal not used,
+ "rule %p: not all repeat blocks might be visited"   :repeat blocks visited,
+ "rule %p: formal stack affix %p can be a table"     :stack formal not set,
+ "rule %p: formal affix %p might change on true exit":formal might change on true,
+ "rule %p: out formal affix %p can be uninitialized" :out formal not set,
+ "rule %p: out formal affix in repeat block unitialized": out formal in repeat block,
+ "rule %p: formal affix %p does not change"          :formal does not change,
+ "rule %p: formal affix %p might change on false exit":formal might change on false
+).
+
+'a'd check rule+>rtag-canT-canF-modT-modF:
+  (is tag flag+rtag+tused;warning+4+ruletag not used+rtag),
+  scratch+RULE,0->compound level,rtag->rule compiled,
+  setup formal stack+rtag,0->modT,
+  rule body+canT+canF+modT+modF+#+#,
+  (rtag=Xroot; $ do not check the root
+   is tag flag+rtag+rexit,
+      ((is+canT;is+canF),error+exit rule can return+rtag;+);
+   (is+canT;0->modT,error+rule cannot succeed+rtag),
+   (is+canF,(is tag flag+rtag+rcan fail;
+             error+rule can fail+rtag);
+    0->modF,(is tag flag+rtag+rcan fail,
+                 error+rule cannot fail+rtag;
+             +)),
+   (is+modT,(is tag flag+rtag+rside effect;
+             error+rule has global side effect+rtag);
+    canT=0;
+    is tag flag+rtag+rside effect,warning+6+rule has no side effect+rtag;
+    +),
+   (is+modF,(is tag flag+rtag+rside effect,
+                warning+5+fail and rule side effect+rtag;
+             error+fail and rule side effect+rtag);+)),
+  $ check all formal and local variables for usage
+   (nxt: >>LLOC < <<LLOC;
+         (-check-tag: type*LLOC=Ilabel; $ check is label is used ??? $
+          type*LLOC=Iformal shift;
+          tag*LLOC->tag,
+            (is local flag+>>LLOC+Lused;
+             warning+4+local or formal not used+rtag+tag),
+            (=type*LLOC=
+             [Iformal repeat],0->check,
+                (is local flag+>>LLOC+LTset; $ * as actual affix, all set $
+                 is local flag+>>LLOC+LTmod,warning+4+repeat blocks visited+rtag,
+                   (is tag flag+rtag+routvararg,error+out formal in repeat block+rtag;
+                    +);
+                 +);
+             [Iformal stack],0->check,(is local flag+>>LLOC+LTmod;
+                warning+3+stack formal not set+rtag+tag);
+             [Iformal in],canF->check,(is local flag+>>LLOC+LTmod,
+                warning+2+formal might change on true+rtag+tag;+);
+             [Iformal out],canF->check,(is local flag+>>LLOC+LTset;
+                error+out formal not set+rtag+tag);
+             [Iformal inout],canF->check,(is local flag+>>LLOC+LTmod;
+                warning+3+formal does not change+rtag+tag);
+             0->check),
+            (-level:(is+check,is local flag+>>LLOC+LFmod),
+                (is tag flag+rtag+r macro,9->level;2->level),
+                warning+level+formal might change on false+rtag+tag;+)),
+            unstack+LLOC,:nxt),
+   must Q+Dpoint.
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+

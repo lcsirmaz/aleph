@@ -1,0 +1,123 @@
+$ disc output $
+'pragmat'module="disc".
+
+$ writing DISC
+'a'D+>x,D cons+>x,D string+>x,Dtag+>x.
+$ reading from DISC
+'p'Q+>x,Q cons+x>,Q string+x>,Qtag+x>.
+'q'Qahead+>x.
+'a'must Q+>x,must Qcons+x>,must Qtag+x>,Qskip+>x.
+
+'f'save disc position+pos>+lnum>.
+'a'restore disc position+>pos+>lnum.
+$ open / close
+'a'open disc+>mode,close disc.
+
+$ exported disc symbols
+'constant'
+  $ files
+  Dfile,
+  $ expression operators
+  Dor,Dand,Dxor,Dcompl,Ddiv,
+    $ Dplus,Dminus,Dcalibre,Dlwb,Dupb,Dopen,Dclose
+  $ other
+  Dbox,   Dbus, Dcalibre, Dclose, Dcolon,
+  Dcomma, Dend, Dexpression, Dextension, Dfill, Djump,
+  Dlabel, Dline, Dlist, Dlocal, Dlwb, Dmodule, Dminus, Dnoarg,
+  Dopen, Dplus, Dpoint, Dpragmat, Droot, Drule,
+  Dsemicolon, Dstar, Dsub, Dtitle, Dto, Dupb,
+  Dvlwb, Dvupb, Dzone.
+
+'table'DSYMB.
+
+'pragmat'if=compile.
+
+'table'DSYMB=( $ disk symbols
+  "&":Dand,
+  "=":Dbox,   "]":Dbus, 
+  "<>":Dcalibre, ")":Dclose, ":":Dcolon, ",":Dcomma, "~":Dcompl,
+  "/":Ddiv,
+  "'end'":Dend, "'expression'":Dexpression, "'extension'":Dextension,
+  "'file'":Dfile, "'fill'":Dfill,
+  "'jump'":Djump,
+  "'label'":Dlabel, "\n":Dline, "'list'":Dlist, "'local'":Dlocal, "'lwb'":Dlwb, 
+  "'module'":Dmodule,"-":Dminus,
+  "#":Dnoarg,
+  "(":Dopen, "|":Dor,
+  "+":Dplus, ".":Dpoint, "'pragmat'":Dpragmat,
+  "'root'":Droot, "'rule'":Drule,
+  ";":Dsemicolon, "*":Dstar, "[":Dsub,
+  "'title'":Dtitle, "'to'":Dto,
+  "'upb'":Dupb,
+  "'vlwb'":Dvlwb, "'vupb'":Dvupb,
+  "^":Dxor,
+  "'zone'":Dzone
+).
+
+'pragmat'require=("lexical","display","obj","tags","types","symbols").
+$ ------------------------------------------------------------ $
+'datafile' DISC[DSYMB;LADM;LLOC;LEXT] = "/tmp/aleph.tmp">.
+$ temporary file(s)
+'stack'LEXT=(
+  "/tmp/aleph.tmp" :disc file
+).
+
+'table'MESSAGE=(
+   "cannot create temp file %p, error code=%d, aborting" 
+          :cannot open disc file
+).
+
+'a'open disc+>mode-err:
+   open file+DISC+mode+LEXT+disc file;
+   get file error+DISC+err,
+     Xerror+0+cannot open disc file+disc file+err,'exit'22.
+'a'close disc:
+   close file+DISC.
+
+'a'D+>x: $ x is a pointer to DSYMB, or coming from Dtag
+    put data+DISC+x+pointer.
+'a'D cons+>n:
+   put data+DISC+n+numerical.
+'a'D string+>x: $ x is a pointer to LEXT
+   put data+DISC+x+pointer.
+'a'D tag+>tag: $ x is a pointer to LADM or LLOC
+   was+LADM+tag,(has formal type+tag,repr*LADM[tag]->tag,:D tag;D+tag);
+   was+LLOC+tag,D+tag;
+   internal error+27. $ D+tag $
+
+$ reading ------------------------------------------ $
+'variable'Qsymbol=0,Qtype=0,Qposition=0,Qlinenum=0,linenum=0.
+
+'a'next disc symbol:
+  Qahead+Dend;
+  get file pos+DISC+Qposition,linenum->Qlinenum,
+  (get data+DISC+Qsymbol+Qtype,
+      ((Qsymbol=Dline,Qtype=1),incr+linenum,set linenum+linenum,:next disc symbol;
+       +);
+   Dend->Qsymbol,1->Qtype).
+'f'save disc position+pos>+lnum>:
+   Qposition->pos,Qlinenum->lnum.
+'a'restore disc position+>pos+>lnum:
+   set file pos+DISC+pos,lnum->linenum,set linenum+linenum,next disc symbol.
+
+'p'Q+>x: x=Qsymbol,is+Qtype,next disc symbol.
+'q'Qahead+>x: x=Qsymbol,is+Qtype.
+'a'must Q+>x: Q+x; internal error+27.
+'p'Qcons+x>: Qtype=0,Qsymbol->x,next disc symbol.
+'a'must Qcons+x>: is+Qtype,internal error+27;
+             Qsymbol->x,next disc symbol.
+'p'Qtag+x>: is+Qtype,(=Qsymbol=[LADM;LLOC],Qsymbol->x,next disc symbol;
+                      -).
+'p'Qstring+x>:
+  is+Qtype,was+LEXT+Qsymbol,Qsymbol->x,next disc symbol.
+
+'a'must Qtag+x>: Qtag+x;internal error+29.
+'a'Qskip+>to:
+   Qahead+Dend;
+   Q+to;
+   next disc symbol,:Qskip.
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+

@@ -1,0 +1,182 @@
+$ constants and variables $
+'pragmat'module="variables".
+$ HEADER ******************************************************* $
+$ main program
+$
+'a'constant declaration+>ext.
+   $ constant declaration, external
+'a'variable declaration+>ext, static variable declaration.
+   $ variable declaration, external, static
+
+$ BODY ********************************************************* $
+'pragmat'if=compile.
+'pragmat'public=(
+  constant declaration,variable declaration,static variable declaration
+).
+'pragmat'require=("display","lexical","symbols","tags","pragmats","types","disc").
+$
+$ constant and variable declaration:
+$  <typer> tag = <initializer>.
+$   => Dexpression <tag> <expression> Dpoint
+$ external declaration:
+$  'external' <typer> tag = "string".
+$ prototype"
+$  <typer> tag.
+$
+$ initializer: symbolic read swallows the minus sign before integer and hex
+$   denotations, thus 'a*b-4' becomes 'a' '*' 'b' '-4'
+$ Accepted constructs:
+$   <L >L <>L tag cons () * / + - ~ | & ^
+$ LADM values:
+$   type: Ivariable, Iconstant, Istatic var
+$   flag: tpublic             from a prototype or pragmat
+$         texternal|tdefined  external declaration
+$         timported|tdefined  from a prototype
+$         tdefined            declaration
+$   repr: string in LEXT for external
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'table'MESSAGE=(
+  "wrong expression syntax"        :wrong expression,
+  "in expression a tag is expected":tag expected,
+  "wrong or missing expression"    :wrong or missing expression,
+  "tag expected for '%p'"          :tag expected for,
+  "tag %p must be table or stack (%p)" :tag is not list type,
+  "tag %p must be a constant (%p)"  :tag is not constant type,
+  "%p: no external tag in expression":no external tag,
+  "external %p declaration: missing = after %p" :no external init,
+  "external %p declaration: missing string after %p=":no external string,
+  "mixing declaration and prototype in %p declaration" :mixing proto,
+  "%p: redefined as %p (was %p at %l)" :tag redefined at,
+  "%p: redefined as %p (was %p)"       :tag redefined proto,
+$ warning $
+  "only virtual bounds in expressions":virtual bounds only
+).
+
+'a'tag redefined+>tag+>newtype-l-oldtype:
+   get defline+tag+l,get type+tag+oldtype,
+   (l>0,error+tag redefined at+tag+newtype+oldtype+l;
+        error+tag redefined proto+tag+newtype+oldtype).
+
+$ ======================================================= $
+$ read an expression
+$
+'p'is expression+>err>:
+  (R+Sminus,D+Dminus;+),
+  (nxt: exprbase+err,
+        (is+err;
+         R+Sboolor,  D+Dor,   :nxt;
+         R+Sbooland, D+Dand,  :nxt;
+         R+Sboolxor, D+Dxor,  :nxt;
+         R+Splus,    D+Dplus, :nxt;
+         R+Sminus,   D+Dminus,:nxt;
+         $ as a*b-3 becomes 'a' '*' 'b' '-3' wee need this trick
+         ahead cons, D+Dplus, :nxt;
+         R+Sasterisk,D+Dstar, :nxt;
+         R+Sslash,   D+Ddiv,  :nxt;
+         +)).
+'a'expect list tag+>err>-x-type:
+   is tag+x,get type+x+type,D tag+x,
+      (type=Iempty;type=Itable;type=Istack;type=Istatic stack;
+       error+tag is not list type+x+type,1->err),
+      (is tag flag+x+texternal,1->err,error+no external tag+x;+),
+      (is+err;use tag+x);
+   1->err,error+tag expected.
+'a'expect constant tag+>tag+>err>-type:
+   get type+tag+type,D tag+tag,
+      (type=Iempty;type=Iconstant;type=Ipointer constant;
+       error+tag is not constant type+tag+type,1->err),
+      (is tag flag+tag+texternal,1->err,error+no external tag+tag;+),
+      (is+err;use tag+tag).
+'p'exprbase+>err>-x:
+   is cons+x,D cons+x;
+   is tag+x,expect constant tag+x+err;
+   R+Scomplement,D+Dcompl,
+      (exprbase+err;is+err;1->err,error+wrong expression);
+   R+Svlwb,D+Dlwb,expect list tag+err;
+   R+Svupb,D+Dupb,expect list tag+err;
+   R+Slwb,warning+1+virtual bounds only,D+Dlwb,expect list tag+err;
+   R+Supb,warning+1+virtual bounds only,D+Dupb,expect list tag+err;
+   R+Scalibre,D+Dcalibre,expect list tag+err;
+   R+Sopen,D+Dopen,
+      (is expression+err;is+err;1->err,error+wrong expression),
+      D+Dclose,must+Sclose.
+
+'a'expect expression+>err>:
+   $ after '=' in constant and variable declaration
+   (is expression+err;1->err,error+wrong or missing expression),
+   (is+err,skip all;+).
+$ ------------------------------------------------------ $
+$ constant/variable declarer
+$ after <TYPER><tag>=
+'a'declarer+>tag+>type+>dl-err-otype:
+   0->err,get type+tag+otype,
+     (otype=Iempty;
+      otype=type;
+      tag redefined+tag+type,1->err),
+     add tag definition+tag+dl+err,(is+err;put type+tag+type),
+     D+Dexpression,Dtag+tag,expect expression+err,D+Dpoint.
+$ after 'external'<TYPER><tag>=
+'a'external declarer+>tag+>type+>dl-str-err-otype:
+    0->err,get type+tag+otype,
+      (otype=Iempty;
+       otype=type;
+       tag redefined+tag+type,1->err),
+      (is string+str;
+       0->str,1->err,error+no external string+type+tag,skip all),
+      add tag external+tag+dl+err,
+      (is+err;put type+tag+type,put repr+tag+str).
+
+$ after <TYPER><tag>.
+'a'prototype+>tag+>type+>dl-proto-otype-err:
+   get pragmat value+pgt proto+proto, $1: import, 2: public, 0: none $
+   get type+tag+otype,0->err,
+     (otype=Iempty;
+      otype=type;
+      tag redefined+tag+type,1->err),
+     (is+err; $ there was an error $
+      proto=1,add tag import+tag+dl+err;
+      proto=2,add tag public+tag+dl+err;
+      add tag prototype+tag+dl),
+     (is+err;put type+tag+type).
+
+$ 'x''const'var="@var".  external declarer
+$ 'const'var=EXPR.       declarer
+$ 'const'var.            prototype
+$ ext=1: external; ext=2/3 declarer/prototype
+'a'declaration+>ext>+>type-tag-dl:
+   is tagdl+tag+dl,
+     (R+Sequals, $ this is a declarer
+       (ext=3,error+mixing proto+type,skip all;
+        ext=1,external declarer+tag+type+dl;
+        2->ext,declarer+tag+type+dl);
+      ext=1,error+no external init+type+tag,skip all;
+      ext=2,error+mixing proto+type,skip all;
+      3->ext,prototype+tag+type+dl);
+   error+tag expected for+type,skip all.
+        
+$ after <EXTERNAL><TYPER>
+$  ext changes to reflect declaration / prototype
+$    ext=1     external
+$    ext=0/2   declarer
+$    ext=0/3   prototype
+'a'declaration series+>ext+>type:
+   declaration+ext+type,
+        (R+Scomma,:declaration series;
+         R+Spoint;
+         must+Spoint,skip to point).
+
+$ 'external''constant' or 'constant'
+'a'constant declaration+>ext:
+   declaration series+ext+Iconstant.
+$ 'external''variable' or 'variable'
+'a'variable declaration+>ext:
+   declaration series+ext+Ivariable.
+$ 'static''variable'
+'a'static variable declaration:
+   declaration series+0+Istatic var.
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+

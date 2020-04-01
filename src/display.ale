@@ -1,0 +1,266 @@
+$ display routines for ALEPH $
+'pragmat'module="display".
+
+$ HEADER ****************************************************** $
+$
+$ Print source, errors, warnings and messages
+$ They use variable length rules; the first affix is the format
+$   string from MESSAGE; the following affixes are arguments
+$   %%  print %
+$   %c  character
+$   %d  integer
+$   %p  pointer (ask all modules to handle it)
+$   %l  source line number
+$   %*  skip
+$ for error, warning, print source file and actual line number
+$
+
+'table'MESSAGE.
+   $ error, warning, message
+'q'was error.
+'f'get error no+x>.
+'a'clear local error+old>.
+'p'was local error+>old.
+   $ check if there were errors between these calls;
+   $    can be called nested
+   $ check for local errors; restore old value.
+'a'error+*+>mess.
+'a'Xerror+>line+*+>mess.
+   $ error with current/given line number
+'a'warning+>level+*+>mess.
+'a'Xwarning+>level+>line+*+>mess.
+$'a'warning+>level+*(>mess).
+$'a'Xwarning+>level+line+*+>mess.
+   $ warning with current/given line number
+'e'internal error+*+>mess.
+   $ exit routine for internal error
+'a'message+*+>mess.
+   $ a message
+'a'display char+>char+>show.
+'a'reset pr line.
+   $ print the next character of the source
+'a'DICT header+>tag+>defline,DICT item+>line,DICT tail.
+   $ dictionary printing
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("lexical","pragmats","types","tags","input").
+
+$ export
+'pragmat' public=(
+  display char,
+  was error,get error no,clear local error,was local error,
+  MESSAGE, error, Xerror, warning, Xwarning, message,
+  DICT header,DICT item,DICT tail,
+  reset pr line
+).
+
+$ ******************************************************** $
+'constant' T=1, F=0.
+
+$ ******************************************************** $
+$ ERRORS, WARNINGS $
+'constant'
+   count col=2,		$ line number
+   prog col=9.		$ program listing starts here
+
+'variable'
+   prpos=0,		$ print position
+   old prpos=1,		$ saved print position
+   prpos ok=1,		$ no need to start new line
+   pr line=0.		$ program line number
+
+'charfile' PRINTFILE="stdout">.
+
+'a'print char+>ch:
+   $ print a character to PRINTFILE
+   incr+prpos, put char+PRINTFILE+ch.
+'a'nlcr:
+   $ start new line if not at the begining
+   prpos<=1,1->prpos;
+   0->prpos,print char+newline.
+'a'tab line+>pos:
+   $ go ahead until position "pos"
+   prpos = pos;
+   prpos > pos, nlcr, :tab line;
+   print char+/ /, :tab line.
+
+$ simple output $
+'a'print int+>n:
+   $ print n in decimal; min int does not end with 9
+   n=min int, print char+/-/,subtr+-1+n+n,print int1+n+/1/;
+   n<0, print char+/-/,get abs+n+n,print int1+n+/0/;
+   print int1+n+/0/.
+'a'print int1+>n+>c-q-r:
+   divrem+n+10+q+r,(q=0; print int1+q+/0/),
+        add+r+c+r, print char+r.
+'a'print form+>n: print form1+n+4.
+   $ print n for 4 places
+'a'print form1+>n+>m -q-r:
+   m=0;
+   decr+m,divrem+n+10+q+r,print form1+q+m,add+r+/0/+r,print char+r.
+'a'print+T[]+>p-n:
+   $ print a string  
+   was+T+p,put string+PRINTFILE+T+p, 
+     string length+T+p+n, add+prpos+n+prpos;
+   +.
+$ printing source $
+'a'reset pr line:
+   $ called when the input is changed; restart line numbers
+   0->pr line, nlcr.
+'a'save prpos:
+   $ save old print position when messages and source are intermixed
+   is+prpos ok,F->prpos ok,prpos->old prpos;
+   +.
+'a'print line head+>show:
+   $ start each line with a line number
+   is+show, nlcr, tab line+count col, print form+pr line,
+     tab line+prog col;
+  +.
+'a'display char+>char+>show:
+   $ next character in source; print when "show" is true
+   char=newline, incr+pr line, T->prpos ok, print line head+show;
+   is+show, $ should be printed
+    (is+prpos ok; T->prpos ok, tab line+old prpos),
+    print char+char;
+   +.
+$ formated printing $
+'stack'[1]BUFFER.
+'a'print base+>str-obuff-ptr:
+   $ print the base of the source file at LEXT[str]
+   >>BUFFER->obuff,unpack string+LEXT+str+BUFFER,>>BUFFER->ptr,
+   $ go back until / \ :
+   (nxt: ptr<=obuff;
+         BUFFER[ptr]=///;
+         BUFFER[ptr]=/\/;
+         BUFFER[ptr]=/:/;
+         decr+ptr,:nxt),incr+ptr,
+   $ print until the first dot
+   (nxt: >>BUFFER<ptr;
+         BUFFER[ptr]=/./;
+         print char+BUFFER[ptr],incr+ptr,:nxt),
+   unstack to+BUFFER+obuff.
+'a'print source line+>n-str:
+   $ print source file and line number
+   n=0,print char+/0/; $ for n=0 just print 0 $
+   $ n<0 means the most recent line number $
+   find linenum+n+n+str,print form+n,print char+///,print base+str.
+'a'print pointer+>ptr-v:
+   $ print out some pointer
+   ptr=0, print+"[NULL]";
+   was+MESSAGE+ptr,print+MESSAGE+ptr;
+   (was lexical pointer+ptr+BUFFER;
+    was tag pointer+ptr+BUFFER;
+    was type pointer+ptr+BUFFER),
+$ this might came later when checking for circular definition
+$    was expr pointer+ptr+BUFFER),
+   print+BUFFER+>>BUFFER, unstack string+BUFFER;
+   was lexical integer+ptr+v,print int+v;
+   print +"[?", print int+ptr, print+"]".
+'a'push BUFFER+>x: (* x->BUFFER *)BUFFER.
+'a'pop BUFFER+x>: BUFFER->x,unstack+BUFFER.
+'a'format print+*+>fmt-optr-ptr-level:
+   $ formatted print; first argument is the format in MESSAGE[]
+   0->level,(again:
+   >>BUFFER->optr, unpack string+MESSAGE+fmt+BUFFER, optr->ptr, incr+ptr,
+   (nxt: >>BUFFER < ptr,
+          (level=0;
+           decr+level,unstack to+BUFFER+optr,
+             pop BUFFER+optr,pop BUFFER+ptr,:nxt);
+        BUFFER[ptr]!=/%/, print char+BUFFER[ptr], incr+ptr, :nxt;
+        incr+ptr, (>>BUFFER<ptr, print char+/%/;
+                   (=BUFFER[ptr]=
+                    [/d/], (shift affix block+*,print int+fmt; print +"[d?]"),incr+ptr,:nxt;
+                    [/c/], (shift affix block+*,
+                               (fmt=newline,print+"<newline>";print char+fmt);
+                            print+"[c?]"),incr+ptr,:nxt;
+                    [/l/], (shift affix block+*,print source line+fmt; print+"[?]"),incr+ptr,:nxt;
+                    [/p/], (shift affix block+*,print pointer+fmt; print+"[?]"),incr+ptr,:nxt;
+                    [/m/], (shift affix block+*,incr+ptr,push BUFFER+ptr,
+                                push BUFFER+optr,incr+level,:again;
+                            print+"[f?]",incr+ptr,:nxt);
+                    [/*/], (shift affix block+*; +),incr+ptr,:nxt;
+                    print char+BUFFER[ptr],incr+ptr,:nxt)))),
+   (shift affix block+*,print+"[...]";+),
+   unstack to+BUFFER+optr.
+
+$ --------------------------------------------------------------- $
+$ dictionary printing $
+'variable'last dict src=0,right hand margin=120.
+'a'DICT tab-r:
+  prpos>right hand margin,tab line+8;
+  print char+/ /,divrem+prpos+6+#+r,(r=1;:DICT tab).
+
+'a'DICT header+>tag+>defline-l:
+  nlcr,0->last dict src,get pragmat value+pgt margin+right hand margin,
+  print pointer+tag,print char+/ /,(prpos<8,tab line+8;+),
+  (defline<=0;
+   find linenum+defline+l+last dict src,
+    print base+last dict src,print char+/:/,
+    print form+l,print char+/*/).
+'a'DICT item+>line-src-l:
+  find linenum+line+l+src,
+    (src=last dict src;
+     src->last dict src,DICT tab,print base+last dict src,
+      print char+/:/),
+    DICT tab,print form+l.
+'a'DICT tail:
+  nlcr.
+
+$ --------------------------------------------------------------- $
+$ MESSAGES $
+'table'MESSAGE=(
+  "internal error: "	:internal error message
+).
+
+'variable'
+   error no=0,		$ number of error messages
+   local error no=0.	$ number of local errors
+
+'q'was error: error no>0.
+   $ yes if there was an error
+'f'get error no+x>: error no->x.
+   $ number of error messages
+'a'clear local error+old>:
+   $ count errors local to this compound block
+   local error no->old, 0->local error no.
+'p'was local error+>old-x:
+   $ discount error numbers; the same error might occur severl times
+   local error no->x, add+old+x+local error no, x>0.
+
+$ error messages
+'constant'
+   line col=4,		$ line numbers starts here
+   mess col=22.		$ message starts here
+
+'a'message header+>line+>level:
+   $ line: -1 - most recent; 0 - none
+   save prpos, nlcr,        $ start in new line
+   (level<0,print char+/I/; $ message
+    level<10,print char+/W/,$ warning
+        add+level+/0/+level,print char+level;
+    print char+/E/),        $ error
+   (line=0;                 $ no line information
+    tab line+line col,print source line+line),
+   tab line+mess col.
+
+'a'error+*+>mess:
+   incr+error no, incr+local error no,
+   message header+-1+10,format print+*,nlcr.
+'a'Xerror+>line+*+>mess:
+   incr+error no, incr+local error no,
+   message header+line+10,format print+*, nlcr.
+'a'warning+>level+*+>mess:
+   (-n:get pragmat value+pgt warning level+n,level<n);
+   message header+-1+level,format print+*,nlcr.
+'a'Xwarning+>level+>line+*+>mess:
+   (-n:get pragmat value+pgt warning level+n,level<n);
+   message header+line+level,format print+*,nlcr.
+'a'message+*+>mess:
+   message header+-1+-1,format print+*,nlcr.
+'e'internal error+*+>mess:
+   message header+0+10,print+MESSAGE+internal error message,
+   format print+*,nlcr,exit+8.
+
+'root'+.
+'pragmat'endif=compile.
+'end'

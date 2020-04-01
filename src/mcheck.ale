@@ -1,0 +1,65 @@
+$ check macros
+'pragmat'module="checkmacros".
+$ HEADER ******************************************************* $
+$ read from DISC and check that macros do not call each other
+$
+'a'm check macro rules.
+
+$ BODY ********************************************************* $
+'pragmat'if=compile.
+'pragmat'require=("display","disc","tags").
+
+'table'MESSAGE=(
+  "rule %p: unbounded macro substitution":recursive macro call
+).
+
+'a'skip source:
+  Q cons+#;
+  (Q+Dlwb;Q+Dupb;Q+Dvlwb;Q+Dvupb;Q+Dcalibre),must Qtag+#;
+  Q+Dsub,skip source,mustQ+Dbus,must Qtag+#,(Qtag+#;must Qcons+#);
+  Q+Dnoarg;
+  must Qtag+#.
+'a'skip affixes:
+  Q+Dplus,skip source,:skip affixes;+.
+
+'a'rule body:
+  (Q+Dlabel,must Qtag+#;+),
+  (Q+Dlocal,Qskip+Dcolon;+),
+  (Q+Dbox,Qskip+Dbox,classification;
+   alt sequence).
+'a'classification:
+  mustQ+Dzone,Qskip+Dzone,mustQ+Dcomma,alternative,
+    (Q+Dsemicolon,:classification;+).
+'a'alternative:
+   member,(Q+Dcomma,:alternative;+).
+'a'alt sequence:
+   alternative,(Q+Dsemicolon,:alt sequence;+).
+ 'a'member-tag-dpos-dnum:
+   Q+Dopen,rule body,mustQ+Dclose;
+   Q+Dextension,Qskip+Dextension;
+   Q+Djump,must Qtag+#;
+   Q+Dplus;
+   Q+Dminus;
+   must Qtag+tag,save disc position+dpos+dnum,
+     check macro+tag,restore disc position+dpos+dnum,skip affixes.
+
+'a'check macro+>tag-dpos-dnum:
+   search macro rule+tag+dpos+dnum,restore disc position+dpos+dnum, 
+   rule body.
+
+'a'm check macro rules-tag:
+   0->tag,(nxt:
+     next macro rule+tag,
+        (is tag flag+tag+rmchecked;
+         is tag flag+tag+rmchecking,error+recursive macro call+tag;
+         set tag flag+tag+rmchecking,check macro+tag,
+           clear tag flag+tag+rmchecking,set tag flag+tag+rmchecked),
+        :nxt;
+      +).
+
+'root'+.
+
+'pragmat'endif=compile.
+
+'end'
+

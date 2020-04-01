@@ -1,0 +1,72 @@
+$ program
+'pragmat'module="passii".
+$ HEADER ******************************************************* $
+$ read from DISC and generate all definitions.
+$   give error for tags used but not defined
+$
+'a'pass II.
+
+$ BODY ********************************************************* $
+'pragmat'if=compile.
+'pragmat'require=("display","disc","drules","tags","obj",
+          "types","pragmats").
+
+'table'MESSAGE=(
+  """%p"" not defined":tag not defined,
+  "%p ""%p"" cannot be public (%l)"  : cannot be public,
+  "%p ""%p"" cannot be a macro (%l)" : cannot be a macro,
+  "external rule ":extrule,
+  "imported rule ":imprule,
+$ internal error
+  "pass II, unknown disc symbol" : unknown disc symbol,
+  "d read pragmat: unknown pragmat number %d": wrong pragmat value
+).
+
+'a'pass II:
+   Q+Drule,(-rtag: must Qtag+rtag,d store macro+rtag,d check rule+rtag),:pass II;
+   Q+Droot,d check rule+Xroot,:pass II;
+   Q+Dpragmat,d read pragmat,:pass II;
+   Q+Dexpression,d expression,:pass II;
+   Q+Dfile,d file data,:pass II;
+   Q+Dfill,d list filling,:pass II;
+   Q+Dlist,d list size,:pass II;
+   Q+Dend;  $ last symbol
+   internal error+unknown disc symbol.
+
+$ ===================================================== $
+$ macro rule
+'a'd store macro+>tag-dpos-dnum:
+  was error;
+  is tag flag+tag+rmacro,save disc position+dpos+dnum,
+    link macro rule+tag+dpos+dnum;
+  +.
+$ ===================================================== $
+$ pragmat
+$  pgt macro <tag> | pgt public <tag> | 
+$  pgt warning level <cons>
+'a'check tag for public+>tag-type-dl:
+   is tag flag+tag+tdefined,get defline+tag+dl,get type+tag+type,
+     (is tag flag+tag+texternal,error+cannot be public+type+tag+dl;
+      is tag flag+tag+timported,error+cannot be public+type+tag+dl;
+      +);
+    error+tag not defined+tag.
+
+'a'check tag for macro+>tag-type-dl:
+   is tag flag+tag+tdefined,get defline+tag+dl,get type+tag+type,
+     (type!=Irule,error+cannot be a macro+type+tag+dl;
+      is tag flag+tag+texternal,error+cannot be a macro+extrule+tag+dl;
+      is tag flag+tag+timported,error+cannot be a macro+imprule+tag+dl;
+      +);
+    error+tag not defined+tag.
+
+'a'd read pragmat-pgt-x:
+   must Qcons+pgt,
+     (pgt=pgt warning level,must Qcons+x,set pragmat value+pgt+x;
+      pgt=pgt macro,must Qtag+x,check tag for macro+x;
+      pgt=pgt public,must Qtag+x,check tag for public+x;
+      internal error+wrong pragmat value+pgt).
+
+'root'+.
+'pragmat'endif=compile.
+
+'end'

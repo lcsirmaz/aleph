@@ -1,0 +1,174 @@
+$ constants and variables $
+'pragmat'module="files".
+$ HEADER ******************************************************* $
+$ main program
+$
+'a'charfile declaration+>ext.
+'a'datafile declaration+>ext.
+$ BODY ********************************************************* $
+'pragmat'if=compile.
+'pragmat'public=(
+  charfile declaration,datafile declaration
+).
+'pragmat'require=("lexical","display","symbols","tags","types",
+     "pragmats","disc").
+
+$
+$ charfile and datafile declaration:
+$ 'charfile' tag = > "path" >.
+$   => Dfile <tag> <0..3> Xstdstring <ptr> Dpoint
+$   where in = cst&1; out = cst&2; <ptr> is an stdstr pointer (tag)
+$ 'datafile' tag [ list1; list2; list3] = >"path".
+$   => Dfile <tag> Dsub <tag1> <hash1> ...<tagn> <hashn> 
+$          Dbus <0..3> Xstdstring <ptr> Dpoint
+$   here Dsub ... Dbus is missing if no area; otherwise n>=1
+$ external declaration:
+$ 'external''datafile' tag="@rep".
+$ prototype for export/import: no output
+$
+$ The "path" is stored as a standard string. Declarations
+$   are emitted to the disc; dir=0/1/2/3.
+$ Lists in the file area cannot be external ones.
+$ LADM values:
+$   type: Icharfile, Idatafile
+$   flag: tpublic             from prototype or pragmat
+$         texternal|tdefined  external declaration
+$         timported|tdefined  from prototype
+$         tdefined            declaration
+$
+
+
+'table'MESSAGE=(
+  "external %p declaration: missing string after %p=":no external string,
+  "%p: redefined as %p (was %p at %l)" :tag redefined at,
+  "%p: redefined as %p (was %p)"       :tag redefined proto,
+  "mixing declaration and prototype in %p declaration" :mixing proto,
+  "external %p declaration: missing = after %p" :no external init,
+  "missing path in file declaration"        : no file path,
+  "file are %p must be of list type (%p)"   : must be of list type,
+  "list tag is expected in file area"       : tag expected,
+  "too many datafile area (max %d)"         : too many datafile area,
+  "%p declaration: tag expected"            : tag expected for
+).
+
+'a'tag redefined+>tag+>newtype-l-oldtype:
+   get defline+tag+l,get type+tag+oldtype,
+   (l>0,error+tag redefined at+tag+newtype+oldtype+l;
+        error+tag redefined proto+tag+newtype+oldtype).
+
+$ ========================================================== $
+
+$ declarations:
+$  'charfile' tag = >"path">.
+$  'datafile' tag [<file area>] = >"path">.
+$  'datafile' tag = >"path">.
+$  'x'charfile' tag = "@tag"
+$  'x'datafile' tag = "@tag"
+$ prototypes:
+$  'charfile' tag1,tag2.
+$  'datafile' tag1,tag2.
+$ this is an example from stdlib (can be used without opening)
+$  'x''charfile'stdin="@stdin",stdout="@stdout".
+$ other files can be opened, but without opening the first
+$  file operation automatically opens with the given path and
+$  direction.
+
+'a'expect path+>tag+path>+dir>:
+   0->dir,(R+Sright,incr+dir;+),
+   (is string+path;Squote image->path,error+no file path+tag),
+   new stdstring+path+path, 
+   (R+Sright,add+dir+2+dir;+).
+$ --------------------------------------------------- $
+
+$ after 'datafile'<tag>[
+'constant'max datafile area=32. $ maximal number of lists in a datafile
+'a'file area-tag-type-cnt-x:
+  0->cnt,(nxt:
+    (is tag+tag,incr+cnt,Dtag+tag,get tag hash+tag+x,Dcons+x,get type+tag+type,
+       (=type=
+        [Iempty;Itable;Istack;Istatic stack],use tag+tag;
+        error+must be of list type+tag+type);
+     error+tag expected),
+    (cnt=max datafile area,error+too many datafile area+max datafile area;+),
+    (R+Ssemicolon,:nxt;must+Sbus)).
+
+'a'file area declarer+>tag+>dl-err-otype-path-dir:
+   0->err,get type+tag+otype,
+     (otype=Iempty;
+      otype=Idatafile;
+      tag redefined+tag+Idatafile,1->err),
+   add tag definition+tag+dl+err,(is+err;put type+tag+Idatafile),
+   D+Dfile,Dtag+tag,D+Dsub,file area,D+Dbus,
+   must+Sequals,expect path+tag+path+dir,D cons+dir,Dtag+Xstring table,Dtag+path,D+Dpoint.
+
+$ charfile / datafile declaration
+$ after <TYPER><tag>=
+'a'declarer+>tag+>type+>dl-path-err-otype-dir:
+   0->err,get type+tag+otype,
+     (otype=Iempty;
+      otype=type;
+      tag redefined+tag+type,1->err),
+     add tag definition+tag+dl+err,(is+err;put type+tag+type),
+     expect path+tag+path+dir, $ and write it to the disc$
+     D+Dfile,Dtag+tag,D cons+dir,Dtag+Xstring table,Dtag+path,D+Dpoint.
+
+$ after 'external'<TYPE><tag>=
+'a'external declarer+>tag+>type+>dl-str-err-otype:
+   0->err,get type+tag+otype,
+      (otype=Iempty;
+       otype=type;
+       tag redefined+tag+type,1->err),
+      (is string+str;
+       0->str,1->err,error+no external string+type+tag,skip all),
+      add tag external+tag+dl+err,
+      (is+err;put type+tag+type,put repr+tag+str).
+
+$ after <TYPER><tag>
+'a'prototype+>tag+>type+>dl-proto-otype-err:
+   get pragmat value+pgt proto+proto, $ 1: import, 2: public, 0: none $
+   get type+tag+otype,0->err,
+     (otype=Iempty;
+      otype=type;
+      tag redefined+tag+type,1->err),
+     (is+err;
+      proto=1,add tag import+tag+dl+err;
+      proto=2,add tag public+tag+dl+err; $must be defined
+      add tag prototype+tag+dl),
+     (is+err;put type+tag+type).
+
+$ 'x''charfile'tag="@@@"    external declaration
+$ 'charfile'tag= >"path">   declaration
+$ 'datafile' tag            prototype
+$ ext=1: external, ext=2/3  definition/prototype
+'a'declaration+>ext>+>type-tag-dl:
+  is tagdl+tag+dl,
+    (R+Sequals, $this is a declarer
+       (ext=3,error+mixing proto+type,skip all;
+        ext=1,external declarer+tag+type+dl;
+        2->ext,declarer+tag+type+dl);
+     ext=1,error+no external init+type+tag,skip all;
+     (type=Idatafile,R+Ssub),
+       (ext=3,error+mixing proto+type,skip all;
+        2->ext,file area declarer+tag+dl);
+     ext=2,error+mixing proto+type,skip all;
+     3->ext,prototype+tag+type+dl);
+  error+tag expected for+type,skip all.
+
+'a'declaration series+>ext+>type:
+   declaration+ext+type,
+       (R+Scomma,:declaration series;
+        R+Spoint;
+        must+Spoint,skip to point).
+
+$ 'external''datafile' or 'datafile'
+'a'datafile declaration+>ext:
+   declaration series+ext+Idatafile.
+$ 'external''charfile' or 'charfile'
+'a'charfile declaration+>ext:
+   declaration series+ext+Icharfile.
+       
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+

@@ -1,0 +1,189 @@
+$ INPUT source files for ALEPH $
+'pragmat'module="input".
+$ HEADER ****************************************************** $
+
+'a'read sources.
+   $ add all arguments to be processed
+'a'read stdlib.
+   $ read standard library if not disabled
+'a'add required source+>ptr.
+   $ add LEXT[ptr] as required source; complain if duplicate
+'a'add included source+>ptr.
+   $ add LEXT[ptr] as included source, complain if duplicate
+'f'find linenum+>n+line>+str>.
+   $ find LEXT module name and line number within
+'q'next input entry+>ptr>+n>+str>.
+   $ returns the next file and the next line number
+$ BODY ******************************************************** $
+
+'pragmat'if=compile.
+'pragmat'require=("lexical","display","pragmats","symbols","disc","passi").
+
+'pragmat'public=(
+  read sources,read stdlib,
+  add required source,add included source,
+  find linenum, next input entry
+).
+
+'table'MESSAGE=(
+ "missing argument for cmdline pragmat ""-o""": missing argument for pragmat,
+ "source file ""%p"" is in command line, ignored": added as cmdline source,
+ "source file ""%p"" included/required differently": source included differently,
+ "no input file was specified"  :no input file,
+ "error opening file ""%p""": error opening source
+).
+
+'stack'LEXT=(
+ "alib.ale" : stdlib file
+).
+
+
+$ values for flag*INPUT
+'constant'
+  cpragmat     = 0x1301,      $ command line pragmat
+  csource      = 0x1302,      $ source
+  required     = 0x1303,      $ required
+  library      = 0x1304,      $ std library
+  included     = 0x13f0,      $ included, should be the last one; flags added
+  cmp flag     = 0x0008,      $ compile mask
+  proto mask   = 0x0007,      $ proto mask
+  req flags    = 1.           $ required: compile=off, proto=1
+$  source flags = cmp flag|2. $ $ source:   compile=on, proto=2
+
+'stack'[1](flag,n,string)INPUT.
+
+'f'find linenum+>from+n>+str>-ptr-nptr:
+   $ for messages and dictionary find source and line number
+   (from>0;get linenum+from),
+   <<INPUT->ptr,(nxt:
+     add+ptr+<>INPUT+nptr,
+     ((>>INPUT<nptr;n*INPUT[nptr]<0;from<n*INPUT[nptr]),
+        subtr+from+n*INPUT[ptr]+n,incr+n,
+        (flag*INPUT[ptr]=cpragmat,Squote image->str,0->n;
+         string*INPUT[ptr]->str);
+      nptr->ptr,:nxt)).
+'a'add command line arg+>ptr+>twoarg>-flag:
+   $ don't check multiple submission, leave it to the user
+   (is cmdline pragmat+ptr+twoarg+#+#,cpragmat->flag;csource->flag),
+      (* flag->flag, -1->n, ptr->string *)INPUT.
+'q'was source added+>ptr+inpt>-eq:
+   $ check if the same string appears in INPUT
+   >>INPUT->inpt,
+   (nxt: inpt<<<INPUT,-;
+    compare string+LEXT+string*INPUT[inpt]+LEXT+ptr+eq,
+      ((eq=0,flag*INPUT[inpt]!=cpragmat),+;
+       previous+INPUT+inpt,:nxt)).
+'a'add source+>ptr+>flag-inpt:
+   $ complain if it is there with different flags
+   was source added+ptr+inpt, $ it is there
+     (flag*INPUT[inpt]=csource,warning+8+added as cmdline source+ptr;
+      flag*INPUT[inpt]=flag; $ ignore
+      error+source included differently+ptr);
+   (* ptr->string, flag->flag, -1->n *)INPUT.
+
+'a'add required source+>ptr:
+   $ require="source"  compile=no, prototype=external
+   add source+ptr+required.
+
+'a'add included source+>ptr-flag:
+   $ include="source"  compile=keep, prototype=keep
+   get pragmat value+pgt proto+flag, $ 0 / 1 / 2 $
+   (is pragmat value+pgt compile,add+flag+cmp flag+flag;+),
+   add+flag+included+flag,add source+ptr+flag.
+'a'set pragmats+>flag-x:
+   bool and+flag+proto mask+x,set pragmat value+pgt proto+x,
+   bool and+flag+cmp flag+x,(is+x,1->x;0->x),
+   set pragmat value+pgt compile+x.
+
+$ ===================================================================== $
+'variable'last linenum=0.
+'q'next input entry+>ptr>+n>+str>:
+   (ptr=0,<<INPUT->ptr;+),(nxt: ptr>>>INPUT,-;
+      flag*INPUT[ptr]=cpragmat,next+INPUT+ptr,:nxt;
+      string*INPUT[ptr]->str,last linenum->n,next+INPUT+ptr,
+        (nxt2: ptr>>>INPUT;
+               flag*INPUT[ptr]=cpragmat,next+INPUT+ptr,:nxt2;
+               n*INPUT[ptr]->n)).
+$ ===================================================================== $
+
+'q'is cmdline pragmat+>ptr+>twoarg>+pid>+value>-eq:
+  $ LEXT[ptr] is a pragmat
+  is+twoarg,0->twoarg,0->pid,0->value;
+  (compare string+LEXT+ptr+"-L"+eq,eq=0), $ library=on
+     pgt library->pid,1->value;
+  (compare string+LEXT+ptr+"-M"+eq,eq=0), $ module=on
+     pgt module->pid,1->value;
+  (compare string+LEXT+ptr+"-d"+eq,eq=0), $ dictionary=on
+     pgt dict->pid,1->value;
+  (compare string+LEXT+ptr+"-l"+eq,eq=0), $ list=on
+     pgt text->pid,1->value;
+  (compare string+LEXT+ptr+"-W"+eq,eq=0), $warning level=3
+     pgt warning level->pid,3->value;
+  (compare string+LEXT+ptr+"-Wall"+eq,eq=0), $warning level=0
+     pgt warning level->pid,0->value;
+  (compare string+LEXT+ptr+"-o"+eq,eq=0), $ title=
+     1->twoarg,pgt title->pid,0->value;
+  (compare string+LEXT+ptr+"-I"+eq,eq=0), $ path=
+     1->twoarg,pgt path->pid,0->value;
+  (string elem+LEXT+ptr+0+eq,eq=/-/,string elem+LEXT+ptr+1+eq,eq=/-/), $ --
+     -1->pid,0->value.
+             
+'a'init program args-ptr-x-twoarg:
+   $ add STDARG to the INPUT list
+   >>STDARG->ptr,0->twoarg,
+     (nxt:ptr<<<STDARG,(twoarg=0; Xerror+0+missing argument for pragmat);
+          copy string+STDARG+ptr+LEXT,add command line arg+>>LEXT+twoarg,
+            string width+STDARG+ptr+x,subtr+ptr+x+ptr,:nxt).
+
+'p'next input+>ptr>-twoarg-pid-value-flag-use path:
+   $ execute pragmats and a source
+   ptr > >>INPUT,-;
+   0->twoarg,advance linenum,get linenum+n*INPUT[ptr],flag*INPUT[ptr]->flag,
+   (flag=csource,1->use path;2->use path),
+   $ usepath=2:  use "-I path1;path2;path3"; usepath=1: don't use $
+    ((flag=cpragmat,is cmdline pragmat+string*INPUT[ptr]+twoarg+pid+value),
+     $ cmdline pragmat,
+        (pid<0, $ read pragmat from the argument
+                (next source+0+string*INPUT[ptr],next symbol,
+                 cmdline pragmat,close source;+),next+INPUT+ptr,:next input;
+         twoarg!=0, $ pragmat with string argument
+                next+INPUT+ptr,
+                 (ptr>>>INPUT,Xerror+0+missing argument for pragmat,-;
+                  get linenum+n*INPUT[ptr],set pragmat value+pid+string*INPUT[ptr],
+                      next+INPUT+ptr,:next input);
+         set pragmat value+pid+value,next+INPUT+ptr,:next input);
+     next source+use path+string*INPUT[ptr],next+INPUT+ptr,
+     $ source file, set pragmat flags; defaults are: proto=2,compile=1
+        (=flag=
+         [csource],+; $set pragmats+source flags;$
+         [required],set pragmats+req flags;
+         $ included $ set pragmats+flag);
+     Xwarning+9+0+error opening source+string*INPUT[ptr],next+INPUT+ptr,:next input).
+
+'a'read sources-ptr-cnt:
+   $ go over all source files; complain if no source file was supplied
+   init program args,<<INPUT->ptr,0->cnt,
+     set pragmat value+pgt library+0, $ not in library
+     reset pragmats,
+     (nxt:next input+ptr,next symbol,pass I,close source,
+            reset pragmats,set pragmat value+pgt library+0,incr+cnt,:nxt;+),
+     (cnt>0;Xerror+0+no input file).
+'a'read stdlib-ptr:
+$ XXXXXXXXXXXXXXXXXXXXXXXXXXXX 
+   $ not if there was an error
+   $ read standard library and all included files
+   (-x:get pragmat value+pgt stdlib+x,x=0),get linenum+last linenum;
+   add source+stdlib file+library,>>INPUT->ptr,
+     reset pragmats,set pragmat value+pgt library+1,
+     (nxt:next input+ptr,next symbol,pass I,close source,
+           reset pragmats,set pragmat value+pgt library+1,:nxt;
+      get linenum+last linenum,reset pragmats).
+
+'root'+.
+
+'pragmat'endif=compile.
+
+'end'
+
+
+

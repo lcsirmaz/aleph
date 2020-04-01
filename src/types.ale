@@ -1,0 +1,92 @@
+$ types
+'pragmat'module="types".
+
+$ HEADER ******************************************************** $
+$
+$ different types used
+$
+
+'constant' $ types
+  Iempty,
+  Iconstant,		Irecconst,		Ivariable,
+  Istatic var,		Istatic const,		Itable,
+  Istack,		Istatic stack,
+  Iselector,		Ipointer constant,	Ichar file,
+  Idata file,		Irule,			Ifirst formal type,
+  Iformal selector,	Iformal stack,		Iformal table,
+  Iformal file,		Iformal in,		Iformal out,
+  Iformal inout,	Iformal repeat,		Iformal shift,
+  Imacro,		Inoarg,			Ilocal,
+  Ilabel.
+  
+'p'was type pointer+>ptr+[]st[].
+'q'has formal type+>tag.
+'table'INDICATOR.
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+
+'pragmat'public=(
+$ types
+  Iempty,	Iconstant,	Irecconst,
+  Ivariable,	Istatic var,	Istatic const,
+  Itable,	Istack,		Istatic stack,	Iselector,
+  Ipointer constant,
+  Ichar file,	Idata file,	Irule,
+$ formal affixes
+  Ifirst formal type,		$ not an actual type
+  Iformal selector,		Iformal stack,
+  Iformal table,		Iformal file,
+  Iformal in,			Iformal out,
+  Iformal inout,		Iformal repeat,
+  Iformal shift,
+  Imacro,	Inoarg,		Ilocal,		Ilabel,
+$ rules
+  was type pointer,has formal type
+).
+
+'pragmat'require="tags".
+
+'table'INDICATOR=(
+  "undefined"		:Iempty,
+  "constant"		:Iconstant,
+  "constant"            :Irecconst, $ expression under evaluation
+  "variable"		:Ivariable,
+  "static variable"	:Istatic var,
+  "static constant"     :Istatic const,
+  "table"		:Itable,
+  "stack"		:Istack,
+  "static stack"	:Istatic stack,
+  "selector"		:Iselector,
+  "pointer constant"	:Ipointer constant,
+  "charfile"		:Ichar file,
+  "datafile"		:Idata file,
+  "rule"		:Irule,
+$formal types, should come at the end ...
+  "formal"		:Ifirst formal type, $dummy type
+  "formal selector"	:Iformal selector,
+  "formal stack"	:Iformal stack,
+  "formal table"	:Iformal table,
+  "formal file"         :Iformal file,
+  "formal in"		:Iformal in,
+  "formal out"		:Iformal out,
+  "formal inout"	:Iformal inout,
+  "formal repeat"	:Iformal repeat, $virtual type
+  "formal shift"        :Iformal shift,
+  "macro parameter"	:Imacro,
+  "no argument"		:Inoarg,
+  "local"		:Ilocal,
+  "label"		:Ilabel
+).
+
+'p'was type pointer+>ptr+[]st[]:
+   was+INDICATOR+ptr,copy string+INDICATOR+ptr+st.
+'q'has formal type+>tag-type:
+   get type+tag+type,type>=Ifirst formal type.
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+
+
+

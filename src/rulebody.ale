@@ -1,0 +1,311 @@
+$ rule body
+'pragmat'module="rulebody".
+$ HEADER ******************************************************* $
+$
+'a'rule body+>tag+>repaffix.
+'a'root body.
+
+$ BODY ********************************************************* $
+'pragmat'if=compile.
+'pragmat'require=("symbols","tags","types","lexical","disc",
+    "display","pragmats").
+'pragmat'public=(rule body,root body).
+
+
+'table'MESSAGES=(
+  "symbol %p is expected here"     :expected,
+  "symbol %p is expected after %p" :expected after,
+  "tag expected after %p"          :tag expected after,
+  "tag expected"                   :tag expected,
+  "source or tag expected"         :source or tag expected,
+  "in extension selector expected" :selector tag expected,
+  "after extension tag expected"   :stack tag expected,
+  "wrong affix form"               :wrong affix form,
+  "rule %p: unknown label %p"      :unknown label,
+  "source expected after %p"       :source expected,
+  "formal selector %p not defined" :undefined formal selector,
+  "rule %p: member expected"       :member expected,
+  "formal affix %p as an actuel rule":formal as rule,
+  "rule %p: no formal repeat affix":no formal repeat affix,
+  "rule %p: zone syntax (cannot be empty)" :wrong zone
+  
+).
+
+$ rule body and root body
+
+$ conditional error message
+$  give the message only if no messages were given earlier
+'a'Eerror+>err>+*+>msg:
+  is+err;
+  1->err,error+*.
+$ the rule tag and the formal repeat affix, if any
+'variable'rule tag=0,formal repeat affix=0.
+$ ------------------------------------------------------ $
+$ local affixes $
+$  (orepr,  otype,flag,type,repr,tag) LLOC <== formal/local
+$  (calibre,ssel, flag,type,repr,tag) LLOC <== formal lists
+
+'stack'(orepr=calibre,otype=ssel,flag,type,repr,tag) LLOC=().
+  $ the empty () is added to prevent exporting this stack
+
+$ retrieve formal calibre and ssel
+'a'handle formal list+>formal+>local-x:
+  =type*LADM[formal]=
+  [Iformal stack;Iformal table],
+     get formal calibre+formal+x,x->calibre*LLOC[local],
+     get formal ssel+formal+x,x->ssel*LLOC[local];
+  +.
+$ open a range
+'a'set up local stack+>rtag+loc>-formal-local:
+   scratch+LLOC,get adm+rtag+formal,
+   $ formal affixes $
+   (nxt: formal=0;
+     (*0->flag->repr,type*LADM[formal]->type,formal->tag,0->orepr->otype *)LLOC,
+     >>LLOC -> local, handle formal list+formal+local, put repr+formal+local,
+     get adm+formal+formal,:nxt),
+   >>LLOC->loc,
+   $ add rule tag as label
+   D+Dlabel,Dtag+rtag,
+   (* 0->flag->repr,Ilabel->type,rtag->tag,0->orepr->otype *)LLOC.
+'a'open new local range+>label+old>:
+   >>LLOC->old,
+   (label=0;
+    (* 0->flag->repr->orepr->otype,Ilabel->type,label->tag *)LLOC,
+       D+Dlabel,Dtag+label).
+'a'add local affix+>tag-orepr-otype:
+   get repr+tag+orepr,get type+tag+otype,
+   (* 0->flag->repr,Ilocal->type,tag->tag,orepr->orepr,otype->otype *)LLOC,
+   put type+tag+Ilocal,put repr+tag+>>LLOC.
+'a'close local range+>old:
+   >>LLOC<=old;
+   $ type*LLOC can be Ilocal,ILabel,or some formal value $
+   (type*LLOC=Ilocal,put repr+tag*LLOC+orepr*LLOC,
+           put type+tag*LLOC+otype*LLOC;+),   
+   unstack+LLOC,:close local range.
+$ ----------------------------------------------------- $
+$ check if it is an extension. The alternate syntax is
+$ ambiguous; go ahead and retrieve list tag and its type
+$   (* 0->s1->s2 *) STACK
+$   ( * 0->s1->s2 *STACK, ... )
+
+$ skip over an index [a*b[32]]
+'a'skip over an index+>err>:
+   R+Ssub,skip over source+#+err,
+     (R+Sbus;Eerror+err+expected+Sbus);
+   +.
+$ skip over a source; single=1 if this is a single tag
+'a'skip over source+single>+>err>-symb:
+   0->single,inpt->symb,
+    (is cons+#;
+     is tag+#,(R+Sasterisk,(is tag+#,skip over an index+err;
+                  Eerror+err+tag expected after+Sasterisk);
+               ahead+Ssub,skip over an index+err;
+               1->single);
+     (R+Slwb;R+Supb;R+Svlwb;R+Svupb;R+Scalibre),
+                  (is tag+#;Eerror+err+tag expected after+symb);
+     Eerror+err+source or tag expected).
+$ skip over target selectors (there must be at least one)
+'a'skip over destination+>err>:
+   R+Sarrow,(nxt:is tag+#,(R+Sarrow,:nxt;+);
+     Eerror+err+selector tag expected);
+   Eerror+err+expected+Sarrow.
+$ skip over an extension
+$  >ex     : if set, allow "*) STACK" extended syntax
+$  tag>    : the STACK
+$  simple> : set if the extended syntax was used
+$  err>    : there was an error meanwhile
+'a'skip over extension+>ex+tag>+simple>+err>:
+   0->tag->simple->err,init restore,
+   (R+Sasterisk;1->err),
+   (nxt:skip over source+#+err,skip over destination+err,
+         (R+Scomma,:nxt;+)),
+   $ * STACK or *) STACK
+   must+Sasterisk,
+   ((is+ex,R+Sclose),1->simple;+),
+   (is tag+tag;Eerror+err+stack tag expected),
+   (is+err,forget restore,skip all;make restore).
+$ check whether this is an affix form, tranport or relation
+$  tag is zero if affix form, Xarrow for ->, and other
+$  LADM entry for other relation
+'a'peek after source+tag>+err>-single tag:
+   init restore,0->err->tag,skip over source+single tag+err,
+     (is special rule+inpt+tag;
+      is+single tag;
+      Eerror+err+wrong affix form),
+   (is+err,forget restore,skip all;make restore).
+$ ----------------------------------------------------- $
+
+$ search "tag" as a label; complain if not found
+'a'search jump+>tag-loc:
+   >>LLOC->loc,(nxt:
+      loc<<<LLOC,error+unknown label+rule tag+tag;
+      (type*LLOC[loc]=Ilabel,tag*LLOC[loc]=tag),D+Djump,Dtag+loc;
+      previous+LLOC+loc,:nxt).
+'p'terminator-x:
+  R+Splus,D+Dplus;
+  R+Sminus,D+Dminus;
+  R+Sexit,Dtag+Xexit,use tag+Xexit,
+     D+Dplus,0->x,source+Xexit+x;
+  R+Scolon,(is tag+x,search jump+x;error+tag expected after+Scolon).
+
+$ SEL*LIST [ index ] ==>
+$  Dsub <index> Dbus Dtag(LIST) Dtag/Dcons
+'a'index source+>tag+>err>:
+   R+Ssub,D+Dsub,source+tag+err,D+Dbus,
+      (R+Sbus;Eerror+err+expected after+Sbus+tag);
+   D+Dsub,D+Dupb,Dtag+tag,D+Dbus.
+$ emit the selector after the index value
+'a'selector+>sel+>tag-type-repr:
+   pack selector+sel+tag+sel,
+     (has formal type+tag,get type+sel+type,
+        (type=Iformal selector,get repr+sel+repr;-1->repr),
+        $ repr=-1: selector not defined
+        (repr>0,D cons+repr;
+         error+undefined formal selector+sel);
+      Dtag+sel).
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+$ a list tag is expected after <L, <<L, <>L, >L, >>L
+'a'list tag+>x+>err>-tag:
+   is tag+tag,use tag+tag,Dtag+tag;
+   Eerror+err+tag expected after+x.
+'a'source+>tag+>err>-x-y:
+   is cons+x,Dcons+x;
+   is tag+x,(R+Sasterisk,
+                (is tag+y,index source+y+err,use tag+y,Dtag+y,selector+x+y;
+                 Eerror+err+tag expected after+Sasterisk);     
+             ahead+Ssub,index source+x+err,use tag+x,Dtag+x,selector+x+x;
+             use tag+x,Dtag+x);
+   R+Slwb,D+Dlwb,list tag+Slwb+err;
+   R+Supb,D+Dupb,list tag+Supb+err;
+   R+Svlwb,D+Dvlwb,list tag+Svlwb+err;
+   R+Svupb,D+Dvupb,list tag+Svupb+err;
+   R+Scalibre,D+Dcalibre,list tag+Scalibre+err;
+   Eerror+err+source expected+tag,skip all.
+$ actual affix can be a string, dummy argument # or ?, or a source
+'a'source or string+>tag+>err>-x-c:
+   is string+x,new stdstring+x+c,$ c and Xstring table are used
+      D+Dplus,Dtag+Xstring table,D+Dplus,Dtag+c;
+   R+Snoarg,D+Dplus,D+Dnoarg;
+   R+Senquiry,D+Dplus,D+Dnoarg; $ +? is the same as +# 
+   D+Dplus,source+tag+err.
+'p'repeat affix:
+   R+Sasterisk,(is+formal repeat affix,D+Dplus,Dtag+formal repeat affix;
+      error+no formal repeat affix+rule tag).
+'a'affix form-tag-err:
+   is tag+tag,(has formal type+tag,error+formal as rule+tag,skip all;
+       Dtag+tag,use tag+tag,0->err,
+          (nxt:R+Splus,(repeat affix; $this must be the last affix $
+                        source or string+tag+err,:nxt);+));
+   error+tag expected,skip all.
+'a'special affix form+>tag-err:
+   Dtag+tag,use tag+tag,D+Dplus,0->err,source+tag+err,
+     (is+err;next symbol), $ skip -> or the relation
+     D+Dplus,source+tag+err,
+     (tag=Xarrow,(nxt:R+Sarrow,D+Dplus,source+tag+err,:nxt;+);+).
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'to selectors+>tag+>err>-sel:
+   R+Sarrow,(nxt:is tag+sel,D+Dto,selector+sel+tag,(R+Sarrow,:nxt;+);
+                 Eerror+err+tag expected after+Sarrow,skip all);
+   Eerror+err+expected+Sarrow.
+'a'extension+>tag-err:
+   D+Dextension,use tag+tag,Dtag+tag,Rskip+Sasterisk,0->err,
+   (nxt:source+tag+err,to selectors+tag+err,(R+Scomma,:nxt;+)),
+   D+Dextension,Rskip+Sasterisk,Rskip+Sclose,Rskip+tag.
+
+'q'looking at a member:
+   =inpt=
+   [Sopen;                   $ compound member or extension $
+    Sasterisk;               $ extension $
+    Slwb;Supb;Svlwb;Svupb;Scalibre; $ limit $
+    CONST;TTAG               $ constant or tag $
+   ],+;
+   -.
+'a'member-err-tag-simple:
+   R+Sopen,(ahead+Sasterisk, $ check for (* ... *)STACK
+               skip over extension+1+tag+simple+err,
+               (is+err; $ error
+                is+simple,extension+tag;
+                compound member);
+            compound member);
+   ahead+Sasterisk,skip over extension+0+tag+#+err,
+          (is+err;extension+tag);
+   peek after source+tag+err,
+          (is+err;is+tag,special affix form+tag;affix form).
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'peek label+label>:
+   init restore,0->label,
+      (is tag+label,(ahead+Scolon;ahead+Sminus;0->label);+),
+      make restore.
+'a'skip label+>label:
+   is+label,Rskip+label,Rskip+Scolon;+.
+'a'add local affixes-tag:
+   init restore,
+     ((R+Sminus,is tag+#),make restore,D+Dlocal,
+        (nxt:R+Sminus,(is tag+tag,Dtag+tag,add local affix+tag,:nxt;
+                error+tag expected after+Sminus,skip all);
+             R+Scolon,D+Dcolon;
+             error+expected+Scolon,skip all);
+      make restore).
+'a'compound member-label-loc:
+   D+Dopen,
+   peek label+label,open new local range+label+loc,
+   skip label+label,add local affixes,
+   (R+Sbox,classification;alternative series),
+   (R+Sclose;error+expected+Sclose,skip all),
+   D+Dclose,close local range+loc.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'alternative:
+   terminator;
+   looking at a member,member,(R+Scomma,D+Dcomma,:alternative;+);
+   error+member expected+rule tag.
+'a'alternative series:
+   alternative,(R+Ssemicolon,D+Dsemicolon,:alternative series;+).
+'a'classifier-x-empty:
+   0->empty,
+   (is tag+x,Dtag+x,use tag+x;is cons+x,Dcons+x;1->empty),
+   (R+Scolon,0->empty,D+Dcolon,
+     (is tag+x,Dtag+x,use tag+x;is cons+x,Dcons+x;+);+),
+   (is+empty, error+wrong zone+rule tag;+),
+   (R+Ssemicolon,D+Dsemicolon,:classifier;
+    must+Sbus).
+'a'zone+>err>+last>:
+   R+Ssub,0->last,D+Dzone,classifier,D+Dzone,D+Dcomma,
+     (R+Scomma;Eerror+err+expected+Scomma),
+     alternative;
+   1->last,D+Dzone,D+Dcolon,D+Dzone,D+Dcomma,alternative.
+$ classification: we are after =
+'a'classification-err-last:
+  D+Dbox,0->err,source+Sbox+err,D+Dbox,
+    (R+Sbox;Eerror+err+expected+Sbox),
+    (nxt:zone+err+last,(is+last;R+Ssemicolon,D+Dsemicolon,:nxt;+)),
+    (is+err,skip all;+).
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'rule pragmats+>tag:
+   (is pragmat value+pgt trace,set tag flag+tag+rtrace;+),
+   (is pragmat value+pgt count,set tag flag+tag+rcount;+),
+   (is pragmat value+pgt bounds,set tag flag+tag+rbounds;+).
+'a'rule body+>tag+>repaffix-loc:
+   tag->rule tag,repaffix->formal repeat affix,
+   D+Drule,Dtag+rule tag,rule pragmats+rule tag,
+   set up local stack+tag+loc,
+   (ahead+Sminus,add local affixes;
+    R+Scolon;
+    error+expected+Scolon,skip all),
+   (R+Sbox,classification; alternative series),
+   D+Dpoint,close local range+loc,
+   (R+Spoint;error+expected+Spoint,skip to point).
+
+'a'root body-loc:
+   Xroot->rule tag,0->formal repeat affix,
+   D+Droot,Dtag+Xroot,rule pragmats+Xroot,
+   set up local stack+Xroot+loc,add local affixes,
+   (R+Sbox,classification; alternative series),
+   D+Dpoint,close local range+loc,
+   (R+Spoint;error+expected+Spoint,skip to point).
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+
+
+

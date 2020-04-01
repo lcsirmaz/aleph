@@ -1,0 +1,545 @@
+$ lexical checker for ALEPH 
+'pragmat'module="lexical".
+
+$ HEADER ****************************************************** $
+$ Create symbols from the raw character sequence read from SOURCE
+$   or from a string in LEXT
+$ A symbol is a pointer to 
+$   TTAG      tag
+$   CONST     contant
+$   LEXT      string
+$   SPECIAL   all other, they have special names
+$ Handle source printing through "display char+char+show"
+
+'constant' $ symbol names
+  Saction,	Sarrow,		Sasterisk,	Sbooland,
+  Sboolor,	Sboolxor,	Sbox,		Sbus,
+  Scalibre,	Scharfile,	Sclose,		Scolon,
+  Scomplement,	Scomma,		Sconssymb,	Sdatafile,
+  Sdummy symb,	Sendsymb,	Senquiry,	Seol,
+  Sequals,	Sexit,		Sextsymb,	Sfunction,
+  Sless,	Slseq,		Slwb,		Sminus,
+  Smore,	Smreq,		Snoarg,		Snot equal,
+  Sopen,	Splus,		Spoint,
+  Spredicate,	Spragsymb,	Squestion,	Sright,
+  Srootsymb,	Ssemicolon,	Sslash,		Sstacksymb,
+  Sstatic,	Ssub,		Stablesymb,	Supb,
+  Svarsymb,	Svlwb,		Svupb,
+$ empty string in LEXT
+  Squote image.
+
+'stack'LEXT,CONST.
+'p'next source+>type+>ptr.
+   $ if type=0 then read from the third character of LEXT[ptr];
+   $ otherwise open the source file LEXT[ptr]; if type=2 try path.
+   $ fails if type=0 and cannot open the file
+'a'close source.
+   $ clean up after next source; close the open file handler
+'a'create obj name.
+   $ append '.alo' to the title. Use forget string+>>LEXT to free it
+'a'read+x>.
+   $ return the next symbol: one of the symbol names,
+   $ or a pointer fo LEXT (string), CONST (constant), 
+   $ TTAG (tag)
+'a'skip+x>.
+   $ go ahead until point, eol or eof; return that symbol
+'a'forget string+>x.
+   $ throw away the last element of LEXT
+'q'is same string+>x+>y.
+   $ two strings are the same
+'p'was lexical pointer+>ptr+[]st[].
+   $ gives a readable version of a pointer for messages
+'q'was lexical integer+>ptr+x>.
+   $ return the value if it is a CONST
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+
+'pragmat' public=(
+$ symbol names
+  Saction,	Sarrow,		Sasterisk,	Sbooland,
+  Sboolor,	Sboolxor,	Sbox,		Sbus,
+  Scalibre,	Scharfile,	Sclose,
+  Scolon,	Scomplement,	Scomma,
+  Sconssymb,	Sdatafile,	Sdummy symb,
+  Sendsymb,	Seol,		Senquiry,	Sequals,
+  Sexit,
+  Sextsymb,	Sfunction,	Sless,		Slseq,
+  Slwb,		Sminus,		Smore,		Smreq,
+  Snoarg,	Snot equal,	Sopen,
+  Splus,	Spoint,		Spredicate,	Spragsymb,
+  Squestion,	Sright,		Srootsymb,
+  Ssemicolon,	Sslash,		Sstacksymb,	Sstatic,
+  Ssub,		Stablesymb,
+  Supb,		Svarsymb,	Svlwb,
+  Svupb,
+$ empty string in LEXT
+  Squote image,
+$ lists
+  LEXT,		CONST,
+$ rules
+  next source, close source, read, skip, forget string,
+  is same string,
+  was lexical pointer,was lexical integer
+).
+
+$ external stuff $
+'pragmat'require=("display","tags","pragmats").
+
+$ ************************************************************** $
+'charfile' SOURCE="stdin">.	$ input file
+
+$ stacks for strings and constants $
+'stack'[16] LEXT =(
+  ""		:Squote image      $ empty string
+).
+'stack'[5] CONST =(
+  0		:const zero,
+  1
+).
+'a'enter const+>v+ptr>-cnt:
+$ check the first 100 entries for equality, otherwise just add it
+  0->cnt,<<CONST->ptr,incr+ptr,(nxt:
+   >>CONST<ptr,extend+CONST+v,>>CONST->ptr;
+   CONST[ptr]=v;
+   cnt>100,extend+CONST+v,>>CONST->ptr;
+   incr+cnt,incr+ptr,:nxt).
+
+$ ************************************************************** $
+
+$ Symbol names $
+'table'[] SPECIAL =
+("<dummy>"      :Sdummy symb,     "'end'"        :Sendsymb,
+ "'action'"     :Saction,         "'function'"   :Sfunction,	
+ "'predicate'"  :Spredicate,      "'question'"   :Squestion,
+ "'exit'"       :Sexit,           "'root'"       :Srootsymb,
+ "'external'"   :Sextsymb,        "'static'"     :Sstatic,
+ "'charfile'"   :Scharfile,       "'datafile'"   :Sdatafile,
+ "'constant'"   :Sconssymb,       "'variable'"   :Svarsymb,
+ "'table'"      :Stablesymb,      "'stack'"      :Sstacksymb,
+ "'pragmat'"    :Spragsymb,
+ 
+ "->"           :Sarrow,          "="            :Sequals:Sbox,
+ "<"            :Sless:Svlwb,     ">"            :Smore:Sright:Svupb,
+ "<<"           :Slwb,            ">>"           :Supb,
+ "["            :Ssub,            "]"            :Sbus,
+$ "[*"           :Ssubstar,        "*]"           :Sstarbus,
+ "<>"           :Scalibre,        "*"            :Sasterisk,
+ "("            :Sopen,           ")"            :Sclose,
+
+ ":"            :Scolon,          ","            :Scomma,
+ ";"            :Ssemicolon,      "."            :Spoint,
+
+ "-"            :Sminus,          "+"            :Splus,
+ "#"            :Snoarg,          "?"            :Senquiry,
+ "!="           :Snot equal,      "/"            :Sslash,
+ ">="           :Smreq,           "<="           :Slseq,
+ "~"            :Scomplement,     "|"            :Sboolor,
+ "&"            :Sbooland,        "^"            :Sboolxor,
+# end of line
+ "\n"           :Seol
+).
+$ put the character representation of ptr into []st[]
+'p'was lexical pointer+>ptr+[]st[]:
+  was+SPECIAL+ptr, copy string+SPECIAL+ptr+st;
+  was+LEXT+ptr, copy string+LEXT+ptr+st.
+'q'was lexical integer+>ptr+x>:
+  was+CONST+ptr,CONST[ptr]->x.
+
+$ ********************************************************* $
+$ error messages $
+'table'MESSAGE=(
+"hex digit expected after 0x" :hex digit expected,
+"wrong character denotation"  :wrong character denotation,
+"unterminated string"         :unterminated string,
+"unknown key word '%p'"       :unrecognized bold,
+"missing ' after '%p'"        :missing bold delimiter,
+"illegal character: %c"       :illegal character
+).
+
+$ ****************** BASIC INPUT-OUTPUT ****************** $
+
+$ local variables and constants
+'variable'
+   tab width=8,	$ tabular width
+   give text=0,	$ list source
+   LEXTptr=-1, 	$ string pointer in LEXT
+   LEXTcnt=0,	$ character counter
+   LEXTlen=0,	$ total length
+   char=/ /,	$ next character is stored here
+   pchar=0,	$ character position within the line
+   ppline=0,	$ postponed newline from string denoters
+   was tab=0,	$ tabular read, emit that much spaces
+   exhausted=-4.$ reaching eof
+
+'constant'
+   tabchar=9,	$ tabular character
+   end char=0x1234567. $ large number representing eof
+
+'p'read char+char>:
+  $ return the next character from either LEXT or SOURCE
+  LEXTptr>0,
+    (nxt: LEXTcnt=LEXTlen, /./->char,incr+LEXTcnt;
+          LEXTcnt<LEXTlen,string elem+LEXT+LEXTptr+LEXTcnt+char,incr+LEXTcnt,
+              (char=newline,:nxt;+));
+  LEXTptr=0,get char+SOURCE+char.
+
+'a'next char-show:
+  $ get next character to "char", handle tab,
+  $    newline chars. When reaching eof, add two
+  $    newline chars, then emit "end char".
+   ((is+give text, exhausted<-2), 1->show; 0->show),
+   display char+char+show,
+   (nxt-x:
+    was tab>0, decr+was tab, / /->char, incr+pchar;
+    read char+char, incr+pchar,
+      (=char=
+       [newline], 0->pchar, get pragmat value+pgt text+give text,
+                  get pragmat value+pgt tab width+tab width;
+       [tabchar], / /->char, subtr+pchar+1+x,
+                  divrem+x+tab width+#+was tab,
+                  subtr+tab width+was tab+was tab, decr+was tab;
+       [:31],     :nxt;
+       +);
+    exhausted < -2, incr+exhausted, newline->char;
+    end char->char
+  ).
+
+$ ***************************************** $
+'p'bold letter+x>:
+  $ return the next bold letter; no spaces
+  =char=
+  [/a/:/z/], char->x, next char;
+  -.
+'p'digit+x>:
+  $ skip spaces, return the value of the digit
+  =char=
+  [/ /], next char,:digit;
+  [/0/:/9/], subtr+char+/0/+x, next char;
+  -.
+'p'hex digit+x>:
+  $ skip spaces, return the value of the hex digit
+  =char=
+  [/ /], next char,:hex digit;
+  [/0/:/9/], subtr+char+/0/+x, next char;
+  [/a/:/f/], subtr+char+/a/+x,add+x+10+x, next char;
+  [/A/:/F/], subtr+char+/A/+x,add+x+10+x, next char;
+  -.
+'p'letgit+x>:
+  $ skip spaces, allow @ in library
+  =char=
+  [/ /], next char,:letgit;
+  [/A/:/Z/;/a/:/z/;/0/:/9/], char->x, next char;
+  [/@/], is pragmat value+pgt library, char->x, next char;
+  -.
+'a'next visible char:
+  $ skip spaces and newlines
+  =char=
+  [/ /], next char, :next visible char;
+  [newline], incr+ppline, next char, :next visible char;
+  +.
+$ ******************************************************** $
+$ path is unpacked to BUFFER. It is a sequence of strings
+$  separated by :
+'a'try opening+>str+res>-errno:
+  open file+SOURCE+/r/+LEXT+str, 0->res;
+  get file error+SOURCE+errno,(errno=2,1->res;-1->res).
+
+'a'add extension:
+  extend+BUFFER+/./,extend+BUFFER+/a/,extend+BUFFER+/l/,extend+BUFFER+/e/.
+
+'a'try next path+>ptr>+>str+>res>-n-nn-last:
+   $ copy the string from ptr until the next ;
+   >>BUFFER->n,/:/->last,(nxt: BUFFER[ptr]=/:/;
+               BUFFER[ptr]->last,incr+ptr,extend+BUFFER+last,:nxt),
+   (last=/:/; $ empty path, do nothing $
+    (last=///;extend+BUFFER+///), $ add separating slash $
+    unpack string+LEXT+str+BUFFER,
+    subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,
+    try opening+>>LEXT+res,forget string+>>LEXT,
+    (res<=0,unstack to+BUFFER+n;
+     add extension,
+     subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,
+     try opening+>>LEXT+res,forget string+>>LEXT,unstack to+BUFFER+n)).
+
+'a'try path+>str+>res>-path-ptr-end:
+   get pragmat value+pgt path+path,(path=0;
+    scratch+BUFFER,unpack string+LEXT+path+BUFFER,extend+BUFFER+/:/,
+    <<BUFFER->ptr,>>BUFFER->end,(nxt:ptr>=end;
+      try next path+ptr+str+res,(res=1,incr+ptr,:nxt;+)),
+    scratch+BUFFER).
+
+'p'open source file+>type+>str-res-n:
+  $ try file name as it is, if not found, try adding extension ".ale"
+  try opening+str+res,
+  (res=1,scratch+BUFFER,unpack string+LEXT+str+BUFFER,
+    add extension,list length+BUFFER+n,pack string+BUFFER+n+LEXT,
+    scratch+BUFFER,try opening+>>LEXT+res,forget string+>>LEXT,
+    ((res=1,type=2),try path+str+res)),
+  res=0.
+  
+'p'next source+>type+>ptr:
+   $ switch to the next source; 
+   $  type=0: read from the third character of LEXT[ptr]
+   $  type=1: LEXT[ptr] is the file name
+   $  type=2: try the string in the "path" pragmat
+   $  initialize reading; ptr=0 from SOURCE; 
+   $   otherwise from LEXT third char, first two are "--"
+   (type=0,ptr->LEXTptr,string length+LEXT+LEXTptr+LEXTlen,
+        2->LEXTcnt,0->give text;
+    open source file+type+ptr,0->LEXTptr,
+        get pragmat value+pgt text+give text),
+   0->pchar, get pragmat value+pgt tab width+tab width,
+   -4 ->exhausted, 0->ppline, 0->was tab, 0->optor,
+   reset pr line, $ reset printed source line numbers
+   newline->char,next char,next visible char.
+'a'close source:
+   $ close SOURCE of reading from there
+   LEXTptr>0,-1->LEXTptr;
+   LEXTptr=0,close file+SOURCE,-1->LEXTptr;
+   +.
+'a'create obj name-ptr-n-nn:
+   $ add ".ice" extension to the title
+   get pragmat value+pgt title+ptr,>>BUFFER->n,
+     unpack string+LEXT+ptr+BUFFER,extend+BUFFER+/./,
+     extend+BUFFER+/i/,extend+BUFFER+/c/,extend+BUFFER+/e/,
+     subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,unstack to+BUFFER+n.
+   
+$ ******************************************************** $
+$ Symbols
+'stack'[1]BUFFER.
+'a'extend+[]L[]+>v: (*v->L*)L.
+
+$ reading symbols $
+'a'read greater+>optor+x>:
+  $ look ahead after >; optor shows if after an operand 
+  is+optor,(char=/=/,next char,Smreq->x; Smore->x);
+  char=/>/, next char, Supb->x;
+  Svupb->x.
+'a'read less+>optor+x>:
+  $ look ahead after <; optor shows if after an operand
+  is+optor,(char=/=/, next char, Slseq->x; Sless->x);
+  char=/</, next char, Slwb->x;
+  char=/>/, next char, Scalibre->x;
+  Svlwb->x.
+'a'read minus+x>:
+  $ look ahead after -: ->, -=, -123
+  =char=
+  [/>/], next char, Sarrow->x;
+  [/=/], next char, Snot equal->x;
+  read minus with spaces+x.
+'a'read minus with spaces+x>:
+  $ look ahead after - skipping spaces
+  =char=
+  [/ /], next char, :read minus with spaces; $ skip spaces
+  [/0/], next char, read zero+1+x;
+  [/1/:/9/], read const+1+x;
+  Sminus->x.
+$ constants
+'a'read zero+>sign+x>:
+  $ we are after a zero
+  =char=
+  [/ /], next char, :read zero; $ skip spaces
+  [/0/:/9/], read const+sign+x; $ a constant
+  [/x/;/X/], next char, read hex+sign+x;
+  const zero->x.
+'a'read const+>sign+x>-v:
+  $ a digit
+  subtr+char+/0/+v, next char,
+    (nxt-d: digit+d, addmult+v+10+d+v,:nxt;
+            is+sign,subtr+0+v+v;
+            +),
+    enter const+v+x.            
+'a'read hex+>sign+x>-d-v:
+  $ after 0x
+  hex digit+v,
+    (nxt: hex digit+d, left clear+v+4,
+            bool or+v+d+v, :nxt;
+          is+sign,subtr+0+v+v;+),
+    enter const+v+x;
+  error+hex digit expected, const zero->x.
+
+'a'read char denotation+x>-v:
+  $ we are after / reading a character denotation
+  char->v,
+    (char=newline, error+wrong character denotation;
+     next char, (char=///, next char;
+                 error+wrong character denotation)
+    ), enter const+v+x.
+'a'skip char denotation:
+  $ skip  /X/
+  char=newline;
+  next char, (char=///, next char; +).
+
+'a'read string+x>-n:
+  $ strings are stored in LEXT, char=/"/
+  scratch+BUFFER,0->n,
+  (nxt: next char, (=char=
+    [/"/], next char, $ closing quote mark
+      (char=/"/, extend+BUFFER+char, incr+n, :nxt;
+       next visible char, $ if /"/ then continuation
+         (char=/"/,:nxt;
+          n=0, Squote image->x;
+          pack string+BUFFER+n+LEXT, >>LEXT->x));
+    [newline; end char], error+unterminated string, Squote image->x;
+    extend+BUFFER+char, incr+n, :nxt)).
+
+'a'skip string:
+   $ skip a string; initial quote mark passed
+   =char=
+   [/"/], next char;
+   [newline; end char], +;
+   next char, :skip string.
+
+'a'forget string+>x:
+   $ remove the topmost string if not not needed
+   x=Squote image;
+   x=>>LEXT, unstack string+LEXT;
+   +.
+'q'is same string+>x+>y-eq:
+   $ strings x and y are the same
+   compare string+LEXT+x+LEXT+y+eq,eq=0.
+
+$ COMMENTS $
+'a'long comment:
+  $ comment starting with dollar goes to the next one
+  =char=
+  [newline], +;
+  [/$/], next char;
+  next char, :long comment.
+'p'short comment:
+  $ a # followed by alphanumeric characters
+  =char=
+  [/ /], next char, :short comment;
+  [/A/:/Z/;/a/:/z/;/0/:/9/], next char,
+     (nxt: =char=
+      [/A/:/Z/;/a/:/z/;/0/:/9/;/ /], next char, :nxt; +);
+  -. $ not a short comment
+
+$ BOLD SYMBOLS $
+$ bold symbols are stored in a table
+'table'[](left,right,adm)BOLD =
+("a"           :B1        ,(   0,   0,Saction    ),
+ "act"         :B2        ,(  B1,  B3,Saction    ),
+ "action"      :B3        ,(   0,   0,Saction    ),
+ "charfile"    :B4        ,(  B2,  B6,Scharfile  ),
+ "cons"        :B5        ,(   0,   0,Sconssymb  ),
+ "constant"    :B6        ,(  B5,  B7,Sconssymb  ),
+ "cst"         :B7        ,(   0,   0,Sconssymb  ),
+ "datafile"    :B8        ,(  B4, B12,Sdatafile  ),
+ "e"           :B9        ,(   0,   0,Sexit      ),
+ "end"         :B10       ,(  B9, B11,Sendsymb   ),
+ "exit"        :B11       ,(   0,   0,Sexit      ),
+ "external"    :B12       ,( B10, B14,Sextsymb   ),
+ "f"           :B13       ,(   0,   0,Sfunction  ),
+ "fct"         :B14       ,( B13, B15,Sfunction  ),
+ "func"        :B15       ,(   0,   0,Sfunction  ),
+ "function"    :first bold,(  B8, B24,Sfunction  ),
+ "p"           :B17       ,(   0,   0,Spredicate ),
+ "pragmat"     :B18       ,( B17, B19,Spragsymb  ),
+ "pred"        :B19       ,(   0,   0,Spredicate ),
+ "predicate"   :B20       ,( B18, B22,Spredicate ),
+ "q"           :B21       ,(   0,   0,Squestion  ),
+ "qu"          :B22       ,( B21, B23,Squestion  ),
+ "que"         :B23       ,(   0,   0,Squestion  ),
+ "question"    :B24       ,( B20, B28,Squestion  ),
+ "root"        :B25       ,(   0,   0,Srootsymb  ),
+ "stack"       :B26       ,( B25, B27,Sstacksymb ),
+ "static"      :B27       ,(   0,   0,Sstatic    ),
+ "table"       :B28       ,( B26, B30,Stablesymb ),
+ "var"         :B29       ,(   0,   0,Svarsymb   ),
+ "variable"    :B30       ,( B29, B31,Svarsymb   ),
+ "x"           :B31       ,(   0,   0,Sextsymb   )
+).
+'a'read bold+x>-n:
+  $ read a bold symbol 'abc'; give error messages
+    scratch+BUFFER,0->n,
+    ((nxt-t: bold letter+t,extend+BUFFER+t,incr+n,:nxt;
+             char=/'/,next char),
+     pack string+BUFFER+n+LEXT,first bold->x,
+     (nxt: x=0,error+unrecognized bold+>>LEXT,Sdummy symb->x;
+          compare string+BOLD+x+LEXT+>>LEXT+n,next+BOLD+x,
+            (n>0,left*BOLD[x]->x,:nxt;
+             n<0,right*BOLD[x]->x,:nxt;
+             adm*BOLD[x]->x
+            )
+     ),
+     unstack string+LEXT;
+    pack string+BUFFER+n+LEXT,error+missing bold delimiter+>>LEXT,
+    unstack string+LEXT,Sdummy symb->x).
+$ IDENTIFIERS $
+$ identifiers are passed to the "tags" module
+'a'read tag+x>:
+  $ handle an identifier colleced in BUFFER
+  scratch+BUFFER, extend+BUFFER+char, next char,
+  (nxt-t: letgit+t, extend+BUFFER+t, :nxt; +),
+  enter tag+BUFFER+x.
+
+$ **************************************************************** $
+
+'variable'
+  optor=0.	$ 1 after ),], tag, digits, char denotation
+
+'a'read+x>-ooptor:
+  $ return the next symbol.
+  ppline>0, decr+ppline, Seol->x; $ stored newlines
+  optor->ooptor, 0->optor, (nxt: =char=
+    [/ /], next char, :nxt; $ skip spaces
+    [/A/:/Z/;/a/:/z/], 1->optor, read tag+x;
+    [/+/], next char, Splus->x;
+    [/,/], next char, Scomma->x;
+    [/;/], next char, Ssemicolon->x;
+    [newline], next char, ooptor->optor, Seol->x;
+    [/-/], next char, read minus+x;
+    [/=/], next char, Sequals->x;
+    [/(/], next char, Sopen->x;
+    [/)/], next char, 1->optor, Sclose->x;
+    [/0/], next char, 1->optor, read zero+0+x;
+    [/1/:/9/], 1->optor, read const+0+x;
+    [/'/], next char, read bold+x;
+    [/</], next char, read less+ooptor+x;
+    [/>/], next char, read greater+ooptor+x;
+    [/*/], next char, Sasterisk->x;
+    [/:/], next char, Scolon->x;
+    [///], next char, (is+ooptor, Sslash->x;
+            1->optor, read char denotation+x);
+    [/./], next char, Spoint->x;
+    [/@/], (is pragmat value+pgt library, 1->optor, read tag+x;
+            error+illegal character+char, next char,:nxt);
+    [/?/], next char, Senquiry->x;
+    [/$/], next char, long comment, :nxt;
+    [/[/], next char, Ssub->x;
+    [/]/], next char, 1->optor, Sbus->x;
+    [/#/], next char, (short comment, :nxt; Snoarg->x);
+    [/"/], read string+x;
+    [/!/], next char, (char=/=/, next char, Snot equal->x;
+                       error+illegal character+/!/, :nxt);
+    $ boolean operators $
+    [/~/],next char,Scomplement->x;
+    [/|/],next char,Sboolor->x;
+    [/&/],next char,Sbooland->x;
+    [/^/],next char,Sboolxor->x;
+    [end char],next char,Sendsymb->x;
+    error+illegal character+char,next char,:nxt
+  ).  
+
+'a'skip+x>:
+  $skip untip eol, point, or eof
+  ppline>0, decr+ppline, Seol->x;
+  (nxt: =char=
+        [newline], next char, Seol->x;
+        [///], next char, skip char denotation, :nxt;
+        [/./], next char, Spoint->x;
+        [/"/], next char, skip string, :nxt;
+        [/#/], next char, (short comment;+),:nxt;
+        [/$/], next char, long comment, :nxt;
+        [end char], Sendsymb->x;
+        next char, :nxt
+  ).
+
+'root'+.
+'pragmat'endif=compile.
+
+'end'
+
+

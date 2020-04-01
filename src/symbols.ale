@@ -1,0 +1,234 @@
+$ symbol handling for ALEPH
+'pragmat'module="symbols".
+
+$ HEADER ***************************************************** $
+
+$ * Handling symbols
+$   the input stream is parsed into symbols which is a pointer to
+$     TTAG    a tag
+$     CONST   a constant or a character denotation with the value
+$     LEXT    string denotation; "Squote image" is the empty string
+$     SPECIAL all other symbols (defined in "lexical")
+$  'variable'inpt. 
+$     next symbol; DO NOT USE directly
+$  'a'next symbol.
+$     advance the input stream and replace "inpt" by the next symbol
+$ * Look ahead
+$    to go back in symbol stream, use the "restore" functions. 
+$  'a'init restore.
+$      mark the current position to be returned potentially. Only
+$      one position can be marked at the same time
+$  'a'make restore.
+$      go back to the marked position (looking at the same symbol
+$      as when issuing "init restore"). After that "init restore"
+$      can be issued again.
+$  'a'forget restore.
+$      release the marked position.
+$    When there is a marked position, incoming symbols are stored in
+$    a circular buffer. "linenum" is not advanced, and tags are not
+$    put into the dictionary. The total number of stored symbols should
+$    not exceed the buffer size.
+$ * Line numbers
+$    "linenum" indicates the source line; it start at zero and advances
+$    for each eol character emitting a Dline to the DISC. Each source
+$    file stores the starting value.
+
+$ do not use these variables directly.
+'variable'
+   inpt.     $ contains the next symbol
+
+'a'next symbol.
+   $ advances the stream to the next symbol
+$ look ahead routines
+$   dictionary is turned off while look ahead is in effect
+'a'init restore.
+   $ marks the input stream position
+'a'make restore.
+   $ goes back to the marked position
+'a'forget restore.
+   $ forgets the mark and goes ahead
+'q'ahead+>x:       x=inpt.
+   $ true if we are looking at the symbol "x"
+'p'R+>x:           x=inpt,next symbol.
+   $ if the next symbol is "x", return true and advance
+'a'Rskip+>x.
+   $ if the next symbol is "x", jump over it.
+'a'must+>x.
+   $ if the next symbol is NOT "x", issue the error "symbol x inserted"
+'a'skip silently.
+   $ skip up to the next point, don't give messages.
+'a'skip to point.
+   $ skip up to including the next point
+'a'skip all.
+   $ skip up to the next point looking at a point
+
+'p'is raw tag+tag>.
+   $ if the next symbol is a tag, return pointer to TTAG
+'p'is tag+tag>,is tagdl+tag>+dl>.
+   $ if the next symbol is a tag, return pointer to LADM or LLOC
+   $ If dict-on, add the line number
+   $ return the line number in dl
+'p'is cons+value>.
+   $ constant or char denotation, return the value
+'q'ahead cons.
+   $ the next symbol is a constant.
+'p'is string+str>.
+   $ string, pointer to LEXT (including empty string)
+'f'get linenum+x>.
+   $ retrieve the current value of the line counter
+'a'set linenum+>x.
+   $ set linenum to the given value.
+'a'advance linenum.
+   $ advance and write Dline to the disc.
+
+$ BODY *************************************************** $
+
+'pragmat'if=compile.
+'pragmat'require=("display","lexical","tags","disc").
+'pragmat'public=(
+   next symbol,init restore,make restore,forget restore,
+   Rskip,must,skip silently,skip to point,skip all,
+   is raw tag,is tag,is tagdl,is cons,ahead cons,is string,
+   inpt,get linenum,advance linenum
+).
+
+'constant'T=1,F=0.
+
+$ RESTORE FACILITY $
+$ "init restore" should be followed by one of "make restore"
+$  or "forget restore" within "restore size" symbols.
+$
+$ saved symbols are marked as *
+$ ....**********************.......
+$     ^old                 ^in=out, restorecount: in-out do=T
+$ ....**********************.......
+$     ^out=old             ^in      after makerestore, do=T
+$ ...........***************.......
+$            ^out          ^in      reading from restore, do=F
+$ ....**********************.......
+$     ^old   ^out          ^in      reading from restore, do=T
+$ ....**********************.......
+$                          ^in=old=out (restorecount=0)
+$ init restore: starts backtrack
+$     T->do restore
+$     save "out restore" to "old restore" (so we know the position)
+$     save current inpt and linenum (otherwise they would be lost)
+$     We might still reading stored symbols (in!=out is possible)
+$ make restore: 
+$     F->do restore
+$     old restore->out restore, restore inpt and linenum
+$ read from restore:
+$     if in=out, return false (nothing is in RESTORE)
+$     advance out, and set inpt from RESTORE
+$      if not "do restore", decrease restore count
+'constant' restore size=500.
+'stack'[=restore size=]RESTORE=(0*restore size).
+
+'table'MESSAGE=(
+ "symbol %p is inserted"         :inserted,
+ "program text skipped "
+      "until the next point"     :text skipped, $ info
+$ internal error $
+ "FATAL: init restore called repeatedly":init restore error,
+ "FATAL: make restore without init"     :make restore error,
+ "FATAL: restore size exceeded (%d)"    :too large backtrack,
+ "FATAL: save to restore inconsistent"  :save to restore error,
+ "FARAL: read from restore inconsistent":read from restore error
+).
+
+'variable'restore count=0,old restore=0,
+     old inpt=0,old linenum=0,
+     do restore=0,
+     inrestore=<RESTORE,outrestore=<RESTORE.
+
+'a'init restore:
+   $ start remembmering symbols, take care of linenum
+   $ we might be serving symbols from RESTORE (restore count!=0)
+   is+do restore,internal error+init restore error;
+   outrestore->old restore,inpt->old inpt,linenum->old linenum,
+   T->do restore.
+'a'make restore:
+   $ reset to the saved position
+   do restore=F,internal error+make restore error;
+   restore count>restore size,internal error+too large backtrack+restore size;
+   old restore->outrestore,
+   old inpt->inpt,old linenum->linenum,
+   F->do restore.
+'a'forget restore:
+   $ skip all stored symbols; set line numbers in DISC as well
+   make restore,
+   (nxt: read from restore,set symbol position,:nxt;+).
+'a'save to restore:
+   $ save inpt to stack RESTORE
+   do restore=F; $ do nothing
+   outrestore!=inrestore,internal error+save to restore error;
+   incr+restore count,count restore+inrestore,inrestore->outrestore,
+     inpt->RESTORE[inrestore].
+'p'read from restore:
+   $ restore next symbol from RESTORE
+   inrestore=outrestore,-;
+   count restore+outrestore,RESTORE[outrestore]->inpt,
+   (is+do restore; decr+restore count),
+   (restore count>=0;internal error+read from restore error).
+'f'count restore+>x>:
+   x>=>>RESTORE,<<RESTORE->x;incr+x.
+$ ---------------------------------------------- $
+'variable'inpt=0,linenum=0.
+
+'a'set symbol position:
+   inpt=Seol,incr+linenum,(is+do restore;D+Dline);
+   +.
+'a'next symbol:
+   (read from restore; read+inpt,save to restore),
+   set symbol position,
+   (inpt=Seol,:next symbol;+).
+'a'Rskip+>symbol:
+   symbol=inpt,next symbol;
+   (was+LADM+symbol,inpt=tag*LADM[symbol]),next symbol;
+   +.
+'a'must+>symbol:
+   symbol=inpt,next symbol;error+inserted+symbol.
+'p'is raw tag+tag>:
+   was+TTAG+inpt,inpt->tag,next symbol.
+'p'is cons+value>:
+   was+CONST+inpt,CONST[inpt]->value,next symbol.
+'q'ahead cons:
+   was+CONST+inpt.
+'p'is string+str>:
+   was+LEXT+inpt,inpt->str,next symbol.
+'p'is tagdl+tag>+dl>:
+   was+TTAG+inpt,(inrestore=outrestore,add DICT+inpt+linenum;+),
+    linenum->dl,get tag entry+inpt+tag,next symbol.
+'p'is tag+tag>:
+   was+TTAG+inpt,(inrestore=outrestore,add DICT+inpt+linenum;+),
+    get tag entry+inpt+tag,next symbol.
+
+$ skip $
+'a'skip symbol:
+   (read from restore; skip+inpt,save to restore),
+   set symbol position,
+   (inpt=Seol,:skip symbol;+).
+'a'skip silently:
+   ahead+Spoint;ahead+Send symb;skip symbol,:skip silently.
+'a'skip all:
+   ahead+Spoint;
+   message+text skipped,skip silently.
+'a'skip to point:
+   skip all,Rskip+Spoint.
+
+$ handle linenum $
+
+'f'get linenum+x>: linenum->x.
+'a'set linenum+>x: x->linenum.
+'a'advance linenum: incr+linenum,D+Dline.
+$'a'get next linenum+x>:
+$  D+Dline,incr+linenum,linenum->x.
+$'a'advance linenum: incr+linenum.
+
+'root'+.
+'pragmat'endif=compile.
+
+'end'
+
+
+
