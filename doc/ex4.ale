@@ -1,0 +1,29 @@
+'action'quicksort+>from+>to+[]a[]
+     -left-middle-right-amiddle:
+\smallskip
+$ this rule sorts the elements in the stack "a" from "from" to
+$ "to" in ascending order. The algorithm used is a variation of
+$ "quicksort", C.A.R.Hoare, Computer j. 5(1) 10-15 (1962)\no$
+   mreq+from+to;
+   $ the area to be sorted is not empty:
+   $ it is split into three parts, left, middle and right.
+   $ the middle contains one or more equal elements\no$
+   from->left,random+from+to+middle,to->right,a[middle]->amiddle,
+  (split:
+     (push right: more+left+to;
+                  more+a[left]+amiddle;
+                  incr+left,:push right),
+     (push left:  more+from+right;
+                  more+amiddle+a[right];
+                  decr+right,:push left),
+     (less+left+right,
+        (-elem:
+         a[left]->elem,a[right]->a[left],elem->a[right]),
+        incr+left,decr+right,:split;
+      less+middle+right,
+         a[right]->a[middle],amiddle->a[right],decr+right;
+      more+middle+left,
+         a[left]->a[middle],amiddle->a[left],incr+left;
+     +)
+  ),
+  quicksort+from+right+a, quicksort+left+to+a.

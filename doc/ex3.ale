@@ -1,0 +1,66 @@
+$ symbolic differentiation, problem iii in "machine oriented
+$ languages bulletin", molb 3.1.2, (1973).
+\smallskip
+'charfile'out="output">.
+'stack'[100](op,left,right)expr.
+'table'operator=("+":plus op,"-":min op,"*":tim op,"/":div op,
+     "ln": ln op $ ln(f) is represented as 0 "ln" f $,
+     "pow": pow op $ pow(f,g) is represented as f "pow" g $).
+'stack'[1]const=(0: c zero, 1: c one, 2: c two).
+'stack'[1]var=("x": x var).
+'action'derivative+>e+de>-f-df-g-dg-n1-n2-n3:
+   was+const+e, c zero->de;
+   was+var+e, c one->de;
+   left*expr[e]->f, right*expr[e]->g,
+   derivative+f+df, derivative+g+dg,
+     (=op*expr[e]=
+       [plus op], gen node+plus op+df+dg+de;
+       [min  op], gen node+min  op+df+dg+de;
+       [tim  op], gen node+tim op+f+dg+n1,
+                  gen node+tim op+df+g+n2,
+                  gen node+plus op+n1+n2+de;
+       [div  op], gen node+tim op+df+g+n1,
+                  gen node+tim op+f+dg+n2,
+                  gen node+min op+n1+n2+n1,
+                  gen node+pow op+g+c two+n2,
+                  gen node+div op+n1+n2+de;
+       [ln   op], gen node+div op+dg+g+de;
+       [pow  op], gen node+min op+g+c one+n1,
+                  gen node+pow op+f+n1+n1,
+                  gen node+tim op+df+g+n2,
+                  gen node+tim op+n2+n1+n1,
+                  gen node+ln op+c zero+f+n2,
+                  gen node+tim op+n2+dg+n2,
+                  gen node+pow op+f+g+n3,
+                  gen node+tim op+n2+n3+n2,
+                  gen node+plus op+n1+n2+de;
+     ).
+'action'print expr+>e-zz:
+   was+const+e,put int+out+const[e];
+   was+var+e,put string+out+var+e;
+   op*expr[e]->zz,
+   (= zz =
+     [plus op; min op; tim op; div op],
+        put char+out+/(/,print expr+left*expr[e],
+        put char+out+/)/,put string+out+operator+zz,
+        put char+out+/(/,print expr+right*expr[e],
+        put char+out+/)/;
+     put string+out+operator+zz,put char+out+/(/,
+        (equal+zz+pow op, print expr+left*expr[e],
+             put char+out+/,/; +),
+        print expr+right*expr[e], put char+out+/)/
+   ).
+'action'test-e1-e2-e3:
+   gen node+pow op+x var+x var+e1, $ pow(x,x) $
+      print expr+e1, nl,
+      derivative+e1+e2, print expr+e2, nl,
+      derivative+e2+e3, print expr+e3, nl,
+   gen node+div op+x var+x var+e1, $ x/x $
+      print expr+e1, nl,
+      derivative+e1+e2, print expr+e2, nl,
+      derivative+e2+e3, print expr+e3, nl.
+'action'gen node+>op+>left+>right+res>:
+   * op->op, left->left, right->right *expr, >>expr->res.
+'action' nl: put char+out+new line.
+'root'test.
+'end'

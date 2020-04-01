@@ -1,0 +1,4069 @@
+\documentclass{article}
+\newcommand\A{{\sf ALEPH}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% grammar is typeset in \sf font.
+%% the {grammar} environment uses lines with \tem
+{\catcode`\[=\active\catcode`\]=\active%
+\gdef\mkoptions{\catcode`\[\active\def[{\kern0.05em\char91\kern0.12em\relax}%
+\catcode`\]\active\def]{\kern0.1em\char93\kern0.05em\relax}%
+}}%
+\newcommand\g[1]{{\sf #1}}
+\newcommand\no[1]{}
+
+\newenvironment{grammar}{%
+\begin{list}{}{%
+\setlength\leftmargin{18pt}%
+\setlength\rightmargin{-5pt}%
+\setlength\listparindent{20pt}%
+\setlength\itemsep{1pt plus0.2ex}%
+\setlength\parsep{0pt plus 2pt}%
+\setlength\labelsep{-5pt}%
+}\sf%\def\[##1]{{\kern.1em[\kern.1em ##1\kern.05em]\kern.05em\relax}}%
+\mkoptions%
+}{\end{list}}
+\renewenvironment{itemize}{\begin{list}{}{%
+\advance\leftmargin by -8pt%
+\setlength\itemsep{0ex plus 0.2ex}%
+\setlength\partopsep{3pt}%
+\setlength\topsep{2pt plus 2pt}%
+\setlength\parsep{0pt plus 2pt}%
+}}{\end{list}}
+\newenvironment{witemize}{\begin{list}{}{%
+\advance\leftmargin by 16pt%
+\setlength\itemsep{0ex plus 0.2ex}%
+\setlength\partopsep{3pt}%
+\setlength\topsep{2pt plus 2pt}%
+\setlength\parsep{0pt plus 2pt}%
+}}{\end{list}}
+\def\square{\raisebox{0.7ex}{\setlength\fboxsep{2pt}\framebox[4pt]{}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% bibliography is a subsection, demoving the section head
+\makeatletter
+\renewenvironment{thebibliography}[1]
+     {\list{\@biblabel{\@arabic\c@enumiv}}%
+           {\settowidth\labelwidth{\@biblabel{#1}}%
+            \leftmargin\labelwidth
+            \advance\leftmargin\labelsep
+            \@openbib@code
+            \usecounter{enumiv}%
+            \let\p@enumiv\@empty
+            \renewcommand\theenumiv{\@arabic\c@enumiv}}%
+      \sloppy
+      \clubpenalty4000
+      \@clubpenalty \clubpenalty
+      \widowpenalty4000%
+      \sfcode`\.\@m}
+     {\def\@noitemerr
+       {\@latex@warning{Empty `thebibliography' environment}}%
+      \endlist}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% program listing is done using lmtt fixed font
+%%   words within '' are typeset in bold
+%%   disabling '' and ,, and << >> ligatures.
+\DeclareFixedFont{\tt}{T1}{lmtt}{m}{n}{10pt}
+\DeclareFixedFont{\tft}{T1}{lmtt}{m}{n}{8pt}
+\DeclareFixedFont{\bt}{T1}{lmtt}{b}{n}{10pt}
+%% \mkbold sets space, comma, apostrophy active
+%%   and defined words between '' to be typeset in bold
+%% \pp|text| is an inline program
+%% \begin{program} ... \end{program} is a displayed program
+{\catcode`\'=\active\catcode`\ =\active\catcode`\,=\active%
+\catcode`\$=12\catcode`\<\active\catcode`\>\active%
+\gdef\mkbold{\catcode`\'\active\def'##1'{\char39\relax{\bt##1}\char39\relax}%
+\catcode`\,\active\def,{\char44\relax}%
+\catcode`\<\active\def<{\char60\relax}%
+\catcode`\>\active\def>{\char62\relax}%
+\catcode`\$=12\catcode`\#=12\catcode`\^=12%
+\catcode`\ \active\def {\nobreakspace}}}
+\newenvironment{program}{%
+\ignorespaces
+\par\vskip 5pt plus 2pt minus 2pt
+\leftmargin=20pt
+\parindent=0pt\tt
+\catcode`\$=12\catcode`\^=12
+\mkbold
+\obeylines
+\leftskip 8pt
+\baselineskip=0.9\baselineskip
+\everypar\expandafter{\the\everypar\unpenalty}%
+}{\vskip 6pt plus 2pt minus 1pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{\catcode`\'=\active\catcode`\ =\active\catcode`\,=\active%
+\catcode`\$=12\catcode`\^=12\catcode`\|=\active\catcode`\<\active\catcode`\>\active%
+\gdef\pp#1{\relax\begingroup
+\catcode`\$=12\catcode`\~=12\catcode`\^=12%
+\catcode`\|\active\let|\endgroup
+\catcode`\ \active\def {\space}%\nobreakspace
+\catcode`\'\active\def'##1'{\char39\relax{\bt##1}\char39\relax}%
+\catcode`\<\active\def<{\char60\relax}%
+\catcode`\>\active\def>{\char62\relax}%
+\catcode`\#=12\catcode`\^=12%
+\tt
+}%
+%\gdef\H#1#2{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{ #1\hfil}
+%\qquad\hbox to 0.3\linewidth{#2\hfil}\par}
+%\gdef\Y#1#2{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{\sf #1\hfil}
+%\qquad\hbox to 0.3\linewidth{\pp|#2|\hfil}\par}
+%\gdef\W#1#2#3{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{\sf #1\hfil}
+%\qquad\hbox to 0.3\linewidth{\pp|#2| or \pp|#3|\hfil}\par}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% subsubsubsection
+\makeatletter
+\setcounter{secnumdepth}{4}
+\newcounter{subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection.\@arabic\c@subsubsubsection}
+\newcommand\subsubsubsectionmark[1]{}
+\newcommand\subsubsubsection{%
+\@startsection{subsubsubsection}{4}{\z@}%
+   {-3.25ex\@plus -1ex \@minus -.2ex}% {3.25ex \@plus1ex \@minus.2ex}
+   {1ex \@plus .5ex}%             {-1em}
+   {\normalfont\normalsize\bfseries}}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% keywords in two columns (7.2)
+\makeatletter
+\newenvironment{keywords}{%
+\gdef\\{\@ifnextchar[{\@finishline}{\@finishline[0pt]}}%
+\gdef\@finishline[##1]{\par\vskip ##1}%
+\gdef\G##1{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{\g{ ##1 symbol}\hfil}
+   \qquad }%
+\gdef\K##1{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{\g{ ##1}\hfil}
+   \qquad }%
+}{}
+\makeatother
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{{\A} Manual}
+\author{D. Grune \and R. Bosch \and L.G.L.T Meertens}
+\date{Fourth printing, 1982}
+
+
+\begin{document}
+\maketitle
+
+\setcounter{section}{-1}
+\section{Preface}
+{\A} (acronym for ``\underline{\sf A} \underline{\sf L}anguage
+\underline{\sf E}ncouraging \underline{\sf P}rogram \underline{\sf
+H}ierarcy'') is a high-level language designed to provide the programmer
+with a tool that will effectively aid him in structuring his program is a
+hierarchical fashion. The syntactic and semantic simplicity of {\A} leads to
+efficient object code \cite{wichmann77}, so that the loss
+of efficiency usually incurred in structured programming is avoided. {\A} is
+suitable for any problem that suggests top-down analysis (parsers, search
+algorithms, combinatorial problems, artificial intelligence problems, etc.).
+
+Chapter one of this Manual gives a tutorial introduction into the way of
+thinking that is used in \A. It addresses itself to computer users that have
+some experience with algorithms and grammars, though not necessarily with
+high-level languages. It must not be concluded from these prerequisites
+that \A{} should not be taught to the novice programmer. On the contrary,
+\A{} introduces him to a discipline of thought that is lacking in many other
+languages.
+% Experiments in teaching \A{} and it parent {\sf CDL} have proved
+%to be successful (cf. C.~H.~A.~Koster, \emph{Portable compilers and the
+%UNCOL concept}, in: Proc. of IFIP working Conf.~on Machine Oriented High
+%Level Languages, Trondheim, 1973).
+
+Chapter two treats the \A{} program is general terms. Chapter three through
+six contain a complete description of \A.
+
+Chapter three treats the flow-of-control. Chapter four treats the data-types.
+Externals, i.e., standard-operations and communication with the outside
+world, are treated in chapter five. Chapter six describes the pragmats.
+
+The representation of \g{symbols} and example programs are given in chapters 
+seven and eight.
+
+An \A{} compiler exists, which translates \A{} programs in {\sf ALICE}
+program in a machine-independent fashion. {\sf ALICE}\cite{bohm77} is a
+simple linear code designed to aid the installation of \A{} on new systems.
+The \A{} compiler is available on both \A{} and {\sf ALICE}. An {\sf ALICE}
+transformer to {\sf COMPASS} for the Cyber 170 is also available. The
+\g{compile} and \g{count} pragmats have not been implemented.
+
+\medskip
+
+This is the fourth printing of the \A{} Manual. Many paragraphs have been
+rephrased to remove inconsistencies; the paragraph numbers have been kept
+identical throughout all printings. Since the third printing in 1977 the
+following modification has been made.
+
+\ref{3.4.3}: the \g{source}s in an \g{extension} are evaluated
+\textit{before} the stack is extended. This prevents the \g{extension}
+\pp|* st[>>st]->st *st| from pushing uninitialized data on the stack \pp|st|.
+
+\ref{3.5}: no math in calibre is required between a formal an actual list in
+the former is explicitly declared with zero selectors, rather than with one
+selector. This criterion is clearer and prevents misapplication of some
+standard externals.
+
+\ref{5.2.5}: the standard externals \pp|back char|, \pp|back data| and
+\pp|back line| are deleted since their limited usefulness in no way
+justifies the effort needed in their implementation.
+
+\ref{6.1}: to be effective a \g{macro} pragmat must occur \emph{before} the
+pertinent \g{rule-declaration}. This modification greatly increases the
+efficiency of the translation process.
+
+\ref{6.1}, \ref{6.2}: all pragmats to switch off run-time checking have been
+deleted.
+
+%The discipline of thought needed in \A{} is different from that needed in
+%most other programming languages. We are very interested in accounts of
+%experience with \A{} and we would be glad to receive comments, suggestion
+%and wishes.
+%
+%This report is to be followed by a report on the implementation of \A. A
+%working \A{} compiler exists for the CYBER 73.
+%
+%The text of this manual was justified by a text justifier written in \A; it
+%is available on paper tape.
+
+\section{Informal introduction to \A}\label{sec:1}
+
+In this chapter we shall gradually develop a small \A{} program and
+intersperse it liberally with annotations and arguments. This introduction
+is intended to give some insight into the use of the language \A{} and to
+display its main features in a very informal way.
+
+\subsection{A grammar}\label{1.1}
+
+The problem we shall treat is the following. We want to write a
+program that reads a series of arithmetic expressions separated by commas,
+calculate the value of each expression while reading it, and subsequently
+print the value. The expression will contain only integers, plus-symbols,
+times-symbols and parentheses: and example might be 
+\pp|15 * (12 + 3 * 9)|.
+
+First we put the requirements for the input to our program in the more
+transparent and clearer form of a context-free grammar. This grammar shows
+exactly which symbol we will accept in which position.
+\begin{grammar}
+\item input: expression, input tail.
+\item input tail: comma symbol, input; empty.
+\item expression: term, plus symbol, expression; term.
+\item term: primary, times symbol, term; primary.
+\item primary: left parenthesis, expression, right parenthesis; integer.
+\item integer: digit, integer; digit.
+\item empty: .
+\end{grammar}
+The rule for \g{input} can be read as: \g{input} is an \g{expression}
+followed by and \g{input-tail}, whereas the rule for \g{primary} can bead
+as: a \g{primary} is either
+\begin{list}{}{%
+\setlength\parskip{-5pt}%
+\setlength\leftmargin{15pt}%
+\setlength\listparindent{15pt}%
+\setlength\itemsep{0ex plus 0.2ex}%
+\setlength\parsep{0pt plus 2pt}%
+\setlength\labelsep{5pt}}
+\item[$\square$] a \g{left-parenthesis} followed by an \g{expression} followed
+by a \g{right-parenthesis}, or
+\item[$\square$] an \g{integer}.
+\end{list}
+This grammar shows clearly that for instance \pp|15 * + 3| will not be
+accepted as an \g{expression}. The \pp|*| can only be followed by a \g{term},
+which always starts with a \g{primary}, which in turn either starts with an
+\g{integer} or a \g{left-parenthesis}, but never with a \pp|+|.
+
+
+\subsection{Rules}\label{1.2}
+
+We shall now write a series of rules in \A, one for each rule in the
+grammar. For the grammar rule \g{expression} we shall write an \A{} rule
+that, when executed, reads and processes an expression and yields its
+result. This \A{} rule looks as follows:
+\begin{program}
+'action'expression+res>-r:
+   term+res,
+   (is symbol+/+/,expression+r,plus+res+r+res;+).
+\end{program}
+\noindent
+This can be read as: an \g{expression}, which must yield a result in \pp|res|
+and uses a (local) variable \pp|r| is (we are now at the colon) a \g{term}
+which will yield a result in \pp|res|, followed by \emph{either} (we are
+now at the left parenthesis) by a \g{plus-symbol} followed by an
+\g{expression}
+which will yield its result in \pp|r| after which the result in \pp|res|
+and the result in \pp|r| will be added to form a new result in \pp|res|,
+\emph{or} (we are at the semicolon now) by nothing. We see that this is the
+old meaning of the grammar rule for \g{expression}, sprinkled with some
+data-handling. This data-handling tells what is to be done to get the
+correct result: we could call it the semantics of an \g{expression}. If we
+remove there paraphernalia from the \A{} rule we obtain something very
+similar to the original grammar rule:
+\begin{program}
+'action'expression1:
+    term, (is symbol+/+/,expression1; +).
+\end{program}
+\noindent
+This rule, while it is still correct \A, does no data handling and,
+consequently, will not yield a result; it could for example be used to skip
+an \g{expression} in the input. 
+
+%Note that comments may be added between
+%\pp|$| and \pp|$|.
+
+We now direct our attention back to the \A{} rule \pp|expression| and consider
+what happens when it is ``executed''. First, \pp|term| is executed and
+will yield a result in \pp|res|: it does so because we shall define
+\pp|term| so that it will. Then we meet a series of two alternatives
+separated by a semicolon (\emph{either} a this \emph{or} a that). First an
+attempt is made to execute the first alternative by asking \pp|is
+symbol+/+/|. This is a question (because we shall define it so) which is
+answered positively if indeed the next symbol is a \pp|+| (in which case the
+\pp|+| will be discarded after reading) or negatively if the next symbol is
+something else.
+% Again it does so because we shall define it that way.
+
+If \pp|is symbol+/+/| ``succeeds'' %(is answered positively) 
+the remainder of the
+first alternative is executed, \pp|expression+r| is called (recursively),
+yielding its result in \pp|r| and subsequently \pp|plus+res+r+res| is
+called, putting the sum of \pp|res| and \pp|r| in \pp|res|. The call of
+\pp|expression+r| works because we just defined what it should do. \pp|plus|
+is the name known to the compiler and has a predefined meaning. However, if
+we are dissatisfied with its workings we could define our own rule for it.
+Now this alternative is finished, so the parenthesized part is finished,
+which brings us to the end of the execution of the rule \pp|expression|.
+
+If \pp|is symbol+/+/| ``fails'' %(is answered negatively) 
+the second alternative
+is tried: the part after the semicolon. This alternative consists of a
+\pp|+| which is a dummy statement that always succeeds. Without further
+action we reach the end of the rule \pp|expression|.
+
+The above indicates the division of responsibility between the language and
+the user. The language provides a framework that controls which rules will
+be called depending on the answers obtained from other rules. The user must
+fill in this framework, by defining what action must be performed by a
+specific rule and what question must be asked. These definitions again will
+have the form of rules that do something (to be defined by the user)
+embedded in a framework that controls their order (supplied by the language).
+It is clear that this process must end somewhere. It can end in one of two
+ways.
+
+It may appear that the action needed is supplied by \A: there are three very
+basic primitives in the language, the copying of a value, the test for
+equality of two values and the extension of a stack by a fixed number of
+given values. Often, however, these two primitives are not
+sufficient to express the action needed; the rule is then subdivided into
+other rules.
+%Normally the rule is then decomposed into other rules; however, 
+There are, however, cases where this is not desirable (or
+not possible). In such cases the rule is declared \pp|'external'| and
+its actions must be specified in a different way, often 
+in the assembly
+language of the machine used. By specifying a rule as \pp|'external'| we
+leave the realm of machine-independent semantics. A number of external rules
+are predefined by the compiler, including the rule \pp|plus| used above.
+This set of rules will suffice for most applications.
+
+We shall now pay some attention to the exact notation (syntax) of the rule
+\pp|expression|. All rules have the property that when they are called they
+are either guaranteed to succeed or they may fail. 
+The word \pp|'action'| indicates that a call of this rule is guaranteed to
+succeed. The name of the rule is \pp|expression|, and
+\pp|res| is its only formal ``affix'' (parameter). The
+\pp|+| serves as a separator (it \emph{affixes} the affix to the rule). The
+right arrowhead (\pp|>|) indicates that the resulting value of \pp|res| will
+be passed back to the calling rule. This means that \pp|expression| has the
+obligation to assign a value to \pp|res| under all circumstances: \pp|res|
+is an output parameter, guaranteed to receive a value. If the text of the
+rule does not support this claim, the compiler will discover thus and issue a
+message. The \pp|+| sign and the term \emph{affix} stem from the theory of
+affix grammars of which \A{} is based \cite{koster71b,watt77}.
+
+The \pp|-r| specifies \pp|r| as a local affix (local variable) of the rule
+and the colon closes the left hand side. The \pp|+| in \pp|term+res| appends
+the actual affix \pp|res| to the rule \pp|term|, the comma separates
+calls of rules. The parentheses group both alternatives
+into one action. The \pp|+| between slashes (indicating ``absolute value'')
+represents the integer value of the plus-symbol in the code used. The
+semicolon separates alternatives, which are checked in textual order. 
+As said before, the
+stand-alone \pp|+| denotes the dummy action that always succeeds. The period
+ends the rule.
+
+%For the reader who is familiar with \g{ALGOL}-like languages 
+The following
+approximate translation to \g{ALGOL 68} might be helpful:
+\begin{program}
+{\bf{}proc }expression = ({\bf ref int }res) {\bf{}void}:
+{\bf{}begin int }r;
+  term(res);
+  {\bf{}if }is symbol("+")
+  {\bf{}then }expression(r); plus(res,r,res)
+  {\bf{}else skip}
+  {\bf{}fi}
+{\bf{}end}
+\end{program}
+%\noindent
+%An approximate PL/I version runs as follows:
+%\begin{program}
+%EXPRESSION:
+%   PROCEDURE(RES) RECURSIVE;
+%      DECLARE(RES,R) FIXED BINARY;
+%      CALL TERM(RES);
+%      IF IS\underline{ }SYMBOL(\char39+\char39) THEN
+%      DO; CALL EXPRESSION(R);
+%          CALL PLUS(RES,R,RES);
+%      END; ELSE;
+%   END;
+%\end{program}
+
+\subsection{Further rules}\label{1.3}
+In view of the above the rule for \g{term} should not surprise the
+reader:
+\begin{program}
+'action'term+res>-r:
+   primary+res,
+    (is symbol+/*/, term+r, times+res+r+res;+).
+\end{program}
+\noindent
+Now we are tempted to render the rule for \g{primary} as:
+\begin{program}
+'action'primary+res>:
+   is symbol+/(/, expression+res, is symbol+/)/;
+   integer+res.
+\end{program}
+\noindent
+but here the compiler would discover that we did not specify what should be
+done if the second call of \pp|is symbol| fails. If that happens, we would
+have recognized, processed and skipped a \g{left-parenthesis} and a complete
+\g{expression}, to find that the corresponding \g{right-parenthesis} is missing.
+This means that the input (which is a production of \g{input}) is incorrect; 
+we now decide that we shall not do
+any error recovery, so we give and error message and stop the program. The
+correct version of the \A{} rule \pp|primary| is then:
+\begin{program}
+'action'primary+res>:
+   is symbol+/(/,expression+res,
+      (is symbol+/)/;
+       error+no paren);
+   integer+res.
+\end{program}
+\noindent
+Here the two alternatives between parentheses behave like one action that will
+always succeed: either the right parenthesis is present in the input, or an
+error will be signaled. \pp|no paren| is a constant that will be specified
+later on.
+
+Writing the rule for \pp|integer| is a trickier problem than is seems to be.
+For a comprehensive account on how to obtain correct and incorrect versions
+of it the reader is referred to \cite{koster71a}. We shall confine ourselves to
+giving one correct version. It consists of two rules and is about as
+complicated as necessary.
+\begin{program}
+'action'integer+res>:
+   digit+res,integer1+res;
+   error+no int,0->res.
+\smallskip
+'action'integer1+>res>-d:
+   digit+d,times+res+10+res,
+      plus+res+d+res,integer1+res;+.
+\end{program}
+\noindent
+The rule \pp|integer| asks for a digit. If present, its value will serve as
+the initial value of \pp|res|. The value of \pp|res| is then passed to
+\pp|integer1|. If no digit is present an error message will result and
+\pp|res| will get the dummy value \pp|0|. This is necessary to ensure that
+\pp|integer| will assign a value to \pp|res| under all circumstances
+(because of the right arrow-head after \pp|res|). The right arrow
+in \pp|0->res| indicates the assignation of the value on the left to the
+variable on the right, one of the primitive actions in \A.
+
+The rule \pp|integer1| processes the tail of the integer. If there is such a
+tail it starts with a digit, so the first alternative asks \pp|digit+d|. If
+so, a new result is calculated from the previous one and the digit \pp|d| by
+making \pp|res| equal to \pp|res*10+d| and \pp|integer1| is called again (to
+see if there are more digits to come). If there was no digit, we have
+processed the whole integer and \pp|res| contains its value.
+
+%The rule \pp|integer1| is recursive; this should not worry the reader since
+%the compiler will discover that this is a case of trivial right-recursion
+%and will optimize it into a simple jump.
+
+The right arrow-head in front of \pp|res| means that the calling rule will have
+assigned a value to this affix just before calling \pp|integer1|, i.e.
+\pp|res| is ``initialized''. The right arrow-head after \pp|res| again indicates
+that the resulting value will be passed back to the calling rule.
+
+A more convenient way of reading an integer is provided by the (standard)
+external rule \pp|get int|.
+
+
+\subsection{Input}\label{1.4}
+
+The above forms the heart of our program. We shall now supply it with some
+input and output definitions. For the input we need a file to obtain the
+input symbols from, which we shall call \pp|reader|; let us suppose that
+this file is called \pp|SYSIN| somewhere in the surrounding operating system
+(e.g. on a control card). Furthermore we shall use a global variable
+\pp|buff| which will contain the first symbol not yet recognized.
+Comment starts with a \pp|$|.%$
+\begin{program}
+$ Input% $
+
+'charfile'reader=>"SYSIN".
+'variable'buff=/ /.
+\end{program}
+\noindent
+The variable \pp|buff| is initialized with the code for the space symbol
+(there being no uninitialized variables in \A). We are now in a position to
+give two rule definitions that were still missing.
+\begin{program}
+'predicate'is symbol+>n: buff=n, get next symbol.
+\smallskip
+'predicate'digit+d>:
+  =buff=
+  [/0/:/9/], minus+buff+/0/+d, get next symbol;
+  [   :   ], -.
+\end{program}
+\noindent
+These require some more explanation, mainly concerning the notation. The
+word \pp|'predicate'| indicates that \pp|is symbol| is not an action but a
+question, or more precisely a \emph{committing} question as opposed to a
+\emph{non-committal} question. A non-committal question is a question that,
+regardless of the answer it yields, makes no global changes, does not do
+anything irreversible. A committing question is a question that, when
+answered positively, does make global (and often irreversible) changes,
+as specified by the programmer. To give an example, ``\emph{Are there
+plane tickets for New York for less than \$100?}'' is a non-committal
+question, whereas ``\emph{Are there plane tickets for New York for less than
+\$100? If so, I want one}'' is a committing question.
+
+In the case of \pp|is symbol| the (committing) question is: {\it is the
+symbol in \pp|buff| equal to the one I want? if so, advance the input and put
+the next symbol in \pp|buff|.} The form \pp|buff=n| is a test for equality
+and is one of the primitive operations in \A. \pp|get next symbol| will be
+defined below.
+
+Again the right arrow-head in front of the formal affix \pp|n| indicates
+that the calling rule will have assigned a value to it; the absence of a
+right arrow-head to the right of the \pp|n| indicates that the value of
+\pp|n| (which may have been changed!) will not be passed back to the calling
+rule.
+
+The rule for \pp|digit| (again a \pp|'predicate'|) shows another feature of
+\A, the \g{classification}. For certain classes of values of \pp|buff| one
+alternative will be chosen, for other classes a different alternative will
+be chosen. The classes are presented inside the square brackets. Thus, for
+values of \pp|buff| that lie between the code for \pp|0| and the code for
+\pp|9| the first alternative will be chosen. For all other values the dummy
+question that always fails (\pp|-|) will be executed. The rule
+\pp|digit| is equivalent to
+\begin{program}
+'predicate'digit+d>:
+   between+/0/+buff+/9/,minus+buff+/0/+d,get next symbol.
+\end{program}
+\noindent
+assuming that \pp|between+/0/+buff+/9/| succeeds if and only if
+\pp|/0/|${}\le{}$\pp|buff|${}\le{}$\pp|/9/|. In complicated cases a
+classification is easier to write and will in general produce more
+efficient object code. The classification is analogous to
+case statements in \g{ALGOL 68} and other programming languages.
+
+All the arithmetic used here on symbols is based on the (possibly
+machine-dependent) assumption that the numerical codes associated with the
+symbols \pp|0| through \pp|9| are a set of consecutive integers in ascending
+order. The numerical value of a digit symbol can then indeed be obtained by
+subtracting the code for \pp|0| from its numerical value.
+
+One more input rule most be supplied:
+\begin{program}
+'action'get next symbol:
+   get char+reader+buff,
+      ((buff=/ /; buff=newline), get next symbol;
+       + );
+   stop->buff.
+\smallskip
+'constant'stop=-1.
+\end{program}
+\noindent
+\pp|get char| is an (external) rule known to the compiler. It tries to read
+the next symbol from the file indicated by its first affix (here
+\pp|reader|); if there is a symbol it puts it in its second affix (here
+\pp|buff|); if there is no symbol it fails. In the latter case \pp|buff| is
+given the value \pp|stop|, which is defined in a \g{constant-declaration} to be
+\pp|-1|.
+
+If \pp|get char| does yield a symbol and if this is a space or a new-line,
+\pp|get char| is called again. We use nested parenthesizing here.
+This definition of \pp|get next symbol|\footnote{In the manuscript {\tft
+get char}.} implies we have decided that spaces and
+new-lines are allowed in the input in all positions (a decision that was not
+yet present in the initial grammar).
+
+\subsection{Output}\label{1.5}
+The output is as follows:
+\begin{program}
+$ output% $
+
+'charfile'printer="SYSOUT">.
+'action'print integer+>int:
+   out integer+int,put char+printer+newline.
+'action'out integer+>int-rem:
+   divrem+int+10+int+rem,plus+rem+/0/+rem,
+   (int=0;out integer+int),put char+printer+rem.
+\end{program}
+\noindent
+The rule \pp|put char| is known to the compiler, as is \pp|divrem|. The call
+of the latter has the effect that \pp|int| is divided by 10, the quotient
+is placed back to \pp|int| and the remainder in \pp|rem|. This splits the
+number into its last digit and its head; if this head (now in \pp|int|) is
+not zero it must be printed first, which is effected by the recursive call
+of \pp|put integer|. Subsequently, the last digit is printed through a call
+or \pp|put char|.
+This is a simple but inefficient way of printing a
+number.
+% here the recursion is essential and will not be optimized out by the
+%compiler.
+%
+A more convenient way of printing an integer is provided by the (standard)
+external rule \pp|put int|.
+
+For the printing of error messages we shall need some string handling. Strings
+do not constitute a special data type in \A: they are handled, like all
+other complicated data types, by putting them in \g{stack}s and
+\g{table}s and are operated upon by suitably defined rules (generally
+defined by the programmer but sometimes predefined in the system).
+
+The error handler takes the following form:
+\begin{program}
+$ Error-message printing% $
+
+'action'error+>er:
+   put char+printer+new line,
+     put string+printer+strings+er,'exit'1.
+\smallskip
+'table'strings=
+  ("Right parenthesis missing":no paren,
+   "Integer missing":no int
+  ).
+\end{program}
+\noindent
+The table \pp|strings| contains two strings, stored and packed in a way
+suitable to our machine; they can be reached under the names \pp|no paren|
+and \pp|no int|. The call of \pp|put string| takes the affix \pp|er|, looks
+in the table \pp|strings| under the entry corresponding to \pp|er| and
+transfers the string thus found to the file identified as \pp|printer|.
+
+When the construction \pp|'exit'1| is executed the program will be terminated
+and the \pp|1| will be passed to the operating system as an indication of
+what went wrong. This is by no means the normal program termination: normal
+program termination ensues when all work is done.
+
+\subsection{Starting the program}\label{1.6}
+
+The rule for reading an \g{expression} (\pp|expression|) and the one for
+printing an \g{integer} (\pp|print integer|) can now be combined into the rule
+\pp|input| (see the grammar at the beginning of this chapter).
+\begin{program}
+'action'input-int:
+   expression+int, print integer+int,
+     (is symbol+/,/, input;+).
+\end{program}
+\noindent
+This rule combines the grammar rule for \g{input} and \g{input tail}.
+Instead of translating \g{empty} by \pp|+|, we could make a test to see
+whether we have indeed reached the end of the file:
+\begin{program}
+     (buff=stop; error+no end)
+\end{program}
+\noindent
+We now remember our convention that \pp|buff| contains the first symbol not
+yet recognized, and realize that \pp|buff| must be initialized with the
+first non-space symbol of the input:
+\begin{program}
+'action'initialize: get next symbol.
+\smallskip
+'action'read expressions and print results: initialize,input.
+\end{program}
+
+The reader will have noticed that until know we have only defined rules
+that will do something if they are executed (called) and which will then call
+other rules. He may have wondered whether \A{} contains any directly
+executable statements at all. The answer is yes, but only one (per program).
+In our example it has the following form:
+\begin{program}
+'root'read expressions and print results.
+\end{program}
+\noindent
+We now indicate the end of our program:
+\begin{program}
+'end'
+\end{program}
+
+When the program is run the rule \pp|read expressions and print results| is
+executed. This rule calls \pp|initialize|, which through a call of \pp|get
+next symbol| puts the first non-space symbol in \pp|buff|; when
+\pp|initialize| is done, \pp|input| is called which calls \pp|expression|
+which in turn executes \pp|term|, etc. After a while \pp|input|, which is
+called repeatedly, will find \pp|is symbol+/,/| to fail, it is done and so
+is \pp|read expressions and print result|. The call specified in the
+\pp|'root'| instruction is finished: this constitutes the normal program
+termination.
+
+We could give the \g{rule-declarations} and \g{data-declarations} in any other
+order and the effect would still be the same. The \pp|'end'|,
+however, must be the last item of the program.
+
+This brings us to the end of our sample program.
+
+\subsection{Some details}\label{1.7}
+Although the rule \pp|put string| used above is known to the compiler, it is
+useful to see, as an additional example, how it looks when expressed in \A.
+We first propose the preliminary version \pp|put string 1|.
+\begin{program}
+'action'put string 1+""file+table[]+>string-count:
+   0->count,next1+file+table+string+count.
+\smallskip
+'action'next1+""out+tbl[]+>str+>cnt-symb:
+   string elem+tbl+str+cnt+symb,put char+out+symb,
+     inc+cnt,next1+out+tbl+str+cnt;
+   +.
+\end{program}
+\noindent
+The double set of quotation marks (\pp|""|) indicates that the corresponding
+actual affix will be a file, the square brackets indicate that the
+corresponding actual affix will be a table. We see that the only thing
+\pp|put string 1| does is to create an environment for \pp|next1| to run in.
+\pp|next1| starts by calling \pp|string elem|. This (standard) rule
+considers the string in \pp|tbl| designated by \pp|str| and determines
+whether this string has a \pp|cnt|-th symbol. If so, it puts it in
+\pp|symb|; if not, it fails. If the call fails, we know we reached the end
+of the string and we are done. Otherwise the symbol is transferred to the
+file indicated by \pp|out|, the counter \pp|cnt| is increased by
+\pp|1| (through the external rule \pp|incr|) and \pp|next1| is called again
+with the same affixes. Like at the first call of \pp|next1|, the value of
+\pp|cnt| is the position in the string of the symbol to be processed.
+
+The recursive call of \pp|next1| is a case of trivial right-recursion;
+moreover all actual affixes are the same as the formal affixes (which are
+left of the colon). In this case the recursive call is equivalent to a
+straightforward jump: it does not even necessitate parameter transfers. For
+this case there is a shorthand notation: a name of a rule proceeded by a
+colon denotes the re-execution of that rule with the affixes it had upon its
+initial call (of course this is only allowed inside the same rule and only
+if the recursion is trivial right-recursion). Now we can write a simplified
+version:
+\begin{program}
+'action'put string 2+""file+table[]+>string-count:
+   0->count, next2+file+table+string+count.
+\smallskip
+'action'next2+""out+tbl[]+>str+>cnt-symb:
+   string elem+tbl+str+cnt+symb,
+     put char+out+symb, incr+cnt, :next2;
+   +.
+\end{program}
+\noindent
+The gain is twofold. We no longer have to write that tail of affixes
+which only convey the information ``same as before'', and, more
+important, the rule \pp|next2| is now called only in one place (in \pp|put
+string 2|). This means that we could as well explicitly have written it there.
+We now replace the call of \pp|next2| in \pp|put string 2| by the definition
+of \pp|next2|: we parenthesize the rule, substitute for each formal affix
+its corresponding actual affix and the remove the formal affixes:
+%
+%The final version is then:
+\begin{program}
+'action'put string+""file+table[]+>string-count:
+   0->count,
+    (next-symb:
+      string elem+table+string+count+symb,
+        put char+file+symb, incr+count, :next;
+      +).
+\end{program}
+\noindent
+Note that this mechanism of replacing a call of a rule by its (slightly
+modified) definition is not applied here for the first time. We have been
+using it tacitly from the very first sample rule in \ref{1.2}. There the rule
+\pp|expression| is a contraction of:
+\begin{program}
+'action'expression1+res>:
+   term+res,expression tail 1+res.
+\end{program}
+\noindent
+and
+\begin{program}
+'action'expression tail 1+>res>-r:
+   is symbol+/+/, expression1+r, plus+res+r+res; +.
+\end{program}
+\noindent
+which, according to the above recipe, would yield:
+\begin{program}
+'action'expression 2+res>:
+   term+res,
+    (expression tail 2-r:
+      is symbol+/+/, expression 2+r, plus+res+r+res;
+      +).
+\end{program}
+
+In a sense this is a more appropriate form than the one given in 
+\ref{1.2}:%\footnote{The manuscript says 2.2 here and at the next reference}:
+now the \pp|r| occurs where it belongs, that is, in the position of a local
+affix of the parenthesized part only. To obtain the version in \ref{1.2}
+exactly one must start from:
+\begin{program}
+'action'expression 3+res>-r:
+   term+res,expression tail 3+res+r.
+\end{program}
+\noindent
+and
+\begin{program}
+'action'expression tail 3+>res>+r>:
+   is+symbol+/+/,expression 3+r,plus+res+r+res;+.
+\end{program}
+
+%%%%%%%%%%%%
+
+%\subsection{References}
+%\begin{thebibliography}{9}
+%\bibitem{1}
+%C.~H.~A.~Koster, \emph{A Compiler Compiler}, MR 127/71, Mathematical Centre,
+%Amsterdam (1971)
+%
+%\bibitem{2}
+%C.~H.~A.~Koster, \emph{Affix-grammars} in: ALGOL 68 implementation, ed.
+%J.~E.~L.~Peck, North-Holland Publ. Co., Amsterdam (1971)
+%\end{thebibliography}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction to the manual}\label{sec:2}
+
+\subsection{Interface with the outside world}\label{2.1}
+
+The solution of a problem by means of a computer implies that a sequence of
+actions be specified that, when executed, lead to the desired result. In
+\A{} the actions in this sequence may be obtained from four sources:
+\begin{itemize}
+\item[a.] the framework of the language (supplied by the compiler),
+\item[b.] the program (supplied by the programmer),
+\item[c.] the standard externals (standard definitions of actions, to be
+supplied by the complied if the need arises),
+\item[d.] the programmer-defined externals (definitions of action supplied
+by the programmer but not belonging to the program, for example, precompiled
+code or machine code).
+\end{itemize}
+The framework of \A{} is treated in chapter \ref{sec:3}, the program is treated in
+section \ref{3.1} and the externals are treated in chapter \ref{sec:5}.
+
+The data needed in solving the problem at hand come from four sources:
+\begin{itemize}
+\item[a.] the data description in the program,
+\item[b.] the input file(s),
+\item[c.] the predefined constants in the compiler (e.g., the maximum value
+an integer can have),
+\item[d.] the programmer-defined external values (in the rare case that
+these values cannot be normally defined in the program, as for example
+computer-generated binary tables of considerable size).
+\end{itemize}
+
+The data descriptions and the input files are explained in chapter
+\ref{sec:4}, and the
+externals again in chapter \ref{sec:5}.
+
+The results can be passed back to the outside world along two paths:
+\begin{itemize}
+\item[a.] as output files,
+\item[b.] as a single integer (the termination state of the program) which is
+made available to the operating system upon termination of the program, indicating
+in some way the outcome of the program.
+\end{itemize}
+
+The output files are described in section \ref{4.2}. The termination state is
+described in \ref{3.1} and in \ref{3.6}. In some operating systems it can be used to
+control the further course of events, in other operating systems it may only
+indicate whether the program proceeded satisfactorily or broke off because
+of some irrecoverable error.
+
+\subsection{The syntactical description}\label{2.2}
+
+The syntax of \A{} is given in the form of a context-free grammar. The
+notation in this grammar follows a well-known scheme: the part on the right
+hand side of a syntax rule defines the possible productions of the notion on
+the left hand side. The right hand side consists of one or more
+alternatives, separated by semicolons, of which only one alternative applies
+in a given case. Sometimes one or more notions in an alternative are
+enclosed in square brackets: this indicates that the given notions may or
+may not be present, i.e., they are optional.
+
+The terminal symbols of the grammar, together with the representations, are
+listed in \ref{7.2}; all except four end in \g{-symbol}. A notion that ends
+in \g{-tag} produces \g{tag}. Such a notion then contains a hint as to
+exactly which \g{tag}s are allowed by the context conditions. A full
+VW-grammar incorporating all context conditions was prepared by R.~
+Glandorf, D;~Grune and J.~Verhangen \cite{GGV78}.
+
+Constituents of the grammar are printed in \g{bold}; programs and program
+fragments are printed in \pp|script|.
+
+\section{Program logic}\label{sec:3}
+
+\subsection{General}\label{3.1}
+\subsubsection{The program}\label{3.1.1}
+
+Syntax:
+\begin{grammar}
+\item program: [information sequence],
+
+root, [information sequence], end symbol.
+\item information sequence: information, [information sequence].
+\item information: declaration; pragmat.
+\item root: root symbol, affix form, point symbol.
+\item declaration: rule declaration; data declaration; external declaration.
+\end{grammar}
+The syntax of \g{program} can be verbalized as: ``A \g{program} is a
+sequence of \g{declaration}s and \g{pragmat}s, followed by an \g{end
+symbol}; in this sequence exactly one \g{root} must occur.'' The order in
+which the \g{declaration}s and the \g{root} appear is immaterial. The
+position of some \g{pragmat}s is significant (\ref{6.1}).
+
+\noindent
+Example of a program:
+\begin{program}
+'charfile'output="PRINTER">.
+'root'put char+output+/3/.
+'end'
+\end{program}
+\noindent
+in which the first line is a \g{data-declaration}, the second is the \g{root}
+and the third contains the \g{end symbol}. For other examples see chapter
+\ref{sec:8}.
+
+The execution of a \g{program} starts with the processing of all of its
+\g{data-declaration}s, in such an order that no data item is used before
+its value has been calculated. If no such order exists an error-message is
+given.
+
+Example: the \g{data-declaration}s
+\begin{program}
+'constant'p=q.
+'constant'q=3.
+\end{program}
+\noindent
+are processed in reverse order, whereas the \g{data-declaration}s
+\begin{program}
+'constant'p=q.
+'constant'q=2-p.
+\end{program}
+\noindent
+will result in an error-message.
+
+A large part of the processing of the \g{data-declaration}s will normally be
+performed during compilation.
+
+After all constants, variables, stacks, tables and files have thus been
+established, the \g{affix-form} in the \g{root} is executed (\ref{3.5}) as the
+sole
+directly executable instruction in the program. If this \g{affix-form}
+reaches its normal completion, the program finishes with a termination state
+of \pp|0|. If the execution of the \g{affix-form} stops prematurely, the
+program finishes, but now with a termination state possibly different from
+\pp|0|. If the stop is due to an \g{exit} instruction (\ref{3.6}), the termination state
+is specified by this instruction. If the stop is due a run-time error the
+termination state is \pp|-1|.
+
+\subsubsection{The use of \g{tag}s}\label{3.1.2}
+A \g{tag} is a sequence of letter and digits, the first of which is a
+letter. All \g{tag}s defined by \g{rule-declaration}s, \g{pointer-{}
+initialization}s, \g{constant-description}s, \g{variable-description}s,
+\g{table-head}s (except those in \g{field-list-pack}s), \g{stack-head}s
+(except those in \g{field-list-pack}s), \g{file-description}s, 
+\g{external-rule-description}s
+and \g{external-constant-description}s must differ from each
+other.
+
+\subsection{Rules} \label{3.2}
+The declarations and applications of \g{rule}s constitute the mechanism for
+controlling the logical flow of the program. The \g{rule-declaration}
+defines \emph{what} is to be done \emph{if} the rule is called, whereas
+the application (in an \g{affix-form}) indicates \emph{that} the rule is
+to be called.
+
+A rule, when called, will either succeed or fail, according to criteria
+to be given in this manual summarized in \ref{3.9.2}.
+
+\subsubsection{Rule declarations}\label{3.2.1}
+
+Each rule in the program must be declared exactly once, either in a
+\g{rule-declaration} or in an \g{external-rule-description} (for the latter see
+\ref{sec:5}).
+
+\noindent
+Syntax:
+\begin{grammar}
+\item rule declaration:
+
+     typer, rule tag, [formal affix sequence],
+     actual rule, point symbol.
+\item typer:
+
+      action symbol;function symbol;predicate symbol;question symbol.
+\item rule tag:
+
+      tag.
+\end{grammar}
+Example of a \g{rule declaration}:
+\begin{program}
+'action'put string+""file+table[]+>string-count:
+   0->count,
+   (next-symb:
+      string elem+table+string+count+symb,
+      put char+file+symb, incr+count, :next;
+      +).
+\end{program}
+\noindent
+Here the \g{typer} is \pp|'action'|, the \g{rule-tag} is \pp|put string|,
+the \g{formal-affix-sequence} is \pp|+""file+table[]+>string| and the
+\g{actual-rule} is the rest, excluding the point but including the
+\pp|-count:|.
+
+A \g{rule-declaration} defines the \g{actual-rule} to be of the type
+designated by \g{typer}, to be identified by the \g{rule-tag} and to have
+the formal affixes given by its \g{formal-affix-sequence}.
+
+There are four types of rules: predicates, questions, actions and functions,
+each designated by the corresponding \g{typer} symbol. These four types arise
+from the fact that rules are differentiated on the basis of two mutually
+independent criteria:
+
+\begin{itemize}
+\item[a.] a rule will \emph{either} always succeed \emph{or} be capable of
+failing depending on the logical construction of the \g{actual-rule},
+\item[b.] a rule, when succeeding, may or may not have side effect, again
+depending on the logical construction of the \g{actual-rule}.
+\end{itemize}
+These criteria are elaborated upon in \ref{3.9}.
+
+\begin{itemize}
+\item[$\cdot$]
+A rule is \emph{predicate} if it can fail and has side effect (the
+restriction on the structure of rules prevent these side effects from
+becoming effective if the rule fails).
+\item[$\cdot$]
+A rule is a \emph{question} if it can fail and has no side effect.
+\item[$\cdot$]
+A rule is an \emph{action} if it will always succeed and has side effects.
+\item[$\cdot$]
+A rule is a \emph{function} if it will always succeed and has no side
+effects.
+\end{itemize}
+The type of a rule is checked against the logical construction of the
+\g{actual-rule}; if an action or function is found to be able to fail, an error message
+is given; in all other cases, if a discrepancy is found a warning is given.
+
+Examples.
+
+In each of the following examples the beginning of a \g{rule-declaration} is given, together
+with a summary of what the rule does. From this
+explanation it follows why the rule was declared with the given type.
+
+\smallskip\noindent
+\begin{tabular}{lp{0.5\textwidth}}
+\pp|'predicate'digit+d>:|
+&
+If the next symbol in the input file is a digit, it is delivered in \pp|d|,
+the input file is advanced by one symbol (side effect) and \pp|digit|
+succeeds; otherwise it fails.
+\\[3pt]
+\pp|'question'is digit+>d:|
+&
+If \pp|d| is a digit the rule succeeds, otherwise it fails.
+\\[3pt]
+\pp|'action'skip up to point:|
+&
+the input file is advanced until the next symbol is a point.
+\\[3pt]
+\pp|'function'plus+>x+>y+sum>:|
+&
+the sum of \pp|x| and \pp|y| is delivered in \pp|sum|.
+\end{tabular}
+
+
+\subsubsection{Actual rules}\label{3.2.2}
+
+An \g{actual-rule} mentions the variables local to it and specifies one or more
+alternatives.
+
+\noindent
+Syntax:
+\begin{grammar}
+\item actual rule: [local affix sequence], colon symbol, rule body.
+\item rule body: alternative series; classification.
+\item alternative series:
+
+   alternative, [semicolon symbol, alternative series].
+\item alternative:
+
+   last member; member, comma symbol, alternative.
+\end{grammar}
+Example of an \g{actual rule}:
+\begin{program}
+  -d:
+    digit+d,times+res+10+res,
+       plus+res+d+res,integer1+res;+.
+\end{program}
+\noindent
+Here the \g{local-affix-sequence} is \pp|-d|, one \g{alternative} is
+\begin{program}
+    digit+d,times+res+10+res,
+       plus+res+d+res, integer1+res
+\end{program}
+\noindent
+and \pp|+| is
+another; \pp|plus+res+d+res| is a \g{member} and \pp|+| is a
+\g{last-member}.
+
+When an \g{actual-rule} is executed (through a call (\ref{3.5}) of the \g{rule}
+of which it is the \g{actual rule}), the following takes place.
+
+First, space is made available on the run-time stack for the 
+\g{local-affix}es, one location of each \g{local-affix} (see \ref{3.3.3}). Subsequently its
+\g{rule-body} is executed.
+
+The execution of a \g{rule-body} implies the execution of its
+\g{alternative-series} or of its \g{classification}.
+
+The execution of an \g{alternative-series} starts with a search to determine
+which of its \g{alternative}s applies in the present case. The applicable
+\g{alternative} is the (textually) first \g{alternative} whose ``key''
+succeeds. The ``key'' of  an \g{alternative} is its first
+\g{member}, or it it has no \g{member}, its \g{terminator}.
+Thus the key of the first
+\g{alternative} is executed: if it succeeds, the first \g{alternative}
+applies. Otherwise the key of the second \g{alternative} is
+executed: if it succeeds, the second \g{alternative} applies, etc. If none
+of the keys succeeds, the \g{alternative-series} fails.
+
+%If the first \g{member} is a \g{terminator} (and then it is the only
+%member), the \g{alternative} at hand applies; if the \g{terminator}
+%succeeds, the \g{alternative series} succeeds; if it fails the
+%\g{alternative series} fails and if it does neither, the question whether the
+%\g{alternative series} succeeds of fails will not arise.
+
+The \g{alternative} found applicable is then elaborated further. Its key 
+has already been executed. Now the rest of its \g{member}s and
+\g{last-member} are
+executed in textual order until one of two situations is reached:
+
+\emph{either} all its \g{members}s and its \g{last-member} have succeeded, in which which case the
+\g{alternative-series} succeeds as well,
+
+\emph{or} a member or \g{last-member} fails: any (textually) following \g{member}s 
+or \g{last-member} in this
+\g{alternative} will not be executed and the \g{alternative-series} fails.
+
+If the \g{alternative-series} succeeded, the \g{actual-rule} succeeds; if
+it failed, the \g{actual-rule} fails.
+
+For the execution of a \g{classification} see \ref{3.8}.
+
+After the result of the \g{actual-rule} thus has been assessed, the
+space for the \g{local-affix}es is removed form the run-time stack.
+
+\smallskip\noindent
+Restrictions.
+
+An \g{alternative-series} must satisfy the following restrictions:
+\begin{itemize}
+\item[a.]
+If the key of an \g{alternative} cannot fail (\ref{3.9.2}), the
+\g{alternative} must be the last one. This restriction ensures that all
+\g{alternative}s can, in principle, be reached. Violation of the restriction
+causes an error message.
+\item[b.]
+If an \g{alternative} contains a \g{member} that has side-effects (see
+\ref{3.9.1}) this \g{member} may not, in the same \g{alternative}, be followed by
+a \g{member} that can fail (see \ref{3.9.2}).
+
+This restriction ensures that the side-effects of a \g{member} cannot
+materialize if the \g{member} fails; this in turn ensures that the tests
+necessary to determine the applicable \g{alternative} in an \g{alternative-%
+series} do not interfere with each other.
+
+Violation of this restriction
+causes a warning. The user is urged to either reconsider the formulation of
+his problem or convince himself that the side effects caused no ill
+consequences.
+\end{itemize}
+
+\subsubsection{Members}\label{3.2.3}
+
+Members are the units of action in \A. This action is a primitive operation,
+a call of a rule, or consists in its turn of other actions.
+
+\noindent
+Syntax:
+\begin{grammar}
+\item member: affix form; operation; compound member.
+\item last member: member; terminator.
+\end{grammar}
+Example of a \g{member};
+\begin{program}
+(declaration sequence option-type-idf:
+   declaration+type+idf,enter+type+idf,
+     :declaration sequence option;+)
+\end{program}
+\noindent
+This \g{member} is a \g{compound-member}, \pp|declaration+type+idf| is an
+\g{affix-form}, \pp|:declaration sequence option| is a \g{last-member} as is
+\pp|+|.
+
+The notion \g{last-member} has been introduced in the syntax to ensure that a
+\g{terminator} will occur last in an \g{alternative}.
+
+\subsection{Affixes}\label{3.3}
+
+Formal and actual affixes constitute the communication between the caller of
+a rule and the rule called. Local affixes are a means for creating
+variables that are local to a given \g{rule-body}.
+
+\subsubsection{Formal affixes}\label{3.3.1}
+Syntax:
+\begin{grammar}
+\item formal affix sequence:
+    formal affix, [formal affix sequence].
+\item formal affix: formal affix symbol, formal.
+\item formal: formal variable; formal stack; formal table; formal file.
+
+\medskip
+
+\item formal variable: [right symbol], variable tag, [right symbol].
+\item formal table: [formal field list pack], table tag, sub bus.
+\item formal stack: sub bus, [formal field list pack], stack tag, sub bus.
+\item sub bus: sub symbol, bus symbol.
+\item formal field list pack: open symbol, [field list], close symbol.
+\item formal file: quote image, file tag.
+\end{grammar}
+Example of a \g{formal-affix-sequence}:
+\begin{program}
+ +""file+table[]+>string
+\end{program}
+
+
+The \g{formal-affix-sequence} defines the number and types of the
+\g{formal-affix}es of the rule it belongs to.
+
+A \g{formal-variable} describes a variable. If the
+\g{formal-variable} starts with a \g{right-symbol} the variable has obtained
+a value from the calling rule; it is \emph{initialized}. Otherwise it has
+the attribute \emph{uninitialized} at the beginning of each alternative in
+the \g{actual-rule}. 
+
+If the \g{formal-variable} ends in a \g{right-symbol} its value will be
+passed back to calling rule: it must have the attribute \emph{initialized} at the end of
+each \g{alternative} of the \g{actual-rule} which does not end in a
+\g{jump}, \g{exit} or \g{failure-symbol}.
+
+A \g{formal-stack} describes a stack. If the \g{formal-field-list pack} is absent, 
+the \g{formal-stack} is supposed to have one
+\g{selector}: the tag of this \g{selector} is the same as the tag of the
+\g{formal-stack} itself. For example, the \g{formal-affix} \pp|[]list[]| has
+the same meaning as \pp|[](list)list[]|.
+
+A \g{formal-table} describes a table. If the \g{formal-field-list pack} is 
+absent, the \g{formal-table} is supposed to have one
+\g{selector}: the tag of this \g{selector} is the same as the tag of the
+\g{formal table} itself.
+
+A \g{formal-file} describes a file.
+
+All \g{variable-}, \g{stack-}, \g{table-} and \g{file-tag}s 
+in a \g{formal affix sequence} must be different. They must
+also be different from the \g{rule-tag} that precedes the
+\g{formal-affix-sequence}.
+
+\subsubsection{Actual affixes}\label{3.3.2}
+
+\g{Actual-affix}es occur in \g{affix-form}s which cause the call of a
+\g{rule}. Each \g{actual-affix} corresponds to a \g{formal-affix} of that
+rule.
+
+Syntax:
+\begin{grammar}
+\item actual affix sequence: actual affix, [actual affix sequence].
+\item actual affix: actual affix symbol, actual.
+\item actual: source; list tag; file tag.
+\end{grammar}
+Example of an \g{actual affix sequence}:
+\begin{program}
++511+/?/+alpha+beta*gamma[p]+<>list+?
+\end{program}
+\noindent
+In this example \pp|511| is an \g{integer-denotation}, \pp|/?/| is a
+\g{character-denotation}, \pp|alpha| is a \g{file-tag}, \pp|beta*gamma[p]|
+may be a \g{stack-element}, \pp|<>list| is a \g{calibre} and \pp|?| is a
+\g{dummy-symbol}.
+
+\g{Actual-affix}es derive their exact meanings from the corresponding
+\g{formal-affix}es. The interrelations are discussed in \ref{3.5}
+(\g{affix-form}s and \ref{3.4} (\g{transport}s).
+
+\subsubsection{Local affixes}\label{3.3.3}
+Syntax:
+\begin{grammar}
+\item local affix sequence: local affix, [local affix sequence].
+\item local affix: local affix symbol, local variable.
+\item local variable: variable tag.
+\end{grammar}
+Example of a \g{local-affix-sequence}:
+\begin{program}
+  -count
+\end{program}
+%\noindent
+A \g{local-variable} describes a variable. Space for
+this \g{variable} is reserved on the run-time stack upon entry of the
+\g{actual-rule} or \g{compound-member} of which it is part. On exit from
+that \g{actual-rule} or \g{compound-member} this space is removed.
+
+A \g{local-variable} has the attribute \emph{uninitialized} at the beginning
+of each \g{alternative} of the \g{actual-rule} or \g{compound-member}. Its
+attribute must be \emph{initialized} at the end of at least one
+\g{alternative}.
+
+All \g{variable-tag}s in a \g{local-affix-sequence} $L$ must be different. Furthermore,
+all \g{variable-tag}s in $L$ must be different from:
+\begin{itemize}
+\item[a.] all the \g{rule-tag}s, if any, and all \g{variable-tag}s in the
+\g{local-affix-sequence}s, if any, of all the \g{compound-member}s, if any, in which $L$ is
+contained,
+\item[b.] the \g{rule-tag} and all \g{variable-}, \g{stack-}, \g{table-} and
+\g{file-tag}s in the \g{formal- affix-sequence}, if any, of the \g{rule-declaration} in which $L$ occurs.
+\end{itemize}
+
+\subsection{Operations}\label{3.4}
+Syntax:
+\begin{grammar}
+\item operation: transport; identity; extension.
+\smallskip
+\item transport: source, variable directive sequence.
+\smallskip
+\item source: constant; variable.
+\item constant: plain value; table element.
+\item plain value:
+
+  integral denotation; character denotation; constant tag; limit.
+\item integral denotation: [integral denotation], digit.
+\item character denotation: absolute symbol, character, absolute symbol.
+\item variable: variable tag; stack element; dummy symbol.
+\item table element:
+
+ [selector, of symbol], table tag, sub symbol, source, bus symbol.
+\item stack element:
+
+ [selector, of symbol], stack tag, sub symbol, source, bus symbol.
+\smallskip
+\item variable directive sequence:
+  variable directive; [variable directive sequence].
+\item variable directive: to token, variable.
+\item to token: minus symbol, right symbol.
+\smallskip
+\item identity: source, equals symbol, source.
+\smallskip
+\item extension: of symbol, field transport list, of symbol, tag.
+\item field transport list:
+
+ field transport, [comma symbol, field transport list].
+\item field transport: source, selector directive sequence.
+\item selector directive sequence:
+
+ selector directive, [selector directive sequence].
+\item selector directive: to token, selector.
+\end{grammar}
+Example of a \g{transport}:
+\begin{program}
+pnt->sel*list[q]->offset->ors*list[offset]
+\end{program}
+\noindent
+Example of an \g{identity}:
+\begin{program}
+ext*list[pnt]=nil
+\end{program}
+\noindent
+Example of an \g{extension}:
+\begin{program}
+* pnt->sel,nil->ect->ors *list
+\end{program}
+
+\subsubsection{Transports}\label{3.4.1}
+A \g{transport} can be considered as a \g{function}, i.e., it has no
+(inherent) side effects and will always succeed.
+Its execution starts with the evaluation of its \g{source}.
+A \g{source} is evaluated as follows.
+\begin{trivlist}
+\item
+If the \g{source} is an \g{integral-denotation}, its value is the numeric
+value of the sequence of \g{digit}s, considered as a number in decimal
+notation.
+\item
+If the \g{source} is a \g{character-denotation}, its value is the numerical
+value of the \g{character} in the code used.
+\item
+If the \g{source} is a \g{constant-tag} or a \g{variable-tag}, its value is
+the value of the constant or variable identified. If a
+formal or local variable is identified, it must have the attribute \emph{initialized}.
+\item
+If the \g{source} is a \g{stack-element}, or a \g{table-element}, its value is determined as follows (see
+also \ref{4.1.5} and \ref{4.1.6}).
+
+The \g{source} between the \g{sub-symbol} and the
+\g{bus-symbol} is evaluated and its value is called $P$. We call the
+\g{stack-tag} or \g{table-tag} in front of the \g{sub-symbol} $T$, and the
+(global or formal) list identified by it $L$.
+We now consider the block in $L$ that has an address
+equal to $P$ (if no such block exists, there is an error); it is called $B$.
+Subsequently a selector $S$ is determined: if the \g{of-symbol} is present,
+$S$ is the
+\g{selector} in front of it; if the \g{of symbol} is absent, $S$ is $T$.
+(As en example, \pp|list[p]| is equivalent to \pp|list*list[p]|.) $S$ must
+be a selector of $L$.
+Now the value of the
+\g{stack-element} or \g{table-element} is the value in the block $B$ indicated by the selector
+$S$..
+\item
+If the \g{source} is a \g{limit}, its value is described in \ref{4.1.7}.
+\item if the \g{source} is a \g{dummy-symbol}, there is an error.
+%the tag of the \g{limit} must be the
+%\g{tag} of a (global or formal) stack or table. The value of the \g{min
+%limit} (\g{max limit}, \g{calibre}) is the value of the \pp|min limit|
+%(\pp|max limit|, \pp|calibre|) of the corresponding actual stack or table.
+%For these values see \ref{4.1.7}.
+\end{trivlist}
+
+The value of the \g{source} is called $V$. Now the 
+\g{variable-directive}s of the \g{transport} are executed in textual order. 
+A \g{variable-directive} is executed as follows.
+
+% is determined and $V$ is put in the
+%location indicated. Next its second \g{destination}, if present, is
+%determined and $V$ is put in the location indicated, and so forth.
+%
+%\medskip\noindent
+%A \g{destination} is determined as follows.
+\begin{trivlist}
+\item
+If its \g{variable} is a \g{variable-tag}, $V$ 
+%the \g{destination} is a \g{tag}, this \g{tag} must identify a global,
+%formal or local variable. In this case the value
+is put in the location of the variable identified. If a formal or local
+variable is identified, this variable has the attribute \emph{initialized}
+int he rest of the \g{alternative} in this the \g{transport} appears.
+%the \g{destination} is the \g{tag} of a formal or local
+%variable, this variable has the attribute \emph{initialized} in the rest of
+%the \g{member}s in the \g{alternative} in which the \g{transport} appears.
+%\item
+%If the \g{destination} is an \g{element}, the \g{source} between the 
+\item
+If its \g{variable} is a \g{stack-element}, the \g{source} between the
+\g{sub-symbol} and \g{bus-symbol} is evaluated and its value is called $P$.
+We call the stack identified by the \g{stack-tag} $L$.
+%The
+%\g{tag} in front of the \g{sub symbol} must be the tag of a global or formal
+%stack. 
+We now consider the block in $L$ that has an address equal to
+$P$ (if no such block exists, there is an error); it is called $B$.
+Subsequently a selector $S$ is determined: if the \g{of-symbol} is present, the
+$S$ is the \g{selector} in front of it; if the \g{of-symbol} is absent, $S$
+is the \g{stack-tag}. $S$ must be a selector of $L$.
+%. Otherwise it is the \g{tag} in front
+%of the \g{sub symbol}. (As an example, \pp|list[p]| is equivalent to
+%\pp|list*list[p]|.) The value is now 
+Now $v$ is put in the location in block $B$ identified by the selector $S$.
+%that is identified by the selector.
+\item
+if the \g{variable} is a \g{dummy-symbol}, the \g{variable-directive} is a
+dummy action.
+\end{trivlist}
+Examples:
+
+\smallskip\noindent
+\begin{tabular}{lp{0.63\textwidth}}
+\pp|0->cnt->res|
+& now \pp|cnt| and \pp|res| are both zero
+\\[2pt]
+\pp|p->list[q]->q|
+& the value of \pp|p| is put in the location identified by 
+    \pp|list*list[q]| and in (the location of) \pp|q|
+\\[2pt]
+\pp|p->q->list[q]|
+& the value of \pp|p| is put in (the location of) \pp|q| and then in the 
+ location identified by \pp|list*list[q]| which is now the same
+ as \pp|list*list[p]|
+\\[2pt]
+\pp|list[p]->p->list[p]|
+&  the value of \pp|list*list[p]| is put in \pp|p| and then put 
+  in \pp|list*list[p]| using the new value of \pp|p|, with the result
+  that now \pp|list*list[p]| contains a  pointer to itself
+\end{tabular}
+
+\subsubsection{Identities}\label{3.4.2}
+
+An \g{identity} can be considered a question, i.e., it has no side
+effects and may either succeed or fail.
+
+Both its \g{source}s are evaluated as
+described above. If the two values are numerically equal the \g{identity}
+succeeds, otherwise it fails.
+
+If the values represent numerical results the \g{identity} tests equality.
+If the values represent pointers to blocks in lists of tables, the
+\g{identity} tests whether the two blocks pointed at are the same, not
+whether they are equal (as this might imply complicated comparison criteria).
+
+\subsubsection{Extensions}\label{3.4.3}
+
+An \g{extension} can be considered as an action, i.e., it has side
+effects and will always succeed. 
+
+Call the stack indicated by the \g{stack-tag} $S$. The \g{selector}s that
+appear in the \g{field-transport-list} must be selectors of $S$.
+
+Firs the \g{source}s in the \g{field transport}s are evaluated as described
+in \ref{3.4.1} and their values remembered.
+%The \g{tag} after the second \g{of symbol}
+%must be that of a (global or formal) stack, and the \g{tag}s that appear as
+%\g{selector destination} in the \g{field transport list} must be selectors
+%of that stack.
+Subsequently the stack is extended to the right with one block $B$
+ of empty locations
+(whence the name \emph{extension}); the number of locations in this block is
+equal to the calibre of $S$. Net the
+\g{field transport}s are executed; a \g{field-transport} is executed by
+putting the value remembered for its \g{source} in the location(s) in $B$
+identified by its \g{selector}s.
+%evaluated as described in \ref{3.4.1}. Its value is put in the location in
+%the block just added that is identified by the first selector in the
+%\g{selector destination sequence}, then that value is put in the location
+%identified by the second selector (if present), and so on. Next, the
+%second \g{source} is evaluated (if present) and its value put in the
+%location(s) indicated by its \g{selector destination sequence}, and so on.
+
+No more than one value may be put in a given location in $B$; at the end of the
+\g{extension} all locations in $B$ must have given a value;
+if the stack is formal, the calibre of the actual stack must be equal to
+that of the formal stack.
+
+\smallskip\noindent
+Example: given a stack \pp|st| declared as \pp|[](sel,ect,ors)st| then the
+\g{extension}
+\begin{program}
+   * 3-><ext, 5->sel->ors *st
+\end{program}
+\noindent
+would add the block \pp|(5,3,5)| to \pp|st| and \pp|>>st| would be $3$
+higher than it was before.
+
+\subsection{Affix form}\label{3.5}
+Syntax (see also \ref{3.3.2}::
+\begin{grammar}
+\item affix form: rule tag, [actual affix sequence].
+\end{grammar}
+Example:
+\begin{program}
+string elem+tbl+str+cnt+symb
+\end{program}
+\noindent
+When an \g{affix-form} is executed, the rule identified by the \g{rule-tag}
+in the \g{affix-form} is called, as follows.
+
+\smallskip
+Relationships are set up between the \g{actual-affix}es as supplied by the
+\g{affix-form} and the \g{formal-affix}es as supplied by the \g{rule-declaration}.
+The correspondence between actual and formal affixes is decided
+from their order: the first actual corresponds to the first formal, the
+second actual to the second formal, and so on. The number of actuals must be
+equal to the number of formals.
+
+The \g{actual} corresponding to a \g{formal-table} must be a \g{list-tag}
+identifying a (global or formal) stack or a (global or formal) table. All actions
+performed on the \g{formal} are executed directly on the \g{actual}. If the
+\g{formal} has a \g{field-list} the calibres
+%\g{actual} calibre larger than $1$ the calibre
+of the \g{formal} and
+\g{actual} must be equal; the selectors may differ. If the \g{formal}
+has no \g{field-list}, no calibre
+%calibre of the \g{formal} is $1$, no 
+match is required. Regardless of
+mismatches, the value delivered by the \g{calibre} (\pp|<>list|) is the
+calibre of the global list to which the \g{formal table}
+corresponds, directly or indirectly.
+
+The \g{actual} corresponding to a \g{formal-stack} must be a \g{stack-tag}
+identifying
+a (global or formal) stack. All actions performed on the \g{formal} are
+executed directly on the \g{actual}. If the \g{formal} has a \g{field-list}
+the calibres of the
+\g{formal} and \g{actual} must be equal; the
+the selectors may differ. If the \g{formal} ha no \g{field-list}, no
+calibre match is required. Regardless of mismatches, the value delivered by the
+\g{calibre} is the calibre of the global stack to which the
+\g{formal-stack} corresponds, directly or indirectly.
+
+The \g{actual} corresponding to a \g{formal-file} must be a \g{file-tag}
+identifying
+a (global or formal) file. All actions performed on the \g{formal} are
+executed directly on the \g{actual}.
+
+\smallskip
+
+First the copying part of the affix mechanism is put into operation: for
+each \g{formal} which is a \g{formal-variable} starting with a 
+\g{right-symbol} a \g{transport} is executed with the \g{actual} as a \g{source} and
+the \g{variable-tag} of the \g{formal} as it \g{variable}.
+
+Subsequently the \g{actual-rule} in the rule identified above is executed
+(see \ref{3.2.2}). If this \g{actual-rule} succeeds, the \g{affix-form}
+succeeds; if it fails, the \g{affix-form} fails.
+
+If the \g{affix-form} succeeds the restoring part of the affix mechanism
+will be executed: for each \g{formal} that is a \g{formal-variable} ending
+in a \g{right-symbol}, a \g{transport} is executed with the \g{variable-tag}
+of the \g{formal} as its
+\g{source} and the \g{actual} as its \g{variable}, in the order in which
+the affixes appear.
+
+\smallskip\noindent
+Example: Suppose the following \g{rule}s are defined:
+\begin{program}
+'question'if a: $ some question $.
+'question'if b: $ another question $.
+'function'give value1+n>: 1->n.
+'function'give value2+n>: 2->n.
+'action'use value+>n: print+n.
+'action'print+>n:
+    $ some actual rule that prints the value of n $.
+\end{program}
+\noindent
+In the \g{actual-rule}
+\begin{program}
+-loc: if a, give value1+loc, use value+loc, print+loc;
+      if b, give value2+loc, use value+loc.
+\end{program}
+\noindent
+\pp|loc| is \emph{uninitialized} at the colon and likewise at the first
+comma, \emph{initialized} at the second comma because of the restoring done
+by the call of \pp|give value1|, and keeps the attribute \emph{initialized} until the
+end of the \g{alternative}. Its value can be copied over to \pp|use value|
+and \pp|print|. At the beginning of the second alternative it is still has
+the attribute
+\emph{uninitialized} (\underline{still} \emph{uninitialized}, not
+\underline{again} \emph{uninitialized}, since, if the beginning of the
+second \g{alternative} is reached, the initialization in the previous
+\g{alternative} will not have taken place). It keeps the attribute \emph{uninitialized}
+until the call of \pp|give value2| after (and by) which it obtains the
+attribute
+\emph{initialized}. Its subsequent application in \pp|use value| is correct.
+
+The \g{actual-rule}
+\begin{program}
+-loc:if a, use value+loc, give valu1+loc, print+loc
+\end{program}
+\noindent
+is incorrect. \pp|loc| is still has the attribute \emph{uninitialized} at the first comma and
+is then used as a \g{source} in the copying done by the call of \pp|use value|.
+
+\subsection{Terminators}\label{3.6}
+Syntax:
+\begin{grammar}
+\item terminator: jump; exit; success symbol; failure symbol.
+\item jump: repeat symbol, rule tag.
+\item exit: exit symbol, expression.
+\end{grammar}
+Examples of \g{terminator}s:
+\begin{program}
+  :order
+  'exit'16
+  +
+  -
+\end{program}
+\subsubsection{Jumps}\label{3.6.1}
+The \g{rule-tag} after the \g{repeat-symbol} may be the \g{rule-tag} of the
+rule in which the \g{jump} occurs or the \g{rule-tag} of (one of) the
+\g{compound member}(s) in  which the \g{jump} occurs.
+
+A \g{jump} to the \g{rule-tag} of a rule is an abbreviated notation
+of a call to that rule, with actual affixes that correspond to the original
+actual affixes. The abbreviation is only allowed if, after the execution of
+the call, no more members in the rule can be executed. This condition
+ensures that there will be no need for the \emph{recursive call} mechanism to
+be invoked.
+
+\smallskip\noindent
+Example: the rule
+\begin{program}
+'action'bad1: a,(b; :bad1), c; +.
+\end{program}
+\noindent
+is incorrect: after returning from \pp|:bad1|, the \g{affix-form} \pp|c| will be executed. If
+the \pp|,c| is removed, the rule is correct. Likewise the rule
+\begin{program}
+'question'bad2:(a,b,:bad2); c.
+\end{program}
+\noindent
+is incorrect: after unsuccessful returning from \pp|:bad2|, the
+\g{affix-form} \pp|c| will be
+executed. If the parentheses are removed, the rule is correct.
+
+A \g{jump} to the \g{rule-tag} of a \g{compound member} $C$ causes this
+\g{compound member} to be re-executed. The precise meaning can be assessed
+by decomposing (see \ref{3.7}) the rule until $C$ turns into a
+rule. Then the above applies.
+
+\subsubsection{Exits}\label{3.6.2}
+The execution of an \g{exit} causes the entire program to be terminated. The
+termination state is equal to the value of the \g{expression} in the
+\g{exit}. An \g{exit} is a \g{function}.
+
+\subsubsection{Success and failure symbols}\label{3.6.3}
+
+The execution of a \g{success-symbol} always succeeds, the execution of a
+\g{failure-symbol} always fails. Neither has side-effects.
+
+
+\subsection{Compound members}\label{3.7}
+\g{Compound-member}s serve to turn a (composite) \g{rule-body}s into a
+single \g{member}. 
+
+\smallskip\noindent
+Syntax:
+\begin{grammar}
+\item compound member: open symbol, [local part, colon symbol],
+
+     rule body, close symbol.
+\item local part: rule tag, [local affix sequence]; local affix sequence.
+\end{grammar}
+Example:
+\begin{program}
+(order-n: less+y+x,x->n,y->x,n->y;
+           x=y,get next int+x,:order;+)
+\end{program}
+\noindent
+A \g{compound-member} is an abbreviated notation for the call of a rule.
+Loosely speaking, the rule that is called has the same meaning as the
+\g{rule-body} of the \g{compound-member} and has all its non-globals as
+formal affixes. The call then calls that rule with these non-globals as
+actual affixes. The following statement expresses this more precisely.
+
+\smallskip
+A \g{rule-declaration} for the rule that is called can be derived from the
+\g{compound-member} in the following way.
+\begin{itemize}
+\item[a.] the \g{open-symbol} and \g{close-symbol} are removed,
+\item[b.] a \g{point-symbol} is placed after the \g{rule-body},
+\item[c.] if the \g{local-part, colon-symbol} is absent, a \g{colon-symbol}
+is placed in front of the \g{rule-body},
+\item[d.] if the \g{rule-tag} is missing, a \g{rule-tag} is placed in front
+that produces a \g{tag} that is different from any other \g{tag} in the program,
+\item[e.] a \g{formal-affix-sequence}, if necessary, is constructed (see
+below) and inserted after the \g{rule-tag},
+\item[f.] the \emph{type} of the \g{rule-body} is determined (see \ref{3.9})
+ and the
+corresponding \g{typer} (see \ref{3.2.1}) is placed in front of the \g{rule-tag}.
+\end{itemize}
+The \g{formal-affix-sequence} mentioned in e above is constructed as
+follows:
+\begin{itemize}
+\item[a.] a list is made of all tags in the \g{rule-body} that do not refer
+to global items and do not occur in the \g{local-affix-sequence} of $C$, if
+present,
+\item[b.] if the list is empty, the \g{formal-affix-sequence} is empty,
+\item[c.] for each tag in the list, if the corresponding item
+\begin{itemize}
+\item[1.] is used as a \g{source} (either directly or through the affix
+mechanism) and is
+used as \g{variable} (either directly or through the affix mechanism), it is entered
+into the \g{formal-affix-sequence} preceded and followed by a \g{right-symbol},
+\item[2.] is used as a \g{source} (either directly or through the affix
+mechanism), it is
+entered into the \g{formal-affix-sequence} preceded by a \g{right-symbol},
+\item[3.] is used as a \g{variable} (either directly or through the affix
+mechanism),
+it is entered into the \g{formal-affix-sequence} followed by a \g{right-symbol},
+\item[4.] is used as a \g{stack-tag} (or \g{table-tag}), it is entered into
+the \g{formal-affix-sequence} as a
+\g{formal-stack} (or \g{formal-table}) with the same \g{field-list-pack}
+as that of the corresponding (formal or actual) stack (or table),
+\item[5.] is used as an \g{actual-affix} where a file is required, it is
+entered into the \g{formal-affix-sequence} as a \g{formal-file},
+\end{itemize}
+\item[d.] the items in the \g{formal-affix-sequence} are preceded by
+\g{formal-affix-symbol}s.
+\end{itemize}
+Example:
+For the \g{compound member}
+\begin{program}
+(a[p]=0, 0->a[q]; plus+m+p+q)
+\end{program}
+\noindent
+where \pp|m| is global, the \g{rule-declaration} runs:
+\begin{program}
+'action'zzgrzl+[](a)a[]+>p+>q>:
+    a[p]=0, 0->a[q]; plus+m+p+q.
+\end{program}
+\noindent
+and the call is:
+\begin{program}
+zzgrzl+a+p+q
+\end{program}
+
+\noindent
+This also implies that, if a \g{compound-member} fails, the changes it made
+to formal and local variables do not become effective. Compare
+\begin{program}
+   0->n,((1->n,-);
+         n=0,do something)
+\end{program}
+\noindent with
+\begin{program}
+   0->n,(spoil and fail+n;
+         n=0,do something)
+\end{program}
+\noindent where
+\begin{program}
+   'question'spoil and fail+n>:1->n, -.
+\end{program}
+\noindent
+Both cases behave in exactly the same way: the rule \pp|do something| will
+be called.
+
+\smallskip
+The \g{rule-tag}, if any, in a \g{compound-member} $C$ must be different
+from:
+\begin{itemize}
+\item[a.] the \g{rule-tag}s, if any, and all the \g{variable-tag}s in the
+\g{local-affix-sequence}s, if any, of all the \g{compound-member}s, if any, in which
+$C$ occurs,
+\item[b.] the \g{rule-tag} and all the \g{variable-tag}s,
+\g{stack-tag}s, \g{table-tag}s and \g{file-tag}s in the 
+\g{formal-affix-sequence}, if any, of the \g{rule-declaration} in which $C$ occurs.
+\end{itemize}
+
+\subsection{Classification}\label{3.8}
+
+A \g{classification} is similar to an \g{alternative-series} in that both
+specify a series of \g{alternative}s only one of which will eventually
+apply. The difference is twofold: in a \g{classification} exactly one
+\g{alternative} applies (as opposed to one or zero in an \g{alternative series}),
+and the choice of the pertinent \g{alternative} is based on a single runtime
+value (as opposed to the successive execution of keys).
+\g{Classification}s allow fast selection of \g{alternative}s at the cost of
+less versatile selection mechanism.
+
+\smallskip\noindent
+Syntax:
+\begin{grammar}
+\item classification: classifier box, class chain.
+\item classifier box: box symbol, classifier, box symbol.
+\item classifier: source.
+\item class chain: class, semicolon symbol, class chain; last class.
+\item class: area, comma symbol, alternative.
+
+\smallskip
+
+\item area: sub symbol, zone series, bus symbol.
+\item zone series: zone, [semicolon symbol, zone series].
+\item zone: [expression], up to symbol, [expression]; expression; list tag.
+\item last class: class; alternative.
+\end{grammar}
+\noindent
+Example 1:
+\begin{program}
+(n:get+char,
+   (=char=
+    [/0/:/9/], dgt->type;
+    [/a/:/z/;/a/+cap:/z/+cap],ltr->type;
+    [/+/;/-/;/*/;///],op->type;
+    [0;127], :n;
+    err->type))
+\end{program}
+\noindent
+Example 2:
+\begin{program}
+=tag=
+[var   decl], handle variable+tag;
+[macro decl], handle macro call+tag;
+[rout  decl], handle routine call+tag;
+              handle bad tag+tag
+\end{program}
+\noindent
+The execution of a \g{classification} starts with the evaluation of the
+\g{source} in its \g{classifier-box}. The resulting value is called $V$. Now
+the \g{area}s in the \g{classification} are searched in textual order for an
+\g{area} in which $V$ belongs. If such an \g{area} is found, the
+\g{alternative} following it applies and is executed (see \ref{3.2.2}). If
+there is no such \g{area}, the \g{last class} must be an \g{alternative},
+which then applies and is executed. Otherwise there is an error.
+
+$V$ belongs in a given \g{area} if it belongs in any of its constituent
+\g{zone}s. Whether $V$ belongs in a given \g{zone} is determined as follows.
+
+\begin{itemize}\item[$\cdot$]
+If the \g{zone} is an \g{expression} $E$ then $V$ belongs in that \g{zone} if
+it is equal to the value of $X$.
+\item[$\cdot$]
+If the \g{zone} contains an \g{up to symbol} it is designated by two
+boundaries. The left boundary $L$ is the value of the \g{expression} in
+front of the \g{up to symbol} or, if it is missing, the value of \pp|mint
+int|. The right boundary $R$ is the value of the \g{expression} after the
+\g{up to symbol} or, if it is missing, the value of \pp|max int|. $V$
+belongs to the given \g{zone} is $L\le V\le R$.
+\item[$\cdot$]
+If the \g{zone} is a \g{list-tag}, this \g{list-tag} must identify a global
+(\emph{not} formal) list. $V$ belongs in the \g{zone} if it is an
+address in the virtual address space (\ref{4.1.4}) of that list.
+\end{itemize}
+\g{Area}s may coincide partially or totally; the textually first \g{area}
+takes precedence.
+
+The exact size and location of all \g{zone}s is known at compile time; this
+information can be utilized by the compiler.
+% A warning is issued if the total of the \g{area}s do not
+%cover the complete range from \pp|min int|to \pp|max int|.
+
+A \g{classification} can fail if at least on of its \g{alternative}s can
+fail, it has side-effects if at least one of its \g{alternative}s has
+side-effects.
+
+\subsection{Criteria for side effects and failing}\label{3.9}
+
+Where a list of conditions is given in this paragraph, the requirements for
+this list are fulfilled if at least one of the conditions is fulfilled.
+
+\subsubsection{Criteria for side effects}\label{3.9.1}
+In essence, a rule \emph{has side effects} if it changes global
+information.
+
+A rule has side effects if its \g{rule-body} has side effects.
+
+A \g{rule-body} (i.e., an \g{alternative-series} or \g{classification}) has
+side effects if it contains at least one \g{member} that has side effects.
+
+\noindent
+A \g{member} has side effects if
+\begin{itemize}
+\item[1.] it is an \g{affix form} that has side effects,
+\item[2.] it is a \g{transport} that has side effects,
+\item[3.] it is an \g{extension},
+\item[4.] it is a \g{compound-member} the \g{rule-body} of which has side
+effects.
+\end{itemize}
+An \g{affix-form} has side effects if
+\begin{itemize}
+\item[1.] the rule called is an action or predicate or
+\item[2.] the restoring part of the affix mechanism (see \ref{3.5}) causes a
+\g{transport} that has side effects.
+\end{itemize}
+A \g{transport} has side effects if (one of) its \g{variable}(s) identifies a global
+variable or is a \g{stack-element}.
+
+\subsubsection{Criteria for failure}\label{3.9.2}
+
+A \g{member} can fail if
+\begin{itemize}
+\item[1.] it is an \g{affix-form} the rule of which is a
+predicate or question,
+\item[2.] it is an \g{identity},
+\item[3.] it is a \g{compound-member} the \g{rule-body} of which can fail.
+\end{itemize}
+
+a \g{terminator} can fail if
+\begin{itemize}
+\item[1.] it is a \g{failure-symbol} (\pp|-|) or
+\item[2.] it is a \g{jump} to a rule or \g{compound-member} that can fail.
+\end{itemize}
+
+\noindent
+A \g{rule body} can fail if its \g{alternative series} or \g{classification}
+can fail.
+
+An \g{alternative series} can fail if
+\begin{itemize}
+\item[1.] the key of its last \g{alternative} can fail,
+\item[2.] it contains an \g{alternative} that contains a
+\g{member} or \g{terminator}, other than its key, that can fail.
+\end{itemize}
+
+\section{Data} \label{sec:4}
+
+The basic way of representing information in \A{} is through integers. There
+are four integer-based data types:
+\begin{itemize}
+\item[$\cdot$] integers (constants),
+\item[$\cdot$] locations that contain integers (variables),
+\item[$\cdot$] ordered lists of integers (tables), and
+\item[$\cdot$] ordered lists of location that contain integers (stacks).
+\end{itemize}
+Integers used in data declarations can be given in the form of expressions.
+
+The basic way of routing information into and out of the program is through
+files. There are two type of files:
+\begin{itemize}
+\item[$\cdot$] charfiles, files containing only integers that correspond to
+characters, and
+\item[$\cdot$] datafiles, files containing pointers to prescribed stacks and tables
+and/or integers in a prescribed range.
+\end{itemize}
+There are three primitive actions on integer-based data: \g{transport}s,
+\g{identity}es and \g{extension}s. Additional integer handling can be done through
+externals.
+
+There are no primitive action of files: all file handling is done through
+externals.
+
+\smallskip\noindent
+Syntax of \g{data-declaration}:
+\begin{grammar}
+\item data declaration:
+
+constant declaration; variable declaration;
+
+stack declaration; table declaration;
+
+file declaration.
+
+\end{grammar}
+
+\subsection{Integer-based data}\label{4.1}
+
+Since all integer-based data can be initialized through expressions, these
+will be treated first.
+
+\subsubsection{Expressions}\label{4.1.1}
+Syntax:
+\begin{grammar}
+\item expression:
+
+[plus minus], term; expression, plusminus, term.
+\item term: [term, times by], base.
+\item base: plain value; expression pack.
+\item expression pack: open symbol, expression, close symbol.
+\item plus minus: plus symbol; minus symbol.
+\item times by: times symbol; by symbol.
+\end{grammar}
+Examples:
+\begin{program}
+-3 + 5 * byte size
+line width/2
+(/e/+1)*char size + /n/+1)*char size+/d/+1
+\end{program}
+
+The value of an \g{expression} is the integral value that results from
+evaluating the \g{expression} according to the standard rules of algebra.
+
+The result of an integer division \pp|n=p/q| (\pp|q|${}\not={}$\pp|0|) is a
+value \pp|n| such that \pp|p-n*q| is non-negative and minimal
+(so, e.g., \pp|7/3=2|, \pp|7/(-3)=-2|, \pp|(-7)/3=-3| and \pp|(-7)/(-3)=3|).
+
+A \g{constant-tag} defined in a user=defined
+\g{external-constant-declaration} cannot be used in an \g{expression}.
+
+The \g{list-tag} in a \g{min-limit} or \g{max-limit} (see \ref{4.1.7} used
+in an \g{expression} must identify a (global) table, i.e., limits of stacks
+cannot be used in \g{expression}s.
+
+\subsubsection{Constants}\label{4.1.2}
+
+A \emph{constant} consists of a \g{constant-tag} and an integral value. The relation between
+tag and value is set up through a \g{constant-declaration} and cannot be
+changed afterwards.
+
+\noindent
+Syntax:
+\begin{grammar}
+\item constant declaration:
+
+constant symbol, constant description list, point symbol.
+\item constant description list:
+
+constant description,
+[comma symbol, constant description list].
+\item constant description: constant tag, equals symbol, expression.
+\item constant tag: tag.
+\end{grammar}
+Example:
+\begin{program}
+'constant'mid page = line width/2, line width=144.
+\end{program}
+
+The value of the \g{expression} must not depend on the \g{constant-tag}
+being declared. That is,
+\begin{program}
+  'constant' p=q, q=2-p.
+\end{program}
+\noindent
+is not allowed.
+
+Constants can be used in \g{expression}s and in \g{source}s.
+
+\subsubsection{Variables}\label{4.1.3}
+
+A \emph{variable} consists of a \g{variable-tag} and a location; the location may or may not
+contain a value. If it contains a value the variable \emph{has} that value.
+The contents of a location may be changed. Once a location has obtained a
+value it can never become empty again.
+
+A global variable is declared in a \g{variable-declaration}.
+
+A formal variable originates from a \g{formal-affix-sequence}.
+
+A local variable originates from a \g{local-affix-sequence}.
+
+\noindent
+Syntax of \g{variable-declaration}:
+\begin{grammar}
+\item variable declaration:
+
+variable symbol, variable description list, point symbol.
+\item variable description list:
+
+variable description,
+[comma symbol, variable description list].
+\item variable description: variable tag, equals symbol, expression.
+\item variable tag: tag.
+\end{grammar}
+Examples:
+\begin{program}
+'variable'tag pnt=nil, median code=(<<code+ >>code)/2.
+'variable'line cnt=0, page nct=0.
+\end{program}
+\noindent
+For each \g{variable-description} a location is made available tagged with
+the \g{variable-tag} and filled with the value of the \g{expression}.
+
+Variables can be used in \g{source}s and in \g{destination}s. They cannot be
+used in \g{expression}s.
+
+\subsubsection{The address space}\label{4.1.4}
+
+In addition to constants and variables lists of constants
+(\emph{tables}) and lists of variables (\emph{stacks}) exist. Stacks and tables
+together are called \emph{lists}. The items in these lists are identified
+by unique addresses which are represented by integral values. These values
+ranges from a (large) negative number to a (large) positive number:
+this range is called the \emph{address space}.
+
+The lists are described as running from left to right.
+
+\smallskip\noindent
+Example:
+
+\noindent
+On a 16-bit machine the address space could be though of as a list of
+$2^{16}$ (65536) locations, the addresses of which run from $-2^{15}$ 
+($-32768$) at the left to $2^{15}-1$ (32767) at the right. The question
+whether all these locations actually exists in memory is at this point
+immaterial: it is only the addressability of a location that is secured
+here.
+
+\smallskip
+
+For a given program the address space is divided into chunks, one for each
+list. Consequently, and address uniquely identifies not only a location but
+also the list it belongs to. A chunk of address space belonging to a list is
+called its \emph{virtual address space}. Generally only a part of the
+virtual address space is in use: this part is called the \emph{actual
+address space}. From the language specifications if follows that an actual
+address space is always a contiguous list of locations or values.
+
+The user has no direct control over the way in which the address space is
+divided and addresses are assigned. This is done as follows:
+\begin{itemize}
+\item[a.] \emph{Deleted}; see \ref{5.2.4} for \pp|nil| and \pp|nil table|.
+%One address is set aside and the \g{external constant} \pp|nil| is
+%given its value. Consequently \pp|nil| will never address any user item.
+\item[b.] For each table of stack without \g{size-estimate} $L$ the size of
+the actual address space is calculated from its \g{filling-list} and $L$ is
+given a virtual address space of exactly the same size.
+%\item[b.] For each table $T$ the size of its actual address space is
+%calculated from its \g{filling list} and $T$ is given a virtual address
+%space of exactly the same size. The right-most address is called the
+%{\tt max limit} of $T$, the left-most address minus one plus the
+%{\tt calibre} of $T$ is called the {\tt min limit} of $T$.
+\item[c.] For each stack with an \g{absolute size} a virtual address space
+of that size is reserved.
+\item[d.] The remainder of the virtual address space is distributed over the
+rest of the stacks, proportionally to their \g{relative size}s.
+\end{itemize}
+For each list $L$ the right-most address in its virtual address
+space is called \emph{virtual max limit}, the left-most address in its
+virtual address space minus one plus the {\tt calibre} of $L$ is called
+\emph{virtual min limit}; the size of its actual address space is calculated
+form its \g{filling list} and the actual address space is positioned at the
+left end in the virtual address space. The {\tt max limit} of $L$ is made
+equal to the right-most address in the actual address space; the
+{\tt min limit} of $L$ is made equal to the \emph{virtual min limit}.
+
+If the actual address space has length zero, the {\tt max limit} of $L$ is
+equal to the {\tt min limit} minus the {\tt calibre} of $L$.
+%\end{itemize}
+
+The virtual and actual address space of a table are fixed (and equal) for
+the duration of the program.
+
+\smallskip\noindent
+Example:
+
+\noindent
+Suppose a virtual address space of 5 bits, i.e., the addresses range from
+$-16$ to $15$. If the following declarations (see \ref{4.1.5} and
+\ref{4.1.6}) occur in the program:
+\begin{program}
+'table' powers=(1,10,100,1000).
+'stack' [= 5 =] digits=(0),
+        [ 30  ] stack,
+        [ 50  ] (num,denom) rationals =
+                ((365,113):pi, (191,71):e).
+\end{program}
+\noindent
+the virtual address space could have the following layout:
+\begin{center}%
+\small
+\def\K#1{\hbox to 3em{\hss\tt#1~~}}%
+\let\tt\tft
+\def\ditto{\raisebox{-1pt}{\tt "}}%
+\begin{tabular}{ccccl}
+address & contents & belongs to & selector & pointer \\[2pt]
+\K{-16}& ---        & ---       & ---        & \tt nil \\[-1pt]
+\K{-15}& \K{1}      &\tt powers & \tt powers & \pp|<<powers| \\[-1pt]
+\K{-14}& \K{10}     & \ditto    & \ditto     &               \\[-1pt]
+\K{-13}& \K{100}    & \ditto    & \ditto     &               \\[-1pt]
+\K{-12}& \K{1000}   & \ditto    & \ditto     & \pp|>>powers| \\[-1pt]
+\K{-11}& \K{0}      &\tt digits &\tt digits  & \pp|<<digits|,
+\pp|>>digits|\\[-1pt]
+\K{-10}& ---       & \ditto    & \ditto     &               \\[-1pt]
+\K{-9}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{-9}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{-8}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{-7}& ---        & \ditto    & \ditto     & \pp|>>stack|  \\[-1pt]
+\K{-6}& ---        &\tt stack  &\tt stack   & \pp|>>stack|  \\[-1pt]
+\K{-5}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{-4}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{-3}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{-2}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{-1}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{0}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{1}& ---        & \ditto    & \ditto     &               \\[-1pt]
+\K{2}& \K{355}    &\tt rationals &\tt num~~  &               \\[-1pt]
+\K{3}& \K{113}    & \ditto    &\tt denom   & \pp|<<rationals|, \pp|pi|\\[-1pt]
+\K{4}& \K{191}    & \ditto    &\tt num~~   &               \\[-1pt]
+\K{5}& \K{71}     & \ditto    &\tt denom   & \pp|>>rationals|, \pp|e|\\[-1pt]
+\K{6}& ---        & \ditto    &\tt num~~   &               \\[-1pt]
+\K{7}& ---        & \ditto    &\tt denom    &               \\[-1pt]
+\K{8}& ---        & \ditto    &\tt num~~    &               \\[-1pt]
+\K{9}& ---        & \ditto    &\tt denom    &               \\[-1pt]
+\K{10}& ---       & \ditto    &\tt num~~   &               \\[-1pt]
+\K{11}& ---       & \ditto    &\tt denom   &               \\[-1pt]
+\K{12}& ---       & \ditto    &\tt num~~   &               \\[-1pt]
+\K{13}& ---       & \ditto    &\tt denom   &               \\[-1pt]
+\K{14}& ---       & \ditto    &\tt num~~   &               \\[-1pt]
+\K{15}& ---       & \ditto    &\tt denom  &              \\[-1pt]
+\end{tabular}
+\end{center}
+(For the notation used see \ref{4.1.5} through \ref{4.1.7}).
+
+\A{} allows the user to extend a stack toward the right (raising the \pp|max
+limit|) through an \g{extension} (\ref{3.4.3}); to remove items from the right
+of a stack through a call of \pp|unstack|, \pp|unstack n|, \pp|scratch| or
+\pp|delete| (\ref{5.2.4}) after which the discarded address space can be reclaimed
+(but not the values in it) through an extension; and to remove items
+form the left of a stack through a call of \pp|unqueue| or \pp|unqueue n|
+(\ref{5.2.4}) after which the discarded address space is irrevocably lost.
+
+Through the use of these features a stack can be operated in a stack
+fashion (\emph{add to the right end} / \emph{remove from the right end}) 
+or in queue fashion (\emph{add to the right end} / \emph{remove from
+the left end}). Queue-operation consumes virtual
+address space but in most implementations virtual address space will be
+virtually unlimited.
+
+%The virtual and actual address space of a table are fixed (and equal) for
+%the duration of the program.
+
+Usually an actual address space correspond to a physical space that is in
+the physical memory of the computer used. The physical space is completely
+invisible to the user except perhaps in efficiency considerations. Parts of
+it may be in main memory, managed by some re-allotment scheme, part of it
+may be on background memory.
+
+%If the \g{tag} of a table is not used in other constructs than \g{limit} and
+%\g{zone}, the values in the table will never be accessed, and no physical
+%space needs to be assigned to this table.
+%
+%\noindent
+%Example: the \g{table declaration}:
+%\begin{program}
+%'table'dummy=(0:nil1, 0:nil2, 0:nil3).
+%\end{program}
+%\noindent
+%where the tag \pp|dummy| does not occur anywhere else in the program,
+%declares 3 more nil-like constants and no physical space needs to be
+%reserved.
+
+\subsubsection{Tables}\label{4.1.5}
+
+Tables originate from \g{table declaration}s. Syntax:
+\begin{grammar}
+\item table declaration:
+
+table symbol, table description list, point symbol.
+\item table description list:
+
+table description, [comma symbol, table description list].
+
+\item table description: table head, equals symbol, filling list pack.
+\item table head: [field list pack], table tag.
+\item table tag: tag
+
+\smallskip
+
+\item field list pack: open symbol, field list, close symbol.
+\item field list: field, [comma symbol, field list].
+\item field: selector chain.
+\item selector chain: selector, [equals symbol, selector chain].
+\item selector: tag.
+\smallskip
+\item filling list pack: open symbol, filling list, close symbol.
+\item filling list: filling, [comma symbol, filling list].
+\item filling: single block; compound block; string filling.
+\smallskip
+\item single block: expression, [pointer initialization].
+\item compound block:
+
+expression list proper pack, [pointer initialization].
+\item pointer initialization: colon symbol, constant tag.
+\item expression list proper pack:
+
+open symbol, expression list proper, close symbol.
+\item expression list proper:
+
+expression, comma symbol, expression list.
+\item expression list: expression, [comma symbol, expression list].
+\smallskip
+\item string filling: string denotation, [pointer initialization].
+\item string denotation:
+
+quote symbol, [string item sequence], quote symbol.
+\item string item sequence: string item, [string item sequence].
+\item string item: non quote item; quote image.
+\item quote image: quote symbol, quote symbol.
+\end{grammar}
+Examples:
+\begin{program}
+'table'messages =
+   ("tag undefined": bad tag,
+    "wrong number of parameters": wrong  parameters,
+    "quote "" where not allowed"" bad quote).
+\smallskip
+'table'hexadec=
+   (/0/,/1/,/2/,/3/,/4/,/5/,/6/,/7/,
+    /8/,/9/,/a/,/b/,/c/,/d/,/e/,/f/).
+\smallskip
+'table'(wind,next)four winds=
+   ((north wind,east): north,
+    (east wind,south): east,
+    (south wind,west): south,
+    (west wind,north): west).
+\end{program}
+
+\subsubsubsection{The table head}\label{4.1.5.1}
+A \emph{table} is a sequential list of integral values. For referencing
+purposes these values are numbered sequentially. The numbers which can be
+used as addresses are chosen by the compiler and are unique for the given
+table, i.e., no two integral values in tables have the same address. The
+right-most item in the table has the largest address, which ks known as the
+\pp|max limit| of the table. The left-most item has the smallest address,
+the smallest address minus one plus the calibre is known as the \pp|min
+limit| of the table. Consequently the number of values in the table is
+\pp|max limit - min limit + calibre|.
+
+If the \g{field-list-pack} is missing, a \g{field-list-pack} of the form
+\begin{grammar}
+\item open symbol, table tag, close symbol
+\end{grammar}
+where \g{table-tag} is the same is that of the \g{table-head}, is supposed to be present.
+For example, \pp|'table' messages| means \pp|'table'(messages)messages|.
+
+\subsubsubsection{The field list pack and the filling list}\label{4.1.5.2}
+
+The following applies to tables and stacks alike.
+
+\smallskip
+
+All \g{tag}s in a \g{field list pack} must differ one from another.
+
+The \pp|calibre| $C$ of a list is the number of \g{field}s in the
+\g{field-list-pack}. The list is considered to be subdivided into blocks of length
+$C$; this implies that \pp|max limit - min limit| is an integral multiple of
+$C$. The address of the right-most item in a block is considered the address
+of that block. Each value in a block can be referenced through a
+\g{selector}: the \g{field}s in the \g{field-list-pack} correspond, in that
+order, to the values in the block. A \g{field} is indicated by one of its
+\g{selector}s.
+
+The values in the list are specified in the \g{filling-list-pack}. Each
+\g{filling} in the \g{filling-list-pack} corresponds to one or more blocks
+in the list: the first block produced by the \g{filling-list-pack}
+corresponds to the left-most block in the list,
+% (the most primitive block ifthe list is a stack),
+and so on.
+
+If the \g{filling} is a \g{single-block}, the calibre of the list must be 1.
+It gives rise to one block; the value in the block is the value of the
+\g{expression}. If a \g{pointer-initialization} is present the \g{constant-tag}
+in it is defined as having the value of the address of the block.
+
+If the \g{filling} is a \g{compound-block}, the number of \g{expression}s
+in it must be equal to the calibre of the list. The values in the block are
+the values of the \g{expression}s. If a \g{pointer-initialization} is present
+the \g{constant-tag} in it is defined as having the value of the address of
+the block.
+
+If the \g{filling} is a \g{string-denotation}, the calibre of the list must
+be 1. It gives rise to one or more blocks of one value each that describe the
+given string ion a machine-dependent way. If a \g{pointer-initialization} is
+present the \g{constant-tag} in it is defined as having the value of the
+largest address in the generated list of blocks.
+
+The string denoted by a \g{string-denotation} consists of the characters
+which are the representation of its \g{string-item}s, if any, except that for
+each \g{quote-image} the representation of the \g{quote-symbol} is taken.
+%\g{string item sequence}
+%in which each \g{quote image} is replaced by a \g{quote symbol}. A \g{non
+%quote item} is any symbol with the exception of \g{quote symbol}.
+Spaces are considered \g{string item}s, new-line control characters are not, 
+since the dividing into
+lines is done through the charfile-handling externals (see \ref{5.2.5}).
+
+\medskip\noindent
+Example 1:
+The \g{table-declaration} for \pp|for winds| (example 3 above) gives rise to
+the following list:
+\begin{center}%\small\let\tt\tft
+\def\K#1{\hbox to 6em{\tt~~#1\hss}}%
+\def\L#1{\hbox to 4.5em{\tt~~#1\hss}}%
+%\def\ditto{\raisebox{-1pt}{\tt "}}%
+\begin{tabular}{ccc}
+address & selector & value \\[2pt]
+          & \tt wind & \K{north wind}\\[-1pt]
+\L{north} & \tt next & \K{east}       \\
+          & \tt wind & \K{east  wind} \\[-1pt]
+\L{east}  & \tt next & \K{south}      \\
+          & \tt wind & \K{south wind} \\[-1pt]
+\L{south} & \tt next & \K{west}       \\
+          & \tt wind & \K{west wind}  \\[-1pt]
+\L{west}  & \tt next & \K{north}     
+\end{tabular}
+\end{center}
+and \pp|wind*four winds[next*four winds[west]]| has the value \pp|north
+wind|.
+
+\medskip\noindent
+Example 2: the \g{table-declaration}
+\begin{program}
+'table'strings=("abcdefg":letters, "01234":digits)
+\end{program}
+\noindent
+could in some version on some computer generate:
+\begin{center}%\small\let\tt\tft
+\def\K#1{\hbox to 6em{\tt~~#1\hss}}%
+\def\ditto{\raisebox{-1pt}{\tt "}}%
+\begin{tabular}{ccc}
+address & selector & value \\[2pt]
+          & \tt strings &\K{13 14 15 16}\\[-1pt]
+          & \ditto      &\K{17 20 21 00}\\[-1pt]
+\K{letters}& \ditto     &\K{00 07 00 02}\\
+          & \ditto      &\K{01 02 03 04} \\[-1pt]
+          & \ditto      &\K{05 00 00 00} \\[-1pt]
+\K{digits}& \ditto      &\K{00 05 00 02}
+\end{tabular}
+\end{center}
+
+A \g{table-tag} can be used in a \g{table-element} or a \g{limit}, or as an
+\g{actual} in an \g{affix-form}, or to indicate a \g{zone} in a
+\g{classification} or \g{file-description}.
+
+\subsubsection{Stacks}\label{4.1.6}
+
+Stacks original from \g{stacks declaration}s.
+
+\noindent
+Syntax:
+\begin{grammar}
+\item stack declaration:
+
+stack symbol, stack description list, point symbol.
+
+\item stack description list:
+
+stack description, [comma symbol, stack description list].
+
+\item stack description: stack head, [equals symbol, filling list pack].
+\smallskip
+\item stack head: size estimate, [field list pack], stack tag.
+\item size estimate: relative size; absolute size.
+\item relative size: sub symbol expression, bus symbol.
+\item absolute size:
+
+sub symbol box symbol, expression, box symbol, bus symbol.
+\item stack tag: tag.
+\end{grammar}
+Examples:
+\begin{program}
+'stack'[= line width =](char)print line.
+\smallskip
+'stack'[40](tag pnt,left,right)idf list=
+$ the following 'filling list pack' describes a binary tree
+$ containing the standard identifiers of ALGOL 60.
+   ((exp    st, cos, sign  ): exp,
+    (abs    st, nil, arctan): abs,
+    (arctan st, nil, nil   ): arctan,
+    (cos    st, abs, entier): cos,
+    (entier st, nil, nil   ): entier,
+    (ln     st, nil, nil   ): ln,
+    (sign   st, ln,  sun   ): sign,
+    (sin    st, nil, sqrt  ): sin,
+    (sqrt   st, nil, nil   ): sqrt).
+\end{program}
+
+A \emph{stack} is a (possibly empty) sequential list of locations that
+contain integral values. The structure of this list and its addressing
+scheme is parallel to that of a table. The initial values in the locations
+are determined by the \g{filling-list-pack} is a way analogous to that used
+for tables. the \pp|max limit| is equal to the address of the right-most
+location, the \pp|min limit| is equal to the address of the left-most
+location minus one plus the \pp|calibre| of the stack. Again these values
+are chosen by the compiles and are unique to the given stack.
+
+The value of the \g{expression} in the \g{size-estimate} must not depend,
+directly or indirectly, on the value of any \g{constant-tag} defined in a
+\g{pointer-initialization}.
+
+The values in the locations in a stack can be altered by transporting
+(\ref{3.4}) a value into an element of that stack. For ways of changing
+the size of the stack see \ref{4.1.4}.
+
+A \g{stack-tag} can be used in a \g{stack-element}, a \g{limit} or an
+\g{extension}, or as an \g{actual} in an \g{affix-form}, or to designate a
+\g{zone} in a \g{classification} or \g{file-description}.
+
+\subsubsection{Limits}\label{4.1.7}
+Syntax:
+\begin{grammar}
+\item limit: min limit; max limit; calibre.
+\item min limit: min token, list tag.
+\item max limit: max token, list tag.
+\item calibre: calibre token, list tag.
+\item list tag: stack tag; table tag.
+\item min token: left symbol, left symbol.
+\item max token: right symbol, right symbol.
+\item calibre token: left symbol right symbol.
+\end{grammar}
+Examples:
+\begin{program}
+<<stack, >>table, <>blocked
+\end{program}
+
+\noindent
+A \g{min-limit} (\g{max-limit}, \g{calibre}) has the value of the \pp|min
+limit| (\pp|max limit|, \pp|calibre|) or the list identified by the \g{list-tag}.
+The value of a \g{limit} is a constant in that it cannot be changed by a
+\g{transport}. However, the \g{min-limit} and \g{max-limit} of a stack may
+change as a consequence of actions that change the size of that stack. The
+values of the
+\g{min-limit} and the \g{max-limit} of tables and the \g{calibre} of all lists
+are invariable.
+
+\subsection{Files}\label{4.2}
+
+File originate form \g{file declaration}s. They can be prefilled by the
+operating system (input files) or postprocessed by the operating system
+(output files) or both (I/O files) or neither (scratch files).
+
+\noindent Syntax:
+\begin{grammar}
+\item file description:
+   file typer, file description list, point symbol.
+\item file typer: charfile symbol; datafile symbol.
+\item file description list:
+
+file description, [comma symbol, file description list].
+\item file description: file tag, [area], equals symbol,
+
+  [right symbol], string denotation, [right symbol].
+\item file tag: tag.
+\end{grammar}
+Examples:
+\begin{program}
+'charfile'printer="output">, backward cards=>"qelet,invert".
+\smallskip
+'datafile'tagfile[tag;link;0:]= >"systags">,
+     bin card[0:4095]="12row,bin", overflow[:]="??qxz".
+\end{program}
+
+A \g{file-description} declares a \pp|file| of the type indicated by the
+\g{file-typer}. If the first \g{right-symbol} is present, the file is
+prefilled by the operating system (but it may still be empty); if the second
+\g{right-symbol} is present, the file will be postprocessed by the operating
+system (but it may be empty).
+
+The (implementation-dependent) \g{string-denotation} must contain enough information to enable the operating system
+to manipulate the file is the desired way. It might for example contain: the
+external file name, allocation information, the names of routines
+to do the prefilling and postprocessing, etc.
+
+\A{} contains no explicit file handling statements: all file handling is
+done through (standard) externals (see \ref{5.2.5}). When a file is used for
+writing, each item offered must belong in the \g{area} given in the
+\g{file-description}; when a file is used for reading, each item delivered will
+belong in the given \g{area}. If no \g{area} is supplied, the \g{area}
+\pp|[:]| is assumed.
+
+Files are read and written sequentially. The can be reset to the beginning
+of the file and be reread or rewritten.
+% Some files allow \emph{back-spacing}, \emph{back-lining} or \emph{back-data-ing}.
+The file
+ends after the last item written or else after the last item produced by the
+preprocessing.
+
+\subsubsection{Charfiles}label{4.2.1}
+A \pp|charfile| is a list of \emph{line}s. A line consists of a control
+integer and a (possibly empty) sequence of characters. Characters are values
+in the \g{area} \pp|[0:max char]|, control integers are values outside that
+\g{area}. Four control integers are predefined in the compiler (see
+\ref{5.2.5});
+\pp|new line|, \pp|same line|, \pp|rest line| and \pp|new page|. These
+control integers can be used by the pre- and post-processing to reconcile
+the system requirements with the \A{} requirements. If the file is
+eventually postprocessed towards a printer, lines of the type \pp|new line|
+will be printed on new lines, those of the type \pp|same line| will be
+printer over the previous line and those of type \pp|new page| will be
+printed on the first line of the next page; \pp|rest line| serves
+administrative purposes only. Analogous effects should be defined for other
+devices, as far as the analogy will stretch.
+
+\noindent
+Example: A file containing \pp|a\&b\underline{=}b\&a| would consists of two
+lines:
+\begin{program}
+new line,  /a/, /\&/, /b/, /=/, /b/, /\&/, /a/
+same line, / /, / /, / /, /\underline{ }/.
+\end{program}
+
+The standard externals allow two ways of processing a charfile.
+\begin{itemize}
+\item[a.] linewise: each call of \pp|'predicate'get
+line+""charfile+\allowbreak[]stack[]\allowbreak+cint>|
+puts the next line on \pp|stack| (the last character on the line is the
+rightmost item
+in the stack) and yields the control integer in \pp|cint|. It will fail if
+there is no next line.
+\item[b.] characterwise: each call of \pp|'predicate'get
+char+""charfile+char>|
+yields the next item form the \pp|charfile| (control integers and characters
+equally). It will fail if there is no next item.
+\end{itemize}
+
+The \g{area} in the \g{file-description} of a charfile pertains to the
+values of the characters only. If present, the \g{area} must only specify
+values that belong in \pp|[0:max char]|, e.q. \pp|[0:1]|.
+
+\subsubsection{Datafiles}\label{4.2.2}
+
+A \emph{datafile} is a list of \emph{data-item}s. A data-item consists of an
+integer value and an indication about its meaning. This indications is
+either \pp|numerical| in which case the integer value stands for itself, or
+is the name of a list in which case the integer value is an offset from the
+left end of that list.
+
+A data-item is written on a datafile by a call of \pp|'action'put data +
+""file + >item + >type|. The data-item is constructed from the item- and
+type-parameters and from the \g{area} in the \g{file-description} of the
+file in the
+following way.
+
+If the \pp|type| is \pp|numerical|, there must be a \g{zone} in the \g{area} which is
+not a tag identifying a list, such that the value of \pp|item| belongs in
+that \g{zone}. The
+data-item then consists of the value of \pp|item| and the indication
+\pp|numerical|.
+
+If the \pp|type| is \pp|pointer|, the value of \pp|item| must be an address
+in the virtual address space of a list whose \g{list-tag} is a \g{zone} in
+the \g{area}.
+%point into a list
+t%hat is a \g{zone} in the area.
+The data-item then consists of the offset
+from the left end of that list and the name of the list.
+
+A data-item is read from a datafile by a call of \pp|'predicate' get data +
+""file + item> + type>|. If there is still a data-item on \pp|file|, it
+is read and the \pp|item| and \pp|type| are reconstructed from it (see
+above). If there are no more data-items on the datafile, the predicate fails.
+
+Datafiles can be used to transfer information from one \A-program to
+another. Pointers to lists that are in different positions in both programs
+are adjusted automatically during the transfer.
+
+Note: in practice it is not necessary to record the list name with every
+item. It is enough to have one bit per item and one translation table for the
+whole file.
+
+\noindent
+Example:
+Suppose the \g{file-declaration}
+\begin{program}
+'datafile' tag file[tag; list;0:] = >"systags">.
+\end{program}
+\noindent
+Then \pp|put data| for this file can be visualized as:
+\begin{program}
+'action'put data+""file+>item+>type:
+$ for file = tagfile only %$
+
+  type=pointer,
+    (=item=
+     [tag],  minus+item+<<tag+item,
+                 write data item+item+tag name;
+     [list], minus+item+<<list+item,
+                 write data item+item+list name;
+             error+bad item);
+  type=numerical,
+    (=item=
+     [0:], write data item+item+numerical;
+             error+bad item);
+  error+bad type.
+\end{program}
+\noindent
+Here the (imaginary) \pp|write data item+>val+>ind| would write a data-item
+consisting of \pp|val| and \pp|ind| on the file \pp|tagfile|.
+
+\section{Externals}\label{sec:5}
+
+External rules, tables and constants can be used in the same was as
+internally declared rules, tables and constants. An external rule differs
+from an \emph{internal} rule in that its body is not given in the program
+but is instead obtained from external sources. In the same was the values
+of external tables and constants are obtained from external sources. The
+necessary information can be supplied by the user through external means
+(\emph{user} externals, section \ref{5.1}) in which case the name of the item and
+some of its properties must be declared in the program or it is supplied
+automatically by the compiler (\emph{standard} externals, section \ref{5.2}) in
+which case there is no explicit declaration at all.
+
+\subsection{User externals}\label{5.1}
+Syntax:
+\begin{grammar}
+\item external declaration:
+
+external rule declaration;
+
+external table declaration;
+
+external constant declaration.
+\item external rule declaration:
+
+   external symbol typer,
+
+~~~~~~ external rule description list, point symbol.
+\item external rule description list:
+
+external rule description,
+
+~~~~~~ [comma symbol, external rule description list].
+\item external rule description:
+
+rule tag, [formal affix sequence], equals symbol string denotation.
+\smallskip
+\item external table declaration:
+
+external symbol, table symbol, 
+
+~~~~~~ external table description list, point symbol.
+
+\item external table description list;
+
+external table description,
+
+~~~~~~ [comma symbol, external table description list].
+\item external table description:
+
+table head, equals symbol, string denotation.
+%
+%(field list pack), tag, equals symbol, string denotation.
+\smallskip
+\item external constant declaration:
+
+external symbol, constant symbol,
+
+~~~~~~ external constant description list,  point symbol.
+\item external constant description list:
+
+external constant description,
+
+~~~~~~ [comma symbol, external constant description list].
+\item external constant description:
+
+constant tag, equal symbol, string denotation.
+\end{grammar}
+Example:
+\begin{program}
+'external''function'converto to hash+t[]+>p+h>="subtr, convertt".
+'external''table' conv 2 ebcdic="adde, conv2ebc".
+'external''constant' max ebcdic="cons, maxebcdi".
+\end{program}
+
+An \g{external-rule-description} defines a rule to be of the type given by
+the preceding \g{typer}, to be known internally under the name given by the
+\g{rule-tag} and externally by the \g{string-denotation}, and to have affixes as
+shown by the \g{formal-affix-sequence}. A call to such a rule will result in
+implementation-dependent actions; it is the implementer's responsibility to
+see to it that these actions are in accordance with the type of the rule and
+that no-sideeffect will occur when a call of the rule fails.
+% (see \A{} Implementation, to be published by
+%the Mathematical Centre, Amsterdam).
+
+An \g{external-table-description} defines a table to be known internally
+under the name given by the \g{table-tag} and externally by the
+ \g{string-denotation}, and to have the selectors given by the
+\g{field-list-pack}. An
+application of this table will result in implementation-dependent actions.
+
+An \g{external-constant-description} defines a constant to be known
+internally under the name given by the \g{constant-tag} and externally by the
+\g{string-denotation}. An application of this constant will result in
+implementation-dependent actions.
+
+\subsection{Standard externals}\label{5.2}
+
+Standard externals can be used in all programs without further notice. Their
+name can be redeclared by the user.
+% The workings of rules marked by \pp|P|
+%are affected by pragmats (see chapter \ref{sec:6}), whereas rules marked with a
+%$\bullet$ are not.
+
+\subsubsection{Integers}\label{5.2.1}
+
+
+\newcommand\X{\smallskip\noindent\hbox to 15pt{\hss$\bullet$}\space}
+%\ifx#1@\relax{\tt P}\else$\bullet\,$\fi\space}}
+\newcommand\Y{\par\hangindent=15pt\hangafter=0\noindent}
+
+
+\X\pp|'constant' zero, one, max int, min int, int size.|\Y
+\pp|zero| has the value 0, \pp|one| has value 1. \pp|max int| has the value
+of the largest integer in the given implementation, and \pp|min int| has the
+value of the smallest (most negative) integer in the given implementation.
+\pp|int size| is the number of decimal digits necessary to represent
+\pp|max int|.
+
+\X\pp|'function'add+>a+>b+head>+tail>.|\Y
+The double-length sum of \pp|a| and \pp|b| is given in \pp|head| and
+\pp|tail|: $\mbox{\tt a}+\mbox{\tt b}=\mbox{\tt head}\times(\mbox{\tt max int}
++1)+\mbox{\tt tail}$, such that $|\mbox{\tt head}|$ is minimal.
+
+\X\pp|'function'subtr+>a+>b+head>+tail>.|\Y
+The double-length difference of \pp|a| and \pp|b| is given in \pp|head| and
+\pp|tail|: $\mbox{\tt a}-\mbox{\tt b}=\mbox{\tt head}\times(\mbox{\tt max
+int}+1)+\mbox{\tt tail}$, such that $|\mbox{\tt head}|$ is minimal.
+
+
+\X\pp|'function'mult+>a+>b+head>+tail>.|\Y
+The double-length product of \pp|a| and \pp|b| is given in \pp|head| and
+\pp|tail|: $\mbox{\tt a}\times\mbox{\tt b}=\mbox{\tt head}\times(\mbox{\tt max
+int}+1)+\mbox{\tt tail}$, such that $|\mbox{\tt head}|$ is minimal.
+
+\X\pp|'function'divrem+>a+>b+quot>+rem>.|\Y
+The quotient and remainder of the integer division of \pp|a| by \pp|b| is
+given in \pp|quot| and \pp|rem|: $\mbox{\tt a}=\mbox{\tt b}\times \mbox{\tt
+quot}+\mbox{\tt rem}$, such that \pp|rem| is non-negative and minimal.
+\pp|b| must not be zero.
+
+\X\pp|'function'plus+>a+>b+c>.|\Y
+The sum of \pp|a| and \pp|b| is given in \pp|c|.
+
+\X\pp|'function'minus+>a+>b+c>.|\Y
+The difference of \pp|a| and \pp|b| (i.e., \pp|a-b|) is given in \pp|c|.
+
+\X\pp|'function'times+>a+>b+c>.|\Y
+The product of \pp|a| and \pp|b| is given in \pp|c|.
+
+\X\pp|'function'incr+>x>.|\Y
+The value of \pp|x| is increased by 1.
+
+\X\pp|'function'decr+>x>.|\Y
+The value of \pp|x| is decreased by 1.
+
+\smallskip
+\X\pp|'question'less+>p+>q.|\Y
+Succeeds if \pp|p| is less than \pp|q|, fails otherwise.
+
+\X\pp|'question'lseq+>p+>q.|\Y
+Succeeds if \pp|p| is less than or equal to \pp|q|, fails otherwise.
+
+\X\pp|'question'more+>p+>q.|\Y
+Succeeds if \pp|p| is more than \pp|q|, fails otherwise.
+
+\X\pp|'question'mreq+>p+>q.|\Y
+Succeeds if \pp|p| is more than or equal to \pp|q|, fails otherwise.
+
+\X\pp|'question'equal+>p+>q.|\Y
+Succeeds if \pp|p| is equal to \pp|q|, fails otherwise. It is identical to
+\pp|p=q|.
+
+\X\pp|'question'noteq+>p+>q.|\Y
+Succeeds if \pp|p| is not equal to \pp|q|, fails otherwise.
+
+\smallskip
+
+\X\pp|'action'random+>p+>q+r>.|\Y
+A pseudo-random number between \pp|p| and \pp|q| is given in \pp|r|,
+$\mbox{\tt p}\le\mbox{\tt r}\le\mbox{\tt q}$. The value of \pp|r| is derived
+from an element in a uniformly distributed sequence of random numbers. The next call of
+\pp|random| will derive its output value from the next number in that
+sequence, etc.
+
+\X\pp|'action'set random+>n.|\Y
+\pp|n| determines in some way the position in the circular sequence of
+random numbers mentioned above, from which the next call of \pp|random| will
+obtain its output value.
+
+\X\pp|'action'set real random.|\Y
+The position in the circular sequence of random numbers used by \pp|random|
+is determined in an unpredictable way.
+
+\smallskip
+
+\X\pp|'question'sqrt+>a+root>+rem>.|\Y
+If \pp|a| is non-negative, \pp|sqrt| succeeds; the square root and remainder
+of \pp|a| are yielded such that $\mbox{\tt a}=\mbox{\tt root}\times\mbox{\tt
+root}+\mbox{\tt rem}$, and \pp|rem| is non-negative and minimal. Otherwise
+it fails.
+
+\X\pp|'function'pack int+from[]+>n+int>.|\Y
+The right-most \pp|n| elements in the list \pp|from| must be integer values
+corresponding to characters that indicate digits. The digits thus indicated
+are considered as the decimal notation of an integer, and the value of this
+integer is yielded in \pp|int|. A check on integer overflow is performed.
+Example: if the 4 right-most elements of \pp|st| are
+\begin{program}
+   /0/, /2/, /7/, /3/
+\end{program}
+\noindent
+then a call of \pp|pack int+st+4+res| will assign the value \pp|273| to
+\pp|res|.
+
+\X\pp|'action'unpack int+int>+[]st[].|\Y
+The absolute value of \pp|int| is written in decimal notation in \pp|int
+size| digits, and \pp|st| is extended with the integer values of the digits
+thus obtained, in left-to-right order.
+
+\smallskip
+The following externals are recommended.
+
+\X\pp|'function'date+year>+month>+day>.|\Y
+The year, month and day are yielded in \pp|year|, \pp|month| and \pp|day|.
+
+\X\pp|'function'time+amount>.|\Y
+If two calls of \pp|time| yield \pp|amount1| and \pp|amount2| respectively,
+then \pp|amount1-\allowbreak{}amount2| is in some way indicative for the time spent by
+the program between these two calls.
+
+
+\subsubsection{Words}\label{5.2.2}
+
+For those data that are considered to be arrays of bits (words) the
+following standard externals are available.
+
+\X\pp|'constant'word size.|\Y
+The bits in a word are numbered (from left to right) form \pp|word size-1|
+to \pp|0|.
+
+\X\pp|'constant'false, true.|\Y
+The value of \pp|false| is \pp|0|, that of \pp|true| is \pp|1|.
+
+\X\pp|'function'bool invert+>a+b>.|\Y
+A word is yielded in \pp|b| that contains a 1 in those positions where
+\pp|a| constants a 0, and 0 otherwise.
+
+\X\pp|'function'bool and+>a+>b+c>.|\Y
+A word is yielded in \pp|c| that contains a 1 in those positions where both
+\pp|a| and \pp|b| contain a 1, and a 0 otherwise.
+
+\X\pp|'function'boor or+>a+>b+c>.|\Y
+A word is yielded in \pp|c| that contains a 1 in those positions where
+either \pp|a| or \pp|b| or both contain a 1, and a 0 otherwise.
+
+\X\pp|'function'bool xor+>a+>b+c>.|\Y
+A word is yielded in \pp|c| that contains a 1 in those positions where
+\pp|a| and \pp|b| differ, and a 0 otherwise.
+
+\smallskip
+
+\X\pp|'function'left circ+>x>+>n.|\Y
+The bit-array in \pp|x| is shifted \pp|n| position to the left; bits leaving
+the word on the left are re-introduced on the right. It is required that
+$0\le\mbox{\tt n}\le\mbox{\tt word size}$.
+
+\X\pp|'function'left clear+>x>+>n.|\Y
+The bit-array in \pp|x| is shifted \pp|n| position to the left; bits leaving
+the word on the left are discarded and 0-s are introduced on the right. It is
+required that $0\le\mbox{\tt n}\le\mbox{\tt word size}$.
+
+\X\pp|'function'right circ+>x>+>n.|\Y
+The bit-array in \pp|x| is shifted \pp|n| position to the right; bits leaving
+the word on the right are re-introduced on the left. It is required that
+$0\le\mbox{\tt n}\le\mbox{\tt word size}$.
+
+\X\pp|'function'right clear+>x>+>n.|\Y
+The bit-array in \pp|x| is shifted \pp|n| position to the right; bits leaving
+the word on the right are discarded and 0-s are introduced on the left. It is
+required that $0\le\mbox{\tt n}\le\mbox{\tt word size}$.
+
+\X\pp|'question'is elem+>x+>n.|\Y
+Succeeds if the \pp|n|-th bit in \pp|x| is a 1, fails otherwise. It is
+required that $0\le\mbox{\tt n}\le\mbox{\tt word size}$.
+
+\X\pp|'question'is true+>x.|\Y
+Succeeds if \pp|x| contains at least one 1, fails otherwise.
+
+\X\pp|'question'is false+>x.|\Y
+Succeeds if \pp|x| contains only 0-s, fails otherwise.
+
+\X\pp|'function'set elem+>x>+>n.|\Y
+The \pp|n|-th bit in \pp|x| is made equal to 1. It is required that
+$0\le\mbox{\tt n}\le\mbox{\tt word size}$.
+
+\X\pp|'function'clear elem+>x>+>n.|\Y
+The \pp|n|-th bit in \pp|x| is made equal to 0. It is required that
+$0\le\mbox{\tt n}\le\mbox{\tt word size}$.
+
+\X\pp|'function'extract bits+>x+>n+y>.|\Y
+A word is yielded in \pp|y| that contains copies of the right-most \pp|n|
+bits in \pp|x| in the corresponding positions, and 0-s in the remaining
+positions, if any. It is required that $0\le\mbox{\tt n}\le\mbox{\tt word
+size}$.
+
+\X\pp|'question'first true+>x+n>.|\Y
+If \pp|x| contains at least one 1, \pp|first true| succeeds and yields the
+position of the left-most 1 in \pp|n|. Otherwise it fails.
+
+\smallskip
+\X\pp|'function'pack bool+from[]+>n+word>.|\Y
+The right-most \pp|n| bits of \pp|word| are filled as follows. If the
+element in \pp|from| with address \pp|>>from-i| contains at least one 1, bit
+\pp|i| of \pp|word| is set to 1, otherwise to 0, for $0\le\mbox{\tt
+i}<\mbox{\tt n}$. The remaining bits in \pp|word|, if any, are 0. It is
+required that $0\le\mbox{\tt n}<\mbox{\tt word size}$.
+
+\X\pp|'action'unpack bool+>word+[]st[].|\Y
+The stack \pp|st| is extended with \pp|word size| blocks of one location
+each, the location with address \pp|>>st-i| containing a copy of the
+\pp|i|-th bit in \pp|word|, for $0\le\mbox{\tt i}<\mbox{\tt word size}$.
+
+\subsubsection{Strings}\label{5.2.3}
+
+For those data that are considered to be strings the
+following externals are available.
+
+\X\pp|'constant'max char.|\Y
+\pp|max char| has the maximum integer value that corresponds to a character.
+
+\X\pp|'function'to ascii+>c+d>.|\Y
+\pp|d| is given the integer value that corresponds in ASCII-code to the
+character that corresponds to \pp|c| in the code used. It is required that
+$0\le\mbox{\tt c}\le\mbox{\tt max char}$.
+
+\X\pp|'function'from ascii+>c+d>.|\Y
+\pp|d| is given the integer value that corresponds in the code used to the
+character that corresponds to \pp|c| in ASCII. It is required that
+$0\le\mbox{\tt c}\le 127$.
+
+\X\pp|'action'pack string+from[]+>n+[]to[].|\Y
+The right-most \pp|n| elements of \pp|from| must be values that correspond
+the characters. These characters are packed, in same way, into some number
+\pp|m| of values, and the stack \pp|to| is extended with \pp|m| blocks of
+one location each, containing these values. The packed format thus obtained
+is the same as that used for storing \g{string}s in lists (see \ref{4.1.5}).
+The pointer to the string is the address of the right-most element. So,
+after a call of \pp|pack string|, the \g{limit} \pp|>>to| is the pointer to
+the resulting packed string.
+
+\X\pp|'action'unpack string+from[]+>p+[]to[].|\Y
+The pointer \pp|p| most point into the list \pp|from| and be the address of
+a packed string. This string is unpacked yielding a sequence of \pp|m|
+character values, and the stack \pp|to| is extended with \pp|m| blocks on
+one location each, containing these values in left-to-right order.
+
+\X\pp|'question'string elem+text[]+>p+>n+c>.|\Y
+The pointer \pp|p| must point into \pp|text| and be the address of a packed
+string. If this string has an \pp|n|-th character (counting from 0), its
+value is yielded in \pp|c| and \pp|string elem| succeeds; otherwise it
+fails.
+
+\X\pp|'function'string length+text[]+>p+n>.|\Y
+The pointer \pp|p| must point into \pp|text| and be the address of a packed
+string. The number of character in this string is yielded in \pp|n|.
+
+\X\pp|'function'compare string+t1[]+>p1+t2[]+>p2+trit>.|\Y
+The pointer \pp|p1| must point into \pp|t1| and be the address of a packed
+string, $s_1$. The pointer \pp|p2| must point into \pp|t2| and be the
+address of a packed string, $s_2$. These two strings are compared in some
+way: if $s_1$ is smaller than (lexicographically comes before) $s_2$, \pp|trit| is
+set to \pp|-1|; if they are equal, \pp|trit| is set to \pp|0|; otherwise
+\pp|trit| is set to \pp|1|.
+
+\X\pp|'action'unstack string+[]st[].|\Y
+The \pp|max limit| of \pp|st| must point into \pp|st| and be the address of
+a packed string. The blocks containing this string are removed from \pp|st|.
+
+\X\pp|'action'previous string+t[]+>pnt>|\Y
+The pointer \pp|pnt| most point into \pp|t| and be the address of a packed
+string; it is made to point to the (possibly non-existing) block just
+preceding the string.
+
+\X\pp|'question'may be string pointer+text[]+>p>|\Y
+Succeeds if \pp|p| points into \pp|text| and can be interpreted as the
+address of a packed string. Otherwise fails.
+
+\subsubsection{Lists}\label{5.2.4}
+
+For lists the following externals are available.
+
+\X\pp|'constant'nil.|\Y
+\pp|nil| is a value that points into the standard table \pp|nil table|.
+
+\X\pp|'table'nil table.|\Y
+Contains one entry, \pp|nil|, pointed at by \pp|nil|.
+
+\X\pp|'question'was+a[]+>p.|\Y
+Succeeds if \pp|p| points into \pp|a|, fails otherwise.
+
+\X\pp|'function'next+a[]+>p>.|\Y
+The calibre of \pp|a| is added to \pp|p|.
+
+\X\pp|'function'previous+a[]+>p>.|\Y
+The calibre of \pp|a| is subtracted from \pp|p|.
+
+\X\pp|'function'list length+a[]+l>.|\Y
+The number of elements in \pp|a| is yielded in \pp|l|.
+
+\X\pp|'action'unstack + []st[].|\Y
+The stack \pp|st| must contain at least one block. The right-most block of
+\pp|st| is removed. Its location can be reclaimed by an \g{extension}, its
+contents are lost.
+
+\X\pp|'action'unstack to+[]st[]+>pnt.|\Y
+Zero or more blocks are removed from the right hand side of \pp|st|, so that
+the \pp|max limit| is \pp|st| becomes equal to \pp|pnt|. If this cannot be
+done, an error message follows.
+
+\X\pp|'action'unqueue+[]st[].|\Y
+The stack \pp|st| must contain at least one block. The left-most block of
+\pp|st| is removed. Its (virtual) locations and its contents are lost.
+
+\X\pp|'action'unqueue to+[]st[]+>pnt.|\Y
+Zero or more block are removed from the left hand side of \pp|st|, so that
+the \pp|min limit| of \pp|st|  becomes equal to \pp|pnt|. If this cannot be
+done, an error message follows.
+
+\X\pp|'action'scratch+[]st[].|\Y
+All block in \pp|st| are removed. Their locations can be reclaimed through
+\g{extension}s, their contents are lost.
+
+\X\pp|'action'delete+[]st[].|\Y
+All block in \pp|st| are removed, as in a call of \pp|scratch|. Moreover,
+the run-rime system will disregard \pp|st| until a possible subsequent
+\g{extension} on \pp|st|. Consequently, the remaining stacks will get better
+service, but reactivating \pp|st| will be expensive.
+
+\subsubsection{Files}\label{5.2.5}
+
+The following standard externals on files are available.
+
+\X\pp|'constant'new line, same line, new page.|\Y
+These constants are predefined values to be used as control integers for
+\g{charfiles}. Their intended meanings are \emph{print on new line},
+\emph{print again on same line} and \emph{print on first line of next page}
+respectively, as far as meaningful for the \g{charfile} and as far as
+implementable in the system.
+
+\X\pp|'constant'rest line.|\Y
+\pp|rest line| acts as a dummy control integer and is used by \pp|get line|,
+\pp|put line| and \pp|put char|,
+
+\X\pp|'predicate'get line+""file+[]st[]+cint>.|\Y
+The file \pp|file| must be charfile. If the file is exhausted, \pp|get line|
+fails. Otherwise the next item in \pp|file| is read; it is a control
+integer, it is assigned to \pp|cint|, otherwise \pp|cint| is set to \pp|rest
+line|. Then zero or more characters are read from \pp|file| until the end of
+line. The stack \pp|st| is extended with these character in left-to-right
+order.
+
+\X\pp|'action'put line+""file+a[]+>cint.|\Y
+The file \pp|file| must be a charfile; \pp|a| must only contain values that
+correspond to characters. If \pp|cint| is not \pp|rest line|, a line with
+control integer \pp|cint| is written on the file \pp|file|, containing the
+character in \pp|a| in left-to-right order. Otherwise the characters in
+\pp|a| are appended to the last line written on \pp|file|.
+
+\X\pp|'predicate'get char+""file+char>.|\Y
+The file \pp|file| must be a charfile. If the file is not exhausted, the
+next character or control integer is read and delivered in \pp|char|.
+Otherwise \pp|get char| fails.
+
+\X\pp|'action'put char+""file+>char.|\Y
+The file \pp|file| must be a charfile. The value of \pp|char| must either
+correspond to a character or be a control integer. This character or control
+integer is written on file \pp|file|, except the control integer \pp|rest
+line|, which is ignored.
+
+\X\pp|'action'put string+""file+text[]+>p.|\Y
+The file \pp|file| must be a charfile; the pointer \pp|p| must point into
+\pp|text| and be the address of a packed string. This string is written on
+the file \pp|file|.
+
+\X\pp|'predicate'get int+""file+int>.|\Y
+The file \pp|file| must be a charfile. A call of \pp|get int| will read and
+skip any number of spaces and control integers on \pp|file| until i either
+reached the end of file, in which case it fails, or finds a digit, plus-sign
+or minus-sign. It will then read and collect one or more digits until a
+non-digit is found: this non-digit is not read. The value if this stream of
+digits considered as a signed decimal number is given in \pp|int|.
+A subsequent call of \pp|get char| will yield the non-digit mentioned. If
+the above cannot be performed, and error message is given.
+This rule involves backtrack. It is not intended for use in programs that
+handle input very carefully; it is meant to provide an easy means for
+reading numbers.
+
+\X\pp|'action'put int+""file+>int.|\Y
+\pp|intsize+1| characters are appended to the last line on \pp|file|, which
+must be a charfile. These character are: zero or more spaces, the sign of
+\pp|int| and the character of the decimal representation of the absolute
+value in \pp|int| without leading zeroes.
+
+\X\pp|'constant'numerical, pointer.|\Y
+These constants are predefined values that can be used as type indications
+in datafiles. For their meaning see \ref{4.2.2}.
+
+\X\pp|'predicate'get data+""file+data>+type>.|\Y
+The file \pp|file| must be a datafile. If the file is not exhausted, the
+next data-item is read, its value delivered in \pp|data| and its type in
+\pp|type|. Otherwise it fails. For a more detailed description see
+\ref{4.2.2}.
+
+\X\pp|'action'put data+""file+>data+>type.|\Y
+The file \pp|file| must be a datafile. A data-item is written on the file,
+consisting of the value \pp|data| and the type \pp|type|. For a more
+detailed description see \ref{4.2.2}.
+
+%\smallskip
+%The following four externals are recommended.
+
+\X\pp|'predicate'back file+""file.|\Y
+If there is not yet a last item read, \pp|back file| fails. Otherwise it
+succeeds and the file is repositioned to
+beginning of the file.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% page 67
+
+\section{Pragmats}\label{sec:6}
+
+Pragmats are used to control certain aspect of the compilation
+(\g{compiler-pragmats} and to supply implementation-dependent information to
+the machine-dependent part of the compiler (\g{user-pragmats}). The exact
+position of a compiler pragmat in the program may be significant.
+
+\noindent
+Syntax:
+\begin{grammar}
+\item pragmat: pragmat symbol, pragmat item list, point symbol.
+\item pragmat item list: pragmat item, [comma symbol, pragmat item list].
+\item pragmat item:
+
+tag;
+
+tag, equals symbol, pragmat value;
+
+tag, equals symbol, pragmat value list pack.
+\item pragmat value:
+
+tag;
+
+integral denotation;
+
+string denotation.
+\item pragmat value list pack:
+
+open symbol, pragmat value list, close symbol.
+\item pragmat value list:
+
+pragmat value, [comma symbol, pragmat value list].
+\end{grammar}
+Example:
+\begin{program}
+'pragmat'title="aleph compiler",
+    background=(numb adm, history),
+    macro=(convert 1 to 2 compl, set all bits).
+\end{program}
+
+Before the meaning of a \g{pragmat} is determined, it is preprocessed: all
+\g{pragmat-value-list-pack}s are removed in the following way.
+
+For every \g{pragmat-value-list-pack} which is preceded by an
+\g{equals-symbol} preceded by a \g{tag}, the \g{equals-symbol} and \g{tag} are removed
+and inserted in front of each \g{pragmat-value} in the
+\g{pragmat-value-list-pack}.
+Subsequently all \g{open-symbol}s and \g{close-symbol}s are removed.
+
+This the \g{pragmat-item}
+\pp|background=(numb adm,history)|
+has the same meaning as
+\pp|background=number adm, background=history|.
+%\begin{program}
+%algol=apl=list, algol=apl=2,
+%algol=apl=pl=1, algol=snobol.
+%\end{program}
+
+%All \g{pragmat item}s are now of the form \g{tag, equals symbol, pragmat
+%item or int or string}. They are divided into three groups according to the
+%\g{tag}: compiler-pragmats, affecting the compiler; external-pragmats,
+%affecting the standard externals; and user-pragmats.
+%
+\subsection{Compiler-pragmats}\label{6.1}
+
+The \g{tag}s \pp|background|, \pp|compile|,
+\pp|count|, \pp|dump|, \pp|first col|, \pp|last col|, \pp|macro| and
+\pp|title| identify compiler-pragmats.
+
+\X\pp|background=|\g{list-tag}\Y
+The identified list will be kept on
+background memory if possible and necessary. The position of this
+\g{pragmat} is immaterial.
+
+%\X\pp|bounds=|\g{tag1}\pp|=|\g{tag2}\Y
+%The \g{tag1} must identify a list. The \g{tag2} can be:
+%\begin{witemize}
+%\item[\tt on] subsequent \g{element}s of \g{tag1} will be compiled with a
+%dynamic bound check (if necessary).
+%\item[\tt off] no such check is made.
+%\end{witemize}
+%The standard option is \pp|on|. An \g{element} of a formal table or stack
+%will be compiled with a bound check, unless at that point int he program no
+%bound checks would be compiled for any \g{element}.
+%
+%\X\pp|class=|\g{tag}\Y
+%The \g{tag} can be:
+%\begin{witemize}
+%\item[\tt on] subsequent \g{classification}s are compiled with a dynamic
+%check that determines if the value of its \g{classifier} belongs in any area
+%(if necessary).
+%\item[\tt off] no such check is compiled.
+%\end{witemize}
+%The standard option is \pp|on|.
+
+\X\pp|compile=|\g{tag}\Y
+The \g{tag} can be:
+\begin{witemize}
+\item[{\tt off}:] subsequent program text will be interpreted in the following
+sense:
+\begin{itemize}
+\item[a.] the \g{rule-body} of a \g{rule-declaration}, the \g{rule-tag} of
+which is used in normally compiled text will be interpreted as dummy,
+\item[b.] a \g{rule-declaration} the \g{rule-tag} of which is not used in
+normally compiled text will be ignored,
+\item[c.] a \g{data-declaration} will be ignored,
+\item[d.] a \g{pragmat-item} other than \pp|compile=on| will be ignored.
+\end{itemize}
+Injudicious applications of this pragmat can render a correct program
+incorrect.
+\item[{\tt on}:] normal compilation is resumed.
+\item[{\tt all}:] subsequent \g{pragmat-item}s of the form \pp|compile=off|
+will have no effect.
+\end{witemize}
+The standard option is \pp|on|.
+
+\X\pp|count=|\g{tag}\Y
+The \g{tag} can be
+\begin{witemize}
+\item[{\tt rule}:] a counter is kept for each subsequent rule and
+compound member. The initial value of the counter is 0; it is
+incremented by 1 for every entrance to its rule or compound member.
+The counters are printed at program termination.
+\item[{\tt member}:] same as for \pp|rule|, expect that a counter is kept for
+every member.
+\item[{\tt off}:] no counters are kept for subsequent program text.
+\end{witemize}
+The standard option is \pp|off|.
+
+\X\pp|dump=|\g{tag}\Y
+The \g{tag} can be
+\begin{witemize}
+\item[{\tt global}:] upon error termination a symbolic dump of all global variables
+and stacks will be printed.
+\item[\tt rule] upon error termination a symbolic dump of the run-time stack will
+be printed.
+\item[{\tt member}:] upon error termination the number of the current member (as
+determined by the compiler) will be printed.
+\end{witemize}
+The position of this pragmat in the program is immaterial. The standard
+option is \pp|member|.
+
+\X\pp|first col=|\g{integral-denotation}\Y
+Call the value of the \g{integral-denotation} $i$. The first $i-1$
+character on subsequent program lines are ignored. This alignment can be
+revoked in another \pp|first col| pragmat. An initial pragmat \pp|first
+col=1| is assumed.
+
+\X\pp|last col=|\g{integral-denotation}\Y
+Call the value of the \g{integral-denotation} $i$. All characters beyond the
+$i$-th position on subsequent program lines are ignored. This alignment can
+be revoked in another \pp|last col| pragmat. An initial pragmat \pp|last
+col=72| is assumed.
+
+\X\pp|macro=|\g{rule-tag}\Y
+The \g{rule-tag} must identify a non-recursive rule. Calls of this rule will be
+implemented through textual substitution rather than by subroutine call.
+The \g{rule-tag} may not be the \g{rule-tag} of the \g{affix-form} of the
+\g{root}. This pragmat must occur before the declaration of the affected
+rule.
+
+\X\pp|title=|\g{string-denotation}\Y
+The \g{string-denotation} is the title of the program. The default title is
+empty.
+
+\subsection{External-pragmats}\label{6.2}
+
+Deleted.
+
+\subsection{User-pragmats}\label{6.3}
+
+Pragmats not identified in \ref{6.1} are considered
+\emph{user-pragmats} and are transferred to the machine-dependent part of the
+compiler.
+
+\section{The representation of program}\label{sec:7}
+
+\subsection{The program}\label{7.1}
+The program produced by the notion \g{program} consists of a series of
+terminal
+symbols. Into this program comments may be inserted in the following way. The
+program is considered as a sequence of the following units:
+\begin{itemize}
+\item[] \g{tag}s,
+\item[] \g{integral denotation}s,
+\item[] \g{character denotation}s,
+\item[] \g{symbol}s not occurring in one of the above.
+\end{itemize}
+Spaces may be added in from of all these units and inside \g{tag}s and
+\g{integral denotation}s. Long comments may be added in form of all these
+units. A long comment consist of a dollar-sign (\pp|$\no{$}|), followed by
+zero or more characters which are not dollar-signs, followed by a
+dollar-sign. Short comments may be added in from of all units except
+\g{tag}s and \g{integral denotation}s. A short comment consists of a
+sharp-sign (\pp|\#|) followed by zero or more letters, digits and spaces.
+
+In the program thus obtained all symbols are expanded into characters
+as described in \ref{7.2}
+(e.g., \g{root-symbol} turns into \pp|'root'|).
+%\g{variable symbol} turns into \pp|'var'|). 
+The program text is then divided
+into lines in such a way that no comment is spread over two or more lines.
+If a line ends with a dollar-sign from a long comment, this dollar-sign may
+be omitted. In other words: long comments start with a dollar-sign an end at
+a dollar-sign or at the end of the line; short comments start with a
+sharp-sign and end at the first character that is not a letter, a digit or a
+space, or at the end of the line.
+
+Depending on the programs \pp|first col| and \pp|last col| (see \ref{6.1}) a
+number of characters must be added before each line or may be added behind
+each line.
+
+\subsection{The characters}\label{7.2}
+
+Almost all terminal symbols of the \A{} grammar are notions that end in
+\g{-symbol}. The exceptions are \g{tag}, \g{character} and
+\g{non-quote-item}. A \g{tag} is represented by a non-empty sequence of
+small letters and / or digits, the first of which is a small letter: two
+\g{tag}s are equal if their representation consist of equal sequences.
+A \g{digit} is represented by one of the digits \pp|0| \dots \pp|9|. A
+\g{character} is represented by any character in the available character set
+except the new-line control character. A \g{non-quote-item} has as its
+representation any representation of \g{character} with the exception of the
+representation of the \g{quote-symbol}.
+
+The representations of the other terminal symbols can found in the following
+table.
+
+\begin{keywords}
+% title
+\G{\kern -1ex\rm}	representation	\\[3pt]
+\G{absolute}		\pp|/|		\\
+\G{action}		\pp|'action'| or \pp|'act'|	\\
+\G{actual affix}	\pp|+|		\\[3pt]
+\G{box}			\pp|=|		\\
+\G{bus}			\pp|]|          \\
+\G{by}			\pp|/|		\\[3pt]
+\G{charfile}		\pp|'charfile'|	\\
+\G{close}		\pp|)|		\\
+\G{colon}		\pp|:|		\\
+\G{comma}		\pp|,|		\\
+\G{constant}		\pp|'constant'| or \pp|'cst'| \\[3pt]
+\G{datafile}		\pp|'datafile'|	\\
+\G{dummy}               \pp|?|          \\[3pt]
+\G{end}			\pp|'end'|	\\
+\G{equals}		\pp|=|		\\
+\G{exit}		\pp|'exit'|	\\
+\G{external}		\pp|'external'|	\\[3pt]
+\G{failure}		\pp|-|		\\
+\G{formal affix}	\pp|+|		\\
+\G{function}		\pp|'function'| or \pp|'fct'| \\[3pt]
+\G{left}		\pp|<|		\\
+\G{local affix}		\pp|-|		\\[3pt]
+\G{minus}		\pp|-|		\\[3pt]
+\G{of}			\pp|*|		\\
+\G{open}		\pp|(|		\\[3pt]
+\G{plus}		\pp|+|		\\
+\G{point}		\pp|.|		\\
+\G{pragmat}		\pp|'pragmat'|	\\
+\G{predicate}		\pp|'predicate'| or \pp|'pred'| \\[3pt]
+\G{question}		\pp|'question'| or \pp|'qu'| \\
+\G{quote}		\pp|"|		\\[3pt]
+\G{repeat}		\pp|:|		\\
+\G{right}		\pp|>|		\\
+\G{root}		\pp|'root'|	\\[3pt]
+\G{semicolon}		\pp|;|		\\
+\G{stack}		\pp|'stack'|	\\
+\G{sub}			\pp|[|          \\
+\G{success}		\pp|+|		\\[3pt]
+\G{table}		\pp|'table'|	\\
+\G{times}		\pp|*|		\\[3pt]
+\G{up to}		\pp|:|		\\[3pt]
+\G{variable}		\pp|'variable'| or \pp|'var'|\\
+\end{keywords}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Examples}\label{sec:8}
+
+\subsection{Towers of Hanoi}\label{8.1}
+%\nopagebreak
+\begin{program}\input{ex1.ale}\end{program}
+
+
+\subsection{Printing Towers of Hanoi}\label{8.2}
+%\nopagebreak
+\begin{program}\input{ex2.ale}\end{program}
+
+\subsection{Symbolic differentiation}\label{8.3}
+%\medskip\noindent
+%Example\footnote{The \g{last class} in the \g{classification} of the
+%\g{rule} {\tft derivative} cannot be the \g{success symbol} {\tft+} as this
+%alternative must also assign a value to the formal out affix {\tft de}.} 3:
+%\nopagebreak
+\begin{program}\input{ex3.ale}\end{program}
+
+\subsection{Quicksort}\label{8.4}
+%\medskip\noindent
+%Example\footnote{As the comment says, the \g{formal affix} {\tft a} must be
+%a \g{formal stack}, and not a \g{formal table} as its elements are
+%\g{destination}s in \g{transport}s.} 4:
+%\nopagebreak
+\begin{program}\input{ex4.ale}\end{program}
+
+\subsection{Permutations}\label{8.5}
+%\medskip\noindent
+%Example 5:
+%\nopagebreak
+\begin{program}\input{ex6.ale}\end{program}
+
+\section{References in the manual}
+\begin{thebibliography}{9}
+\bibitem{bohm77}
+A.~P.~W.~B\"ohm, 
+ALICE: An Exercise in Program Portability,
+IW 91/77, \emph{Mathematical Centre}, Amsterdam, 1977
+
+\bibitem{GGV78}
+R.~Glandorf, D.~Grune, J.~Verhagen,
+A W-grammar of \A,IW 100/78, \emph{Mathematical Centre}, Amsterdam, 1978
+
+\bibitem{koster71a}
+C.~H.~A.~Koster, 
+A Compiler Compiler, 
+MR 127/71, \emph{Mathematical Centre},
+Amsterdam (1971)
+
+\bibitem{koster71b}
+C.~H.~A.~Koster, 
+Affix-grammars, in: \emph{ALGOL 68 implementation}, ed.
+J.~E.~L.~Peck, North-Holland Publ. Co., Amsterdam (1971)
+
+\bibitem{watt77}
+D.~A.~Watt,
+The parsing problem for affix grammars,
+\emph{Acta Inf.} {\bf 8}, pp 1--20, 1977
+
+\bibitem{wichmann77}
+B.~A.~Wichmann,
+How to call procedures, or second thoughts on Ackermann's function,
+\emph{Software -- Practica \& Experience}, {\bf 7} pp 317--329 (1977)
+
+\end{thebibliography}
+
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% page 81
+
+
+\section{The grammar}\label{sec:9}
+
+\subsubsection*{\ref{7.2} Symbols}
+
+\begin{keywords}
+\G{open}		\pp|(| \\
+\G{close}		\pp|)| \\
+\G{absolute}		\pp|/| \\
+\G{plus}		\pp|+| \\
+\G{minus}		\pp|-| \\
+\G{times}		\pp|*| \\
+\G{by}			\pp|/| \\
+\G{left}		\pp|<| \\
+\G{right}		\pp|>| \\
+\G{equals}		\pp|=| \\
+\G{point}		\pp|.| \\
+\G{colon}		\pp|:| \\
+\G{semicolon}		\pp|;| \\
+\G{comma}		\pp|,| \\
+\G{sub}			\pp|[| \\
+\G{bus}			\pp|]| \\
+\G{quote}		\pp|"| \\
+\G{formal affix}	\pp|+| \\
+\G{local affix}		\pp|-| \\
+\G{repeat}		\pp|:| \\
+\G{success}		\pp|+| \\
+\G{failure}		\pp|-| \\
+\G{box}			\pp|=| \\
+\G{up to}		\pp|:| \\
+\G{actual affix}	\pp|+| \\
+\G{of}			\pp|*| \\
+\end{keywords}
+
+\subsubsection*{Bold face symbols}
+\begin{keywords}
+\G{constant}		\pp|'constant'|, \pp|'cst'| \\
+\G{variable}		\pp|'variable'|, \pp|'var'| \\
+\G{stack}		\pp|'stack'| \\
+\G{table}		\pp|'table'| \\
+\G{charfile}		\pp|'charfile'| \\
+\G{datafile}		\pp|'datafile'| \\
+\G{predicate}		\pp|'predicate'|, \pp|'pred'|	\\
+\G{question}		\pp|'question'|, \pp|'qu'|	\\
+\G{action}		\pp|'action'|, \pp|'act'|	\\
+\G{function}		\pp|'function'|, \pp|'fct'|	\\
+\G{external}		\pp|'external'| \\
+\G{pragmat}		\pp|'pragmat'| \\
+\G{exit}		\pp|'exit'|	\\
+\G{root}		\pp|'root'|	\\
+\G{end}			\pp|'end'|	\\
+\end{keywords}
+
+\subsubsection*{Other primitives}
+\begin{keywords}
+\K{tag}		\\
+\K{digit}	\\
+\K{character}	\\
+\K{non quote item}\\
+\end{keywords}
+
+\subsubsection*{\ref{3.1} The program}
+\begin{grammar}
+\item program:\\
+  (information sequence), root, (information sequence), end symbol.
+\item information sequence:\\
+  information, (information sequence).
+\item information:\\
+  declaration; pragmat [6].
+\item root:\\
+  root symbol, affix form [3.5], point symbol.
+\item declaration:\\
+  rule declaration [3.2.1];\\
+  data declaration [4];\\
+  external declaration [5.1].
+\end{grammar}
+
+\subsubsection*{\ref{3.2.1} Rule declarations}
+\begin{grammar}
+\item rule declaration:\\
+  typer, rule tag, (formal affix sequence),\\
+  actual rule [3.2.2], point symbol.
+\item typer:\\
+  action symbol; function symbol, predicate symbol; question symbol.
+\item rule tag:\\
+  tag.
+\item formal affix sequence:\\
+  formal affix, (formal affix sequence).
+\item formal affix:\\
+  formal affix symbol, formal.
+\item formal:\\
+  formal variable; formal stack; formal table; formal file.
+\item formal variable:\\
+  (right symbol), variable tag[4.1.3], (right symbol).
+\item formal table:\\
+  (field list pack [4.1.5]), table tag [4.1.5], sub bus.
+\item formal stack:\\
+  sub bus, (field list pack [4.1.5]), stack tag [4.1.6], sub bus.
+\item sub bus:\\
+  sub symbol, bus symbol.
+\item formal file:\\
+  quote image [4.1.5], file tag [4.2].
+\end{grammar}
+
+\subsubsection*{\ref{3.2.2} Actual rules}
+\begin{grammar}
+\item actual rule:\\
+  (local affix sequence), colon symbol, rule body.
+\item local affix sequence:\\
+  (local affix, (local affix sequence).
+\item local affix:\\
+  local affix symbol, local variable.
+\item local variable:\\
+  variable tag.
+\item rule body:\\
+  alternative series; classification [3.8].
+\item alternative series:\\
+  alternative, (semicolon symbol, alternative series).
+\item alternative:\\
+  last member[3.2.3]; member[3.2.3], comma symbol, alternative.
+\end{grammar}
+
+\subsubsection*{\ref{3.2.3} Members}
+\begin{grammar}
+\item last member:\\
+  member; terminator[3.6].
+\item member:\\
+  affix form[3.5]; operation[3.4]; compound member[3.7].
+\end{grammar}
+
+\subsubsection*{\ref{3.4} Operations}
+\begin{grammar}
+\item operation:\\
+  transport; identity; extension.
+\item transport:\\
+  source[3.5], destination sequence.
+\item destination sequence:\\
+  destination, (destination sequence).
+\item destination:\\
+  to token, variable[3.5].
+\item to token:\\{}
+  minus symbol, right symbol.
+\item identity:\\
+  source[3.5], equals symbol, source[3.5].
+\item extension:\\
+  of symbol, field transport list, of symbol, stack tag[4.1.6].
+\item field transport list:\\
+  field transport, (comma symbol, field transport list).
+\item field transport:\\
+  source[3.5], selector destination sequence.
+\item selector destination sequence:\\
+  selector destination, (selector destination sequence).
+\item selector destination:\\
+  to token, selector[4.1.5].
+\end{grammar}
+
+\subsubsection*{\ref{3.5} Affix form}
+\begin{grammar}
+\item affix form:\\
+  rule tag[3.2.1], (actual affix sequence).
+\item actual affix sequence:\\
+  actual affix, (actual affix sequence).
+\item actual affix:\\
+  actual affix symbol, actual.
+\item actual:\\
+  source; list tag[4.1.7]; file tag[4.2].
+\item source:\\
+  constant; variable.
+\item constant:\\
+  plain value[4.1.1]; table element.
+\item variable:\\
+  variable tag[4.1.3]; stack element.
+\item table element:\\
+  (selector[4.1.5], of symbol), table tag[4.1.5],\\
+  sub symbol, source, bus symbol.
+\item stack element:\\
+  (selector[4.1.5], of symbol), stack tag[4.1.6], 
+
+  sub symbol, source, bus symbol.
+\end{grammar}
+
+\subsubsection*{\ref{3.6} Terminators}
+\begin{grammar}
+\item terminator:\\
+  jump; exit; success symbol; failure symbol.
+\item jump:\\
+  repeat symbol; rule tag[3.2.1].
+\item exit:\\
+  exit symbol, expression[4.1.1].
+\end{grammar}
+
+\subsubsection*{\ref{3.7} Compound members}
+\begin{grammar}
+\item compound member\\
+  open symbol,(local part, colon symbol), rule body[3.2.2], close symbol.
+\item local part:\\
+  rule tag[3.2.1], (local affix sequence[3.2.2]); local affix
+sequence[3.2.2].
+\end{grammar}
+
+\subsubsection*{\ref{3.8} Classifications}
+\begin{grammar}
+\item classification:\\
+  classifier box, class chain.
+\item classifier box:\\
+  box symbol, classifier, box symbol.
+\item classifier:\\
+  source[3.5].
+\item class chain:\\
+  class, semicolon symbol, class chain; last class.
+\item class:\\
+  area, comma symbol, alternative[3.2.2].
+\item area:\\
+  sub symbol, zone series, bus symbol.
+\item zone series:\\
+  zone, (semicolon symbol, zone series).
+\item zone:\\
+  (expression[4.1.1]), up to symbol, (expression[4.1.1]);\\
+  expression[4.1.1]; list tag[4.1.7].
+\item last class:\\
+  class; alternative[3.2.2].
+\end{grammar}
+
+\subsubsection*{\ref{sec:4} Data declarations}
+\begin{grammar}
+\item data declaration:\\
+  constant declaration[4.1.2];\\
+  variable declaration[4.1.3];\\
+  stack declaration[4.1.6];\\
+  table declaration[4.1.5];\\
+  file declaration[4.2].
+\end{grammar}
+
+\subsubsection*{\ref{4.1.1} Expressions}
+\begin{grammar}
+\item expression:\\
+  (plus minus), term; expression, plus minus, term.
+\item term:\\
+  (term, times by), base.
+\item base:\\
+  plain value; expression pack.
+\item plain value:\\
+  integral denotation; character denotation; constant tag[4.1.2];
+limit[4.1.7].
+\item integral denotation:\\
+  (integral denotation), digit.
+\item character denotation:\\
+  absolute symbol, character, absolute symbol.
+\item expression pack:\\
+  open symbol, expression, close symbol.
+\item plus minus:\\{}
+  plus symbol; minus symbol.
+\item times by:\\
+  times symbol; by symbol.
+\end{grammar}
+
+\subsubsection*{\ref{4.1.2} Constant declarations}
+\begin{grammar}
+\item constant declaration:\\
+  constant symbol, constant description list, point symbol.
+\item constant description list:\\
+  constant description, (comma symbol, constant description list).
+\item constant description:\\
+  constant tag, equals symbol, expression[4.1.1].
+\item constant tag:\\
+  tag.
+\end{grammar}
+
+\subsubsection*{\ref{4.1.3} Variable declarations}
+\begin{grammar}
+\item variable declaration:\\
+  variable symbol, variable description list, point symbol.
+\item variable description list:\\
+  variable description, (comma symbol, variable description list).
+\item variable description:\\
+  variable tag, equals symbol, expression[4.1.1].
+\item variable tag:\\
+  tag.
+\end{grammar}
+
+\subsubsection*{\ref{4.1.5} Table declarations}
+\begin{grammar}
+\item table declaration:\\
+  table symbol, table description list, point symbol.
+\item table description list:\\
+  table description, (comma symbol, table description list).
+\item table description:\\
+  table head, equals symbol, filling list pack.
+\item table head:\\
+  (field list pack), table tag.
+\item table tag:\\
+  tag.
+\item field list pack:\\
+  open symbol, field list, close symbol.
+\item field list:\\
+  field, (comma symbol, field list).
+\item field:\\
+  selector chain.
+\item selector chain:\\
+  selector, (equals symbol, selector chain).
+\item selector:\\
+ tag.
+\smallskip
+\item filling list pack:\\
+  open symbol, filling list, close symbol.
+\item filling list:\\
+  filling, (comma symbol, filling list).
+\item filling:\\
+  single block; compound block; string filling.
+\item single block:\\
+  expression[4.1.1], (pointer initialization).
+\item compound block:\\
+  expression list proper pack, (pointer initialization).
+\item pointer initialization:\\
+  colon symbol, constant tag[4.1.2].
+\smallskip
+\item expression list proper pack:\\
+  open symbol, expression list proper, close symbol.
+\item expression list proper:\\
+  expression[4.1.1], comma symbol, expression list.
+\item expression list:\\
+  expression[4.1.1], (comma symbol, expression list).
+\smallskip
+\item string filling:\\
+  string denotation, (pointer initialization).
+\item string denotation:\\
+  quote symbol, (string item sequence), quote symbol.
+\item string item sequence:\\
+  string item, (string item sequence).
+\item string item:\\
+  not quote item; quote image.
+\item quote image:\\
+  quote symbol, quote symbol.
+\end{grammar}
+
+\subsubsection*{\ref{4.1.6} Stack declarations}
+\begin{grammar}
+\item stack declaration:\\
+  stack symbol, stack description list, point symbol.
+\item stack description list:\\
+  stack description, (comma symbol, stack description list).
+\item stack description:\\
+  stack head, (equals symbol, filling list pack[4.1.5]).
+\item stack head:\\
+  size estimate, (field list pack[4.1.5]), stack tag.
+\item size estimate:\\
+  relative size; absolute size.
+\item relative size:\\
+  sub symbol, expression[4.1.1], bus symbol.
+\item absolute size:\\
+  sub symbol, box symbol, expression[4.1.1], box symbol, bus symbol.
+\item stack tag:\\
+  tag.
+\end{grammar}
+
+\subsubsection*{\ref{4.1.7} Limits}
+\begin{grammar}
+\item limit:\\
+  min limit; max limit; calibre.
+\item min limit:\\
+  min token, list tag.
+\item max limit:\\
+  max token, list tag.
+\item calibre:\\
+  calibre token, list tag.
+\item list tag:\\
+  stack tag[4.1.6]; table tag[4.1.5].
+\item min token:\\
+  left symbol, left symbol.
+\item max toke:\\
+  right symbol, right symbol.
+\item calibre token:
+  left symbol, right symbol.
+\end{grammar}
+
+\subsubsection*{\ref{4.2} File declarations}
+\begin{grammar}
+\item file declaration:\\
+  file typer, file description list, point symbol.
+\item file typer:\\
+  charfile symbol; datafile symbol.
+\item file description list:\\
+  file description, (comma symbol, file description list).
+\item file description:\\
+  file tag, (area[3.8]),\\
+  equals symbol, (right symbol), string denotation[4.1.5], (right
+symbol).
+\item file tag:\\
+  tag.
+\end{grammar}
+
+\subsubsection*{\ref{5.1} External declaration}
+\begin{grammar}
+\item external declaration:\\
+  external rule declaration;\\
+  external table declaration;\\
+  external constant declaration.
+\item external rule declaration:\\
+  external symbol, typer[3.2.1], external rule description list, point symbol.
+\item external rule description list:\\
+  external rule description, (comma symbol, external rule description list).
+\item external rule description:\\
+  rule tag[3.2.1], (formal affix sequence[3.2.1]),\\
+  equals symbol, string denotation[4.1.5].
+\smallskip
+\item external table declaration:\\
+  external symbol, table symbol,\\
+  external table description list, point symbol.
+\item external table description list:\\
+  external table description,\\
+  (comma symbol, external table description list),
+\item external table description:\\
+  (filed list pack[4.1.5]), table tag[4.1.5],\\
+   equals symbol, string denotation[4.1.5].
+\smallskip
+\item external constant declaration:\\
+  external symbol, constant symbol,\\
+   external constant description list, point symbol.
+\item external constant description list:\\
+  external constant description,\\
+  (comma symbol, external constant description list).
+\item external constant description:\\
+  constant tag[4.1.2], equals symbol, string denotation[4.1.5].
+\end{grammar}
+
+\subsubsection*{\ref{sec:6} Pragmats}
+\begin{grammar}
+\item pragmat:\\
+  pragmat symbol, pragmat item list, point symbol.
+\item pragmat item list:\\
+  pragmat item, (comma symbol, pragmat item list).
+\item pragmat item:\\
+  tag, equals symbol, integral denotation[4.1.1];\\
+  tag, equals symbol, string denotation[4.1.5];\\
+  tag, equals symbol pragmat item;\\
+  pragmat item list pack.
+\item pragmat item list pack:\\
+  open symbol, pragmat item list, close symbol.
+\end{grammar}
+
+
+\end{document}
+
