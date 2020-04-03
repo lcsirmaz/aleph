@@ -43,7 +43,7 @@ $'a'Xwarning+>level+line+*+>mess.
    $ dictionary printing
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("lexical","pragmats","types","tags","input").
+'pragmat'require=("buffer","lexical","pragmats","types","tags","input").
 
 $ export
 'pragmat' public=(
@@ -124,7 +124,6 @@ $ printing source $
     print char+char;
    +.
 $ formated printing $
-'stack'[1]BUFFER.
 'a'print base+>str-obuff-ptr:
    $ print the base of the source file at LEXT[str]
    >>BUFFER->obuff,unpack string+LEXT+str+BUFFER,>>BUFFER->ptr,

@@ -24,7 +24,7 @@ static void init_msg1(void){
    addMSG("%*",in_none);
    addMSG("extension %p: ",in_extension);
    addMSG("rule %p: ",in_rule);
-   addMSG("\"%p\" not defined",not_defined);
+   addMSG("%p: not defined",not_defined);
    addMSG("%m\"%p\" must be a table or stack (%l)",must_be_list);
    addMSG("%mno standard selector for \"%p\"",undefined_standard_selector);
    addMSG("%mselector %p not defined",undefined_selector);
@@ -711,13 +711,13 @@ static void init_msg3(void){
 
 static void checkExtensionBlock(int *a){ /* >tag+>calibre */
   int par[4];int ptr,cnt1,cnt;
-  ptr=RULE->aupb-a[1];ptr++;cnt=0;
-//printf("check extension; calibre=%d, ptr=%d,off=%d\n",a[1],ptr,RULE->offset[ptr]);
-  if(RULE->offset[ptr]==0){par[0]=wrong_extension_block;par[1]=a[0];
+  ptr=BUFFER->aupb-a[1];ptr++;cnt=0;
+//printf("check extension; calibre=%d, ptr=%d,off=%d\n",a[1],ptr,BUFFER->offset[ptr]);
+  if(BUFFER->offset[ptr]==0){par[0]=wrong_extension_block;par[1]=a[0];
      Error(2,par);}
-  else{nxt1:if(a[1]<=cnt){;}else if(RULE->offset[ptr]==0){;}
+  else{nxt1:if(a[1]<=cnt){;}else if(BUFFER->offset[ptr]==0){;}
             else{ptr++;cnt++;goto nxt1;}
-       cnt1=cnt;nxt2:if(a[1]<=cnt){;}else if(RULE->offset[ptr]==0){
+       cnt1=cnt;nxt2:if(a[1]<=cnt){;}else if(BUFFER->offset[ptr]==0){
               ptr++;cnt++;goto nxt2;}
 //printf("megvan, cnt=%d, cnt1=%d, calibre=%d\n",cnt,cnt1,a[1]);
       if(cnt<a[1]){par[0]=wrong_extension_block;par[1]=a[0];Error(2,par);}
@@ -730,26 +730,30 @@ static void transportDest(int *a){/* >tag+>calibre */
    if(x<=0){;}
    else if(a[1]<x){par[0]=wrong_selector_in_transport;par[1]=a[1];par[2]=x;
      internalError(2,par);}
-   else{ptr=RULE->aupb-x;ptr++;if(RULE->offset[ptr]==0){;}
+   else{ptr=BUFFER->aupb-x;ptr++;if(BUFFER->offset[ptr]==0){;}
       else{par[0]=field_doubly_filled;par[1]=a[0];par[2]=x;Error(3,par);}
-      RULE->offset[ptr]=1;}
+      BUFFER->offset[ptr]=1;}
    goto again;
 }}
 static void transport(int *a){/* >tag + >calibre */
   int par[4];int rptr,cnt;
-//printf("starting here: %d\n",RULE->aupb);
-  rptr=RULE->aupb;cnt=a[1];nxt: par[0]=STACKpar(RULE);par[1]=0;extend(par);
+//printf("starting here: %d\n",BUFFER->aupb);
+  rptr=BUFFER->aupb;cnt=a[1];nxt: par[0]=STACKpar(BUFFER);par[1]=0;extend(par);
     cnt--;if(cnt>0){goto nxt;}nxt2:
-//printf("next transport (last: %d)\n",RULE->aupb);
+//printf("next transport (last: %d)\n",BUFFER->aupb);
     par[0]=a[0];par[1]=0;par[2]=Uin;
     fsimpleAffix(par);par[0]=a[0];par[1]=a[1];transportDest(par); par[0]=Dend;
     if(Q(par) || (par[0]=Dextension,Q(par))){;}else{goto nxt2;}
     par[0]=a[0];par[1]=a[1];checkExtensionBlock(par);
-    par[0]=STACKpar(RULE);par[1]=rptr;unstackto(par);
+    par[0]=STACKpar(BUFFER);par[1]=rptr;unstackto(par);
 }
 static void extension(void){
   int par[3];int tag,type,calibre;
   mustLtag(par);tag=par[0];getType(par);type=par[1];
+  if(type==IstaticStack){par[0]=tag;par[1]=timported;if(isTagFlag(par)){
+     par[0]=stack_expected;par[1]=tag;par[2]=type;Error(3,par);}
+     else{par[0]=tag;getCalibre(par);calibre=par[1];par[0]=tag;
+       par[1]=calibre;transport(par);}}
   if(type==Istack){par[0]=tag;getCalibre(par);calibre=par[1];
      par[0]=tag;par[1]=calibre;transport(par);}
   else if(type==IformalStack){par[0]=tag;getLocalCalibre(par);

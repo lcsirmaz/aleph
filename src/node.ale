@@ -11,15 +11,15 @@ $  -  head / tail
 $ A call has zero, one or two exits; a classifier one exit
 $  for each alternative (one of them must succeed); an
 $  extension has one exit. Eventually, each exit is a label of
-$  some node
+$  some node.
 $ Data flow is recalculated for formal in/out/inout and local
 $  variables to see if set variables are actually used; if not
 $  then the assignment can be skipped. It requires traversing
-$  the flow several times.
+$  the flow backwards several times.
 $ Each compound block stores flags for all relevant formal/local
 $  -- at entry v has a value and it is used as it is
-$        Example: at 2 this flag should be set set, and 
-$                 "2->v" cannot be optimized out
+$        Example: at 2 this flag should be set set as "2->v"
+$                 cannot be optimized out
 $        1->v, (l1: use v, (l2:condition,:l1; 2->v,:l2))
 $              ^1          ^2
 $  -- after leaving the block with true, v is set and will be used
@@ -33,15 +33,17 @@ $  If "n" uses v, set this flag. If "n" does not mention v, OR the
 $  flags of the two branches. At jumps, take the flag from the
 $  referred entry point.
 $
-$ the original flags can be computed iteratively. Initially all
-$  flags are zero; the final TRUE and FALSE flags are computed
-$  for formals. Then apply the sweep above, set the compound block
-$  head flags for each alternative head, and mark if it went up.
-$  If any of the bits went up, repeat. (Keep old flags as they 
-$  can never go down.)
+$ Flags at the compound blocks can be computed iteratively. Initially
+$  all are zero; the final TRUE and FALSE flags are computed for
+$  formals. Then apply the sweep above, set the compound block head
+$  flags for each alternative head, and mark if it went up. If any
+$  of the bits went up, repeat. (Keep old flags as they can never go
+$  down.)
 $
 $ ----------------------------------------------------------- $
-$ There are four no-op nodes: label, +, -, jump. (l:(-;:l))
+$ There are three no-op nodes: +, -, jump. After assigning labels
+$  the are left out. As a final optimization, identical nodes can
+$  be merged, this can trigger further merging.
 
 'end'
 

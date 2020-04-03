@@ -1,0 +1,10 @@
+'pragmat'library=on.
+?less 'q'less+>x+>y:x<y.
+?equal 'q'equal+>x+>y:x=y.
+?more  'q'more+>x+>y:x>y.
+?lseq  'q'lseq+>x+>y:x<=y.
+?mreq 'q'mreq+>x+>y:x>=y.
+?minus 'f'minus+>x+>y+z>:subtr+x+y+z.
+?plus 'f'plus+>x+>y+z>:add+x+y+z.
+?random 'x''f'random+>x+>y+z>="@random".
+'end'

@@ -84,7 +84,7 @@ $ rules
 ).
 
 $ external stuff $
-'pragmat'require=("display","tags","pragmats").
+'pragmat'require=("display","tags","pragmats","buffer").
 
 $ ************************************************************** $
 'charfile' SOURCE="stdin">.	$ input file
@@ -307,7 +307,6 @@ $  separated by :
    
 $ ******************************************************** $
 $ Symbols
-'stack'[1]BUFFER.
 'a'extend+[]L[]+>v: (*v->L*)L.
 
 $ reading symbols $

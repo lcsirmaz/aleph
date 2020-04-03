@@ -75,19 +75,22 @@ $    expression
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("display","lexical","pragmats","disc","input",
-    "tags","types","lists").
+    "tags","types","lists","buffer").
 
 $ messages ---------------------------------------------------- $
 'table'MESSAGE=(
   "%p: not defined":tag not defined,
-  "%p: is of type %p, should be %p":tag type error,
-  "%p: is of type %p, should be list":tag list type error,
+  "%p %p: should be %p":tag type error,
+  "%p %p: should be list":tag list type error,
   "%p %p: not used"                   : tag not used,
   "%p %p: not used, cannot have filling":cannot have filling,
-  "%p: cannot be external (%l)": cannot be external,
+  "%p %p: cannot be external (%l)": cannot be external,
+  "%p %p: undefined selector %p" :undefined selector,
+  "%p %p: selector %p duplicated":double selector,
+  "%p %p: wrong filling block" :wrong filling block,
 $ warning 
-  "list ""%p"" filling: block size %d is bigger than calibre %d" :large block size,
-  "list ""%p"" filling: block size %d is smaller than calibre %d":small block size,
+  "%p %p: filling block size %d is bigger than calibre (%d)" :large block size,
+  "%p %p: filling block size %d is smaller than calibre (%d)":small block size,
 $ internal error
   "FATAL cannot open obj file %p, error code: %p":opening OBJ,
   "FATAL Wtag: wrong argument %p" :wrong Wtag argument,
@@ -162,13 +165,11 @@ $   either used or has a fill (warning/error will be given later)
 
 'q'is item tag+>tag-type:
 $ tdefined implies type is set and not Iempty
-$ if type=Iselector then tused is never set
+$ for type=Iselector tused is never set
   is tag flag+tag+tdefined,is tag flag+tag+tused,get type+tag+type,
     (type=Irule,(is tag flag+tag+tpublic;
                  is tag flag+tag+rmacro,-;+);
      +).
-'q'not defined tag+>tag:
-   is tag flag+tag+tused,(is tag flag+tag+tdefined,-;+).
 
 'a'list data+>tag-x:
   get calibre+tag+x,Wcons+x,get ssel+tag+x,Wcons+x.
@@ -204,8 +205,8 @@ $  next free ITEM. External tags have LEXT string in "repr".
       [Irule],                      formal affixes+tag;
       internal error+"define OBJ: type=%p is wrong"+type),
      Wstring+raw;
-   not defined tag+tag,Xerror+0+tag not defined+tag;
    +).
+
 $ call back routines for Xstring table filling ---------------- $
 'a'Xstring table filling head+>tag:
    W+Dfill,Wtag+tag.
@@ -218,11 +219,11 @@ $ general error messages ====================================== $
 'a'wrong type+>tag+>expected-type:
    get type+tag+type,
    (type=Iempty,error+tag not defined+tag;
-    expected=0,error+tag list type error+tag+type;
-    error+tag type error+tag+type+expected).
-'a'no external+>tag-dl:
-   is tag flag+tag+texternal,
-     get defline+tag+dl,error+cannot be external+tag+dl;
+    expected=0,error+type+tag list type error+tag;
+    error+tag type error+type+tag+expected).
+'a'no external+>tag-dl-type:
+   is tag flag+tag+texternal,get type+tag+type,
+     get defline+tag+dl,error+cannot be external+type+tag+dl;
    is tag flag+tag+tdefined;
    error+tag not defined+tag.
 
@@ -248,7 +249,9 @@ $ list filling ================================================ $
 $ Dfill <tag> (<item><repeater?><initializer*>)* Dpoint
 $ <repeater>     Dstar <tag> | Dstar <cons>
 $ <item>         <tag> | <cons> | <string> | Dopen <block> Dclose
+$                 | Dextension <block2> Dextension
 $ <block>        (<tag> | <cons> | Dstar )*
+$ <block2>       (<tag> | cons>) ( Dto (<selector>|Dstar) )*
 $ <initializer>  Dcolon <tag>
 $ <string> is replaced by a <block>, and a <block> has no Dstar
 
@@ -278,16 +281,63 @@ $ got a block; after the (. Check if there is a *
           must Qcons+#,incr+cnt,:nxt).
 'a'block+>tag-calibre-cnt-rep-x-y:
    get calibre+tag+calibre,count block items+cnt+rep,
+   get type+tag+x,
    (cnt=calibre;
-    cnt>calibre,warning+6+large block size+tag+cnt+calibre;
+    cnt>calibre,warning+6+large block size+x+tag+cnt+calibre;
     rep!=0,subtr+calibre+cnt+rep; $ cnt<calibre
-    warning+4+small block size+tag+cnt+calibre),
+    warning+4+small block size+x+tag+cnt+calibre),
    0->x->y,
    (nxt:Q+Dclose;
         Qtag+x,Wtag+x,check list item type+x,1->y,:nxt;
         Q+Dstar,(nxt:rep<=0;
                  decr+rep,(y=1,Wtag+x;Wcons+x),:nxt),:nxt;
         must Qcons+x,Wcons+x,0->y,:nxt).
+
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'extend+[]t[]+>x: (*x->t*)t.
+
+'a'check block2 extension+>ptr+>tag+>calibre-cnt1-cnt-type:
+  0->cnt,incr+ptr,get type+tag+type,
+    (BUFFER[ptr]=0,error+wrong filling block+type+tag; $ last item not filled $
+     (nxt:calibre<=cnt;
+          BUFFER[ptr]=0;
+          incr+cnt,add+ptr+2+ptr,:nxt),
+     cnt->cnt1,
+     (nxt:calibre<=cnt;BUFFER[ptr]=0,add+ptr+2+ptr,incr+cnt,:nxt;+),
+     (cnt<calibre,error+wrong filling block+type+tag; $ a hole in the filling $
+      cnt1<cnt,warning+3+small block size+type+tag+cnt1+calibre;
+      +)).
+
+'a'block2 selector+>tag+x>-sel-ptr-type:
+  Q+Dstar,-1->x;
+  must Qtag+sel,get repr+sel+x,
+    (x>0,decr+x,addmult+x+-2+>>BUFFER+ptr,decr+ptr,
+           (BUFFER[ptr]=0;
+            get type+tag+type,error+double selector+type+tag+sel);
+     get type+tag+type,error+undefined selector+type+tag+sel,-1->x).
+'a'block2+>tag-optr-calibre-x-y-rx-ry-ptr-sel:
+  $ allocate entries in BUFFER: (flag,data) * calibre
+  $   flag=0: empty, =1: constant, =2: tag
+  >>BUFFER->optr,get calibre+tag+calibre,calibre->x,
+  (nxt:extend+BUFFER+0,extend+BUFFER+0,decr+x,(x=0;:nxt)),
+  0->rx->ry, $ no repeat data yet $
+  (nxt: (Qtag+x,check list item type+x,2->y;must Qcons+x,1->y),
+        (dest: Q+Dto,block2 selector+tag+sel,
+                   (sel<0,x->rx,y->ry;
+                    addmult+sel+-2+>>BUFFER+ptr,
+                        x->BUFFER[ptr],decr+ptr,y->BUFFER[ptr]),
+                   :dest;
+               Q+Dextension;
+               :nxt)),
+  $ BUFFER has been filled, check if there are empty slots
+  optr->ptr,
+  (nxt: ry=0;
+   ptr>=>>BUFFER;
+   incr+ptr,(BUFFER[ptr]=0,ry->BUFFER[ptr],incr+ptr,rx->BUFFER[ptr];
+             incr+ptr),:nxt),
+  check block2 extension+optr+tag+calibre,
+  unstack to+BUFFER+optr.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 $ str is a string in LEXT; print as a sequence of integers
 'a'write string+>str-x:
   W+Dopen,string width+LEXT+str+x,subtr+str+x+x,
@@ -297,9 +347,10 @@ $ a list item: tag, const, string, block
    Qtag+x,Wtag+x,check list item type+x;
    Qcons+x,Wcons+x;
    Qstring+x,write string+x;
-   mustQ+Dopen,W+Dopen,block+tag,W+Dclose.
+   Q+Dopen,W+Dopen,block+tag,W+Dclose;
+   mustQ+Dextension,W+Dopen,block2+tag,W+Dclose.
 
-$ if the list tag does not tused, warning for table,
+$ if the list tag is not tused, warning for table,
 $    error otherwise
 'p'is fill tag used+>tag-type:
    is tag flag+tag+tused;

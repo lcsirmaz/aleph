@@ -114,7 +114,7 @@ $ macro handling
   
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("display","pragmats","types","lexical","obj").
+'pragmat'require=("display","pragmats","types","lexical","obj","buffer").
 
 $ exported data 
 'pragmat' public=(
@@ -312,8 +312,6 @@ $ flags $
    bool or+flag*LADM[tag]+tused+flag*LADM[tag].
    
 $ ************************************************************** $
-'stack'[1]BUFFER.
-
 'a'enter tag+buf[]+tag>-n-y:
    $ buf[] contains the characters which should be added to the TTAG structure
    list length+buf+n, pack string+buf+n+TTAG, first tag->y,

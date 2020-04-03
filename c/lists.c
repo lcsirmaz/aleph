@@ -15,10 +15,10 @@
 static int wrong_selector,selector_expected,list_tag_missing,
   doubly_defined_selector,standard_selector_different,different_calibre,
   repeat_constant_expected,repeat_constant_out_of_range,
-  external_list_with_fill,error_in_filling,
+  external_list_with_fill,error_in_filling,only_one_repeater,
   missing_tag_initializer,filling_list_expected,tag_redefined_at,
   tag_redefined_proto,no_external_string,no_external_size,
-  wrong_size_estimator,mixing_proto,large_block_size,small_block_size,
+  wrong_size_estimator,mixing_proto,filling_selector_expected,
   size_estimator_range,list_tag_not_used;
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
@@ -26,23 +26,23 @@ static void add_messages(void){
   addMSG("wrong selector syntax",wrong_selector);
   addMSG("selector expected",selector_expected);
   addMSG("list tag is missing after 'stack' or 'table'",list_tag_missing);
-  addMSG("selector %p defined differently than at %l",doubly_defined_selector);
-  addMSG("standard selector %p different at %l",standard_selector_different);
-  addMSG("different calibre for %p (was %d at %l)",different_calibre);
+  addMSG("%p %p: selector %p different (%l)",doubly_defined_selector);
+  addMSG("%p %p: standard selector %p different (%l)",standard_selector_different);
+  addMSG("%p %p: calibre must be %d (%l)",different_calibre);
   addMSG("repeat constant expected",repeat_constant_expected);
   addMSG("repeat constant %d out of range (1 .. 10000)",repeat_constant_out_of_range);
-  addMSG("no filling for the external list %p",external_list_with_fill);
-  addMSG("syntax error in filling for list %p",error_in_filling);
-  addMSG("missing tag after : in list %p",missing_tag_initializer);
-  addMSG("filling block expected for list %p",filling_list_expected);
-  addMSG("%p redefined as %p (was %p at %l)",tag_redefined_at);
-  addMSG("%p redefined as %p (was %p)",tag_redefined_proto);
-  addMSG("external list declaration: missing string after %p=",no_external_string);
+  addMSG("%p filling: only one * in the block",only_one_repeater);
+  addMSG("%p filling: selector expected",filling_selector_expected);
+  addMSG("%p %p: cannot have filling",external_list_with_fill);
+  addMSG("%p %p filling: syntax error",error_in_filling);
+  addMSG("%p filling: missing tag after :",missing_tag_initializer);
+  addMSG("%p filling: block expected",filling_list_expected);
+  addMSG("%p %p: redefined as %p ( %l)",tag_redefined_at);
+  addMSG("%p %p: redefined as %p",tag_redefined_proto);
+  addMSG("external %p: missing string after =",no_external_string);
   addMSG("no size estimator in external declaration",no_external_size);
   addMSG("syntax error in size estimator",wrong_size_estimator);
   addMSG("mixing declaration and prototype in %p declaration",mixing_proto);
-  addMSG("filling %p: block size %d is bigger than calibre %d",large_block_size);
-  addMSG("filling %p: block size %d is smaller than calibre %d",small_block_size);
   addMSG("size estimator ""%d"" out of allowed range",size_estimator_range);
   addMSG("%p %p: not used",list_tag_not_used);
 //  addMSG("stack or table %p not used",list_tag_not_used);
@@ -53,9 +53,9 @@ static void add_messages(void){
 static void tagRedefined(int *a){/* >tag+>newtype */
   int par[5];int l,type;
   par[0]=a[0];getDefline(par);l=par[1];getType(par);type=par[1];
-  if(l>0){par[0]=tag_redefined_at;par[1]=a[0];par[2]=a[1];par[3]=type;
+  if(l>0){par[0]=tag_redefined_at;par[1]=a[0];par[3]=a[1];par[2]=type;
     par[4]=l;Error(5,par);}
-  else{par[0]=tag_redefined_proto;par[1]=a[0];par[2]=a[1];par[3]=type;
+  else{par[0]=tag_redefined_proto;par[1]=a[0];par[3]=a[1];par[2]=type;
     Error(4,par);}
 }
 /* ------------------- */
@@ -88,10 +88,10 @@ static void getExternalListTag(int *a){ /* tag>+str>+err> */
   if(a[2]){forgetRestore();}else{makeRestore();}
 }
 /* ---------------------------------------- */
-static void selectorList(int *a){ /* >tag+y> */
-  int par[4];int lin,n,x,ssel,repr,l,sel,type;
-  par[0]=Sopen;if(!R(par)){a[1]=0; return; }
-  a[1]=1;getLinenum(par);lin=par[0];par[0]=a[0];par[1]=a[0];
+static void selectorList(int *a){ /* >tag+>type+>y> */
+  int par[5];int lin,n,x,ssel,repr,l,sel,type;
+  par[0]=Sopen;if(!R(par)){a[2]=0; return; }
+  a[2]=1;getLinenum(par);lin=par[0];par[0]=a[0];par[1]=a[0];
   packSelector(par);ssel=par[2];par[0]=ssel;getRepr(par);x=par[1];
   if(x==0){par[0]=ssel;par[1]=Iselector;putType(par);par[1]=a[0];
     putAdm(par);par[1]=lin;addTagPrototype(par);par[0]=ssel;
@@ -104,7 +104,7 @@ static void selectorList(int *a){ /* >tag+y> */
       else if(par[1]==0){par[0]=sel;par[1]=n;putRepr(par);par[0]=sel;
         par[1]=tdefined;setTagFlag(par);par[1]=lin;putDefline(par);}
       else{par[0]=sel;getDefline(par);l=par[1];par[0]=doubly_defined_selector;
-        par[1]=sel;par[2]=l;Error(3,par);}}
+        par[1]=a[1];par[2]=a[0];par[3]=sel;par[4]=l;Error(5,par);}}
     else if(type==Iempty){par[0]=sel;par[1]=Iselector;putType(par);
       par[1]=lin;putDefline(par);par[1]=tdefined;setTagFlag(par);par[1]=n;
       putRepr(par);par[1]=a[0];putAdm(par);}
@@ -115,34 +115,35 @@ static void selectorList(int *a){ /* >tag+y> */
   par[0]=Sclose;must(par);par[0]=ssel;getRepr(par);repr=par[1];
   if(repr==0){if(x==0){x=-1;}else if(x==-1);
       else{par[0]=ssel;getDefline(par);l=par[1];
-      par[0]=standard_selector_different;par[1]=ssel;par[2]=l;Error(3,par);}}
+      par[0]=standard_selector_different;par[1]=a[1];par[2]=a[0];
+      par[3]=ssel;par[4]=l;Error(5,par);}}
   else if(repr==x){;}
   else if(x==0){x=repr;par[0]=ssel;par[1]=lin;putDefline(par);}
   else{par[0]=ssel;getDefline(par);l=par[1];par[0]=standard_selector_different;
-    par[1]=ssel;par[2]=l;Error(3,par);}
+    par[1]=a[1];par[1]=a[0];par[3]=ssel;par[4]=l;Error(5,par);}
   par[0]=ssel;par[1]=x;putRepr(par);par[0]=a[0];par[1]=x;putSsel(par);
   par[0]=a[0];getCalibre(par);x=par[1];
   if(x==n){;}
   else if(x==0){par[0]=a[0];par[1]=n;putCalibre(par);par[0]=a[0];par[1]=lin;
     putDefline(par);}
   else{par[0]=a[0];getDefline(par);l=par[1];par[0]=different_calibre;
-    par[1]=a[0];par[2]=x;par[3]=l;Error(4,par);}
+    par[1]=a[1];par[2]=a[0];par[3]=x;par[4]=l;Error(5,par);}
 }
-static void fixListParameters(int *a){ /* >tag + >list */
-  int par[4];int ssel,x,dl;
-  if(a[1]){return;}
+static void fixListParameters(int *a){ /* >tag + >type+ >list */
+  int par[5];int ssel,x,dl;
+  if(a[2]){return;}
   par[0]=a[0];par[1]=a[0];packSelector(par);ssel=par[2];par[0]=ssel;
   getRepr(par);x=par[1];
   if(x==1){;}
   else if(x>0){par[0]=ssel;getDefline(par);dl=par[1];
-    par[0]=standard_selector_different;par[1]=ssel;par[2]=dl;Error(3,par);}
+    par[0]=standard_selector_different;par[1]=a[1];par[2]=a[0];par[3]=ssel;par[4]=dl;Error(5,par);}
   else{par[0]=ssel;par[1]=Iselector;putType(par);par[1]=a[0];putAdm(par);
     par[1]=1;putRepr(par);par[0]=a[0];par[1]=1;putSsel(par);
     getLinenum(par);dl=par[0];par[0]=ssel;par[1]=dl;addTagPrototype(par);}
   par[0]=a[0];getCalibre(par);x=par[1];
   if(x==1){;}
   else if(x>0){par[0]=a[0];getDefline(par);dl=par[1];
-    par[0]=different_calibre;par[1]=a[0];par[2]=x;par[3]=dl;Error(4,par);}
+    par[0]=different_calibre;par[1]=a[1];par[2]=a[0];par[3]=x;par[4]=dl;Error(5,par);}
   else{par[0]=a[0];par[1]=1;putCalibre(par);}
 }
 void fixListUsage(int *a){ /* >tag */
@@ -196,23 +197,48 @@ static void repeatCount(void){
   if(n==1){;}else{par[0]=Dstar;D(par);if(n<0){par[0]=tag;Dtag(par);}
     else{par[0]=n;Dcons(par);}}
 }
-static void listFillBlock(int *a){/* >tag+>calibre */
-  int par[3];int va[4];int x,t,cnt;
-  cnt=x=t=0;nxt:par[0]=Scomma;
+static int isExtendedBlock(void){
+  int par[2];
+  initRestore();if((isCons(par)||isTag(par)) && (par[0]=Sarrow,R(par))){
+     makeRestore();return 1;}
+  makeRestore(); return 0;
+}
+static void selectors(int *a){ /* >tag + >t> */ 
+  int par[3];int sel;
+  par[0]=Sarrow;if(R(par)){nxt:par[0]=Dto;D(par);par[0]=Sasterisk; 
+    if(R(par)){if(a[1]==0){a[1]=1;par[0]=Dstar;D(par);}
+      else{par[0]=only_one_repeater;par[1]=a[0];Error(2,par);}}
+    else if(isTag(par)){sel=par[0];par[0]=sel;par[1]=a[0];packSelector(par);
+      sel=par[2];par[0]=sel;Dtag(par);}
+    else{par[0]=filling_selector_expected;par[1]=a[0];Error(2,par);skipAll();}
+    par[0]=Sarrow;if(R(par)){goto nxt;}}
+  else{par[0]=filling_selector_expected;par[1]=a[0];Error(2,par);skipAll();}
+}
+static void extendedBlock(int *a){/* >tag */
+  int par[3];int t,cnt;
+  cnt=t=0;par[0]=Dextension;D(par);nxt:
+  par[0]=Scomma;
   if(R(par)){goto nxt;}
-  else if(isCons(par)){x=par[0];Dcons(par);cnt++;goto nxt;}
-  else if(isTag(par)){x=par[0];useTag(par);Dtag(par);cnt++;goto nxt;}
+  else if(isCons(par)){Dcons(par);par[0]=a[0];par[1]=t;selectors(par);
+    t=par[1];cnt++;goto nxt;}
+  else if(isTag(par)){useTag(par);Dtag(par);par[0]=a[0];par[1]=t;
+    selectors(par);t=par[1];cnt++;goto nxt;}
+  else if(cnt==0){par[0]=filling_list_expected;par[1]=a[0];Error(2,par);
+    skipAll();}
+  else{par[0]=Sclose;must(par);par[0]=Dextension;D(par);}
+}
+static void listFillBlock(int *a){/* >tag */
+  int par[3];int t,cnt;
+  if(isExtendedBlock()){extendedBlock(a);return;}
+  cnt=t=0;par[0]=Dopen;D(par);nxt:par[0]=Scomma;
+  if(R(par)){goto nxt;}
+  else if(isCons(par)){Dcons(par);cnt++;goto nxt;}
+  else if(isTag(par)){useTag(par);Dtag(par);cnt++;goto nxt;}
   else if(cnt==0){par[0]=filling_list_expected;
     par[1]=a[0];Error(2,par);skipAll();}
-  else if(t==0 && (par[0]=Sasterisk,R(par))){t=1;par[0]=Dstar;
-    D(par);goto nxt;}
-  else{par[0]=Sclose;must(par);
-    if(a[1]==0){;}
-    else if(cnt>a[1]){va[0]=large_block_size;
-      va[1]=a[0];va[2]=cnt;va[3]=a[1];Warning(6,4,va);}
-    else if(t==1){;}
-    else if(cnt<a[1]){va[0]=small_block_size;
-      va[1]=a[0];va[2]=cnt;va[3]=a[1];Warning(4,4,va);}}
+  else if((par[0]=Sasterisk,R(par))){if(t==0){t=1;par[0]=Dstar;D(par);}
+    else{par[0]=only_one_repeater;par[1]=a[0];Error(2,par);}goto nxt;}
+  else{par[0]=Sclose;must(par);par[0]=Dclose;D(par);}
 }
 static void initializer(int *a){ /* >list */
   int par[3];int tag,type,dl,err; nxt:
@@ -228,29 +254,26 @@ static void initializer(int *a){ /* >list */
       goto nxt;}
     else{par[0]=missing_tag_initializer;par[1]=a[0];Error(2,par);}}
 }
-static void listFill(int *a){ /* >tag */
-  int par[3];int calibre;
+static void listFill(int *a){ /* >tag  +>type */
+  int par[3];
 //printf("ListFill, get in, inpt=%d, Sopen=%d\n",inpt,Sopen);
   par[0]=Sopen;if(R(par)){par[0]=Sclose;if(R(par)){return;}
    par[0]=a[0];par[1]=texternal;if(isTagFlag(par)){par[0]=external_list_with_fill;
-     par[1]=a[0];Error(2,par);}
-   par[0]=a[0];getCalibre(par);calibre=par[1];
+     par[1]=a[1];par[2]=a[0];Error(2,par);}
 //printf("ListFill, tag=%d, calibre=%d\n",a[0],calibre);
    par[0]=Dfill;D(par);par[0]=a[0];Dtag(par);nxt:
    if(isCons(par)){Dcons(par);repeatCount();}
    else if(isTag(par)){useTag(par);Dtag(par);repeatCount();}
    else if(isString(par)){Dstring(par);repeatCount();}
-   else if(par[0]=Sopen,R(par)){
-     par[0]=Dopen;D(par);par[0]=a[0];par[1]=calibre;listFillBlock(par);
-     par[0]=Dclose;D(par);repeatCount();}
-   else{par[0]=error_in_filling;par[1]=a[0];Error(2,par);skipAll();}
+   else if(par[0]=Sopen,R(par)){par[0]=a[0];listFillBlock(par);repeatCount();}
+   else{par[0]=error_in_filling;par[1]=a[1];par[2]=a[0];Error(3,par);skipAll();}
 //printf("ListFill, after an entry\n");
    par[0]=a[0];initializer(par);par[0]=Scomma;
    if(R(par)){goto nxt;}
    par[0]=Sclose;if(R(par)){par[0]=Dpoint;D(par);//par[0]=a[0];useTag(par);
      par[0]=a[0];par[1]=tfill;setTagFlag(par);}
-   else{par[0]=error_in_filling;par[1]=a[0];Error(2,par);skipAll();}}
-  else{par[0]=error_in_filling;par[1]=a[0];Error(2,par);skipAll();}
+   else{par[0]=error_in_filling;par[1]=a[1];par[2]=a[0];Error(3,par);skipAll();}}
+  else{par[0]=error_in_filling;par[1]=a[1];par[2]=a[0];Error(3,par);skipAll();}
 //printf("ListFill, done\n");
 }
 /* ============================================================= */
@@ -273,9 +296,10 @@ static void externalDeclarer(int *a){ /* >type+>dl */
   par[0]=tag;par[1]=a[1];par[2]=err;addTagExternal(par);err=par[2];
   if(err){skipAll();}
   else{par[0]=tag;par[1]=a[0];par[2]=0;par[3]=-1;listDeclarationTail(par);
-    par[0]=tag;selectorList(par);par[0]=tag;fixListParameters(par);
+    par[0]=tag;par[1]=a[0];selectorList(par);par[0]=tag;par[1]=a[0];
+      /*par[2]=par[2]*/;fixListParameters(par);
     par[0]=tag;par[1]=tfill;if(isTagFlag(par)){par[0]=external_list_with_fill;
-      par[1]=tag;Error(2,par);}
+      par[1]=a[0];par[2]=tag;Error(2,par);}
     par[0]=tag;par[1]=str;putRepr(par);Rskip(par);par[0]=Sequals;Rskip(par);
     par[0]=str;Rskip(par);}}
 }
@@ -303,10 +327,10 @@ static void prototype(int *a){/* >type + >dl + >ext> */
    else{par[0]=tag;par[1]=a[1];addTagPrototype(par);}
    if(err){skipAll();}
    else{par[0]=tag;par[1]=a[0];par[2]=0;par[3]=-1;listDeclarationTail(par);
-     par[0]=tag;selectorList(par);
-     if(proto==1){par[0]=tag;/*par[1]=x;*/fixListParameters(par);}
+     par[0]=tag;par[1]=a[0];selectorList(par);
+     if(proto==1){par[0]=tag;par[1]=a[0];/*par[2]=par[2];*/fixListParameters(par);}
      par[0]=tag;Rskip(par);par[0]=Sequals;if(R(par)){
-     par[0]=tag;listFill(par);}}
+     par[0]=tag;par[1]=a[0];listFill(par);}}
 }}
 static void declarer(int *a){ /* >type+>dl+>esize+>flag */
   int par[4];int tag,err,x;
@@ -319,9 +343,9 @@ static void declarer(int *a){ /* >type+>dl+>esize+>flag */
     par[0]=tag;par[1]=a[1];par[2]=err;addTagDefinition(par);err=par[2];
     if(err){skipAll();}
     else{par[0]=tag;par[1]=a[0];par[2]=a[2];par[3]=a[3];
-      listDeclarationTail(par);par[0]=tag;selectorList(par);x=par[1];
-      par[0]=tag;par[1]=x;fixListParameters(par);par[0]=tag;Rskip(par);
-      par[0]=Sequals;if(R(par)){par[0]=tag;listFill(par);}}
+      listDeclarationTail(par);par[0]=tag;par[1]=a[0];selectorList(par);x=par[2];
+      par[0]=tag;par[1]=a[0];par[1]=x;fixListParameters(par);par[0]=tag;Rskip(par);
+      par[0]=Sequals;if(R(par)){par[0]=tag;par[1]=a[0];listFill(par);}}
 }}
 static void declaration(int *a){ /* >ext> + >type */
   int par[4];int l,esize,flag;

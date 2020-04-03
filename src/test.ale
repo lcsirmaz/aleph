@@ -1,0 +1,217 @@
+
+$ formula manipulation $
+'variable'buff=/ /.
+$'pragmat'if=list,list=off.
+$ testing vararg set
+
+'f'TESTmacro+>a+*+>b:vmi+a+b,(shift affix block+*,:TESTmacro;+).
+
+'pragmat'library=on.
+'static''variable'stv=1.
+'a'increase v:incr+stv.
+'x''var'xv="xv".'x''cons'xc="xc".
+'pragmat'library=off.
+'a'test static+c>: add+xc+xv+xv,increase v,stv->c,vmi+c+stv,(qq+tx+0,stv->a*tx->xv;+).
+$'pragmat'macro=alma.
+$'a'%alma+>x+[]st[].
+
+'stack'(a,b,c,d)tx=((0,*):firstT,(1,0,*):sT,
+     (1->b->d,3->c),
+     (7->c,9->*),
+     (8->d),
+     (10->d->c),
+     (9->a->c),
+     (3->c->d,4->a->c)
+     ).
+'var'ttt=3+4.
+'var'xttt=~3+~~4--0x123.
+'q'q+>n>:xttt->n,-.
+'q'qq+[]S[]+>n:S[n]=0;n!=S[n],-;n=S[n],'exit'S[n].
+'f'vmi+>a+>b:a=b;'exit'-0x12.
+$ test if a formal selector is the same as a real one.
+'a'addw+>x+[](b,c,a)tx[]: x->a*tx.
+
+'a'TEST+x>+y>-i: 0->x->y,TEST+i+a*tx[i].
+'f'TEST2+>x-i: (x=2,1->i,-;+),add+0+x+x;
+               add+0+i+x.
+'a'TEST3-i: 1->i->a*tx[i].
+$'pragmat'macro=TESTmacro.
+'stack'[1]S.
+'a'TESTit+S[]+*+>a>:TESTmacro+0+S+1+S+2+*.
+
+'pragmat'macro=(m1,m2,m3).
+'a'm2+>x+y>:x->y,(x=y,incr+y;x->y,m3+x+y).
+'a'm3+>c+>d-z:c=d,m4+0;add+c+d+z,m4+z.
+'a'm1+>x-y:x->y,(q+y,m2+x+y,incr+y;+).
+'a'm4+>x-y:x->y,add+x+y+y,m1+y.
+
+'a'a-n: 0->n,(q+n;n=0,put int+STDOUT+1;put int+STDOUT+2).
+'pragmat'macro=q.
+$'pragmat'list=on.
+$'root'a.
+
+$'pragmat'endif=list.
+$'end'
+
+$'pragmat'endif=dictionary.
+'a'test2+*+>in:
+   (shift affix block+*,in->buff;+).
+
+'f'test4+>in+*+out>:
+   in->out,incr+in,(shift affix block+*,:test4;+).
+$   +.
+
+'f'mk+>in+*+out>:
+    =1=
+    [1],test+3+*,out->in;
+    1->out,(shift affix block+*,1->out,:mk;
+            out->in,(shift affix block+*,1->out,:mk;1->in)).
+
+$'root'-x:1->x.
+$'end'
+
+'f'test+>in+*+out>:
+    mk+2+*,(in=1,out->in;mk+3+*,out->in).
+$    in=2,mk+3+rep;
+$    in->out.
+     
+
+'root'test+1+buff.
+
+'end'
+    
+#asdf
+'valami'.
+'p r a g m a t 'vas +valami.
+
+'p'Illegal character: ? .
+@ meg m.
+'cons'b=13.
+'table'a=("asdf 
+).
+'cons'c=0x+12.
+
+
+'cons'b=~a ^0xffff.
+'cons'bb=~a+(12|13).
+'cons'a=<>opt.
+'cons'axa=(>>opt+1).
+
+'cons'bbb=~a+23|(a&15).
+'cons'bbbb=(~a+23).
+
+'stack'(ch,p)opt=((/+/,3):egyes,(/-/,3),(/*/,4),(///,4)).
+
+'f'test11+>a+b>: a->b,(nxt-l: incr+a,decr+b).
+'f'test12+>x>+y>: test11+x+y.
+'f'test13+x>+y>: test1+opt+x+y.
+
+$ 'f'test14+*n+x>+y>:test1+opt+x+y.
+'f'test14+*n+y>:test1+opt+1+y+n.
+
+'f'test44+a>+b>:test1+opt+a+b.
+
+'f'test1+st[]+*n+>in+out>-v:
+   st->v,
+   v->out,
+   (shift vararg block+n,
+     add+v+in+v,
+      v->out,
+      :test1;
+  +).
+
+'f'test2-l-s: test1+opt+1+l+2+l+3+s+5+s+p*opt+s.
+
+'f'test3+*n+a>+b>:test1+opt+a+b+n.
+
+'f'test4+a>+b>:test1+opt+a+b.
+
+
+
+
+'a'push+[]st[]+*+>val: (*val->st*)st,(shift vararg block+*,:push;+).
+'a'pop+[]st[]+*+val>-ptr: st->val,subtr+>>st+1+ptr,unstack to+st+ptr,
+                        (shift vararg block+*,:pop;+).
+'stack'L.
+'a'test-x-y: push+L+1+2+3+4+/*/,pop+L+x+y,
+   addup+x+1+2+3+4+5+6+-10.
+
+'f'addup+total>+ *rep + >i:
+  i->total,(nxt:shift vararg block+rep,add+total+i+total,:nxt;+).
+'a'addupt with print+ *rep + >i-total:
+  get vararg blocks+rep+total,print +"numbers to be added: %d\n"+total,
+  addup+total+rep,print+"the sum is %d\n"+total.
+
+'a'print+T[]+>ptr+*rep+>data-x:
+  T[ptr]->x,add+x+data+x.
+
+
+'root'push+L+-1+-2+-3+-4+-0xabcd.
+
+'a'sum+total>+*rep+>t:
+  t->total,(nxt:shift vararg block+rep,(nxt:ra;rb,:nxt;(nxt:ra,:nxt;rb);:nxt),add+total+t+t,:nxt;+).
+
+$ test
+'a'vv+t>+*rep+>v-k:
+  is+rep,v->t,vv+t+1+rep;
+  shift vararg block+rep,vv+k+rep;
+  vv+k+rep,k->t.
+
+
+'p'ra-y-z: extra+1+2+z,-.
+'p'rb-x-z-y:extra label+12,3<4.
+
+
+'a'extra+>a+>b+c>:add+a+a+c.
+'a'extra label+>a-y: add+a+a+a,(nxt-x:a<1,subtr+a+a+a;+).
+
+'a'printf+T[]+*rep+>ptr+y>-x:
+  (<<T<=ptr,ptr<=>>T),unpack string+T+ptr+opt;
+  (<T<=ptr,ptr<>T,ptr=<>T),error+a+egyes+>T+<T+<>opt+>>opt+#;
+  0->x->y, add+y+0+y,(nxt: shift vararg block+rep, add+y+x+x,:nxt;+).
+
+'a'test2+*rep+>x+y>:
+  add+x+0+y,(nxt: shift vararg block+rep,add+x+2+x,:nxt;+).
+
+'a'error+>x+>y>+T[]+>z+>u+>v>+[]S[]:+.
+'p'next+>n+T[]-x: >T->n,aa+<T+#,(*<<T->ch,>T->p*)opt.
+'a'aa+>x+y>:add+x+x+y.
+'charfile'STDOUT,STDIN.
+$'charfile'STDIN=>"stdin".
+$'charfile'STDOUT="stdout">.
+
+'p'next+>n,q+l>,valami+x>.
+'a'prepare.
+'pred'next+>n-q:buff=n,1->q,next symbol,
+   (l-q: 2->q,next symbol,(l-q: 3->q,:l);is+q;:l);is+q;:next.
+'pred'q+l>:=buff= [/a/:/z/],buff->l,next symbol;-.
+
+'q'ims+>a+*rep:'exit'12.
+
+'datafile'next2[a;b;c]=>">what".
+'a'out+>n:put char+STDOUT+n.
+'a'line out:
+  next+newline,out+/ /;
+  out+buff,next symbol,:line out.
+'pred'optor+>prio+op>+p>-i:
+  >>opt->i,
+  (nxt: <<opt>i,-;
+   ch*opt[i]=buff,p*opt[i]>=prio,buff->op,
+        p*opt[i]->p,next symbol;
+   previous+opt+i,:nxt).
+'a'operand-l:
+  next+/(/,form+0,(next+/)/;'exit'1);
+  letter+l,out+l;
+  'exit'2.
+'a'form+>prio:
+  operand,(nxt-op-p:
+    optor+prio+op+p,incr+p,form+p,out+op,:nxt;
+    +).
+'root'masodik root+x.
+
+'a'inverse polish:
+  line out,form+0,(next+newline,out+newline,:inverse polish;+),
+
+
+
+

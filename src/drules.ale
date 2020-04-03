@@ -7,12 +7,11 @@ $
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("display","disc","types","tags").
+'pragmat'require=("display","disc","types","tags","buffer").
 
 $ check the data flow of a rule
 $ Several checks are made simultaneously.
 $  1) do affixes have the correct number and type; 
-$     implicit coercing is made explicit ( st --> +st*st[>>st] )
 $  2) formal/local variables are set when used
 $  3) wether the value of a formal/local changed
 $  4) does the rule has side effects
@@ -348,7 +347,7 @@ $ prefix where the error occurred
  "extension %p: " :in extension,
  "rule %p: "      :in rule,
 $
- """%p"" not defined" :not defined,
+ "%p: not defined" :not defined,
 $ messages using location
  "%m""%p"" must be a table or stack (%p)" :must be list,
  "%mno standard selector for ""%p"""      :undefined standard selector,
@@ -694,12 +693,12 @@ $ internal error
 'a'extend+[]T[]+>x: (* x->T *)T.
 
 'a'check extension block+>tag+>calibre-ptr-cnt1-cnt:
-   subtr+>>RULE+calibre+ptr,incr+ptr,0->cnt,
-   (RULE[ptr]=0,error+wrong extension block+tag;
-               $ extension block does not end at the highes value
-    (nxt:calibre<=cnt;RULE[ptr]=0;incr+ptr,incr+cnt,:nxt),
+   subtr+>>BUFFER+calibre+ptr,incr+ptr,0->cnt,
+   (BUFFER[ptr]=0,error+wrong extension block+tag;
+               $ extension block does not end at the highest value
+    (nxt:calibre<=cnt;BUFFER[ptr]=0;incr+ptr,incr+cnt,:nxt),
     cnt->cnt1,
-    (nxt:calibre<=cnt;RULE[ptr]=0,incr+ptr,incr+cnt,:nxt;+),
+    (nxt:calibre<=cnt;BUFFER[ptr]=0,incr+ptr,incr+cnt,:nxt;+),
     (cnt<calibre,error+wrong extension block+tag;
                 $ not a single block at the end
      cnt1<cnt,warning+3+short extension block+tag+cnt1+calibre;
@@ -710,28 +709,31 @@ $ internal error
     (x<=0;
      calibre<x,internal error+wrong selector in transport+calibre+x;
       $ go back x blocks and mark it
-     subtr+>>RULE+x+ptr,incr+ptr,
-       (RULE[ptr]=0;error+field doubly filled+tag+x),
-       1->RULE[ptr]),
+     subtr+>>BUFFER+x+ptr,incr+ptr,
+       (BUFFER[ptr]=0;error+field doubly filled+tag+x),
+       1->BUFFER[ptr]),
     :transport dest;
   +.
 'a'transport+>tag+>calibre-rptr-cnt:
-   $ adding calibre many zeroes to RULE
-   >>RULE->rptr,calibre->cnt,(nxt:extend+RULE+0,decr+cnt,(cnt>0,:nxt;+)),
+   $ adding calibre many zeroes to BUFFER
+   >>BUFFER->rptr,calibre->cnt,(nxt:extend+BUFFER+0,decr+cnt,(cnt>0,:nxt;+)),
    (nxt:fsimple affix+tag+0+Uin+#,transport dest+tag+calibre,
         (Q+Dend;Q+Dextension;:nxt)),
    check extension block+tag+calibre,
-   unstack to+RULE+rptr.
+   unstack to+BUFFER+rptr.
 
 'a'extension-tag-type-calibre:
    must Ltag+tag,get type+tag+type,(=type=
+     [Istatic stack],
+        (is tag flag+tag+timported,error+stack expected+tag+type;
+         get calibre+tag+calibre,transport+tag+calibre);
      [Istack],get calibre+tag+calibre,transport+tag+calibre;
      [Iformal stack],get local calibre+tag+calibre,
-        $ calibre=-1 when no formal field list
+        $ calibre=-1 for no formal field list
         (calibre>0;1->calibre),
         transport+tag+calibre,set local flag+tag+LTmod;
      [Iempty],error+not defined+tag,Qskip+Dextension;
-        error+stack expected+tag+type,Qskip+Dextension).
+     error+stack expected+tag+type,Qskip+Dextension).
 
 $ CLASSIFICATION ----------------------------------------- $
 'table'MESSAGE=(
@@ -886,8 +888,8 @@ $ TODO: WARNINGS ARE DUPLICATED WHEN REPEATING THIS LOOP
    $ check local affixes and the label for usage
    (nxt: >>LLOC<=loc;
      (is local flag+>>LLOC+Lused;
-      (type*LLOC=Ilabel,(compound level=0;warning+4+label not used+tag*LLOC);
-       warning+4+local affix not used+tag*LLOC),
+      type*LLOC=Ilabel,(compound level=0;warning+4+label not used+tag*LLOC);
+      warning+4+local affix not used+tag*LLOC),
      unstack+LLOC,:nxt).
 
 $ ----------------------------------------------------------- $

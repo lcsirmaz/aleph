@@ -1,0 +1,52 @@
+$ test for vararg
+
+'table'MESSAGE=(0,1,2,3,4,5).
+
+$ user externals cannot have filling
+$  (STDARG, @stdstring are exceptions)
+
+'variable'z=0.
+'a'rule+>x:
+  =x=
+  [2;3],3->z,'exit'44;
+  [4:5],4->z;
+  5->z.
+'root'+.
+'end'
+
+
+'stack'DUMMY=(1,2,3,4,5).
+'stack'(f1,f2=f2=f3)DUMMY 2=(1,2,3,4).
+'pragmat'library=on.
+'x''stack'DUMMY="_dummy".
+'x''stack'(a1,a2)DUMMY 2="_dummy".
+'pragmat'library=off.
+'stack'DUMMY=(6,7).
+'stack'DUMMY 2=((7,8),(9)).
+
+'f'format print+T[]+*+>fmt-opt:
+  T[fmt]->opt,
+  get affix blockno+opt+*,
+  (opt=0; shift affix block+*,:format print; +).
+'a'warning+>level+*+>opt:
+  level<3;
+  format print+MESSAGE+*.
+'root'warning+10+3+4+5.
+
+'stack'[10](a)A.
+'a'test+>x: 1->a*A[<<A],a*A->x.
+
+'stack'(b,c,d)Notused=(1:none,2:ntwo).
+
+$W4 0007/test2        rule formatprint: has no global side effect
+$W5 0007/test2        rule formatprint: does not handle variable args
+$W5 0010/test2        rule warning: does not handle variable args
+'end'
+
+'f'format print+T[]+(*)+>fmt-opt:
+  T[fmt]->opt,
+  (opt=0; shift affix block+(*),:format print; +).
+'a'warning+>level+(*)+>opt:
+  level<3;
+  format print+MESSAGE+(*).
+    

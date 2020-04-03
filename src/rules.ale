@@ -45,7 +45,7 @@ $ formal lists $
 ).
 
 $ skip field list; goes over a field list first time.
-$   returne whether there was any error with error message
+$   returns whether there was any error with error message
 'a'skip field list+>err>:
    R+Sopen,(nxt:is tag+#,(R+Scomma,:nxt;
                           R+Sequals,:nxt;

@@ -1,0 +1,10 @@
+$ provide an all purpose buffer
+'pragmat'module="buffer".
+$ HEADER ****************************************************** $
+'stack'BUFFER.
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+'stack'[1]BUFFER.
+'root'+.
+'pragmat'endif=compile.
+'end'

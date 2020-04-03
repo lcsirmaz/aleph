@@ -556,6 +556,7 @@ void Aread(int *a){
   else if(Achar=='['){nextChar();a[0]=Ssub;}
   else if(Achar==']'){nextChar();optor=1;a[0]=Sbus;}
   else if(Achar=='#'){nextChar();if(shortComment()){goto nxt2;}else{a[0]=Snoarg;}}
+  else if(Achar=='\\'){nextChar();shortComment();goto nxt2;}
   else if(Achar=='"'){readString(par);a[0]=par[0];}
   else if(Achar=='!'){nextChar(); if(Achar=='='){nextChar();a[0]=Snotequal;}
            else{par[0]=illegal_character;par[1]='!';Error(2,par);goto nxt2;}}
@@ -574,6 +575,7 @@ void skip(int *a){
   else if(Achar=='.'){nextChar();a[0]=Spoint;}
   else if(Achar=='"'){nextChar();skipString();goto nxt;}
   else if(Achar=='#'){nextChar();shortComment(); goto nxt;}
+  else if(Achar=='\\'){nextChar();shortComment();goto nxt;}
   else if(Achar=='$'){nextChar();longComment();goto nxt;}
   else if(Achar==endChar){a[0]=Sendsymb;}
   else{nextChar(); goto nxt;}

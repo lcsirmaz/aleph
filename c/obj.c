@@ -15,21 +15,25 @@
 /* messages */
 static int 
 tag_not_defined,tag_type_error,tag_list_type_error,cannot_be_external,
-tag_not_used,cannot_have_filling,
+tag_not_used,cannot_have_filling,undefined_selector,wrong_filling_block,
+double_selector,
 large_block_size,small_block_size,opening_OBJ,wrong_Wtag_argument,
 wrong_Wstring_argument;
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void add_messages(void){
  addMSG("%p: not defined",tag_not_defined);
- addMSG("%p: is of type %p, should be %p",tag_type_error);
- addMSG("%p: is of type %p, should be a list",tag_list_type_error);
+ addMSG("%p %p: should be %p",tag_type_error);
+ addMSG("%p %p: should be a list",tag_list_type_error);
  addMSG("%p %p: not used",tag_not_used);
  addMSG("%p %p: not used, cannot have filling",cannot_have_filling);
- addMSG("%p: cannot be external (%l)",cannot_be_external);
+ addMSG("%p %p: cannot be external (%l)",cannot_be_external);
+ addMSG("%p %p: undefined selector %p",undefined_selector);
+ addMSG("%p %p: selector %p duplicated",double_selector);
+ addMSG("%p %p: wrong filling block",wrong_filling_block);
 /* warning */
- addMSG("list \"%p\" filling: block size %d is bigger than calibre %d",large_block_size);
- addMSG("list \"%p\" filling: block size %d is smaller than calibre %d",small_block_size);
+ addMSG("%p %p: filling block size %d is bigger than calibre (%d)",large_block_size);
+ addMSG("%p %p: filling block size %d is smaller than calibre (%d)",small_block_size);
 /* internal error */
  addMSG("cannot open obj file %p, error code: %p",opening_OBJ);
  addMSG("Wtag: wrong argument %p",wrong_Wtag_argument);
@@ -143,13 +147,13 @@ static int isItemTag(int *a){ /* >tag */
     par[0]=a[0];par[1]=rmacro;if(isTagFlag(par)){return 0;}}
   return 1;
 }
-static int notDefinedTag(int *a){ /* >tag */
-  int par[2];
-  par[0]=a[0];par[1]=tused;if(isTagFlag(par)){par[0]=a[0];
-    par[1]=tdefined;if(isTagFlag(par)){;}else{ return 1;}
-  }
-  return 0;
-}
+//static int notDefinedTag(int *a){ /* >tag */
+//  int par[2];
+//  par[0]=a[0];par[1]=tused;if(isTagFlag(par)){par[0]=a[0];
+//    par[1]=tdefined;if(isTagFlag(par)){;}else{ return 1;}
+//  }
+//  return 0;
+//}
 static void listData(int *a){ /* >tag */
   int par[2];
   par[0]=a[0];getCalibre(par);par[0]=par[1];Wcons(par);
@@ -172,8 +176,8 @@ void defineObjTag(int *a){ /* >tag */
 //printf("++");par[0]=a[0];printPointer(par);par[0]=a[0];par[1]=tused;printf(" used=%d ++\n",isTagFlag(par)?1:0);
   par[0]=a[0];fixListUsage(par);
   par[0]=a[0];if(!isItemTag(par)){
-    par[0]=a[0];if(notDefinedTag(par)){
-      par[0]=tag_not_defined;par[1]=a[0];Xerror(0,2,par);}
+//    par[0]=a[0];if(notDefinedTag(par)){
+//      par[0]=tag_not_defined;par[1]=a[0];Xerror(0,2,par);}
     return; 
   }
   getNewItem(par); item=par[0];par[0]=a[0];getType(par);type=par[1];
@@ -212,13 +216,14 @@ static void wrongType(int *a){/* >tag+>expected */
   int par[4];int type;
   par[0]=a[0];getType(par);type=par[1];
   if(type==Iempty){par[0]=tag_not_defined;par[1]=a[0];Error(2,par);}
-  else if(par[1]==0){par[0]=tag_list_type_error;par[1]=a[0];par[2]=type;Error(3,par);}
-  else{par[0]=tag_type_error,par[1]=a[0];par[2]=type;par[3]=a[1];Error(4,par);}
+  else if(par[1]==0){par[0]=tag_list_type_error;par[2]=a[0];par[1]=type;Error(3,par);}
+  else{par[0]=tag_type_error,par[2]=a[0];par[1]=type;par[3]=a[1];Error(4,par);}
 }
 static void noExternal(int *a){/* >tag */
-  int par[4];
+  int par[4];int dl,type;
   par[0]=a[0];par[1]=texternal;if(isTagFlag(par)){par[0]=a[0];getDefline(par);
-    par[2]=par[1];par[0]=cannot_be_external;par[1]=a[0];Error(3,par);}
+    dl=par[1];getType(par);type=par[1];par[0]=cannot_be_external;
+    par[1]=type;par[2]=a[0];par[3]=dl;Error(4,par);}
   else if((par[1]=tdefined,isTagFlag(par))){;}
   else{par[0]=tag_not_defined;par[1]=a[0];Error(2,par);}
 }
@@ -279,16 +284,16 @@ static void countBlockItems(int *a){ /* cnt> + rep> */
   else{mustQcons(par);a[0]++;goto nxt;}
 }
 static void block(int *a){/* >tag */
-  int par[4];int calibre,cnt,rep,x,y;
+  int par[5];int calibre,cnt,rep,x,y;
   par[0]=a[0];getCalibre(par);calibre=par[1];countBlockItems(par);
-  cnt=par[0];rep=par[1];
+  cnt=par[0];rep=par[1];par[0]=a[0];getType(par);x=par[1];
 //printf("\n ***fill block, count=%d, rep=%d, calibre=%d\n",cnt,rep,calibre);
   if(cnt==calibre){;}
-  else if(cnt>calibre){par[0]=large_block_size;par[1]=a[0];par[2]=cnt;
-    par[3]=calibre;Warning(6,4,par);}
+  else if(cnt>calibre){par[0]=large_block_size;par[1]=x;par[2]=a[0];par[3]=cnt;
+    par[4]=calibre;Warning(6,5,par);}
   else if(rep!=0){rep=calibre-cnt;}
-  else{par[0]=small_block_size;par[1]=a[0];par[2]=cnt;par[3]=calibre;
-    Warning(4,4,par);}
+  else{par[0]=small_block_size;par[1]=x;par[2]=a[0];par[3]=cnt;par[4]=calibre;
+    Warning(4,5,par);}
   x=y=0;nxt:par[0]=Dclose;
   if(Q(par)){;}
   else if(Qtag(par)){x=par[0];Wtag(par);par[0]=x;checkListItemType(par);
@@ -298,6 +303,58 @@ static void block(int *a){/* >tag */
     goto nxt;}
   else{mustQcons(par);x=par[0];Wcons(par);y=0;goto nxt;}    
 }
+/* - - - - - - - - - - - - - - - - - - - - */
+static void checkBlock2Extension(int *a){/* >ptr+>tag+>calibre */
+  int par[5]; int cnt1,cnt,type;         /*   0     1     2    */
+  cnt=0;a[0]++;par[0]=a[1];getType(par);type=par[1];
+  if(BUFFER->offset[a[0]]==0){par[0]=wrong_filling_block;par[1]=type;
+    par[2]=a[1];Error(3,par);}
+  else{nxt:if(a[2]<=cnt){;}
+    else if(BUFFER->offset[a[0]]==0){;}
+    else{cnt++;a[0]+=2;goto nxt;}
+    cnt1=cnt;nxt2:if(a[2]<=cnt){;}
+    else if(BUFFER->offset[a[0]]==0){a[0]+=2;cnt++;goto nxt2;}
+    if(cnt<a[2]){par[0]=wrong_filling_block;par[1]=type;par[2]=a[1];Error(3,par);}
+    else if(cnt1<cnt){par[0]=small_block_size;par[1]=type;par[2]=a[1];
+      par[3]=cnt1;par[4]=a[2];Warning(3,5,par);}}
+}
+static void block2Selector(int *a){ /* >tag + x>  */
+  int par[5];int sel,ptr,type;
+  par[0]=Dstar;if(Q(par)){a[1]=-1; return;}
+  mustQtag(par);sel=par[0];getRepr(par);a[1]=par[1];
+//printf("blck2Selector,sel=%d, aupb=%d ",a[1],BUFFER->aupb);printPointer(par);
+  if(a[1]>0){a[1]--;par[0]=a[1];par[1]=-2;par[2]=BUFFER->aupb;addmult(par);
+    ptr=par[3];ptr--;
+//printf(" checking=%d, v=%d\n",ptr,BUFFER->offset[ptr]);
+    if(BUFFER->offset[ptr]==0){;}
+    else{par[0]=a[0];getType(par);type=par[1];par[0]=double_selector;
+      par[1]=type;par[2]=a[0];par[3]=sel;Error(4,par);}}
+  else{par[0]=a[0];getType(par);type=par[1];par[0]=undefined_selector;
+    par[1]=type;par[2]=a[0];par[3]=sel,Error(4,par);a[1]=-1;}
+}
+static void block2(int *a){ /* >tag */
+  int par[5];int optr,calibre,x,y,rx,ry,ptr,sel;
+  optr=BUFFER->aupb;par[0]=a[0];getCalibre(par);calibre=par[1];x=calibre;
+  nxt1:par[0]=STACKpar(BUFFER);par[1]=0;extend(par);extend(par);x--;
+  if(x==0){;}else{goto nxt1;}
+//printf("block2, bloc start=%d, cal=%d, v=%d,\n",optr+1,calibre,BUFFER->offset[optr+1]);
+  rx=ry=0;nxt2:
+  if(Qtag(par)){x=par[0];checkListItemType(par);y=2;}
+  else{mustQcons(par);x=par[0];y=1;}
+  dest:par[0]=Dto;if(Q(par)){par[0]=a[0];block2Selector(par);sel=par[1];
+    if(sel<0){rx=x;ry=y;}
+    else{par[0]=sel;par[1]=-2;par[2]=BUFFER->aupb;addmult(par);ptr=par[3];
+      BUFFER->offset[ptr]=x;ptr--;BUFFER->offset[ptr]=y;}
+    goto dest;}
+  else if((par[0]=Dextension,Q(par))){;}
+  else{goto nxt2;}
+  ptr=optr;nxt3:if(ry==0){;}else if(ptr>=BUFFER->aupb){;}
+  else{ptr++;if(BUFFER->offset[ptr]==0){BUFFER->offset[ptr]=ry;ptr++;
+     BUFFER->offset[ptr]=rx;}else{ptr++;} goto nxt3;}
+  par[0]=optr;par[1]=a[0];par[2]=calibre;checkBlock2Extension(par);
+  par[0]=STACKpar(BUFFER);par[1]=optr;unstackto(par);
+}
+/* - - - - - - - - - - - - - - - - - - - - */
 static void writeString(int *a){ /* >str */
    int par[3];int x;
    par[0]=Dopen;W(par);
@@ -310,7 +367,9 @@ static void listItem(int *a){ /* >tag */
   if(Qtag(par)){x=par[0];Wtag(par);par[0]=x;checkListItemType(par);}
   else if(Qcons(par)){Wcons(par);}
   else if(Qstring(par)){writeString(par);}
-  else{par[0]=Dopen;mustQ(par);par[0]=Dopen;W(par);par[0]=a[0];block(par);
+  else if(par[0]=Dopen,Q(par)){par[0]=Dopen;W(par);par[0]=a[0];block(par);
+    par[0]=Dclose;W(par);}
+  else{par[0]=Dextension;mustQ(par);par[0]=Dopen;W(par);par[0]=a[0];block2(par);
     par[0]=Dclose;W(par);}
 }
 static int isFillTagUsed(int *a){ /* >tag */
