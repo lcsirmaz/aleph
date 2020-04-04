@@ -336,6 +336,10 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    incr+ptr,(BUFFER[ptr]=0,ry->BUFFER[ptr],incr+ptr,rx->BUFFER[ptr];
              incr+ptr),:nxt),
   check block2 extension+optr+tag+calibre,
+  >>BUFFER->ptr,
+  (nxt:ptr<=optr;
+       BUFFER[ptr]->x,decr+ptr,BUFFER[ptr]->y,decr+ptr,
+       (y=1,Wcons+x;y=2,Wtag+x;+),:nxt),
   unstack to+BUFFER+optr.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 $ str is a string in LEXT; print as a sequence of integers

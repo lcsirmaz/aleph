@@ -34,28 +34,28 @@ $ BODY ********************************************************* $
    member,(Q+Dcomma,:alternative;+).
 'a'alt sequence:
    alternative,(Q+Dsemicolon,:alt sequence;+).
- 'a'member-tag-dpos-dnum:
+ 'a'member-tag:
    Q+Dopen,rule body,mustQ+Dclose;
    Q+Dextension,Qskip+Dextension;
    Q+Djump,must Qtag+#;
    Q+Dplus;
    Q+Dminus;
-   must Qtag+tag,save disc position+dpos+dnum,
-     check macro+tag,restore disc position+dpos+dnum,skip affixes.
+   must Qtag+tag,(is tag flag+tag+rmacro,check macro rule+tag;+),
+      skip affixes.
 
-'a'check macro+>tag-dpos-dnum:
-   search macro rule+tag+dpos+dnum,restore disc position+dpos+dnum, 
-   rule body.
+'a'check macro rule+>tag-dpos-dnum-mp-mn:
+   $ tag is a macro
+   is tag flag+tag+rmchecked;
+   is tag flag+tag+rmchecking,
+     error+recursive macro call+tag,clear tag flag+tag+rmchecking,
+     set tag flag+tag+rmchecked;
+   set tag flag+tag+rmchecking,save disc position+dpos+dnum,
+     search macro rule+tag+mp+mn,restore disc position+mp+mn, 
+     rule body,clear tag flag+tag+rmchecking,set tag flag+tag+rmchecked,
+     restore disc position+dpos+dnum.
 
 'a'm check macro rules-tag:
-   0->tag,(nxt:
-     next macro rule+tag,
-        (is tag flag+tag+rmchecked;
-         is tag flag+tag+rmchecking,error+recursive macro call+tag;
-         set tag flag+tag+rmchecking,check macro+tag,
-           clear tag flag+tag+rmchecking,set tag flag+tag+rmchecked),
-        :nxt;
-      +).
+   0->tag,(nxt:next macro rule+tag,check macro rule+tag,:nxt;+).
 
 'root'+.
 

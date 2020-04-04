@@ -645,7 +645,7 @@ $ and cannot call "shift affix block"
 'a'check macro rule+>rtag:
    is tag flag+rule compiled+rmacro,
      (rtag=rule compiled,error+recursive macro+rtag;
-      rtag=Xshift affix,error+macro cannot call+rtag;
+      is tag flag+rtag+rshiftrule,error+macro cannot call+rtag;
       +);
    +.
 $  canT: rule can succeed
