@@ -56,22 +56,23 @@ static void mustTag(int *a){/* x> */
   fprintf(stderr,"tag must be here\n"); exit(24);
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - */
-static void skipFieldList(int *a){ /* >err> */
+static void skipFieldList(int *a){ /* + calibre>+ >err> */
   int par[2];
-  par[0]=Sopen;if(R(par)){nxt:if(isTag(par)){
-    par[0]=Scomma;if(R(par)){goto nxt;}
+  par[0]=Sopen;if(R(par)){a[0]=1;nxt:if(isTag(par)){
+    par[0]=Scomma;if(R(par)){a[0]++;goto nxt;}
     par[0]=Sequals;if(R(par)){goto nxt;}
     par[0]=Sclose;if(R(par)){;}
-    else{par[0]=wrong_formal_selector;Error(1,par);a[0]=1;}}
-    else{par[0]=formal_selector_tag_expected;Error(1,par);a[0]=1;}}
+    else{par[0]=wrong_formal_selector;Error(1,par);a[1]=1;}}
+    else{par[0]=formal_selector_tag_expected;Error(1,par);a[1]=1;}}
+  else{a[0]=-1;}
 }
-static void getListTag(int *a){ /* tag>+>err> */
+static void getListTag(int *a){ /* tag>+calibre>+>err> */
   int par[2];
-  initRestore();par[0]=a[1];skipFieldList(par);a[1]=par[0];
+  initRestore();par[1]=a[2];skipFieldList(par);a[1]=par[0];a[2]=par[1];
   a[0]=0;if(isTag(par)){a[0]=par[0];}
   else if(a[0]){;}
-  else{par[0]=formal_list_tag_missing;Error(1,par);a[1]=1;}
-  if(a[1]){forgetRestore();}else{makeRestore();}
+  else{par[0]=formal_list_tag_missing;Error(1,par);a[2]=1;}
+  if(a[2]){forgetRestore();}else{makeRestore();}
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - */
 /* skipover formal affixes */
@@ -91,12 +92,11 @@ static void expectFormalTag(int *a){ /* >ruletag+>err> */
 }
 static void skipFormalAffix(int *a){/* >ruletag + >err> */
   int par[3];
-//printf("skip formal affix, looking at %d \"",inpt);par[0]=inpt;printPointer(par);printf("\"\n");
   if(ahead(Ssub)){par[0]=a[0];par[1]=a[1];subbus(par);a[1]=par[1];
-   par[0]=a[1];skipFieldList(par);a[1]=par[0];par[0]=a[0];par[1]=a[1];
+   par[1]=a[1];skipFieldList(par);a[1]=par[1];par[0]=a[0];par[1]=a[1];
    expectFormalTag(par);a[1]=par[1];par[0]=a[0];par[1]=a[1];subbus(par);
    a[1]=par[1];}
-  else if(ahead(Sopen)){par[0]=a[1];skipFieldList(par);a[1]=par[0];
+  else if(ahead(Sopen)){par[1]=a[1];skipFieldList(par);a[1]=par[1];
    par[0]=a[0];par[1]=a[1];expectFormalTag(par);a[1]=par[1];par[0]=a[0];
    par[1]=a[1];subbus(par);a[1]=par[1];}
   else if(par[0]=Squoteimage,R(par)){par[0]=a[0];par[1]=a[1];
@@ -148,14 +148,14 @@ static void defineAsFormal(int *a){ /* >rtag+>formal> + >tag+>type+>err> */
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* formal list affix */
-static void checkSelectorList(int *a){/* >tag+n>+ssel> */
+static void checkSelectorList(int *a){/* >tag+>n+ssel> */
   int par[2];int sel;
-  par[0]=Sopen;if(R(par)){a[1]=1;a[2]=-1;nxt:mustTag(par);sel=par[0];
+  par[0]=Sopen;if(R(par)){a[2]=-1;nxt:mustTag(par);sel=par[0];
     if(a[0]==sel){a[2]=a[1];}
-    if(par[0]=Scomma,R(par)){a[1]++;goto nxt;}
+    if(par[0]=Scomma,R(par)){a[1]--;goto nxt;}
     else if(par[0]=Sequals,R(par)){goto nxt;}
     else {par[0]=Sclose;must(par);}}
-  else{a[1]=-1;a[2]=1;}
+  else{a[2]=1;}
 }
 static void createFormalSelector(int *a){ /* >rtag+>tag+>sel+>offset+>err> */
   int par[5];int fsel,formal;
@@ -172,14 +172,14 @@ static void createFormalSelector(int *a){ /* >rtag+>tag+>sel+>offset+>err> */
 //printf("  formal ssel created from %d as=%d \"",fsel,formal);par[0]=formal;printPointer(par);printf("\"\n");
     }
 }
-static void defineSelectorList(int *a){/* >rtag+>tag+n>+ssel>+>err> */
-                                      /*   0     1   2   3      4   */
+static void defineSelectorList(int *a){/* >rtag+>tag+>n+ssel>+>err> */
+                                      /*    0     1   2   3      4   */
   int par[5];int sel;
-  par[0]=Sopen;if(R(par)){a[2]=1;a[3]=-1;nxt:mustTag(par);sel=par[0];
+  par[0]=Sopen;if(R(par)){a[3]=-1;nxt:mustTag(par);sel=par[0];
     if(a[1]==sel){a[3]=a[2];}
     par[0]=a[0];par[1]=a[1];par[2]=sel;par[3]=a[2];par[4]=a[4];
     createFormalSelector(par);a[4]=par[4];par[0]=Scomma;
-    if(R(par)){a[2]++;goto nxt;}
+    if(R(par)){a[2]--;goto nxt;}
     par[0]=Sequals;if(R(par)){goto nxt;}
     par[0]=Sclose;must(par);
     if(a[3]>0){;}
@@ -188,7 +188,7 @@ static void defineSelectorList(int *a){/* >rtag+>tag+n>+ssel>+>err> */
   else{
 //DEBUG
 //printf("creating ssel for %d\n",a[1]);
-    a[2]=-1;a[3]=1;par[0]=a[0];par[1]=a[1];par[2]=a[1];par[3]=1;par[4]=a[4];
+    a[3]=1;par[0]=a[0];par[1]=a[1];par[2]=a[1];par[3]=1;par[4]=a[4];
     createFormalSelector(par);a[4]=par[4];}
 }
 static void checkFormalListData(int *a){
@@ -207,51 +207,53 @@ static void checkFormalListData(int *a){
     par[1]=a[0];par[2]=a[2];par[3]=ol;Error(4,par);a[6]=1;}
 }
 static void checkAsFormalList(int *a){
-  /* >rtag + >formal> + >tag + >ftype + >err> 
-       0        1         2        3       4  */
-  int par[7];int fcal,fssel;
-  par[0]=a[2];checkSelectorList(par);fcal=par[1];fssel=par[2];
+  /* >rtag + >formal> + >tag + >ftype + >fcal+ >err> 
+       0        1         2        3       4     5 */
+  int par[7];int fssel;
+  par[0]=a[2];par[1]=a[4];checkSelectorList(par);fssel=par[2];
 //printf("check selector list for tag=%d returns cal=%d,sel=%d\n",a[2],fcal,fssel);
-  par[0]=a[2];Rskip(par);par[0]=a[0];par[2]=a[4];subbus(par);a[4]=par[2];
-  if(a[1]){par[0]=a[0];par[1]=a[1];par[2]=a[2];par[3]=a[3];par[4]=fcal;
-    par[5]=fssel;par[6]=a[4];checkFormalListData(par);a[4]=par[6];}
+  par[0]=a[2];Rskip(par);par[0]=a[0];par[2]=a[5];subbus(par);a[5]=par[2];
+  if(a[1]){par[0]=a[0];par[1]=a[1];par[2]=a[2];par[3]=a[3];par[4]=a[4];
+    par[5]=fssel;par[6]=a[5];checkFormalListData(par);a[5]=par[6];}
   else{par[0]=a[3];par[1]=a[2];newFormalTag(par);a[1]=par[2];
-    par[0]=a[1];par[1]=fcal;putFormalCalibre(par);par[0]=a[1];
+    par[0]=a[1];par[1]=a[4];putFormalCalibre(par);par[0]=a[1];
     par[1]=fssel;putFormalSsel(par);}
 }
 static void defineAsFormalList(int *a){
- /* >rtag + >formal> + >tag + >ftype + >err> */
- int par[7];int fcal,fssel;
- par[0]=a[2];if(hasFormalType(par)){a[4]=1;
+/* >rtag + >formal> + >tag + >ftype + >fcal + >err>
+     0       1         2        3       4       5   */
+ int par[7];int fssel;
+ par[0]=a[2];if(hasFormalType(par)){a[5]=1;
    par[0]=formal_affix_redefined;par[1]=a[0];par[2]=a[2];Error(3,par);}
- else{par[0]=a[0];par[1]=a[2];par[4]=a[4];defineSelectorList(par);
-   fcal=par[2];fssel=par[3];a[4]=par[4];par[0]=a[2];Rskip(par);
-   par[0]=a[0];par[1]=a[4];subbus(par);a[4]=par[1];if(a[4]){;}
+ else{par[0]=a[0];par[1]=a[2];par[2]=a[4];par[4]=a[5];defineSelectorList(par);
+   fssel=par[3];a[5]=par[4];par[0]=a[2];Rskip(par);
+   par[0]=a[0];par[1]=a[5];subbus(par);a[5]=par[1];if(a[5]){;}
    else if(a[1]){par[0]=a[0];par[1]=a[1];par[2]=a[2];par[3]=a[3];
-     par[4]=fcal;par[5]=fssel;par[6]=a[4];checkFormalListData(par);
-     a[4]=par[6];}
+     par[4]=a[4];par[5]=fssel;par[6]=a[5];checkFormalListData(par);
+     a[5]=par[6];}
    else{par[0]=a[3];par[1]=a[2];newFormalTag(par);a[1]=par[2];
-     par[0]=a[1];par[1]=fcal;putFormalCalibre(par);par[0]=a[1];
+     par[0]=a[1];par[1]=a[4];putFormalCalibre(par);par[0]=a[1];
      par[1]=fssel;putFormalSsel(par);}
-   if(a[4]){;}else{par[0]=a[2];par[1]=a[1];redefineTag(par);}}
+   if(a[5]){;}else{par[0]=a[2];par[1]=a[1];redefineTag(par);}}
 }
 static void formalListAffix(int *a){
   /* >rtag+ >fast + >formal> + >ftype + >err> 
        0      1        2          3      4   */
-  int par[5];int tag;
-  par[1]=a[4];getListTag(par);tag=par[0];a[4]=par[1];
+  int par[6];int tag,calibre;
+  par[2]=a[4];getListTag(par);tag=par[0];calibre=par[1];a[4]=par[2];
   if(a[4]){;}
   else if(a[1]){par[0]=a[0];par[1]=a[2];par[2]=tag;par[3]=a[3];
-    par[4]=a[4];checkAsFormalList(par);a[2]=par[1];a[4]=par[4];}
-  else{par[0]=a[0];par[1]=a[2];par[2]=tag;par[3]=a[3];par[4]=a[4];
-    defineAsFormalList(par);a[2]=par[1];a[4]=par[4];}
+    par[4]=calibre;par[5]=a[4];checkAsFormalList(par);a[2]=par[1];a[4]=par[5];}
+  else{par[0]=a[0];par[1]=a[2];par[2]=tag;par[3]=a[3];par[4]=calibre;
+    par[5]=a[4];defineAsFormalList(par);a[2]=par[1];a[4]=par[5];}
 }
 static void checkAsFormalTableAffix(int *a){/* >rtag+>tag+>formal>+>err> */
   int par[7];
   if(a[2]){par[0]=a[0];par[1]=a[2];par[2]=a[1];par[3]=IformalTable;
     par[4]=-1;par[5]=1;par[6]=a[3];checkFormalListData(par);a[2]=par[1];
     a[3]=par[6];}
-  else{par[0]=IformalTable;par[1]=a[1];newFormalTag(par);a[2]=par[2];
+  else{par[0]=IformalTable;par[1]=a[1];newFormalTag(par);a[2]=
+  par[2];
     par[0]=a[2];par[1]=-1;putFormalCalibre(par);par[0]=a[2];par[1]=1;
     putFormalSsel(par);}
 }

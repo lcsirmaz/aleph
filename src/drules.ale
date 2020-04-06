@@ -99,7 +99,7 @@ $ flags for LLOC
     previous+LLOC+ptr,:nxt).
 $ -------------------------------------------------- $
 'table'MESSAGE=(
- "%p: formal out affix %p was not set":repeat block out formal not set,
+ "rule %p: formal out affix %p was not set":repeat block out formal not set,
  "rule %p: no pending repeat affixes" :no pending repeat block,
  "label %p: infinite loop"            :unshielded jump
 ).
@@ -346,6 +346,7 @@ $ prefix where the error occurred
  "%*"             :in class,
  "extension %p: " :in extension,
  "rule %p: "      :in rule,
+ "macro %p: "     :in macro,
 $
  "%p: not defined" :not defined,
 $ messages using location
@@ -425,12 +426,12 @@ $   inout         E       E     E      .    .M     .M
  "%m""%p"" unitialized"            :affix no value,
  "%mcannot be a constant"          :cannot be constant,
  "%mlimit with ""%p"" cannot be used":limit cannot be used,
- "%m""%p"" is not compatible (%l)" :provides wrong type,
+ "%m""%p"" has incompatible type (%l)" :provides wrong type,
  "%mdummy affix cannot be used here":wrong dummy affix,
  "%m""%p"" maybe wrong index"       :maybe wrong index,
 
- "rule %p: affix ""%p"" has calibre different from %d" :actual calibre different,
- "rule %p: standard selector of ""%p"" is different" :actual ssel different,
+ "%maffix ""%p"" has calibre different from %d" :actual calibre different,
+ "%mstandard selector of ""%p"" is different" :actual ssel different,
 
  "rule %p: the last actual affix must be *" :missing repeat affix,
  "rule %p: cannot modify in affix %p in a macro rule":cannot modify read only macro,
@@ -466,6 +467,7 @@ $ formal: file
      affix type error+rtag+cnt+atag);
    affix type error+rtag+cnt+0,skip source.
 $ if a formal list has selectors, the actual affix must match
+$ if rtag is macro, then this is an error
 'a'check calibre+>rtag+>formal+>actual-x-atype-acalibre-assel:
    get formal calibre+formal+x,(x<0; $ formal has no field list $
      get type+actual+atype,
@@ -473,9 +475,13 @@ $ if a formal list has selectors, the actual affix must match
          get local calibre+actual+acalibre,(acalibre>=0;1->acalibre),
          get local ssel+actual+assel;
       get calibre+actual+acalibre,get ssel+actual+assel),
-     (x=acalibre;warning+7+actual calibre different+rtag+actual+x),
+     (x=acalibre;
+      is tag flag+rtag+rmacro,error+actual calibre different+in macro+tag+actual+x;
+      warning+7+actual calibre different+in rule+rtag+actual+x),
      get formal ssel+formal+x,
-     (x=assel;warning+7+actual ssel different+rtag+actual)
+     (x=assel;
+      is tag flag+rtag+rmacro,error+actual ssel different+in macro+rtag+actual;
+      warning+7+actual ssel different+in rule+rtag+actual)
    ).
 $ formal: table
 'a'ftable affix+>rtag+>cnt+>formal-atag:
@@ -693,12 +699,14 @@ $ internal error
 'a'extend+[]T[]+>x: (* x->T *)T.
 
 'a'check extension block+>tag+>calibre-ptr-cnt1-cnt:
-   subtr+>>BUFFER+calibre+ptr,incr+ptr,0->cnt,
+   $      c  c-1  c-2 ...  4   3    2   1   $
+   $                                    ^-- <<BUFFER
+   >>BUFFER->ptr,0->cnt,
    (BUFFER[ptr]=0,error+wrong extension block+tag;
                $ extension block does not end at the highest value
-    (nxt:calibre<=cnt;BUFFER[ptr]=0;incr+ptr,incr+cnt,:nxt),
+    (nxt:calibre<=cnt;BUFFER[ptr]=0;decr+ptr,incr+cnt,:nxt),
     cnt->cnt1,
-    (nxt:calibre<=cnt;BUFFER[ptr]=0,incr+ptr,incr+cnt,:nxt;+),
+    (nxt:calibre<=cnt;BUFFER[ptr]=0,decr+ptr,incr+cnt,:nxt;+),
     (cnt<calibre,error+wrong extension block+tag;
                 $ not a single block at the end
      cnt1<cnt,warning+3+short extension block+tag+cnt1+calibre;
@@ -715,7 +723,7 @@ $ internal error
     :transport dest;
   +.
 'a'transport+>tag+>calibre-rptr-cnt:
-   $ adding calibre many zeroes to BUFFER
+   $ adding calibre many zeros to BUFFER
    >>BUFFER->rptr,calibre->cnt,(nxt:extend+BUFFER+0,decr+cnt,(cnt>0,:nxt;+)),
    (nxt:fsimple affix+tag+0+Uin+#,transport dest+tag+calibre,
         (Q+Dend;Q+Dextension;:nxt)),

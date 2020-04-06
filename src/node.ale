@@ -12,48 +12,50 @@ $ A call has zero, one or two exits; a classifier has one exit
 $  for each alternative (one of them must succeed); an
 $  extension has one exit. Eventually, each exit is a label of
 $  some node.
-$ Data flow is recalculated for formal in/out/inout and local
-$  variables to see if set variables are actually used; if not
-$  then the assignment can be skipped. It requires traversing
-$  the flow backwards several times.
-$ Each compound block stores flags for all relevant formal/local
-$  -- at entry v has a value and it is used as it is
-$        Example: at 2 this flag should be set set as "2->v"
-$                 cannot be optimized out
-$        1->v, (l1: use v, (l2:condition,:l1; 2->v,:l2))
-$              ^1          ^2
-$  -- after leaving the block with true, v is set and will be used
-$  -- after leaving the block with false, v is set and will be used
-$  -- auxiliary bit for the head of the next alternative
-$
-$ one can go backwards maintaining this bit. Node "n" has one or
-$  two successors. If "n" gives value to v and the true branch has
-$  this flag off, no need to store and forward the false brach flag.
-$  If "n" uses v, set this flag. If "n" does not mention v, OR the
-$  flags of the two branches. At jumps, take the flag from the
-$  referred entry point.
-$
-$ Flags at the compound blocks can be computed iteratively. Initially
-$  all are zero; the final TRUE and FALSE flags are computed for
-$  formals. Then apply the sweep above, set the compound block head
-$  flags for each alternative head, and mark if it went up. If any
-$  of the bits went up, repeat. (Keep old flags as they can never go
-$  down.)
-$
-$ ----------------------------------------------------------- $
 $ There are three no-op nodes: +, -, jump. After assigning labels
 $  the are left out. As a final optimization, identical nodes can
 $  be merged, this can trigger further merging.
+$ ----------------------------------------------------------- $
+$ Data flow is recalculated for formal in/out/inout and local
+$  variables to see if set variables are actually used; if not
+$  then the assignment can be skipped. It requires traversing
+$  the flow backwards.
+$ Each compound block stores a flag for all relevant formal/local
+$  -- at entry v has a value and it is used
+$     Example: at 2 this flag is set and "2->v" cannot be
+$     optimized out:
+$        1->v, (l1: use v, (l2:condition,:l1; 2->v,:l2))
+$              ^1          ^2
+$ 
+$ A backward pass computes it. Suppose we are at the RULE or
+$ EXTENSION and  have this bit at the (potential) T and the F
+$ exits. I the RULE is an 'exit', clear. Otherwise get it
+$ from T, modify by the out affix (if any). If the RULE can
+$ fail, OR the F bit, and add the in affix (if any). 
+$ A "jump" retrieves the bit from the destination, or clear if
+$ it is not there.
+$ PLUS retrieves the bit from T exit, MINUS from the F exit.
+$ A compound block gets the T and F bits, and returns the front bit.
+$
+$ In compound block, the T exit at the semicolon is the T exit 
+$  of the block; otherwise it is the actual value.
+$ The F exit is the F exit of the block for non-heads, for a head
+$  it is the T value of the next head, or the F exit of the block
+$  if this is the last alternative.
 
-$ this is for in/out/inout and local affixes
+$ OPEN of the compound block is followed by entries for all in/out/
+$  /inout/local up to that block.
+$   UTset, UFset <- final values, set when entering the region
+$   UBset        <- to be computed, this is the final value
+$   UAlt         <- value at the next alternative
+
 $ the RULE stack is filled
 $
 $   RULE	*LADM
 $   use		formal/local (affixes used)
 $   TRUE	0/*RULE
 $   FALSE	0/*RULE   (optional)
-$   use/set/
-$    noset	formal/local (affixes used/set/noset if successful)
+$   use/set	formal/local (affixes used/set if successful)
 $
 $   EXTENSION	tag (formal/global)
 $   use		formal/local (used for filling)
@@ -76,14 +78,92 @@ $
 $   SCOLON	(semicolon to separate alternatives)
 $   HEAD	(just after the head to indicate that this it is)
 
-$ two use bits for affix "v": ends in T or F; needed: (canT,canF)
-$    use v:     set
-$    set v:     clear
-$    FALSE:     T bit: if not head, ignore;
-$                      if head, OR T-bit of head of next alt
-$               F-bit: if not head, bring F bit of block;
-$                      if head, FALSE of the head of the next alt)
-$    JUMP:      copy from the point (clear if not there)
+$ 'stack'(orepr=calibre,otype=ssel,flag,type,repr,tag)LLOC=().
+$     for formal list, calibre and ssel is here; calibre=-1 if no selector list
+$     type: Iformal ??? -- formal              tag: offset for in/out/inout/local
+$           Ilocal  -- local                   otherwise -1
+$           Imacro  -- textual replacement
+$           Ilabel  -- label                   repr: RULE ptr
+
+'table'RULE type=(
+   0:ARULE,	$ cannot fail; extension; last zone $
+   0:ERULE,	$ exit $
+   0:QRULE,	$ can fail; zone $
+   0:use,	$ use + offset $
+   0:set,	$ set + offset
+   0:TRUE,	$ true branch
+   0:FALSE,	$ false branch
+   0:JUMP,	$ jump + RULE
+   0:PLUS,	$ +
+   0:MINUS,	$ -
+   0:HEAD,	$ following a head
+   0:SCOLON,	$ semicolon
+   0:OPEN,	$ region start
+   0:CLOSE	$ region end
+).
+
+$ --------------------------------------- $
+$ create LLOC stack entries for formals;
+$  fill calibre and ssel for lists
+'a'setup formal stack+>rtag-formal-type:
+  $ this is called once for the rule
+  scratch+LLOC,get adm+rtag+formal,
+  (nxt:formal=0;
+    get type+formal+type,
+    (*-1->repr,type->type,formal->tag,0->flag->calibre->ssel *)LLOC,
+    ((type=Iformal stack;type=Iformal table),
+       get formal calibre+formal+calibre*LLOC,
+       get formal ssel+formal+ssel*LLOC;
+     +),get adm+formal+formal,:nxt).
+'a'setup label+label>:
+  $ compound block: if has a label, create the LLOC entry
+  Q+Dlabel,must Qtag+label,
+    (*0->repr,Ilabel->type,label->tag,0->flag->orepr->otype*)LLOC,
+    >>LLOC->label;
+  0->label.
+'a'setup locals-local:
+  $ compound block: create LLOC entry for each local
+  Q+Dlocal,(nxt:Q+Dcolon;
+    must Qtag+local,
+    (*-1->repr,Ilocal->type,local->tag,0->flag->orepr->otype*)LLOC,
+    :nxt);
+   +.
+$ ========================================================== $
+'f'save Qbuffer+Qa>+Qb>+Qc>+Qd>:
+   >>Qbuffer->Qa,Qsubstitute->Qb,save disc position+Qc+Qd.
+'a'restore Qbuffer+>Qa+>Qb+>Qc+>Qd>:
+  restore disc position+Qc+Qd,Qb->Qsubstitute,unstack to+Qbuffer+Qa.
+
+'a'match formal actual+>ftype+type>-tag:
+  =ftype=
+  [Iformal file;Iformal table;Iformal stack],
+    must Qtag+tag,get type+tag+type,putQ+tag;
+  [Iformal in;Iformal out;Iformal inout], fsimple affix+type.
+
+
+'a'macro arguments+>tag-formal-type-x:
+   $ from the corrent position of LLOC make "setup formal stack"
+   get adm+tag+formal,(nxt:formal=0;
+   (* Lsubst->flag,>>QBUFFER->repr,formal->tag,0->calibre->ssel,Imacro->type *)LLOC,
+   mustQ+Dplus,get type+formal+type,
+   (type=Iformal repeat,expand varargs+formal;
+    match formal actual+type+x,
+      (x=Inoarg,0->flag*LLOC,-1->repr*LLOC,Ilocal->type*LLOC;
+       putQ+Dend),
+      get adm+formal+formal,:nxt));
+
+
+'a'expand macro+>tag-lptr-Qa-Qb-Qc-Qd:
+  save Qbuffer+Qa+Qb+Qc+Qd,
+  >>LLOC->lptr,macro arguments+tag,
+
+  restore Qbuffer+Qa+Qb+Qc+Qd.
+
+
+
+'end'
+
+
 
 $ macro substitution ---------------------------------------- $
 $  LLOC is shifted by Qsubstitute
@@ -99,14 +179,6 @@ $    necessary in macros.
 'a'macro limit+x>: 0->x.
 
 'a'macro arguments+>tag-formal-type-x:
-   get adm+tag+formal,(nxt:formal=0;
-   (* Lsubstitute->flag,>>QBUFFER->repr,formal->tag,0->calibre->ssel,Imacro->type *)LLOC,
-   mustQ+Dplus,get type+formal+type,
-   (type=Iformal repeat,expand varargs+formal;
-    match formal actual+type+x,
-      (x=Inoarg,0->flag*LLOC,compound level->repr*LLOC,Ilocal->type*LLOC;
-       x=Iformal repeat,internal error+"impossible";
-       putQ+Dend),
 
 
 'a'expand macro+>head+>tag

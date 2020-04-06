@@ -150,6 +150,7 @@ void skipSilently(void){
 void skipAll(void){
   int par[1];
   if(ahead(Spoint)){;}else{par[0]=text_skipped;message(1,par);
+//printf("a\n");TTAG->offset[0]=0;
     skipSilently();}
 }
 void skipToPoint(void){

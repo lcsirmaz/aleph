@@ -171,7 +171,7 @@ void Dtag(int *a){
     if(hasFormalType(par)){a[0]=LADM->offset[a[0]-LADM_repr];goto nxt;}
     else{par[0]=a[0];D0(par);}}
   else{par[0]=STACKpar(LLOC);par[1]=a[0];if(was(par)){par[0]=a[0];D0(par);}
-      else{par[0]=dtag_error;par[1]=a[0];Error(2,par);exit(7);}
+      else{par[0]=dtag_error;par[1]=a[0];Error(2,par);TTAG->offset[0]=7;exit(7);}
   }
 }
 /* ------------------------------------------------------- */

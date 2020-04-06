@@ -85,12 +85,12 @@ $ messages ---------------------------------------------------- $
   "%p %p: not used"                   : tag not used,
   "%p %p: not used, cannot have filling":cannot have filling,
   "%p %p: cannot be external (%l)": cannot be external,
-  "%p %p: undefined selector %p" :undefined selector,
-  "%p %p: selector %p duplicated":double selector,
-  "%p %p: wrong filling block" :wrong filling block,
+  "filling %p: undefined selector %p" :undefined selector,
+  "filling %p: field %p duplicated":double selector,
+  "filling %p: not a consecutive block":wrong filling block,
 $ warning 
-  "%p %p: filling block size %d is bigger than calibre (%d)" :large block size,
-  "%p %p: filling block size %d is smaller than calibre (%d)":small block size,
+  "filling %p: block size %d is bigger than calibre (%d)" :large block size,
+  "filling %p: block size %d is smaller than calibre (%d)":small block size,
 $ internal error
   "FATAL cannot open obj file %p, error code: %p":opening OBJ,
   "FATAL Wtag: wrong argument %p" :wrong Wtag argument,
@@ -281,11 +281,10 @@ $ got a block; after the (. Check if there is a *
           must Qcons+#,incr+cnt,:nxt).
 'a'block+>tag-calibre-cnt-rep-x-y:
    get calibre+tag+calibre,count block items+cnt+rep,
-   get type+tag+x,
    (cnt=calibre;
-    cnt>calibre,warning+6+large block size+x+tag+cnt+calibre;
+    cnt>calibre,warning+6+large block size+tag+cnt+calibre;
     rep!=0,subtr+calibre+cnt+rep; $ cnt<calibre
-    warning+4+small block size+x+tag+cnt+calibre),
+    warning+4+small block size+tag+cnt+calibre),
    0->x->y,
    (nxt:Q+Dclose;
         Qtag+x,Wtag+x,check list item type+x,1->y,:nxt;
@@ -296,25 +295,26 @@ $ got a block; after the (. Check if there is a *
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'extend+[]t[]+>x: (*x->t*)t.
 
-'a'check block2 extension+>ptr+>tag+>calibre-cnt1-cnt-type:
-  0->cnt,incr+ptr,get type+tag+type,
-    (BUFFER[ptr]=0,error+wrong filling block+type+tag; $ last item not filled $
+'a'check block2 extension+>tag+>calibre-ptr-cnt1-cnt:
+  0->cnt,>>BUFFER->ptr,decr+ptr,
+    (BUFFER[ptr]=0,error+wrong filling block+tag; $ last item not filled $
      (nxt:calibre<=cnt;
           BUFFER[ptr]=0;
-          incr+cnt,add+ptr+2+ptr,:nxt),
+          incr+cnt,subtr+ptr+2+ptr,:nxt),
      cnt->cnt1,
-     (nxt:calibre<=cnt;BUFFER[ptr]=0,add+ptr+2+ptr,incr+cnt,:nxt;+),
-     (cnt<calibre,error+wrong filling block+type+tag; $ a hole in the filling $
-      cnt1<cnt,warning+3+small block size+type+tag+cnt1+calibre;
+     (nxt:calibre<=cnt;BUFFER[ptr]=0,subtr+ptr+2+ptr,incr+cnt,:nxt;+),
+     (cnt<calibre,error+wrong filling block+tag; $ a hole in the filling $
+      cnt1<cnt,warning+3+small block size+tag+cnt1+calibre;
       +)).
 
-'a'block2 selector+>tag+x>-sel-ptr-type:
+'a'block2 selector+>tag+x>-sel-ptr:
   Q+Dstar,-1->x;
   must Qtag+sel,get repr+sel+x,
     (x>0,decr+x,addmult+x+-2+>>BUFFER+ptr,decr+ptr,
            (BUFFER[ptr]=0;
-            get type+tag+type,error+double selector+type+tag+sel);
-     get type+tag+type,error+undefined selector+type+tag+sel,-1->x).
+            error+double selector+tag+sel);
+     error+undefined selector+tag+sel,-1->x).
+
 'a'block2+>tag-optr-calibre-x-y-rx-ry-ptr-sel:
   $ allocate entries in BUFFER: (flag,data) * calibre
   $   flag=0: empty, =1: constant, =2: tag
@@ -335,10 +335,10 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    ptr>=>>BUFFER;
    incr+ptr,(BUFFER[ptr]=0,ry->BUFFER[ptr],incr+ptr,rx->BUFFER[ptr];
              incr+ptr),:nxt),
-  check block2 extension+optr+tag+calibre,
-  >>BUFFER->ptr,
-  (nxt:ptr<=optr;
-       BUFFER[ptr]->x,decr+ptr,BUFFER[ptr]->y,decr+ptr,
+  check block2 extension+tag+calibre,
+  optr->ptr,
+  (nxt:ptr>=>>BUFFER;
+       incr+ptr,BUFFER[ptr]->y,incr+ptr,BUFFER[ptr]->x,
        (y=1,Wcons+x;y=2,Wtag+x;+),:nxt),
   unstack to+BUFFER+optr.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $

@@ -108,7 +108,7 @@ $ check the first 100 entries for equality, otherwise just add it
 $ ************************************************************** $
 
 $ Symbol names $
-'table'[] SPECIAL =
+'table'SPECIAL =
 ("<dummy>"      :Sdummy symb,     "'end'"        :Sendsymb,
  "'action'"     :Saction,         "'function'"   :Sfunction,	
  "'predicate'"  :Spredicate,      "'question'"   :Squestion,
@@ -417,7 +417,7 @@ $ COMMENTS $
 
 $ BOLD SYMBOLS $
 $ bold symbols are stored in a table
-'table'[](left,right,adm)BOLD =
+'table'(left,right,adm)BOLD =
 ("a"           :B1        ,(   0,   0,Saction    ),
  "act"         :B2        ,(  B1,  B3,Saction    ),
  "action"      :B3        ,(   0,   0,Saction    ),

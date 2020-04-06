@@ -10,7 +10,8 @@
 
 /* messages */
 static int
-repeat_block_out_formal_not_set,in_none,in_extension,in_rule,not_defined,
+repeat_block_out_formal_not_set,in_none,in_extension,in_rule,in_macro,
+not_defined,
 must_be_list,undefined_standard_selector,undefined_selector,syntax_error,
 wrong_affix_type,affix_no_value,cannot_be_constant,limit_cannot_be_used,
 provides_wrong_type,wrong_dummy_affix,maybe_wrong_index,unshielded_jump,
@@ -20,10 +21,13 @@ missing_repeat_affix,cannot_modify_read_only_macro,wrong_formal_type;
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void init_msg1(void){
-   addMSG("%p: formal out affix %p was not set",repeat_block_out_formal_not_set);
+   addMSG("rule %p: formal out affix %p was not set",repeat_block_out_formal_not_set);
+   addMSG("rule %p: no pending repeat affixes",no_pending_repeat_block);
+   addMSG("label %p: infinite loop",unshielded_jump);
    addMSG("%*",in_none);
    addMSG("extension %p: ",in_extension);
    addMSG("rule %p: ",in_rule);
+   addMSG("macro %p: ",in_macro);
    addMSG("%p: not defined",not_defined);
    addMSG("%m\"%p\" must be a table or stack (%l)",must_be_list);
    addMSG("%mno standard selector for \"%p\"",undefined_standard_selector);
@@ -34,14 +38,12 @@ static void init_msg1(void){
    addMSG("%m\"%p\" unitialized",affix_no_value);
    addMSG("%mcannot be a constant",cannot_be_constant);
    addMSG("%mlimit with \"%p\" cannot be used",limit_cannot_be_used);
-   addMSG("%m\"%p\" is not compatible (%l)",provides_wrong_type);
+   addMSG("%m\"%p\" has incompatible type (%l)",provides_wrong_type);
    addMSG("%mdummy affix cannot be used here",wrong_dummy_affix);
    addMSG("%m""%p"" maybe wrong index",maybe_wrong_index);
-   addMSG("rule %p: affix \"%p\" has calibre different from %d",actual_calibre_different);
-   addMSG("rule %p: standard selector of \"%p\" is different",actual_ssel_different);
+   addMSG("%maffix \"%p\" has calibre different from %d",actual_calibre_different);
+   addMSG("%mstandard selector of \"%p\" is different",actual_ssel_different);
    addMSG("rule %p: the last actual affix must be *",missing_repeat_affix);
-   addMSG("rule %p: no pending repeat affixes",no_pending_repeat_block);
-   addMSG("label %p: infinite loop",unshielded_jump);
    addMSG("rule %p: cannot modify in affix %p in a macro rule",cannot_modify_read_only_macro);
    addMSG("FATAL: match formal actual: wrong formal type %p",wrong_formal_type);
 }
@@ -115,13 +117,11 @@ static void setupFormalStack(int *a){ /* >rtag */
   int par[8];int formal,repeatBlock;
   par[0]=STACKpar(LLOC);scratch(par);repeatBlock=0;par[0]=a[0];
   getAdm(par);formal=par[1];
-//printf("\nLLOC after scratch upb=%d\n",LLOC->aupb);
   nxt:if(formal==0){;}
   else{par[0]=STACKpar(LLOC);par[1]=6;par[7-LLOC_flag]=LTset;
     par[7-LLOC_repr]=0;par[7-LLOC_type]=LADM->offset[formal-LADM_type];
     par[7-LLOC_tag]=formal;par[7-LLOC_calibre]=par[7-LLOC_ssel]=0;
     expandstack(par);par[0]=repeatBlock;setFormalAffix(par);repeatBlock=par[0];
-//printf("<LLOC %d=",LLOC->aupb);par[0]=LLOC->aupb;printPointer(par);printf(">\n");
     par[0]=formal;getAdm(par);formal=par[1];goto nxt;}
 }
 static void setupLabel(int *a){ /* label> */
@@ -373,9 +373,9 @@ static void checkSsel(int *a){/* >rtag+>cnt+>tag */
   int par[4];int x;par[0]=a[2];getType(par);if(par[1]==Itable||
     par[1]==Istack||par[1]==IstaticStack){par[0]=a[2];getSsel(par);
     x=par[1];}else{par[0]=a[2];getLocalSsel(par);x=par[1];}
-    if(x>0){;}else{par[0]=a[0];par[1]=a[1];where(par);x=par[2];
-    par[0]=undefined_standard_selector;par[1]=x;par[2]=a[0];
-    par[3]=a[2];Error(4,par);}
+   if(x>0){;}else{par[0]=a[0];par[1]=a[1];where(par);x=par[2];
+      par[0]=undefined_standard_selector;par[1]=x;par[2]=a[0];
+      par[3]=a[2];Error(4,par);}
 }
 static void readSelector(int *a){/* >rtag+>cnt+x> */
   int par[4];int tag,w;
@@ -445,7 +445,7 @@ static void ffileAffix(int *a){ /* >rtag + >cnt */
        skipSource();}
 }
 static void checkCalibre(int *a){ /* >rtag+>formal+>actual */
-  int par[4];int x,atype,acalibre,assel;
+  int par[5];int x,atype,acalibre,assel;
   par[0]=a[1];getFormalCalibre(par);x=par[1];if(x<0){return;}
   par[0]=a[2];getType(par);atype=par[1];
   if(atype==IformalTable||atype==IformalStack){par[0]=a[2];
@@ -453,11 +453,17 @@ static void checkCalibre(int *a){ /* >rtag+>formal+>actual */
     par[0]=a[2];getLocalSsel(par);assel=par[1];}
   else{par[0]=a[2];getCalibre(par);acalibre=par[1];par[0]=a[2];
     getSsel(par);assel=par[1];}
-  if(x==acalibre){;}else{par[0]=actual_calibre_different;par[1]=a[0];
-    par[2]=a[2];par[3]=x;Warning(7,4,par);}
+  if(x==acalibre){;}else{par[0]=a[0];par[1]=rmacro;if(isTagFlag(par)){
+    par[0]=actual_calibre_different;par[1]=in_macro;par[2]=a[0];
+    par[3]=a[2];par[4]=x;Error(5,par);}else{
+    par[0]=actual_calibre_different;par[1]=in_rule;
+    par[2]=a[0];par[3]=a[2];par[4]=x;Warning(7,5,par);}}
   par[0]=a[1];getFormalSsel(par);x=par[1];if(x==assel){;}
-  else{par[0]=actual_ssel_different;par[1]=a[0];par[2]=a[2];
-    Warning(7,3,par);}
+  else{par[0]=a[0];par[1]=rmacro;if(isTagFlag(par)){
+     par[0]=actual_ssel_different;par[1]=in_macro;par[2]=a[0];
+     par[3]=a[2];Error(4,par);}else{
+     par[0]=actual_ssel_different;par[1]=in_rule;par[2]=a[0];
+     par[3]=a[2];Warning(7,4,par);}}
 }
 static void ftableAffix(int *a){/* >rtag + >cnt + >formal */
   int par[3]; int atag;
@@ -643,7 +649,8 @@ static void checkMacroRule(int *a){ /* >rtag */
   int par[3];
   par[0]=ruleCompiled;par[1]=rmacro;if(isTagFlag(par)){
     if(a[0]==ruleCompiled){par[0]=recursive_macro;par[1]=a[0];Error(2,par);}
-    else if(a[0]==Xshiftaffix){par[0]=macro_cannot_call,par[1]=a[0],Error(2,par);}}
+    else if((par[0]=a[0],par[1]=rshiftrule,isTagFlag(par))){
+      par[0]=macro_cannot_call,par[1]=a[0],Error(2,par);}}
 }
 /* ----------------- */
 // DEBUG !!!!!
@@ -711,15 +718,14 @@ static void init_msg3(void){
 
 static void checkExtensionBlock(int *a){ /* >tag+>calibre */
   int par[4];int ptr,cnt1,cnt;
-  ptr=BUFFER->aupb-a[1];ptr++;cnt=0;
+  ptr=BUFFER->aupb;cnt=0;
 //printf("check extension; calibre=%d, ptr=%d,off=%d\n",a[1],ptr,BUFFER->offset[ptr]);
   if(BUFFER->offset[ptr]==0){par[0]=wrong_extension_block;par[1]=a[0];
      Error(2,par);}
   else{nxt1:if(a[1]<=cnt){;}else if(BUFFER->offset[ptr]==0){;}
-            else{ptr++;cnt++;goto nxt1;}
+            else{ptr--;cnt++;goto nxt1;}
        cnt1=cnt;nxt2:if(a[1]<=cnt){;}else if(BUFFER->offset[ptr]==0){
-              ptr++;cnt++;goto nxt2;}
-//printf("megvan, cnt=%d, cnt1=%d, calibre=%d\n",cnt,cnt1,a[1]);
+              ptr--;cnt++;goto nxt2;}
       if(cnt<a[1]){par[0]=wrong_extension_block;par[1]=a[0];Error(2,par);}
       else if(cnt1<cnt){par[0]=short_extension_block;par[1]=a[0];
         par[2]=cnt1;par[3]=a[1];Warning(3,4,par);}}
@@ -737,10 +743,8 @@ static void transportDest(int *a){/* >tag+>calibre */
 }}
 static void transport(int *a){/* >tag + >calibre */
   int par[4];int rptr,cnt;
-//printf("starting here: %d\n",BUFFER->aupb);
   rptr=BUFFER->aupb;cnt=a[1];nxt: par[0]=STACKpar(BUFFER);par[1]=0;extend(par);
     cnt--;if(cnt>0){goto nxt;}nxt2:
-//printf("next transport (last: %d)\n",BUFFER->aupb);
     par[0]=a[0];par[1]=0;par[2]=Uin;
     fsimpleAffix(par);par[0]=a[0];par[1]=a[1];transportDest(par); par[0]=Dend;
     if(Q(par) || (par[0]=Dextension,Q(par))){;}else{goto nxt2;}

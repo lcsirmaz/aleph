@@ -45,16 +45,16 @@ $ formal lists $
 ).
 
 $ skip field list; goes over a field list first time.
-$   returns whether there was any error with error message
-'a'skip field list+>err>:
-   R+Sopen,(nxt:is tag+#,(R+Scomma,:nxt;
+$   returns the calibre and whether there was any error with error message
+'a'skip field list+calibre>+>err>:
+   R+Sopen,1->calibre,(nxt:is tag+#,(R+Scomma,incr+calibre,:nxt;
                           R+Sequals,:nxt;
                           R+Sclose;
                           error+wrong formal selector,1->err);
                 error+formal selector tag expected,1->err);
-   +.
-'a'get list tag+tag>+>err>:
-  init restore,skip field list+err,0->tag,
+   -1->calibre.
+'a'get list tag+tag>+calibre>+>err>:
+  init restore,skip field list+calibre+err,0->tag,
     (is tag+tag;
      is+err;
      error+formal list tag missing,1->err),
@@ -92,8 +92,8 @@ $ expected symbol after the sequence: = , - : .
   1->err,error+formal tag expected+ruletag.
 'a'skip formal affix+>ruletag+>err>:
    ahead+Ssub,subbus+ruletag+err,
-      skip field list+err,expect formal tag+ruletag+err,subbus+ruletag+err;
-   ahead+Sopen,skip field list+err,expect formal tag+ruletag+err,subbus+ruletag+err;
+      skip field list+#+err,expect formal tag+ruletag+err,subbus+ruletag+err;
+   ahead+Sopen,skip field list+#+err,expect formal tag+ruletag+err,subbus+ruletag+err;
    R+Squote image,expect formal tag+ruletag+err;
    R+Sright,expect formal tag+ruletag+err,R skip+Sright;
    R+Sasterisk;
@@ -148,17 +148,16 @@ $ define all selectors for a formal list, including the standard one
 $ on entry type*tag is "formal stack" or "formal table" store calibre
 $ set err if the same selector is defined twice
 
-
-$ looking at the selector list, determine calibre and ssel.
+$ looking at the selector list, determine ssel.
 $  tag is the list's tag
-'a'check selector list+>tag+n>+ssel>-sel:
-   R+Sopen,1->n,-1->ssel,
+'a'check selector list+>tag+>n+ssel>-sel:
+   R+Sopen,-1->ssel,
      (nxt:must tag+sel,(tag=sel,n->ssel;+),
-          (R+Scomma,incr+n,:nxt;
+          (R+Scomma,decr+n,:nxt;
            R+Sequals,:nxt;
            must+Sclose));
    $ no selector list
-   -1->n,1->ssel.
+   1->ssel.
 $ create a formal selector entry; complain if doubly defined
 'a'create formal selector+>rtag+>tag+>sel+>offset+>err>-fsel-formal:
    is+err;
@@ -169,17 +168,17 @@ $ create a formal selector entry; complain if doubly defined
 
 $ looking at the formal selector list, define all selectors, give error
 $  messages for doubly defined selectors. Return calibre and ssel
-'a'define selector list+>rtag+>tag+n>+ssel>+>err>-sel:
-   R+Sopen,1->n,-1->ssel,
+'a'define selector list+>rtag+>tag+>n+ssel>+>err>-sel:
+   R+Sopen,-1->ssel,
      (nxt:must tag+sel,(tag=sel,n->ssel;+),
         create formal selector+rtag+tag+sel+n+err,
-        (R+Scomma,incr+n,:nxt;
+        (R+Scomma,decr+n,:nxt;
          R+Sequals,:nxt;
          must+Sclose)),
      (ssel>0; $ standard selector has been defined $
       create formal selector+rtag+tag+tag+-1+err);
    $ no selector list
-   -1->n,1->ssel,create formal selector+rtag+tag+tag+1+err.
+   1->ssel,create formal selector+rtag+tag+tag+1+err.
 $ checking an existing formal list
 'a'check formal list data+>rtag+>formal+>tag+>ftype+>fcal+>fssel+>err>
    -ocal-ossel-otype-ol:
@@ -193,7 +192,7 @@ $ checking an existing formal list
 $ formal is either=0 or is a formal list entry, If not zero,
 $  check if we get the same configuration.
 $ looking at  (selector)tag[]   or  tag[]  -- syntax is OK
-'a'check as formal list+>rtag+>formal>+>tag+>ftype+>err>-fcal-fssel:
+'a'check as formal list+>rtag+>formal>+>tag+>ftype+>fcal+>err>-fssel:
    check selector list+tag+fcal+fssel,Rskip+tag,subbus+rtag+err,
     (is+formal,check formal list data+rtag+formal+tag+ftype+fcal+fssel+err;
      new formal tag+ftype+tag+formal,put formal calibre+formal+fcal,
@@ -201,7 +200,7 @@ $ looking at  (selector)tag[]   or  tag[]  -- syntax is OK
 $ formal is either=0 or is a formal list entry. It not zero, check
 $  against it. Redefine selectors and the formal affix
 $ looking at (selector)tag[]  or  tag[]   --  syntax is OK
-'a'define as formal list+>rtag+>formal>+>tag+>ftype+>err>-fcal-fssel:
+'a'define as formal list+>rtag+>formal>+>tag+>ftype+>fcal+>err>-fssel:
    has formal type+tag,1->err,error+formal affix redefined+rtag+tag;
    define selector list+rtag+tag+fcal+fssel+err,Rskip+tag,subbus+rtag+err,
    (is+err;
@@ -213,11 +212,11 @@ $ formal list affix:  (selector list) tag[]  or tag[]; syntax OK
 $ if "fast" is set, then this is a prototype (no selectors, no tags)
 $ if "formal" is not zero, stored type is checked,
 $  otherwise "formal" is created. If fast=0 it is attached
-'a'formal list affix+>rtag+>fast+>formal>+>ftype+>err>-tag:
-   get list tag+tag+err, $ peek after selector list $
+'a'formal list affix+>rtag+>fast+>formal>+>ftype+>err>-tag-calibre:
+   get list tag+tag+calibre+err, $ peek after selector list $
      (is+err;
-      is+fast,check as formal list+rtag+formal+tag+ftype+err;
-      define as formal list+rtag+formal+tag+ftype+err).
+      is+fast,check as formal list+rtag+formal+tag+ftype+calibre+err;
+      define as formal list+rtag+formal+tag+ftype+calibre+err).
 $ formal affix tag[] (no selector list, after [] )
 'a'check as formal table affix+>rtag+>tag+>formal>+>err>:
    is+formal,check formal list data+rtag+formal+tag+Iformal table+-1+1+err;
