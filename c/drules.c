@@ -16,7 +16,8 @@ must_be_list,undefined_standard_selector,undefined_selector,syntax_error,
 wrong_affix_type,affix_no_value,cannot_be_constant,limit_cannot_be_used,
 provides_wrong_type,wrong_dummy_affix,maybe_wrong_index,unshielded_jump,
 actual_calibre_different,actual_ssel_different,no_pending_repeat_block,
-missing_repeat_affix,cannot_modify_read_only_macro,wrong_formal_type;
+missing_repeat_affix,cannot_modify_read_only_macro,
+cannot_modify_read_only_vararg,wrong_formal_type;
 
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
@@ -45,6 +46,7 @@ static void init_msg1(void){
    addMSG("%mstandard selector of \"%p\" is different",actual_ssel_different);
    addMSG("rule %p: the last actual affix must be *",missing_repeat_affix);
    addMSG("rule %p: cannot modify in affix %p in a macro rule",cannot_modify_read_only_macro);
+   addMSG("rule %p: cannot modify in affix %p in variable block",cannot_modify_read_only_vararg);
    addMSG("FATAL: match formal actual: wrong formal type %p",wrong_formal_type);
 }
 #undef addMSG
@@ -90,14 +92,12 @@ static void resetAffixBlockFlags(int *a){/* >rtag */
      par[0]=no_pending_repeat_block;par[1]=a[0];Warning(4,2,par);}
      par[0]=ptr;par[1]=LTset;if(isLocalFlag(par)){clear=0;}
      par[0]=ptr;par[1]=LFmod;clearLocalFlag(par);par[1]=LFset;setLocalFlag(par);}
-   else if((par[0]=ptr,par[1]=LFmod,isLocalFlag(par))&&clear){
+   else if((par[0]=ptr,par[1]=LFmod,isLocalFlag(par))&&clear 
+      && LLOC->offset[ptr-LLOC_type]==IformalOut){
      if((par[0]=ptr,par[1]=LTset,isLocalFlag(par))){par[0]=ptr;
         par[1]=LTset;clearLocalFlag(par);}
-     else if((par[0]=ptr,par[1]=Lvararg,isLocalFlag(par))&&clear==1){
-        par[0]=ptr;par[1]=LTset;if(isLocalFlag(par)){par[0]=ptr;
-          par[1]=LTset;clearLocalFlag(par);}
-        else{par[0]=repeat_block_out_formal_not_set;par[1]=a[0];
-        par[2]=LLOC->offset[ptr-LLOC_tag];Error(3,par);}}}
+     else{par[0]=repeat_block_out_formal_not_set;par[1]=a[0];
+        par[2]=LLOC->offset[ptr-LLOC_tag];Error(3,par);}}
    par[0]=STACKpar(LLOC);par[1]=ptr;next(par);ptr=par[1];goto nxt;
 }}
 static int Ltag(int *a){ /* tag> */
@@ -152,6 +152,7 @@ static void setFormalAffix(int *a){ /* >flag> */
     par[0]=LLOC->aupb;par[1]=LTmod;setLocalFlag(par);a[0]=1;}
   else if(x==IformalOut){par[0]=LLOC->aupb;par[1]=LTset;clearLocalFlag(par);
     if(a[0]){par[0]=LLOC->aupb;par[1]=Lvararg;setLocalFlag(par);}}
+  else{if(a[0]){par[0]=LLOC->aupb;par[1]=Lvararg;setLocalFlag(par);}}
 }
 static void getLocalCalibre(int *a){ /* >tag + x> */
   a[1]=LLOC->offset[a[0]-LLOC_calibre];
@@ -560,7 +561,10 @@ static void fsimpleAffix(int *a){ /* >rtag+ >cnt+ >utype + mod> */
    else if(type==IformalIn){par[0]=a[2];if(uReadOnly(par)){;}
        else{par[0]=atag;par[1]=LTmod;setLocalFlag(par);par[0]=ruleCompiled;
          par[1]=rmacro;if(isTagFlag(par)){par[0]=cannot_modify_read_only_macro;
-          par[1]=a[0];par[2]=atag;Error(3,par);}}}
+          par[1]=a[0];par[2]=atag;Error(3,par);}
+          else{par[0]=atag;par[1]=Lvararg;if(isLocalFlag(par)){
+            par[0]=cannot_modify_read_only_vararg;par[1]=a[0];
+            par[1]=atag;Error(3,par);}}}}
    else if(type==IformalInout){par[0]=a[2];if(uReadOnly(par)){;}
        else{par[0]=atag;par[1]=LTmod;setLocalFlag(par);}}
    else if(type==IformalOut||type==Ilocal){if(a[2]==Uout){par[0]=atag;
@@ -611,7 +615,7 @@ static int compatibleRepeatBlockType(int *a){/* >provide + >require */
   if(a[0]==a[1]){return 1;}
   if(a[0]==IformalTable && a[1]==IformalStack){return 1;}
   if(a[0]==IformalIn && a[1]==IformalInout){return 1;}
-  if(a[0]==IformalInout && a[1]==IformalIn){return 1;}
+  if(a[0]==IformalOut && a[1]==IformalInout){return 1;}
   return 0;
 }
 static void matchRepeatAffixes(int *a){/* >rtag + >actual + >formal + >modT> */
@@ -626,8 +630,9 @@ static void matchRepeatAffixes(int *a){/* >rtag + >actual + >formal + >modT> */
   else{par[0]=a[2];getType(par);ftype=par[1];par[0]=type;par[1]=ftype;
     if(compatibleRepeatBlockType(par)){par[0]=a[1];par[1]=Lused;setLocalFlag(par);
        if(ftype==IformalStack){a[3]=1;par[0]=a[1];par[1]=LTmod;setLocalFlag(par);}
-       else if(ftype==IformalOut){par[0]=a[1];par[1]=LTmod;setLocalFlag(par);
+       else if(type==IformalOut){par[0]=a[1];par[1]=LTmod;setLocalFlag(par);
           par[0]=a[1];par[1]=LTset;setLocalFlag(par);}
+       else if(ftype==IformalOut){par[0]=a[1];par[1]=LTmod;setLocalFlag(par);}
        else if(ftype==IformalInout){par[0]=a[1];par[1]=LTmod;setLocalFlag(par);}
        goto nxt;}
     else{par[0]=repeat_block_type_mismatch;par[1]=a[0];par[2]=a[1];par[3]=type;

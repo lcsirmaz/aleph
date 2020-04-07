@@ -114,7 +114,7 @@ $ -------------------------------------------------- $
         (is local flag+ptr+LTset,0->clear;+),$ are out affixes set globally?
          $ if fails, out locals are set and no pending blocks
          clear local flag+ptr+LFmod,set local flag+ptr+LFset;
-      (is local flag+ptr+Lvararg,is+clear),
+      (is local flag+ptr+Lvararg,is+clear,type*LLOC[ptr]=Iformal out),
         $ not, check if set, and then clear
         (is local flag+ptr+LTset,clear local flag+ptr+LTset;
          error+repeat block out formal not set+rtag+tag*LLOC[ptr]);
@@ -164,7 +164,7 @@ $   set LTset/LTmod/Lvararg flags
       set local flag+>>LLOC+LTmod,1->flag;
     [Iformal out],clear local flag+>>LLOC+LTset,
       (is+flag,set local flag+>>LLOC+Lvararg;+);
-    +.
+    (is+flag,set local flag+>>LLOC+Lvararg;+).
 'f'get local calibre+>tag+x>: calibre*LLOC[tag]->x.
 'f'get local ssel+>tag+x>:    ssel*LLOC[tag]->x.
 
@@ -435,6 +435,7 @@ $   inout         E       E     E      .    .M     .M
 
  "rule %p: the last actual affix must be *" :missing repeat affix,
  "rule %p: cannot modify in affix %p in a macro rule":cannot modify read only macro,
+ "rule %p: cannot modify in affix %p in variable block":cannot modify read only vararg,
 $ ---------------- $
  "FATAL: match formal actual: wrong formal type %p":wrong formal type
 ).
@@ -476,7 +477,7 @@ $ if rtag is macro, then this is an error
          get local ssel+actual+assel;
       get calibre+actual+acalibre,get ssel+actual+assel),
      (x=acalibre;
-      is tag flag+rtag+rmacro,error+actual calibre different+in macro+tag+actual+x;
+      is tag flag+rtag+rmacro,error+actual calibre different+in macro+rtag+actual+x;
       warning+7+actual calibre different+in rule+rtag+actual+x),
      get formal ssel+formal+x,
      (x=assel;
@@ -562,7 +563,10 @@ $ mod: 0/1 for global side effect
      [Iformal in],(u read only+utype;
          set local flag+atag+LTmod,
            (is tag flag+rule compiled+rmacro,
-               error+cannot modify read only macro+rtag+atag;+));
+               error+cannot modify read only macro+rtag+atag;
+            is local flag+atag+Lvararg,
+               error+cannot modify read only vararg+rtag+atag;
+           +));
      [Iformal inout],(u read only+utype;set local flag+atag+LTmod);
      [Iformal out;Ilocal],
          (utype=Uout,set local flag+atag+LTset;
@@ -606,9 +610,9 @@ $  actual         file   table  stack  in    out  inout    < formal
 $  file           .       E      E     E     E     E
 $  table          E       .      E     E     E     E
 $  stack          E       .      .MG   E     E     E
-$  in             E       E      E     .     E     .M
+$  in             E       E      E     .     E     E
 $  out            E       E      E     E     .MT   E
-$  inout          E       E      E     .     E     .M
+$  inout          E       E      E     .     .M    .M
 $
 
 $ check if the types in a repeat block are compatible
@@ -616,7 +620,7 @@ $ check if the types in a repeat block are compatible
   require=provide;
   require=Iformal table,provide=Iformal stack;
   require=Iformal in,provide=Iformal inout;
-  require=Iformal inout,provide=Iformal in.
+  require=Iformal out,provide=Iformal inout.
 $ rtag: actual rule whose last affix is +*,
 $  actual: the formal * affix in "rule compiled" (LLOC)
 $  formal: the formal * affix in rtag (LADM)
@@ -630,8 +634,9 @@ $  formal: the formal * affix in rtag (LADM)
         (compatible repeat block types+type+ftype,
            set local flag+actual+Lused,
            (ftype=Iformal stack,1->modT,set local flag+actual+LTmod;
-            ftype=Iformal out,set local flag+actual+LTmod,
+            type=Iformal out,set local flag+actual+LTmod,
                    set local flag+actual+LTset;
+            ftype=Iformal out,set local flag+actual+LTmod;
             ftype=Iformal inout,set local flag+actual+LTmod;
             +),:nxt;
          error+repeat block type mismatch+rtag+actual+type+ftype+dl))).

@@ -129,10 +129,44 @@ $  fill calibre and ssel for lists
     :nxt);
    +.
 $ ========================================================== $
+'a'must Qlist+tag>+loc>:
+  Qsave local->loc,must Qtag+tag.
+'a'read selector+x>-tag:
+  Q cons+x; $ this is the selector
+  must Qtag+tag,get repr+tag+x. $ x>0 $
+'f'final selector+>tag+>loc+x>:
+  $ if L is a replacement for T in "macro+T[]" then
+  $  use T*T=1 and not L*L
+  is+loc,ssel*LLOC[loc]->x;was+LLOC+tag,ssel*LLOC[tag]->x;
+  ssel*LADM[tag]->x.
+  
+$ ========================================================== $
 'f'save Qbuffer+Qa>+Qb>+Qc>+Qd>:
    >>Qbuffer->Qa,Qsubstitute->Qb,save disc position+Qc+Qd.
 'a'restore Qbuffer+>Qa+>Qb+>Qc+>Qd>:
   restore disc position+Qc+Qd,Qb->Qsubstitute,unstack to+Qbuffer+Qa.
+
+'p'limit op+op>:
+  Q+Dvlwb,Dvlwb->op;
+  Q+Vvupd,Dvupb->op;
+  Q+Dlwb,Dlwb->op;
+  Q+Dupb,Dupb->op;
+  Q+Dcalibre,Dcalibre->op.
+
+'a'fsimple affix+aff>-x-tag-type-loc:
+  $ read and store an affix; aff=1: #, aff=2: *; aff=0: otherwise
+  Qcons+x,putQ+Dconst+x,0->aff;
+  limit op+x,must Qtag+tag,putQ+x+tag,0->aff;
+  Q+Dsub,putQ+Dsub,fsimple affix+aff,mustQ+Dbus,must Q tag+tag,
+    read selector+x,putQ+Dbus+tag+Dconst+x;
+  Q+Dnoarg,1->aff;
+  must Qlist tag+tag+loc,0->aff,get type+tag+type,(=type=
+    [Iconstant;Ipointer constant;Ivariable;Istatic var;Ipointer constant;
+     Iformal in,Iformal out;Iformal inout;Ilocal],putQ+tag;
+    [Istack;Itable;Istatic stack;Iformal table;Iformal table],
+     $ T ==> T*T[>>T] $
+     final selector+tag+loc+x,putQ+Dsub+Dupb+tag+Dbus+tag+Dconst+x;
+    [Iformal repeat],putQ+tag,2->aff).
 
 'a'match formal actual+>ftype+type>-tag:
   =ftype=
@@ -140,6 +174,41 @@ $ ========================================================== $
     must Qtag+tag,get type+tag+type,putQ+tag;
   [Iformal in;Iformal out;Iformal inout], fsimple affix+type.
 
+'a'copy Qbuffer affix+>ptr>:
+  =QBUFFER[ptr]= [Dplus;Dend],incr+ptr,putq+Dend;
+  [Dconst],incr+ptr,putq+Dconst+QBUFFER[ptr],inct:ptr,:copy Qbuffer affix;
+  putQ+Qbuffer[ptr],incr+ptr,:copy QBUFFER affix.
+
+'variable'LLOC base=0.
+$ the present rule is shifted by that much
+'a'expand varargs+>repeat-formal-ftype-atype-lrep-cnt-qptr:
+   $ repeat is the formal repeat affix of the macro
+   $ head: macro+>a+*+>q:     
+   $   call: macro+1+*,     * => *, q => formal of called
+   $   call macro+1+T1+T2+* * => T1+T2+*, q => T1
+  get adm+repeat+formal,>>LLOC->lrep,0->cnt,
+  (nxt:get type+formal+ftype,match formal actual+ftype+atype,
+    (atype=Iformal repeat; $ last argument is *
+      (cnt=0,(* Lsubst->flag,0->repr,formal->tag,0->calibre->ssel,Imacro->type *)LLOC;+),
+      (atype!=Inoarg;
+       cnt!=0,putQ+Dnoarg;
+       0->flag*LLOC,Ilocal->type*LLOC,putQ+>>LLOC),
+      get adm+formal+formal,(formal=0,1->cnt,get adm+repeat+formal;+),
+      (Q+Dplus,putQ+Dplus,:nxt;+)),
+   $ we have read all actual affixes; replacement text for * is done
+   (-aformal:cnt=0, $ first case, * is in top of QBUFFER
+     QBUFFER->aformal,putQ+Dend,get adm+aformal+aformal,
+     (nxt:formal=0; $ and then aformal=0
+      (* Lsubst->flag,>>QBUFFER->repr,formal->tag,0->calibre->ssel,Imacro->type *)LLOC,
+      $ get repr+aformal+x,add+x+LLshift+x, putQ+x+Dend
+      putQ+repr*LADM[aformal]+Dend,
+      get adm+formal+formal,get adm+aformal+aformal,:nxt);
+   putQ+Dend, $ second case, lrep is the * affix in LLOC
+      repr*LLOC[lrep]->qptr,incr+qptr,
+      $ qptr looks at the replacement text of *
+      (nxt:formal=0;
+       next+LLOC+lrep,(flag*LLOC[lrep]=Lsubst,>>QBUFFER->repr*LLOC[lrep];+),
+       copy QBUFFER affix+qptr,get adm+formal+formal,:nxt)).
 
 'a'macro arguments+>tag-formal-type-x:
    $ from the corrent position of LLOC make "setup formal stack"
@@ -150,13 +219,19 @@ $ ========================================================== $
     match formal actual+type+x,
       (x=Inoarg,0->flag*LLOC,-1->repr*LLOC,Ilocal->type*LLOC;
        putQ+Dend),
-      get adm+formal+formal,:nxt));
+      get adm+formal+formal,:nxt)).
 
 
-'a'expand macro+>tag-lptr-Qa-Qb-Qc-Qd:
-  save Qbuffer+Qa+Qb+Qc+Qd,
-  >>LLOC->lptr,macro arguments+tag,
+'a'expand macro+>tag-lptr-Qa-Qb-Qc-Qd-Lptr:
+  >>Qbuffer->Qa,LLshift->Qb, $ plus disc position $
+  >>LLOC->Lptr,macro arguments+tag, $ this sets up LLOC for formals $
+    save disc position+Qc+Qd,goto macro+tag,
+    subtr+Lptr+<<LLOC+LLshift,next+LLOC+LLshift,
+    $ macro rule body +Lptr $
+    restore disc position+Qc+Qd,
+  Qb->LLshift,unstack to+QBUFFER+Qa.
 
+  unstack to LLOC+LLOC base,Ql->LLOC base,
   restore Qbuffer+Qa+Qb+Qc+Qd.
 
 
