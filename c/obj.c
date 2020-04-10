@@ -52,6 +52,12 @@ void openObjFile(void){
 void closeObjFile(void){
   int par[1];par[0]=CHFILEpar(OBJ);closeFile(par);
 }
+void deleteObjFile(void){
+  int par[3];
+  closeObjFile();
+  createObjName();par[0]=STACKpar(LEXT);par[1]=LEXT->aupb;
+  unlinkFile(par);par[0]=LEXT->aupb;forgetString(par);
+}
 /* ----------------------------------------------------------- */
 /* writing to OBJ */
 static void printInt1(int *a);
@@ -308,13 +314,13 @@ static void checkBlock2Extension(int *a){/* >tag+>calibre */
   int par[5]; int ptr,cnt1,cnt ;          /*   0     1     */
   cnt=0;ptr=BUFFER->aupb;ptr--;
   if(BUFFER->offset[ptr]==0){par[0]=wrong_filling_block;par[1]=a[0];
-    par[2]=a[0];Error(3,par);}
+    par[2]=a[0];Error(2,par);}
   else{nxt:if(a[1]<=cnt){;}
     else if(BUFFER->offset[ptr]==0){;}
     else{cnt++;ptr-=2;goto nxt;}
     cnt1=cnt;nxt2:if(a[1]<=cnt){;}
     else if(BUFFER->offset[ptr]==0){ptr-=2;cnt++;goto nxt2;}
-    if(cnt<a[1]){par[0]=wrong_filling_block;par[1]=a[0];Error(3,par);}
+    if(cnt<a[1]){par[0]=wrong_filling_block;par[1]=a[0];Error(2,par);}
     else if(cnt1<cnt){par[0]=small_block_size;par[1]=a[0];
       par[2]=cnt1;par[3]=a[1];Warning(3,4,par);}}
 }

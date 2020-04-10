@@ -25,7 +25,7 @@
 #define aa_RULE         (16*sizeof_STACK)
 #define aa_DICT         (17*sizeof_STACK)
 #define aa_ITEM         (18*sizeof_STACK)
-// #define aa_QBUFFER      (19*sizeof_STACK)
+#define aa_QBUFFER      (19*sizeof_STACK)
 #define aa_STDARG       (20*sizeof_STACK)  /* arguments */
 
 /* files */
@@ -57,7 +57,7 @@
 #define RULE            parSTACK(aa_RULE)
 #define DICT            parSTACK(aa_DICT)
 #define ITEM            parSTACK(aa_ITEM)
-//#define QBUFFER         parSTACK(aa_QBUFFER)
+#define QBUFFER         parSTACK(aa_QBUFFER)
 #define STDARG          parSTACK(aa_STDARG)
 
 #define DISC            parDFILE(aa_DISC)
@@ -131,6 +131,9 @@
 #define INDICATOR_CALIBRE 1
 /* disc, obj */
 #define ITEM_CALIBRE	6 /* selectors in the linker only */
+
+/* disc */
+#define QBUFFER_CALIBRE 1
 
 //#define ZONE_lb		2
 //#define ZONE_up		1

@@ -2,9 +2,13 @@ $ provide an all purpose buffer
 'pragmat'module="buffer".
 $ HEADER ****************************************************** $
 'stack'BUFFER.
+'a'extend BUFFER+>x.
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 'stack'[1]BUFFER.
+'a'extend BUFFER+>x:
+ (* x->BUFFER *)BUFFER.
+
 'root'+.
 'pragmat'endif=compile.
 'end'

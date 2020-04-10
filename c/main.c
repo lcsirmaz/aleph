@@ -87,11 +87,14 @@ int main(int argc, char *argv[]){
   createObjHeader();
   par[0]='r';openDisc(par); // including nextDiscSymbol()
   passII();
+  if(wasError()){deleteDisc();deleteObjFile();return 1;}
+  // check for root ????
+
+  mCheckMacroRules(); // no recursive macro rules
+
+  if(wasError()){deleteDisc();deleteObjFile();return 1;}
   closeObjFile();
   
-  //
-  // openObjFile();par[0]=2047;Wcons(par);closeObjFile();
-
   return 0;
 }
 

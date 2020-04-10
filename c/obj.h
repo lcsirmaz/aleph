@@ -1,6 +1,6 @@
 /* obj.ale header file */
 
-void openObjFile(void),closeObjFile(void);
+void openObjFile(void),closeObjFile(void),deleteObjFile(void);
 void W(int *a),Wtag(int *a),Wcons(int *a);
 
 void createObjHeader(void),defineObjTag(int *a);

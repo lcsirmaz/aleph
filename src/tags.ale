@@ -77,7 +77,6 @@ $ tag flags in flag*LADM $
    rmacro      = 0x0080,       $ macro rule !! set by pragmat
    tnomacro    = timported|texternal|tpermanent,
    tfill       = 0x0100,       $ stack or table with fill
-   toffset     = 0x0100,       $ Ipointer constant repr=local offset
 $ rule flags
    rside effect= 0x0100,       $ has side effect ('a','p')
    rcan fail   = 0x0200,       $ can fail ('q','p')
@@ -140,7 +139,6 @@ $ exported data
 ).
 
 $ standard local stuff $
-'a'extend+[]st[]+>x: (* x->st *)st.
 $ tag flags for predefined rules
 'constant'
    rshiftarg = rque | rshiftrule | tdefined | rvararg | tpermanent | raffixes,
@@ -331,7 +329,7 @@ $ ************************************************************** $
    $ create "sel*tag" to LADM
    scratch+BUFFER, get tag+sel+sel,get tag+tag+tag,
    previous+TTAG+sel,previous+TTAG+tag,
-   unpack string+TTAG+sel+BUFFER,extend+BUFFER+/*/,
+   unpack string+TTAG+sel+BUFFER,extend BUFFER+/*/,
    unpack string+TTAG+tag+BUFFER,enter tag+BUFFER+x,
    get tag entry+x+x.
 
@@ -510,13 +508,14 @@ $    1 .. 2029: subtract that much
 $    2047:      subtract 2000
 
 $ pack and unpack two values (d,n), n has 11 bits
+'a'extend DICT+>x: (* x->DICT *)DICT;
 'f'pack2+>d+>n+x>:
    d->x,left clear+x+11,bool or+x+n+x.
 'f'unpack2+>x+d>+n>:
    bool and+x+0x7FF+n,x->d,right clear+d+11.
 'a'expand DICT+>ptr+>x-z:
    (ptr=0,0->z;subtr+>>DICT+ptr+z,incr+z),
-    pack2+z+x+z,extend+DICT+z.
+    pack2+z+x+z,extend DICT+z.
 'a'add line to DICT+>ptr+>n: $n !=0 $
    n<2030,expand DICT+ptr+n;
    expand DICT+ptr+2047,subtr+n+2000+n,>>DICT->ptr,:add line to DICT.

@@ -15,7 +15,7 @@
 
 static int 
 tag_not_defined,cannot_be_public,cannot_be_macro,extrule,imprule,
-unknown_disc_symbol,wrong_pragmat_value;
+macro_ignored,unknown_disc_symbol,wrong_pragmat_value;
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void add_messages(void){
@@ -24,6 +24,7 @@ static void add_messages(void){
  addMSG("%p \"%p\" cannot be macro (%l)",cannot_be_macro);
  addMSG("external rule ",extrule);
  addMSG("imported rule ",imprule);
+ addMSG("pragmat macro=%p is ignored",macro_ignored);
  addMSG("pass II, unknown disc symbol",unknown_disc_symbol);
  addMSG("d read pragmat: unknown pragmat number %d",wrong_pragmat_value);
 }
@@ -70,13 +71,16 @@ static void checkTagForMacro(int *a){ /* >tag */
   int par[4];int dl,type;
   par[0]=a[0];par[1]=tdefined;if(isTagFlag(par)){
     par[0]=a[0];getDefline(par);dl=par[1];par[0]=a[0];getType(par);type=par[1];
-    if(type!=Irule){par[0]=cannot_be_macro;par[1]=type;par[2]=a[0];
-       par[3]=dl;Error(4,par);return;}
-    par[0]=a[0];par[1]=texternal;if(isTagFlag(par)){
-      par[0]=cannot_be_macro;par[1]=extrule;par[2]=a[0];par[3]=dl;Error(4,par);return;}
-    par[1]=timported;if(isTagFlag(par)){
-      par[0]=cannot_be_macro;par[1]=imprule;par[2]=a[0];par[3]=dl;Error(4,par);return;}}
-  else{par[0]=tag_not_defined;par[1]=a[0];Error(2,par);}
+    if(type!=Irule){par[0]=a[0];par[1]=rmacro;clearTagFlag(par);
+       par[0]=cannot_be_macro;par[1]=type;par[2]=a[0];
+       par[3]=dl;Warning(3,4,par);return;}
+    par[0]=a[0];par[1]=texternal;if(isTagFlag(par)){par[0]=a[0];par[1]=rmacro;
+      clearTagFlag(par);par[0]=cannot_be_macro;par[1]=extrule;
+      par[2]=a[0];par[3]=dl;Warning(3,4,par);return;}
+    par[1]=timported;if(isTagFlag(par)){par[0]=a[0];par[1]=rmacro;
+      clearTagFlag(par);par[0]=cannot_be_macro;par[1]=imprule;
+      par[2]=a[0];par[3]=dl;Error(4,par);return;}}
+  else{par[0]=macro_ignored;par[1]=a[0];Warning(3,2,par);}
 }
 static void dReadPragmat(void){
    int par[3]; int pgt,x;

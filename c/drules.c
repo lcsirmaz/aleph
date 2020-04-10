@@ -34,7 +34,7 @@ static void init_msg1(void){
    addMSG("%mno standard selector for \"%p\"",undefined_standard_selector);
    addMSG("%mselector %p not defined",undefined_selector);
 /* ------------- */
-   addMSG("%msyntax error",syntax_error);
+   addMSG("%maffix type error",syntax_error);
    addMSG("%m\"%p\" has wrong type %p",wrong_affix_type);
    addMSG("%m\"%p\" unitialized",affix_no_value);
    addMSG("%mcannot be a constant",cannot_be_constant);
@@ -612,10 +612,10 @@ static void init_msg2(void){
 
 /* ------------------------------------------------- */
 static int compatibleRepeatBlockType(int *a){/* >provide + >require */
-  if(a[0]==a[1]){return 1;}
-  if(a[0]==IformalTable && a[1]==IformalStack){return 1;}
-  if(a[0]==IformalIn && a[1]==IformalInout){return 1;}
-  if(a[0]==IformalOut && a[1]==IformalInout){return 1;}
+  if(a[1]==a[0]){return 1;}
+  if(a[1]==IformalTable && a[0]==IformalStack){return 1;}
+  if(a[1]==IformalIn && a[0]==IformalInout){return 1;}
+  if(a[1]==IformalOut && a[0]==IformalInout){return 1;}
   return 0;
 }
 static void matchRepeatAffixes(int *a){/* >rtag + >actual + >formal + >modT> */
@@ -950,7 +950,7 @@ static int
 ruletag_not_used,exit_rule_can_return,rule_cannot_succeed,
 rule_can_fail,rule_cannot_fail,rule_has_global_side_effect,
 rule_has_no_side_effect,fail_and_rule_side_effect,
-local_or_formal_not_used,repeat_block_visited,
+local_not_used,formal_not_used,repeat_block_visited,
 stack_formal_not_set,formal_might_change_on_true,out_formal_not_set,
 out_formal_in_repeat_block,formal_does_not_change,
 formal_might_change_on_false;
@@ -966,7 +966,8 @@ static void init_msg4(void){
   addMSG("rule %p: has global side effect",rule_has_global_side_effect);
   addMSG("rule %p: has no global side effect",rule_has_no_side_effect);
   addMSG("rule %p: can have global side effect when fails",fail_and_rule_side_effect);
-  addMSG("rule %p: local or formal affix %p not used",local_or_formal_not_used);
+  addMSG("rule %p: local affix %p not used",local_not_used);
+  addMSG("rule %p: formal affix %p not used",formal_not_used);
   addMSG("rule %p: not all repeat blocks might be visited",repeat_block_visited);
   addMSG("rule %p: formal stack affix %p can be a table",stack_formal_not_set);
   addMSG("rule %p: formal affix %p might change on true exit",formal_might_change_on_true);
@@ -1010,7 +1011,9 @@ void dCheckRule(int *a){ /* >rtag */
      else if(type==IformalShift){;}
      else{tag=LLOC->offset[LLOC->aupb-LLOC_tag];par[0]=LLOC->aupb;
        par[1]=Lused;if(isLocalFlag(par)){;}
-       else{par[0]=local_or_formal_not_used;par[1]=a[0];par[2]=tag;
+       else if(LLOC->offset[LLOC->aupb-LLOC_type]==Ilocal){
+           par[0]=local_not_used;par[1]=a[0];par[2]=tag;Warning(4,3,par);}
+       else{par[0]=formal_not_used;par[1]=a[0];par[2]=tag;
            Warning(4,3,par);}
        if(type==IformalRepeat){check=0;par[0]=LLOC->aupb;par[1]=LTset;
          if(isLocalFlag(par)){;}

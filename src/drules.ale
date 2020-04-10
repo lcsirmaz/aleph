@@ -421,7 +421,7 @@ $   out,local     E       E     E     chk   .TM    chk,M
 $   inout         E       E     E      .    .M     .M
 
 'table'MESSAGE=(
- "%msyntax error"                  :syntax error,
+ "%maffix type error"              :affix type error,
  "%m""%p"" has wrong type %p"      :wrong affix type,
  "%m""%p"" unitialized"            :affix no value,
  "%mcannot be a constant"          :cannot be constant,
@@ -444,7 +444,7 @@ $ cnt:  affix number
 $ atag: 0 if tag is missing, otherwise the tag
 $ xtype: expected type, can be zero
 'a'affix type error+>rtag+>cnt+>atag-atype-w:
-   atag=0,where+rtag+cnt+w,error+syntax error+w+rtag;
+   atag=0,where+rtag+cnt+w,error+affix type error+w+rtag;
    get type+atag+atype,
      (atype=Iempty,error+not defined+atag;
       where+rtag+cnt+w,
@@ -701,7 +701,6 @@ $ EXTENSION ------------------------------------------ $
 $ internal error
  "Fatal: transport dest, calibre=%d < selector=%d":wrong selector in transport
 ).
-'a'extend+[]T[]+>x: (* x->T *)T.
 
 'a'check extension block+>tag+>calibre-ptr-cnt1-cnt:
    $      c  c-1  c-2 ...  4   3    2   1   $
@@ -729,7 +728,7 @@ $ internal error
   +.
 'a'transport+>tag+>calibre-rptr-cnt:
    $ adding calibre many zeros to BUFFER
-   >>BUFFER->rptr,calibre->cnt,(nxt:extend+BUFFER+0,decr+cnt,(cnt>0,:nxt;+)),
+   >>BUFFER->rptr,calibre->cnt,(nxt:extend BUFFER+0,decr+cnt,(cnt>0,:nxt;+)),
    (nxt:fsimple affix+tag+0+Uin+#,transport dest+tag+calibre,
         (Q+Dend;Q+Dextension;:nxt)),
    check extension block+tag+calibre,
@@ -917,7 +916,8 @@ $  check it, but don't generate code later
  "rule %p: has global side effect"      :rule has global side effect,
  "rule %p: has no global side effect"   :rule has no side effect,
  "rule %p: can have global side effect when fails"   :fail and rule side effect,
- "rule %p: local or formal affix %p not used"        :local or formal not used,
+ "rule %p: local affix %p not used"                  :local not used,
+ "rule %p: formal affix %p not used"                 :formal not used,
  "rule %p: not all repeat blocks might be visited"   :repeat blocks visited,
  "rule %p: formal stack affix %p can be a table"     :stack formal not set,
  "rule %p: formal affix %p might change on true exit":formal might change on true,
@@ -955,7 +955,8 @@ $  check it, but don't generate code later
           type*LLOC=Iformal shift;
           tag*LLOC->tag,
             (is local flag+>>LLOC+Lused;
-             warning+4+local or formal not used+rtag+tag),
+             type*LLOC=Ilocal,warning+4+local not used+rtag+tag,
+             warning+4+formal not used+rtag+tag),
             (=type*LLOC=
              [Iformal repeat],0->check,
                 (is local flag+>>LLOC+LTset; $ * as actual affix, all set $

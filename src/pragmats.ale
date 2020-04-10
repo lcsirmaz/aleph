@@ -195,7 +195,7 @@ $ error and warning messaged
  "pragmat %p=%p has no matching part"   :misplaced if pragmat,
  "pragmat %p has no effect (compile=off)":pragmat has no effect,
 $ warning $
- "macro pragmat is ignored for tag %p"   :macro ignored ,
+ "pragmat macro=%p is ignored"          :macro ignored,
 $ internal error $
  "FATAL: get pragmat+%d, unknown"       :get pragmat error,
  "FATA: set pragmat+%d, unknown"        :set pragmat error

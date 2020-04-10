@@ -32,7 +32,7 @@ void initialize_stdstacks(int argc,char *argv[]){
   init_stack(RULE,     6100000,6200000,RULE_CALIBRE);
   init_stack(DICT,     7000000,9900000,DICT_CALIBRE);
   init_stack(ITEM,     6300000,6400000,ITEM_CALIBRE);
-//  init_stack(QBUFFER,  6400000,6500000,1);
+  init_stack(QBUFFER,  6400000,6500000,QBUFFER_CALIBRE);
   init_stack(STDARG,   6200000,6300000,STDARG_CALIBRE);
   /* add all arguments to STDARGS */
   while(argc>1){argc--;add_new_string(argv[argc],STDARG);}
@@ -52,7 +52,24 @@ void add_new_string(char *what, aSTACK *st){
    par[0]=STACKpar(BUFFER); par[1]=oldupb; unstackto(par);
 }
 
-// DISC, OBJ, PRINTFILE, TARGET, SOURCE
+// DISC, OBJ, PRINTFILE, SOURCE
+
+void initialize_stdfiles(void){
+  int par[5]; int oldupb;
+  SOURCE->openflag=0;		// charfile
+  PRINTFILE->openflag=0;	// charfile
+  DISC->openflag=0;		// datafile
+  OBJ->openflag=0;		// charfile
+// open file(PRINTFILE,stdstring,"stdout")
+  oldupb=TTAG->aupb; add_new_string("stdout",TTAG);
+  par[0]=CHFILEpar(PRINTFILE); par[1]='w';par[2]=STACKpar(TTAG);
+  par[3]=TTAG->aupb; 
+  if(!openFile(par)){fprintf(stderr,"Cannot open PRINTFILE\n"); exit(11); }
+  par[0]=STACKpar(TTAG); par[1]=oldupb; unstackto(par);
+}
+
+/* this is not used ... */
+#if 0
 
 /* return the simple hash of the given string */
 static int compute_hash(char *v){ // compute the hash
@@ -64,23 +81,6 @@ static int compute_hash(char *v){ // compute the hash
    par[0]=STACKpar(TTAG); par[1]=oldupb; unstackto(par);
    return res;
 }
-void initialize_stdfiles(void){
-  int par[5]; int oldupb;
-  SOURCE->openflag=0;		// charfile
-  PRINTFILE->openflag=0;	// charfile
-//  TARGET->openflag=0;		// charfile
-  DISC->openflag=0;		// datafile
-  OBJ->openflag=0;		// charfile
-// this should be moved to lexical
-  // open file(PRINTFILE,stdstring,"stdout")
-  oldupb=TTAG->aupb; add_new_string("stdout",TTAG);
-  par[0]=CHFILEpar(PRINTFILE); par[1]='w';par[2]=STACKpar(TTAG);
-  par[3]=TTAG->aupb; 
-  if(!openFile(par)){fprintf(stderr,"Cannot open PRINTFILE\n"); exit(11); }
-  par[0]=STACKpar(TTAG); par[1]=oldupb; unstackto(par);
-}
-
-/* this is not used ... */
 
 /* collect (list,string) pairs, and then add to the given datafile */
 /* add a new list to a datafile area; collect while d==NULL */
@@ -98,6 +98,6 @@ void init_datafile(aDATAFILE *d,aSTACK *st, char *name){
      cnt=0;
   }
 }
-
+#endif
 
 /* EOF */

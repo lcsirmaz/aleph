@@ -49,19 +49,19 @@ $  (calibre,ssel, flag,type,repr,tag) LLOC <== formal lists
   $ the empty () is added to prevent exporting this stack
 
 $ retrieve formal calibre and ssel
-'a'handle formal list+>formal+>local-x:
-  =type*LADM[formal]=
+'a'handle formal list+>formal-x:
+  =type*LLLOC=
   [Iformal stack;Iformal table],
-     get formal calibre+formal+x,x->calibre*LLOC[local],
-     get formal ssel+formal+x,x->ssel*LLOC[local];
+     get formal calibre+formal+calibre*LLOC,
+     get formal ssel+formal+ssel*LLOC;
   +.
 $ open a range
-'a'set up local stack+>rtag+loc>-formal-local:
+'a'set up local stack+>rtag+loc>-formal:
    scratch+LLOC,get adm+rtag+formal,
    $ formal affixes $
    (nxt: formal=0;
      (*0->flag->repr,type*LADM[formal]->type,formal->tag,0->orepr->otype *)LLOC,
-     >>LLOC -> local, handle formal list+formal+local, put repr+formal+local,
+     handle formal list+formal,put repr+formal+>>LLOC,
      get adm+formal+formal,:nxt),
    >>LLOC->loc,
    $ add rule tag as label
@@ -292,7 +292,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
     R+Scolon;
     error+expected+Scolon,skip all),
    (R+Sbox,classification; alternative series),
-   D+Dpoint,close local range+loc,
+   D+Dpoint,close local range+loc,0->rule tag,
    (R+Spoint;error+expected+Spoint,skip to point).
 
 'a'root body-loc:
@@ -300,7 +300,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    D+Droot,Dtag+Xroot,rule pragmats+Xroot,
    set up local stack+Xroot+loc,add local affixes,
    (R+Sbox,classification; alternative series),
-   D+Dpoint,close local range+loc,
+   D+Dpoint,close local range+loc,0->rule tag,
    (R+Spoint;error+expected+Spoint,skip to point).
 
 'root'+.

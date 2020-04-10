@@ -43,17 +43,17 @@ static void Eerror(int *a,int n,int *va){
   if(a[0]){return;}
   a[0]=1;Error(n,va);
 }
-static int ruleTag,formalRepeatAffix;
+static int ruleTag=0,formalRepeatAffix;
 /* ================================================== */
-static void handleFormalList(int *a){/* >formal + >local */
+static void handleFormalList(int *a){/* >formal */
   int par[3];int x;
-  x=LADM->offset[a[0]-LADM_type];if(x==IformalStack||x==IformalTable){
-    par[0]=a[0];getFormalCalibre(par);LLOC->offset[a[1]-LLOC_calibre]=par[1];
-    getFormalSsel(par);LLOC->offset[a[1]-LLOC_ssel]=par[1];}
+  x=LLOC->offset[LLOC->aupb-LLOC_type];if(x==IformalStack||x==IformalTable){
+    par[0]=a[0];getFormalCalibre(par);LLOC->offset[LLOC->aupb-LLOC_calibre]=par[1];
+    getFormalSsel(par);LLOC->offset[LLOC->aupb-LLOC_ssel]=par[1];}
 }
 /* open a range */
 static void setupLocalStack(int *a){ /* >rtag+ loc> */
-  int par[8];int formal,local;
+  int par[8];int formal;
   par[0]=STACKpar(LLOC);scratch(par);par[0]=a[0];getAdm(par);formal=par[1];
   nxt:
   if(formal==0){;}
@@ -61,9 +61,9 @@ static void setupLocalStack(int *a){ /* >rtag+ loc> */
     par[7-LLOC_flag]=par[7-LLOC_repr]=0;
     par[7-LLOC_type]=LADM->offset[formal-LADM_type];
     par[7-LLOC_tag]=formal;
-    par[7-LLOC_orepr]=par[7-LLOC_otype]=0;expandstack(par);local=LLOC->aupb;
-    par[0]=formal;par[1]=local;handleFormalList(par);
-    par[0]=formal;par[1]=local;putRepr(par);
+    par[7-LLOC_orepr]=par[7-LLOC_otype]=0;expandstack(par);
+    par[0]=formal;handleFormalList(par);
+    par[0]=formal;par[1]=LLOC->aupb;putRepr(par);
     par[0]=formal;getAdm(par);formal=par[1];goto nxt;}
   a[1]=LLOC->aupb;par[0]=Dlabel;D(par);par[0]=a[0];Dtag(par);
   par[0]=STACKpar(LLOC);par[1]=6;
@@ -419,7 +419,7 @@ void ruleBody(int *a){ /* >tag+>repaffix */
   else if(par[0]=Scolon,R(par)){;}
   else{par[0]=expected;par[1]=Scolon;Error(2,par);skipAll();}
   par[0]=Sbox;if(R(par)){classification();}else{alternativeSeries();}
-  par[0]=Dpoint;D(par);par[0]=loc;closeLocalRange(par);
+  par[0]=Dpoint;D(par);par[0]=loc;closeLocalRange(par);ruleTag=0;
   par[0]=Spoint;if(R(par)){;}else{par[0]=expected;par[1]=Spoint;
    Error(2,par);skipToPoint();}
 }
@@ -432,7 +432,7 @@ void rootBody(void){
   par[0]=Xroot;setupLocalStack(par);loc=par[1];
   addLocalAffixes();par[0]=Sbox;if(R(par)){classification();}
   else{alternativeSeries();}
-  par[0]=Dpoint;D(par);par[0]=loc;closeLocalRange(par);
+  par[0]=Dpoint;D(par);par[0]=loc;closeLocalRange(par);ruleTag=0;
   par[0]=Spoint;if(R(par)){;}else{par[0]=expected;par[1]=Spoint;
     Error(2,par);skipToPoint();}
 }

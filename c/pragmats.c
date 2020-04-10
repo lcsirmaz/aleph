@@ -133,7 +133,7 @@ void initialize_pragmats(void){
   addMSG("pragmat endif=%p missing",missing_endif_pragmat);
   addMSG("pragmat %p=%p has no matching part",misplaced_if_pragmat);
   addMSG("pragmat %p has no effect (compile=off)",pragmat_has_no_effect);
-  addMSG("macro pragmat is ignored for tag %p",macro_ignored);
+  addMSG("pragmat macro=%p is ignored",macro_ignored);
   /* ---------------------------- */
   add_new_string("aleph",LEXT);programTitle=LEXT->aupb;
 }

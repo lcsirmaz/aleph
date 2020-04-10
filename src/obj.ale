@@ -59,7 +59,7 @@ $ HEADER ****************************************************** $
 'stack'(flag,type,tag,adm,tnext,fnext)NODE.
 
 $ opening and closing
-'a'open obj file,close obj file.
+'a'open obj file,close obj file,delete obj file.
 $ writing to OBJ  ??????  NODE, FORMAL/LOCAL var ??????
 'a'W+>x,Wcons+>x,Wtag+>x.
 $ create header and item list
@@ -87,7 +87,7 @@ $ messages ---------------------------------------------------- $
   "%p %p: cannot be external (%l)": cannot be external,
   "filling %p: undefined selector %p" :undefined selector,
   "filling %p: field %p duplicated":double selector,
-  "filling %p: not a consecutive block":wrong filling block,
+  "filling %p: not consecutive block":wrong filling block,
 $ warning 
   "filling %p: block size %d is bigger than calibre (%d)" :large block size,
   "filling %p: block size %d is smaller than calibre (%d)":small block size,
@@ -112,6 +112,9 @@ $ obj file ==================================================== $
      internal error+opening OBJ+>>LEXT+err).
 'a'close obj file:
    close file+OBJ.
+'a'delete obj file:
+   close obj file,create obj name,
+     unlink file+LEXT+>>LEXT,forget string+>>LEXT.
 
 $ ------------------------------------------------------------- $
 $ writing to the OBJ file
@@ -293,8 +296,6 @@ $ got a block; after the (. Check if there is a *
         must Qcons+x,Wcons+x,0->y,:nxt).
 
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
-'a'extend+[]t[]+>x: (*x->t*)t.
-
 'a'check block2 extension+>tag+>calibre-ptr-cnt1-cnt:
   0->cnt,>>BUFFER->ptr,decr+ptr,
     (BUFFER[ptr]=0,error+wrong filling block+tag; $ last item not filled $
@@ -319,7 +320,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
   $ allocate entries in BUFFER: (flag,data) * calibre
   $   flag=0: empty, =1: constant, =2: tag
   >>BUFFER->optr,get calibre+tag+calibre,calibre->x,
-  (nxt:extend+BUFFER+0,extend+BUFFER+0,decr+x,(x=0;:nxt)),
+  (nxt:extend BUFFER+0,extend BUFFER+0,decr+x,(x=0;:nxt)),
   0->rx->ry, $ no repeat data yet $
   (nxt: (Qtag+x,check list item type+x,2->y;must Qcons+x,1->y),
         (dest: Q+Dto,block2 selector+tag+sel,

@@ -13,10 +13,11 @@ $ BODY ********************************************************* $
 
 'table'MESSAGE=(
   """%p"" not defined":tag not defined,
-  "%p ""%p"" cannot be public (%l)"  : cannot be public,
-  "%p ""%p"" cannot be a macro (%l)" : cannot be a macro,
+  "%p %p: cannot be public (%l)"  : cannot be public,
+  "%p %p: cannot be a macro (%l)" : cannot be a macro,
   "external rule ":extrule,
   "imported rule ":imprule,
+  "pragmat macro=%p is ignored":macro ignored,
 $ internal error
   "pass II, unknown disc symbol" : unknown disc symbol,
   "d read pragmat: unknown pragmat number %d": wrong pragmat value
@@ -53,11 +54,14 @@ $  pgt warning level <cons>
 
 'a'check tag for macro+>tag-type-dl:
    is tag flag+tag+tdefined,get defline+tag+dl,get type+tag+type,
-     (type!=Irule,error+cannot be a macro+type+tag+dl;
-      is tag flag+tag+texternal,error+cannot be a macro+extrule+tag+dl;
-      is tag flag+tag+timported,error+cannot be a macro+imprule+tag+dl;
+     (type!=Irule,clear tag flag+tag+rmacro,
+            warning+3+cannot be a macro+type+tag+dl;
+      is tag flag+tag+texternal,clear tag flag+tag+rmacro,
+            warning+3+cannot be a macro+extrule+tag+dl;
+      is tag flag+tag+timported,clear tag flag+tag+rmacro,
+            warning+3+cannot be a macro+imprule+tag+dl;
       +);
-    error+tag not defined+tag.
+    warning+3+macro ignored+tag.
 
 'a'd read pragmat-pgt-x:
    must Qcons+pgt,
