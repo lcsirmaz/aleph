@@ -51,13 +51,14 @@ $   UAlt         <- value at the next alternative
 
 $ the RULE stack is filled
 $
-$   RULE	*LADM
-$   use		formal/local (affixes used)
+$   RULE	<NODE entry>
+$   use		formal/local 
 $   FALSE	0/*RULE   (optional)
-$   use/set	formal/local (affixes used/set if successful)
+$   use/set/spare formal/local (if true)
 $   TRUE	0/*RULE
+$   SINK
 $
-$   CLASS	-
+$   BOX		<NODE entry>
 $   use		formal/local (in classification box)
 $   ZONE	-
 $   FALSE	0/*RULE  (the last zone has no FALSE label)
@@ -83,23 +84,26 @@ $        Imacro  -- textual replacement     repr: QBUFFER ptr, tag: formal (LADM
 $        Ilabel  -- label                   repr: RULE ptr
 
 'pragmat'if=compile.
-
-'table'RULE type=(
-   0:ARULE,	$ cannot fail; extension; last zone
-   0:ERULE,	$ exit
-   0:QRULE,	$ can fail; zone
-   0:use,	$ use + offset
-   0:set,	$ set + offset
-   0:TRUE,	$ true branch
-   0:FALSE,	$ false branch
-   0:JUMP,	$ jump + RULE
-   0:PLUS,	$ +
-   0:MINUS,	$ -
-   0:HEAD,	$ following a head
-   0:SCOLON,	$ semicolon
-   0:OPEN,	$ region start
-   0:CLOSE	$ region end
+'pragmat'require=("disc","tags","types","display","buffer"
 ).
+
+'stack'(flag,data)RULE=().
+'constant'
+  Uopen		= 0x100001, $ followed by many 0 for formal/local flags
+  Uclose	= 0x100002, $ points back to Uopen
+  Uhead		= 0x100003, $ after the head of an alternative
+  Urule		= 0x100004, $ rule,extension
+  Utrue		= 0x100005, $ true exit
+  Ufalse	= 0x100006, $ false exit
+  Usink		= 0x100007, $ 'exit' rule
+  Uplus		= 0x100008, $ +
+  Uminus	= 0x100009,
+  Ujump		= 0x10000a,
+  Ubox		= 0x10000b,
+  Uuse		= 0x100011, $ formal/local used here
+  Uset		= 0x100012, $ formal/local set
+  Uspare	= 0x100013, $ formal/local set but not used later
+  Usemicolon	= 0x10000f.
 
 $ --------------------------------------- $
 $ create LLOC stack entries for formals;
@@ -137,10 +141,156 @@ $ macro replacement ====================================== $
   macro call head+tag+Qa+Qb,save disc position+dpos+dnum,
     $ open range $
     goto macro+tag,
-    rule body,mustQ+Dpoint,
+    g rule body,mustQ+Dpoint,
     $ close range $
   restore disc position+dpos+dnum,macro call tail+Qa+Qb,
   unstack to+LLOC+loc.
+$ rule structure =========================================== $
+'a'start region+>label+rloc>-loc-cnt:
+  push RULE+Uopen+0,>>RULE->rloc,(is+label,rloc->repr*LLOC[label];+),
+  <<LLOC->loc,0->cnt,(nxt:loc<=<<LLOC;
+    (=type*LLOC[loc]=
+     [Iformal in;Iformal out;Iformal inout;Ilocal],
+        incr+cnt,push RULE+0+loc,
+        (repr*LLOC[loc]<0,cnt->repr*LLOC[loc];
+         repr*LLOC[loc]=cnt;
+         internal error+_line_);
+     +),
+    next+LLOC+loc,:nxt).
+'a'close region+>rloc:
+  push RULE+Uclose+rloc.
+$ use/set values ------------------------------------ $
+'constant'
+  Uin		=0x234501,
+  Uout		=0x234502,
+  Uinout	=0x234503,
+  Uslicein	=0x234511,
+  Usliceout	=0x234512,
+  Usliceinout	=0x234513.
+'f'utype to slice+>in+out>:add+in+0x10+out.
+'q'in utype+>utype-x:bool and+utype+1+x,x!=0.
+     $ used before the call
+'q'out utype+>utype-x:bool and+utype+2+x,x!=0.
+     $ used after the call
+$ OPTIMIZATION ====================================== $
+$ read the rule, populate the RULE stack, 
+$   traverse it, then read the rule again.
+$ this part populates RULE; tags start with a g
+
+$ extension ----------------------------------------- $
+'a'g transport list:
+  g fsimple affix+Uin+#,$ skip destination
+    (nxt:Q+Dto,(Qcons+#;must Qtag+#),:nxt;+),
+    (Q+Dextension;Q+Dend;:g transport list).
+'a'g extension-tag:
+  must Qtag+tag,push RULE+Urule+0,g transport list,push RULE+Utrue+0.
+$ classification ------------------------------------ $
+'a'g read box:
+    push RULE+Ubox+0,g fsimple affix+Uin+#,mustQ+Dbox.
+'a'g classification:
+    mustQ+Dzone,Qskip+Dzone,
+    push RULE+Urule+0,push RULE+Ufalse+0,push RULE+Utrue+0,
+    g alt tail,(Q+Dsemicolon,push RULE+Usemicolon+0,:g classification;+).
+$ actual rule --------------------------------------- $
+'a'g handle affix+>tag+>utype:
+   (in utype+utype,push RULE+Uuse+repr*LLOC[tag];+),
+   (out utype+utype,(utype>=Uslicein,extend BUFFER+Uuse;extend BUFFER+Uset),
+     extend BUFFER+repr*LLOC[tag];+).
+'a'g handle vararg block+>ptr:
+   $ ptr points to the * formal affix of the rule, use the block
+   (nxt: =type*LLOC[ptr]=
+   [Ilabel],+; $ this is the last one
+   [Iformal in],g handle affix+ptr+Uin,next+LLOC+ptr,:nxt;
+   [Iformal out],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
+   [Iformal inout],g handle affix+ptr+Uinout,next+LLOC+ptr,:nxt;
+   next+LLOC+ptr,:nxt).
+
+'p'g limit:
+   Q+Dvlwb;Q+Dvupb;Q+Dlwb;Q+Dupb;Q+Dcalibre.
+'a'g fsimple affix+>utype+repeat>-tag-type:
+   Qcons+#,0->repeat;
+   g limit,must Qtag+#,0->repeat;
+   Q+Dsub,utype to slice+utype+type,g fsimple affix+type+repeat,
+     mustQ+Dbus,must Qtag+#,(Qcons+#;must Qtag+#);
+   Q+Dnoarg,0->repeat;
+   must Qtag+tag,get type+tag+type,
+     (=type=
+      [Iformal repeat],tag->repeat; $ * affix $
+      [Iformal in;Iformal out;Iformal inout;Ilocal],
+         g handle affix+tag+utype,0->repeat;
+      0->repeat).
+
+'a'g match formal actual+>ftype+repeat>-tag-type:
+  $ we are expecting an affix of type "ftype"
+  $ we can get the formal affix *
+  =ftype=
+  [Iformal file;Iformal table;Iformal stack], 
+     must Qtag+tag,get type+tag+type,
+     (type=Iformal repeat,tag->repeat;0->repeat);
+  [Iformal shift], must Qtag+repeat;
+  [Iformal in],    g fsimple affix+Uin+repeat;
+  [Iformal out],   g fsimple affix+Uout+repeat;
+  [Iformal inout], g fsimple affix+Uinout+repeat;
+  internal error+_line_.
+
+'a'g actual rule+>tag-formal-ftype-repeat-frep:
+  $ collect which formal/local this rule uses and sets
+  $  Uuse <#counter>
+  $ before calling, collect in and inout (plus slice)
+  $ after return, set out and inout (plus slice)
+  $ collect out/inout affixes in BUFFER, and copy from
+  $  there to RULE after the Ufalse entry (if the rule
+  $  can fail).
+  $ If * is an actual affix, use and set all formal
+  $  after the *, except for 'get affix blockno'
+  push RULE+Urule+0,scratch+BUFFER,0->repeat->frep,get adm+tag+formal,
+  (nxt:Q+Dplus,get type+formal+ftype,
+    (ftype=Iformal repeat,get adm+formal+formal,formal->repeat;+),
+    g match formal actual+ftype+frep,
+    get adm+formal+formal,(formal=0,repeat->formal;+),:nxt;
+  +),
+  $ frep: the last actual affix is *; this is a LLOC pointer
+  (frep=0;
+   (tag=Xshift affix,is tag flag+tag+rshiftrule,tag!=Xshift affix);
+   g handle vararg block+frep),
+  (is tag flag+tag+rcan fail,push RULE+Ufalse+0;+),
+  <<BUFFER->frep,
+  (nxt-flag:frep>>>BUFFER;
+    BUFFER[frep]->flag,incr+frep,push RULE+flag+BUFFER[frep],incr+frep,:nxt),
+  (is tag flag+tag+rno return,push RULE+Usink+0;push RULE+Utrue+0).
+$ --------------------------------------------------- $
+'a'g compound-loc:
+  >>LLOC->loc,g rule body,unstack to+LLOC+loc.
+
+'a'g alt sequence:
+  g member,push RULE+Uhead+0,g alt tail,
+    (Q+Dsemicolon,push RULE+Usemicolon+0,:g alt sequence;+).
+
+'a'g alt tail:
+  Q+Dcomma,g member,:g alt tail;+.
+
+'a'g member-tag:
+  Q+Dopen,g compound,mustQ+Dclose;
+  Q+Dextension,g extension;
+  Q+Djump,must Qtag+tag,push RULE+Ujump+repr*LLOC[tag];
+  Q+Dplus,push RULE+Uplus+0;
+  Q+Dminus,push RULE+Uminus+0;
+  must Qtag+tag,(is tag flag+tag+rmacro,expand macro+tag;
+                 g actual rule+tag).
+
+'a'g rule body-label-rloc:
+  setup label+label,$ add label to LLOC, if any $
+  setup locals,     $ add locals to LLOC, some of them before label
+  start region+label+rloc,
+   (Q+Dbox,g read box,g classification;
+    g alt sequence),
+  close region+rloc.
+
+'a'g optimize rule+>tag:
+  scratch+RULE,setup formal stack+tag,
+  g rule body,mustQ+Dpoint.
+
+$ now traverse the RULE array ...
 
 
 'root'+.

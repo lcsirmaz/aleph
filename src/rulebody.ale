@@ -4,6 +4,7 @@ $ HEADER ******************************************************* $
 $
 'a'rule body+>tag+>repaffix.
 'a'root body.
+'a'get rule tag+string>.
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.
@@ -49,8 +50,8 @@ $  (calibre,ssel, flag,type,repr,tag) LLOC <== formal lists
   $ the empty () is added to prevent exporting this stack
 
 $ retrieve formal calibre and ssel
-'a'handle formal list+>formal-x:
-  =type*LLLOC=
+'a'handle formal list+>formal:
+  =type*LLOC=
   [Iformal stack;Iformal table],
      get formal calibre+formal+calibre*LLOC,
      get formal ssel+formal+ssel*LLOC;
@@ -279,6 +280,10 @@ $ classification: we are after =
     (R+Sbox;Eerror+err+expected+Sbox),
     (nxt:zone+err+last,(is+last;R+Ssemicolon,D+Dsemicolon,:nxt;+)),
     (is+err,skip all;+).
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'get rule tag+string>:
+   is+rule tag,Squote image->string;
+   Squote image->string.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'rule pragmats+>tag:
    (is pragmat value+pgt trace,set tag flag+tag+rtrace;+),

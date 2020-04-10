@@ -171,7 +171,7 @@ $   set LTset/LTmod/Lvararg flags
 $ ----------------------------------- $
 $ stack for saving formal/local flags in regions.
 $ used also to check the extension block
-'stack'[1](flag,data=RULE)RULE.
+'stack'(flag,data)RULE=().
 $  flags for RULE - storing flags for a region
 'constant'
   $ final flags of the region
@@ -199,8 +199,8 @@ $  flags for RULE - storing flags for a region
     Uallmod	= UETmod|Ualtmod,      $ entering the region with Tmod
     UtailBits	= UtailFset|UtailFmod.
 $ - - - - - - - - - - - - - - - - - - - - $
-'a'push RULE+>data:
-   (* 0->flag, data->data *)RULE.
+$'a'push RULE+>data:
+$   (* 0->flag, data->data *)RULE.
 'a'set RULE flag+>ptr+>flag:
    bool or+flag*RULE[ptr]+flag+flag*RULE[ptr].
 'q'is RULE flag+>ptr+>flag-x:
@@ -212,11 +212,11 @@ $ - - - - - - - - - - - - - - - - - - - - $
 'a'open region+>modT-ptr:
    $ called after locals are pushed to LLOC. Original modT
    $ for the block, LTset/LTmod for formals
-   <<LLOC->ptr,push RULE+0,          $ border $
+   <<LLOC->ptr,push RULE+0+0,              $ border $
    (is+modT,set RULE flag+>>RULE+UETmod;+), $ modT for the region $
    (nxt: >>LLOC > ptr;
       (type*LLOC[ptr]=Ilabel;
-       push RULE+ptr,
+       push RULE+0+ptr,
          $ how they entered the region $
          (is local flag+ptr+LTset,set RULE flag+>>RULE+Uallset;+),
          (is local flag+ptr+LTmod,set RULE flag+>>RULE+Uallmod;+)),
@@ -233,7 +233,7 @@ $ - - - - - - - - - - - - - - - - - - - - $
 'a'add label+>label+>ptr:
    $ the label comes after RULE block;
    $ to get the label tag add <>RULE to the block pointer
-   is+label,push RULE+tag*LLOC[label],ptr->repr*LLOC[label];
+   is+label,push RULE+0+tag*LLOC[label],ptr->repr*LLOC[label];
    +.
 'p'redo region+>optr+>canT+>canF+modT>-ptr:
    $ check if UTcan,UFcan flags changed (for jumps)
@@ -421,7 +421,7 @@ $   out,local     E       E     E     chk   .TM    chk,M
 $   inout         E       E     E      .    .M     .M
 
 'table'MESSAGE=(
- "%maffix type error"              :affix type error,
+ "%maffix type error"              :wrong affix syntax,
  "%m""%p"" has wrong type %p"      :wrong affix type,
  "%m""%p"" unitialized"            :affix no value,
  "%mcannot be a constant"          :cannot be constant,
@@ -444,7 +444,7 @@ $ cnt:  affix number
 $ atag: 0 if tag is missing, otherwise the tag
 $ xtype: expected type, can be zero
 'a'affix type error+>rtag+>cnt+>atag-atype-w:
-   atag=0,where+rtag+cnt+w,error+affix type error+w+rtag;
+   atag=0,where+rtag+cnt+w,error+wrong affix syntax+w+rtag;
    get type+atag+atype,
      (atype=Iempty,error+not defined+atag;
       where+rtag+cnt+w,
@@ -949,13 +949,12 @@ $  check it, but don't generate code later
    (is+modF,(is tag flag+rtag+rside effect,
                 warning+5+fail and rule side effect+rtag;
              error+fail and rule side effect+rtag);+)),
-  $ check all formal and local variables for usage
    (nxt: >>LLOC < <<LLOC;
          (-check-tag: type*LLOC=Ilabel; $ check is label is used ??? $
           type*LLOC=Iformal shift;
           tag*LLOC->tag,
             (is local flag+>>LLOC+Lused;
-             type*LLOC=Ilocal,warning+4+local not used+rtag+tag,
+             type*LLOC=Ilocal,warning+4+local not used+rtag+tag;
              warning+4+formal not used+rtag+tag),
             (=type*LLOC=
              [Iformal repeat],0->check,
@@ -975,8 +974,8 @@ $  check it, but don't generate code later
              0->check),
             (-level:(is+check,is local flag+>>LLOC+LFmod),
                 (is tag flag+rtag+r macro,9->level;2->level),
-                warning+level+formal might change on false+rtag+tag;+)),
-            unstack+LLOC,:nxt),
+                warning+level+formal might change on false+rtag+tag;+)
+          ),unstack+LLOC,:nxt),
    must Q+Dpoint.
 
 'root'+.

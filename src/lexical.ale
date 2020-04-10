@@ -448,10 +448,10 @@ $ bold symbols are stored in a table
  "var"         :B29       ,(   0,   0,Svarsymb   ),
  "variable"    :B30       ,( B29, B31,Svarsymb   ),
  "x"           :B31       ,(   0,   0,Sextsymb   ),
-$ built-in definitions
- "file"        :D1        ,(   0,   0,1          ),
- "line"        :first bn  ,(  D1,  D3,2          ),
- "rule"        :D3        ,(   0,   0,3          )
+$ built-in strings and constants
+ "_file_"      :D1        ,(   0,   0,1          ),
+ "_line_"      :first bin ,(  D1,  D3,2          ),
+ "_rule_"      :D3        ,(   0,   0,3          )
 ).
 'a'read bold+x>-n:
   $ read a bold symbol 'abc'; give error messages
@@ -478,21 +478,22 @@ $ identifiers are passed to the "tags" module
   enter tag+BUFFER+x.
 $ built-in definitions $
 $ _line_, _file_, _rule_
-'a'built in+x>-n:
-  scratch+BUFFER,0->n,
+'a'read built in+x>-n:
+  scratch+BUFFER,extend BUFFER+/_/,1->n,
   ((nxt-t: bold letter+t,extend BUFFER+t,incr+n,:nxt;
-           char=/_/,next char),
-   pack string+BUFFER+n+LEXT,first bn->x,
+           char=/_/,extend BUFFER+/_/,incr+n,next char),
+   pack string+BUFFER+n+LEXT,first bin->x,
    (nxt:x=0,error+unrecognized builtin+>>LEXT;
         compare string+BOLD+x+LEXT+>>LEXT+n,next+BOLD+x,
          (n>0,left*BOLD[x]->x,:nxt;
           n<0,right*BOLD[x]->x,:nxt;
           adm*BOLD[x]->x)),
    unstack string+LEXT,(=x=
-     [1],$file$ Sdummy symb->x;
-     [2],$line$ find linenum+0+x+#,enter const+x+x;
-     [3],$rule$ Sdummy symb->x;
-     Sdummy symb->x);
+     [1],$_file_$ find linenum+0+#+x;
+     [2],$_line_$ find linenum+0+x+#,enter const+x+x;
+     [3],$_rule_$ Sdummy symb->x; $ get "rule tag" from rulebody $
+     $ error    $ Sdummy symb->x);
+  n=0,error+illegal character+/_/;
   pack string+BUFFER+n+LEXT,error+unrecognized builtin+>>LEXT,
    unstack string+LEXT,Sdummy symb->x).
 $ **************************************************************** $
@@ -540,7 +541,7 @@ $ **************************************************************** $
     [/&/],next char,Sbooland->x;
     [/^/],next char,Sboolxor->x;
     $ buit-in definitions $
-    [/_/],next char,built in+x;
+    [/_/],next char,read built in+x;
     [end char],next char,Sendsymb->x;
     error+illegal character+char,next char,:nxt
   ).  

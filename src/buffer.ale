@@ -1,13 +1,13 @@
 $ provide an all purpose buffer
 'pragmat'module="buffer".
 $ HEADER ****************************************************** $
-'stack'BUFFER.
-'a'extend BUFFER+>x.
+'stack'BUFFER,(flag,data)RULE.
+'a'extend BUFFER+>x: (* x->BUFFER *)BUFFER.
+'a'push RULE+>flag+>data: (* flag->flag,data->data*)RULE.
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'stack'[1]BUFFER.
-'a'extend BUFFER+>x:
- (* x->BUFFER *)BUFFER.
+'stack'[1]BUFFER,
+       [1](flag,data)RULE.
 
 'root'+.
 'pragmat'endif=compile.

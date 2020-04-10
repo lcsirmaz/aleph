@@ -342,7 +342,7 @@ static void expandVarargs(int *a){/* >repeat */
       LLOC->offset[LLOC->aupb-LLOC_type]=Ilocal;par[0]=LLOC->aupb;putQ(1,par);}
     else{par[0]=Dnoarg;putQ(1,par);}
     par[0]=formal;getAdm(par);formal=par[1];
-    if(formal==0){block=1;par[0]=formal;getAdm(par);formal=par[1];}
+    if(formal==0){block=1;par[0]=a[0];getAdm(par);formal=par[1];}
     par[0]=Dplus;if(Q(par)){par[0]=Dplus;putQ(1,par); goto nxt;}}
   if(block==0){int aformal=QBUFFER->offset[QBUFFER->aupb];nxt2:
     if(formal==0){;}

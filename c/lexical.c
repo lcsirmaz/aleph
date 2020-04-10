@@ -5,6 +5,7 @@
 #include "display.h"
 #include "pragmats.h"
 #include "tags.h"
+#include "input.h"
 
 /* exported variables */
 int // pointers to SPECIAL
@@ -85,6 +86,7 @@ static void init_CONST_stack(void){
    par[2]=0;expandstack(par);constZero=CONST->aupb;
    par[2]=1;expandstack(par);
 }
+static void extendBUFFER(int *a){int par[2];par[0]=STACKpar(BUFFER);par[1]=a[0];extend(par);}
 static void init_BOLD_table(void); // to be defined later
 static void init_LEXT_stack(void){
    add_new_string("",LEXT); Squoteimage=LEXT->aupb;
@@ -119,7 +121,7 @@ int wasLexicalInteger(int *a){
 /* -------------------------------------------------------- */
 /* local MESSAGEs */
 static int hex_digit_expected,wrong_character_denotation,unterminated_string,
-   unrecognized_bold,missing_bold_delimiter,illegal_character;
+   unrecognized_bold,unrecognized_builtin,missing_bold_delimiter,illegal_character;
 
 #define addMSG(x,y)	add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void init_MESSAGE_table(void){
@@ -127,6 +129,7 @@ static void init_MESSAGE_table(void){
   addMSG("wrong character denotation",wrong_character_denotation);
   addMSG("unterminated string",unterminated_string);
   addMSG("unknown bold word '%p'",unrecognized_bold);
+  addMSG("wrong built-in '%p'",unrecognized_builtin);
   addMSG("missing ' after '%p'",missing_bold_delimiter);
   addMSG("illegal character: %c",illegal_character);
 }
@@ -438,7 +441,7 @@ again:
 /* bold symbols */
 static int B1,B2,B3,B4,B5,B6,B7,B8,B9,B10,B11,B12,B13,B14,B15,firstBold,
   B17,B18,B19,B20,B21,B22,B23,B24,B25,B26,B27,B28,B29,B30,B31;
-
+static int D1,D3,firstBin;
 #define addtoBOLD(x,y)	add_new_string(x,BOLD);y=BOLD->aupb
 
 static void init_BOLD_table(void){
@@ -475,6 +478,9 @@ static void init_BOLD_table(void){
   addtoBOLD("var",B29);		par[4]=Svarsymb; expandstack(par);
   addtoBOLD("variable",B30);	par[4]=Svarsymb; expandstack(par);
   addtoBOLD("x",B31);		par[4]=Sextsymb; expandstack(par);
+  addtoBOLD("_file_",D1);       par[4]=1;expandstack(par);
+  addtoBOLD("_line_",firstBin); par[4]=2;expandstack(par);
+  addtoBOLD("_rule_",D3);	par[4]=3;expandstack(par);
   // links
   BOLD->offset[firstBold+1]=B8;	BOLD->offset[firstBold+2]=B24;
   BOLD->offset[B8+1]=B4;	BOLD->offset[B8+2]=B12;
@@ -491,12 +497,14 @@ static void init_BOLD_table(void){
   BOLD->offset[B28+1]=B26;	BOLD->offset[B28+2]=B30;
   BOLD->offset[B26+1]=B25;	BOLD->offset[B26+2]=B27;
   BOLD->offset[B30+1]=B29;	BOLD->offset[B30+2]=B31;
+  //
+  BOLD->offset[firstBin+1]=D1;	BOLD->offset[firstBin+2]=D3;
 }
 //'a' read bold+x>
 static void readBold(int *a){
-  int n,t,par[5];
+  int n,par[5];
   par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt1:
-  if(boldLetter(par)){t=par[0];par[0]=STACKpar(BUFFER);par[1]=t;extend(par);
+  if(boldLetter(par)){extendBUFFER(par);
      par[0]=n;incr(par);n=par[0];goto nxt1;}
   else if(Achar=='\''){nextChar();}
   else{par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);packstring(par);
@@ -515,11 +523,35 @@ static void readBold(int *a){
 /* tags */
 //'a' read tag+x>
 static void readTag(int *a){
-  int par[2];int t;
+  int par[2];
   par[0]=STACKpar(BUFFER); scratch(par);
-  par[0]=STACKpar(BUFFER);par[1]=Achar;extend(par);nextChar();nxt:
-  if(letgit(par)){t=par[0];par[0]=STACKpar(BUFFER);par[1]=t;extend(par);goto nxt;}
+  par[0]=Achar;extendBUFFER(par);nextChar();nxt:
+  if(letgit(par)){extendBUFFER(par);goto nxt;}
   par[0]=STACKpar(BUFFER);enterTag(par);a[0]=par[1];
+}
+static void readBuiltin(int *a){/* x> */
+  int n,par[5];
+  par[0]=STACKpar(BUFFER);scratch(par);par[0]='_';extendBUFFER(par);n=1;nxt1:
+  if(boldLetter(par)){extendBUFFER(par);n++;goto nxt1;}
+  else if(Achar=='_'){par[0]='_';extendBUFFER(par);n++;nextChar();}
+  else if(n==0){par[0]=illegal_character;par[1]='_';Error(2,par);a[0]=Sdummysymb;return;}
+  else{par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);packstring(par);
+       par[0]=unrecognized_builtin;par[1]=LEXT->aupb;Error(2,par);
+       par[0]=STACKpar(LEXT);unstackstring(par);a[0]=Sdummysymb; return;}
+  par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);packstring(par);
+  a[0]=firstBin;nxt2:
+  if(a[0]==0){par[0]=unrecognized_builtin;par[1]=LEXT->aupb;Error(2,par);a[0]=Sdummysymb;}
+  else{par[0]=STACKpar(BOLD);par[1]=a[0];par[2]=STACKpar(LEXT);par[3]=LEXT->aupb;
+    comparestring(par);n=par[4];par[0]=STACKpar(BOLD);par[1]=a[0];next(par);a[0]=par[1];
+    if(n>0){a[0]=BOLD->offset[a[0]-BOLD_left];goto nxt2;}
+    else if(n<0){a[0]=BOLD->offset[a[0]-BOLD_right]; goto nxt2;}
+    else{a[0]=BOLD->offset[a[0]-BOLD_adm];}}
+  par[0]=STACKpar(LEXT);unstackstring(par);
+  if(a[0]==1){par[0]=0;findLinenum(par);a[0]=par[2];}
+  else if(a[0]==2){par[0]=0;findLinenum(par);a[0]=par[1];par[0]=a[0];
+    enterConst(par);a[0]=par[1];}
+  else if(a[0]==3){/*_rule_*/a[0]=Sdummysymb;}
+  else{a[0]=Sdummysymb;}
 }
 /*--------------------------------------------------------------------*/
 //'a' read+x>
@@ -564,6 +596,7 @@ void Aread(int *a){
   else if(Achar=='|'){nextChar();a[0]=Sboolor;}
   else if(Achar=='&'){nextChar();a[0]=Sbooland;}
   else if(Achar=='^'){nextChar();a[0]=Sboolxor;}
+  else if(Achar=='_'){nextChar();readBuiltin(par);a[0]=par[0];}
   else if(Achar==endChar){nextChar();a[0]=Sendsymb;}
   else{par[0]=illegal_character;par[1]=Achar;Error(2,par);nextChar();goto nxt2;}
 }

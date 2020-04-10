@@ -79,7 +79,7 @@ $ temporary file(s)
 'a'open disc+>mode-err:
    open file+DISC+mode+LEXT+disc file;
    get file error+DISC+err,
-     Xerror+0+cannot open disc file+disc file+err,internal error+77.
+     Xerror+0+cannot open disc file+disc file+err,internal error+fatal+_line_.
 'a'close disc:
    close file+DISC.
 'a'delete disc:
@@ -94,7 +94,7 @@ $ temporary file(s)
 'a'D tag+>tag: $ x is a pointer to LADM or LLOC
    was+LADM+tag,(has formal type+tag,repr*LADM[tag]->tag,:D tag;D+tag);
    was+LLOC+tag,D+tag;
-   internal error+fatal+27. $ D+tag $
+   internal error+fatal+_line_. $ D+tag $
 
 $ reading with text substitution ----------------------------- $
 $ if LLshift>0 and the disc symbol is a pointer to LLOC,
@@ -157,16 +157,16 @@ $   values are correct.)
 
 'p'Q+>x: x=Qsymbol,is+Qtype,next disc symbol.
 'q'Qahead+>x: x=Qsymbol,is+Qtype.
-'a'must Q+>x: Q+x; internal error+fatal+155.
+'a'must Q+>x: Q+x; internal error+fatal+_line_.
 'p'Qcons+x>: Qtype=0,Qsymbol->x,next disc symbol.
-'a'must Qcons+x>: is+Qtype,internal error+fatal+157;
+'a'must Qcons+x>: is+Qtype,internal error+fatal+_line_;
              Qsymbol->x,next disc symbol.
 'p'Qtag+x>: is+Qtype,(=Qsymbol=[LADM;LLOC],Qsymbol->x,next disc symbol;
                       -).
 'p'Qstring+x>:
   is+Qtype,was+LEXT+Qsymbol,Qsymbol->x,next disc symbol.
 
-'a'must Qtag+x>: Qtag+x;internal error+fatal+164.
+'a'must Qtag+x>: Qtag+x;internal error+fatal+_line_.
 'a'must Qlist+tag>+local>:
    $ they should come in this order as Qtag destroys Qlocal
    Qlocal->local,must Qtag+tag.
@@ -234,16 +234,16 @@ $ - - - - - - - - - - - - $
      $ T ==> T*T[>>T] $
      final ssel+tag+loc+x,putQ+Dsub+Dupb+tag+Dbus+tag+Dconst+x;
     [Iformal repeat],putQ+tag,Iformal repeat->atype;
-    internal error+fatal+207).
+    internal error+fatal+_line_).
 
 'a'match formal actual+>ftype+atype>-tag:
   $ the actual affix can be * while we are expecting something else
-  $ don't store anything for Dnoarg, otherwise the replacement text
+  $ don't store anything for Dnoarg, otherwise store the replacement
   =ftype=
   [Iformal file;Iformal table;Iformal stack],
     must Qtag+tag,putQ+tag,get type+tag+atype;
   [Iformal in;Iformal out;Iformal inout],fsimple affix+atype;
-  internal error+fatal+215.
+  internal error+fatal+_line_.
 
 'a'handle formal list+>formal+>type:
   $ if this is a formal list, supply list data
@@ -267,7 +267,7 @@ $ - - - - - - - - - - - - $
     (atype!=Inoarg; $ dummy argument is like a local affix $
      block=0,-1->repr*LLOC,Ilocal->type*LLOC,putQ+>>LLOC;
      putQ+Dnoarg),
-    get adm+formal+formal,(formal=0,1->block,get adm+formal+formal;+),
+    get adm+formal+formal,(formal=0,1->block,get adm+repeat+formal;+),
     (Q+Dplus,putQ+Dplus,:nxt;+))),
   (-aformal-qptr:block=0,
     $ no repeat block; the actual affix * is in the top of QBUFFER, 

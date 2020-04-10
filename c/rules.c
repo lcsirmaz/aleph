@@ -328,7 +328,7 @@ static void checkRuleType(int *a){/* >ruletype+>ruletag+>dl+err> */
       a[2]=par[1];par[0]=rule_type_different;par[1]=a[1];par[2]=a[2];
       Error(3,par);a[3]=1;}}
   else{par[0]=a[1];getDefline(par);a[2]=par[1];par[0]=tag_redefined;
-    par[1]=a[2];par[2]=otype;par[3]=a[2];Error(4,par);a[3]=1;}
+    par[1]=a[1];par[2]=otype;par[3]=a[2];Error(4,par);a[3]=1;}
 }
 static void checkFormalAffixes(int *a){ /* >fast + >rtag + err> */
   int par[4];int formal,line;
