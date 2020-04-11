@@ -451,7 +451,8 @@ $ bold symbols are stored in a table
 $ built-in strings and constants
  "_file_"      :D1        ,(   0,   0,1          ),
  "_line_"      :first bin ,(  D1,  D3,2          ),
- "_rule_"      :D3        ,(   0,   0,3          )
+ "_rule_"      :D3        ,(   0,  D4,3          ),
+ "_title_"     :D4        ,(   0,   0,4          )
 ).
 'a'read bold+x>-n:
   $ read a bold symbol 'abc'; give error messages
@@ -489,11 +490,12 @@ $ _line_, _file_, _rule_
           n<0,right*BOLD[x]->x,:nxt;
           adm*BOLD[x]->x)),
    unstack string+LEXT,(=x=
-     [1],$_file_$ find linenum+0+#+x;
-     [2],$_line_$ find linenum+0+x+#,enter const+x+x;
-     [3],$_rule_$ Sdummy symb->x; $ get "rule tag" from rulebody $
-     $ error    $ Sdummy symb->x);
-  n=0,error+illegal character+/_/;
+     [1],$ file  $ find linenum+0+#+x;
+     [2],$ line  $ find linenum+0+x+#,enter const+x+x;
+     [3],$ rule  $ Sdummy symb->x; $ get "rule tag" from rulebody $
+     [4],$ title $ Sdummy symb->x; $ get title from pragmats $
+     $ none of the above $ Sdummy symb->x);
+  n=0,error+illegal character+/_/,Sdummy symb->x;
   pack string+BUFFER+n+LEXT,error+unrecognized builtin+>>LEXT,
    unstack string+LEXT,Sdummy symb->x).
 $ **************************************************************** $

@@ -93,7 +93,11 @@ int main(int argc, char *argv[]){
   mCheckMacroRules(); // no recursive macro rules
 
   if(wasError()){deleteDisc();deleteObjFile();return 1;}
-  closeObjFile();
+
+  rewindDisc(); // go back to the beginning
+  passIII();
+
+  deleteDisc(); closeObjFile();
   
   return 0;
 }

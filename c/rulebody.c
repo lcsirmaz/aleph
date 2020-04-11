@@ -382,22 +382,22 @@ static void classifier(void){
   par[0]=Ssemicolon;if(R(par)){par[0]=Dsemicolon;D(par);goto nxt;}
   else{par[0]=Sbus;must(par);}
 }
-static void zone(int *a){/* >err> + last> */
+static void area(int *a){/* >err> + last> */
   int par[2];int va[2];
-  par[0]=Ssub;if(R(par)){a[1]=0;par[0]=Dzone;D(par);
-    classifier();par[0]=Dzone;D(par);par[0]=Dcomma;D(par);
+  par[0]=Ssub;if(R(par)){a[1]=0;par[0]=Darea;D(par);
+    classifier();par[0]=Darea;D(par);par[0]=Dcomma;D(par);
     par[0]=Scomma;if(R(par)){;}else{par[0]=a[0];va[0]=expected;
       va[1]=Scomma;Eerror(par,2,va);}
     alternative();}
-  else{a[1]=1;par[0]=Dzone;D(par);par[0]=Dcolon;D(par);
-    par[0]=Dzone;D(par);par[0]=Dcomma;D(par);alternative();}
+  else{a[1]=1;par[0]=Darea;D(par);par[0]=Dcolon;D(par);
+    par[0]=Darea;D(par);par[0]=Dcomma;D(par);alternative();}
 }
 static void classification(void){
   int par[2];int va[2];int err,last;
   par[0]=Dbox;D(par);err=0;par[0]=Sbox;par[1]=err;source(par);
   err=par[1];par[0]=Dbox;D(par);par[0]=Sbox;
   if(R(par)){;}else{par[0]=err;va[0]=expected;va[1]=Sbox;
-    Eerror(par,2,va);}nxt: par[0]=err;zone(par);last=par[1];err=par[0];
+    Eerror(par,2,va);}nxt: par[0]=err;area(par);last=par[1];err=par[0];
   if(last){;}else if(par[0]=Ssemicolon,R(par)){par[0]=Dsemicolon;
    D(par); goto nxt;}
   if(err){skipAll();}

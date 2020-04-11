@@ -6,7 +6,7 @@ $
 'a'd check rule+>ruletag.
 
 $ BODY ******************************************************** $
-'pragmat'if=compile.
+'pragmat'if=compile,prototype=none.
 'pragmat'require=("display","disc","types","tags","buffer").
 
 $ check the data flow of a rule
@@ -171,7 +171,7 @@ $   set LTset/LTmod/Lvararg flags
 $ ----------------------------------- $
 $ stack for saving formal/local flags in regions.
 $ used also to check the extension block
-'stack'(flag,data)RULE=().
+'stack'(flag,data)RULE.
 $  flags for RULE - storing flags for a region
 'constant'
   $ final flags of the region
@@ -208,8 +208,7 @@ $   (* 0->flag, data->data *)RULE.
 'a'clear RULE flag+>ptr+>flag-mask:
    bool invert+flag+mask,bool and+flag*RULE[ptr]+mask+flag*RULE[ptr].
 $ - - - - - - - - - - - - - - - - - - - - $
-# d start region
-'a'open region+>modT-ptr:
+'a'open range+>modT-ptr:
    $ called after locals are pushed to LLOC. Original modT
    $ for the block, LTset/LTmod for formals
    <<LLOC->ptr,push RULE+0+0,              $ border $
@@ -272,7 +271,6 @@ $ - - - - - - - - - - - - - - - - - - - - $
      (is local flag+loc+LTset; $ LTset might decrease $
       is RULE flag+ptr+UETset,clear RULE flag+ptr+UETset,1->redo;+),
      previous+RULE+ptr,:nxt)).
-# setup rule alt head
 'a'setup alt head flags+>ptr-loc:
    $ the next alternative starts, setup all flags using Ualtset, Ualtmod
    $ for classification: these bits are set when entering the region
@@ -282,7 +280,6 @@ $ - - - - - - - - - - - - - - - - - - - - $
      (is RULE flag+ptr+Ualtmod,set local flag+loc+LTmod;
         clear local flag+loc+LTmod),
      previous+RULE+ptr,:setup alt head flags).
-# save rule alt head
 'a'store alt head flags+>ptr:
    $ after the head of an alternative compute Ualtset and Ualtmod
    $  for the head of the next alternative
@@ -292,9 +289,8 @@ $ - - - - - - - - - - - - - - - - - - - - $
    (is local flag+data*RULE[ptr]+LFmod,set RULE flag+ptr+Ualtmod;
          clear RULE flag+ptr+Ualtmod),
    previous+RULE+ptr,:store alt head flags.
-# setup rule alt sequence
-'a'close region+>ptr-loc:
-   $ the regions is closed; compute final flags for all formal/local
+'a'close range+>ptr-loc:
+   $ the range is closed; compute final flags for all formal/local
    $ and release RULE stack
    data*RULE[ptr]->loc,(loc=0,previous+RULE+ptr,unstack to+RULE+ptr;
    (is RULE flag+ptr+UTset,clear local flag+loc+LTset;
@@ -305,8 +301,7 @@ $ - - - - - - - - - - - - - - - - - - - - $
       clear local flag+loc+LTmod),
    (is RULE flag+ptr+UFmod,set local flag+loc+LFmod;
       clear local flag+loc+LFmod),
-   previous+RULE+ptr,:close region).
-# save rule alt sequence
+   previous+RULE+ptr,:close range).
 'a'merge alt sequence flags+>ptr+>canT+>canF-loc:
    $ at the end of an alternative: collect Tset/Tmod and Fset/Fmod
    $  to the UTset/UTmod, UFset/UFmod bits
@@ -316,12 +311,10 @@ $ - - - - - - - - - - - - - - - - - - - - $
      (is+canF,(is local flag+loc+LFset;set RULE flag+ptr+UFset),
               (is local flag+loc+LFmod,set RULE flag+ptr+UFmod;+);+),
      previous+RULE+ptr,:merge alt sequence flags).
-# clear rule tail Fbits
 'a'clear tail Fbits+>ptr:
    $ clear UtailFset/Fmod bits at the beginning of region
    data*RULE[ptr]=0;
    clear RULE flag+ptr+UtailBits,previous+RULE+ptr,:clear tail Fbits.
-# update rule tail Fbits
 'a'merge tail Fbits+>ptr:
    $ merge Fset/Fmod bits to Utail bits
    data*RULE[ptr]=0;
@@ -330,7 +323,6 @@ $ - - - - - - - - - - - - - - - - - - - - $
    (is local flag+data*RULE[ptr]+LFmod,
       set RULE flag+ptr+UtailFmod;+),
    previous+RULE+ptr,:merge tail Fbits.
-# setup rule tail Fbits
 'a'use tail Fbits+>ptr-loc:
    $ using Utail bits recompute LFset/LFmod
    data*RULE[ptr]->loc,(loc=0;
@@ -774,13 +766,13 @@ $ CLASSIFICATION ----------------------------------------- $
    (Q+Dcolon,(Qcons+#;Qtag+tag2;incr+cnt),check zone interval+tag1+tag2;
     check zone member+tag1+1), 
    (cnt<2;1->empty),
-   (Q+Dsemicolon,:classifier;mustQ+Dzone).
+   (Q+Dsemicolon,:classifier;mustQ+Darea).
 
 'a'classification+>rloc+canT>+canF>+>modT>+modF>+jumpT>+jumpF>
    $ exactly one of the alternatives are chosen,
       -lT-lF-mT-mF-jT-jF-empty-nextMod:
    0->canT->canF->jumpT->jumpF,0->modF,modT->nextMod,
-   (nxt:0->empty,must Q+Dzone,classifier+empty,
+   (nxt:0->empty,must Q+Darea,classifier+empty,
         1->lT,0->jT,nextMod->mT,clear RULE flag+rloc+Ushield,
         alt tail+rloc+lT+lF+mT+mF+jT+jF,
         (is+lT,1->canT,max+mT+modT;+),(is+lF,1->canF,max+mF+modF;+),
@@ -843,7 +835,7 @@ $  on exit: LTset/LTmod if canT; LFset/LFmod if canF
    (is+canF,use tail Fbits+rloc;+).
 
 'a'alt sequence+>rloc+canT>+canF>+>modT>+modF>+jumpT>+jumpF>
-   $ alternative sequence: RULE stack has been set by "open region"
+   $ alternative sequence: RULE stack has been set by "open range"
    $ at exit the UT/UF flags in RULE stack are OK
       -lT-lF-mT-mF-jT-jF-nextAlt-nextMod-nextJump:
    0->canT->canF->jumpT->jumpF,0->modF,modT->nextMod,
@@ -883,7 +875,7 @@ $ compute modT and local LTset/LTmod flags. Rescan if necessary
 'a'rule body+canT>+canF>+>modT>+modF>+jumpT>+jumpF>
       -loc-label-rloc-dpos-dnum:
    >>LLOC->loc,setup label+label,setup locals,
-   open region+modT,>>RULE->rloc,add label+label+rloc,
+   open range+modT,>>RULE->rloc,add label+label+rloc,
    save disc position+dpos+dnum,
    (again-old:
      clear local error+old,
@@ -895,7 +887,7 @@ $ TODO: WARNINGS ARE DUPLICATED WHEN REPEATING THIS LOOP
      (was local error+old;
       redo region+rloc+canT+canF+modT,restore disc position+dpos+dnum,:again;
       +)),
-   close region+rloc, $ set flags for all formal/local
+   close range+rloc, $ set flags for all formal/local
    (is+canT;0->modT),(is+canF;0->modF),
    $ check local affixes and the label for usage
    (nxt: >>LLOC<=loc;

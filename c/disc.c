@@ -16,7 +16,7 @@ int
   Dopen, Dor, Dplus, Dpoint, Dpragmat,
   Droot, Drule, Dsemicolon, Dstack, Dmodule,
   Dstar, Dsub, Dtitle, Dto, Dupb, Dvlwb, Dvupb, 
-  Dxor, Dzone;
+  Dxor, Darea;
 static int Dconst;
 
 
@@ -75,7 +75,7 @@ static void init_DSYMB(void){
    addtoDSYMB("'vlwb'",Dvlwb);
    addtoDSYMB("'vupb'",Dvupb);
    addtoDSYMB("^",Dxor);
-   addtoDSYMB("'zone'",Dzone);
+   addtoDSYMB("'area'",Darea);
    /* local */
    addtoDSYMB("'const'",Dconst);
    /* --- LEXT     ---- */
@@ -116,6 +116,13 @@ static void prepare_DISC(void){
 }
 #undef listB
 
+/* ------------------------------------------------------------ */
+static int Qsymbol=0,Qtype=0,Qposition,Qlinenum,linenum;
+
+static int QbufferPtr=0,Qshift=0,Qlocal=0;
+
+/* ------------------------------------------------------------ */
+
 static void nextDiscSymbol(void);
 
 void openDisc(int *a){ /* >mode */
@@ -126,13 +133,17 @@ void openDisc(int *a){ /* >mode */
     par[0]=cannot_open_disc_file;par[1]=discFile;par[2]=err;Xerror(0,3,par);
     exit(4);
   }
-  if(a[0]=='r'){nextDiscSymbol();}
+  if(a[0]=='r'){QbufferPtr=Qshift=0;linenum=0;nextDiscSymbol();}
 }
 void closeDisc(void){
   int par[2];par[0]=DFILEpar(DISC);closeFile(par);
 }
 void deleteDisc(void){
-  int par[0];closeDisc();par[0]=STACKpar(LEXT);par[1]=discFile;unlinkFile(par);
+  int par[2];closeDisc();par[0]=STACKpar(LEXT);par[1]=discFile;unlinkFile(par);
+}
+void rewindDisc(void){
+  int par[2];
+  QbufferPtr=Qshift=0;par[0]=par[1]=0;restoreDiscPosition(par);
 }
 
 void D(int *a){
@@ -181,10 +192,6 @@ void Dtag(int *a){
   }
 }
 /* ------------------------------------------------------- */
-static int Qsymbol=0,Qtype=0,Qposition,Qlinenum,linenum;
-
-static int QbufferPtr=0,Qshift=0,Qlocal=0;
-
 static void readFromQbuffer(void){
   QbufferPtr++;Qsymbol=QBUFFER->offset[QbufferPtr];
   if(Qsymbol==Dend){QbufferPtr=0;Qlocal=0;nextDiscSymbol();}
@@ -203,22 +210,24 @@ static void nextDiscSymbol(void){
   int par[4];
 //  par[0]=Dend;if(Qahead(par)){return;} /* exhausted */
   if(QbufferPtr!=0){Qlocal=0;readFromQbuffer();return;}
-  nxt:
+  par[0]=linenum;setLinenum(par);nxt:
   par[0]=DFILEpar(DISC);getFilePos(par);Qposition=par[1];Qlinenum=linenum;
   if(getData(par)){Qsymbol=par[1];Qtype=par[2];
-    if(Qsymbol==Dline && Qtype==1){linenum++;par[0]=linenum;setLinenum(par);goto nxt;}
+    if(Qsymbol==Dline && Qtype==1){linenum++;goto nxt;}
     else if(Qshift!=0&&Qtype==1){substitute();}}
   else{Qsymbol=Dend;Qtype=1;}
 }
 void saveDiscPosition(int *a){/* pos> + lineno> */
+   if(QbufferPtr){printf("Fatal: saveDiscPosition while QbufferPtr=%d\n",QbufferPtr); exit(31);}
    a[0]=Qposition;a[1]=Qlinenum;
 }
 void restoreDiscPosition(int *a){ /* >pos + >lineno */
   int par[2];
+  if(QbufferPtr){printf("Fatal: restoreDiscPosition while QbufferPtr=%d\n",QbufferPtr);exit(31);}
   par[0]=DFILEpar(DISC);par[1]=a[0];setFilePos(par);
   par[0]=DFILEpar(DISC);getFileError(par);if(par[1]){
    printf("restoreDiscPosition error=%d, pos=%d, linenum=%d\n",par[1],a[0],a[1]); exit(23);}
-  linenum=a[1];par[0]=linenum;setLinenum(par);nextDiscSymbol();
+  linenum=a[1];par[0]=linenum;nextDiscSymbol();
 }
 /* reading */
 int Q(int *a){
@@ -245,10 +254,10 @@ int Qstring(int *a){if(Qtype==0){return 0;}
   return 0;
 }
 void mustQ(int *a){if(Q(a)){;}else{
-  printf("mustQ: lineno=%d, expected symbol %d, got %d: ",Qlinenum,a[0],Qsymbol);printPointer(a);printf(" ==> ");a[0]=Qsymbol;printPointer(a);printf("\n");LLOC->offset[a[0]]=0;exit(23);}}
+  printf("mustQ: lineno=%d, expected symbol %d, got %d: ",Qlinenum,a[0],Qsymbol);printPointer(a);printf(" ==> ");a[0]=Qsymbol;printPointer(a);printf("\n");LLOC->offset[0]=0;exit(23);}}
 void mustQtag(int *a){if(Qtag(a)){;}else{
   printf("mustQtag failed: (%d,%d), got ",Qsymbol,Qtype);a[0]=Qsymbol;printPointer(a);printf("\n");LLOC->offset[a[0]]=0;;exit(23);}}
-void mustQlist(int *a){a[1]=Qlocal;mustQ(a);}
+void mustQlist(int *a){a[1]=Qlocal;mustQtag(a);}
 void mustQcons(int *a){if(Qcons(a)){;}else{
   printf("mustQcons failed: (%d,%d)\n",Qsymbol,Qtype);exit(23);}}
 void Qskip(int *a){/* >to */
@@ -314,9 +323,9 @@ static void fsimpleAffix(int *a){/* atype> */
     else{printf("fsimpleAffix (disc), wrong formal type %d\n",type);exit(23);}}
 }
 static void matchFormalActual(int *a){ /* >ftype + atype> */
-  int par[2];
+  int par[2];int tag;
   if(a[0]==IformalFile||a[0]==IformalTable||a[0]==IformalStack){
-    mustQtag(par);putQ(1,par);par[0]=a[0];getType(par);a[1]=par[1];}
+    mustQtag(par);tag=par[0];putQ(1,par);par[0]=tag;getType(par);a[1]=par[1];}
   else if(a[0]==IformalIn||a[0]==IformalOut||a[0]==IformalInout){
     fsimpleAffix(par);a[1]=par[0];}
   else{printf("matchFormalActual (disc), wrong ftype %d\n",a[0]); exit(23);}
@@ -377,16 +386,14 @@ static void macroArguments(int *a){/* >tag */
       par[0]=formal;getAdm(par);formal=par[1];goto nxt;}}
 }
 /* ------------------------------------------------------= */
-void macroCallHead(int *a){/* >tag + Qa> +Qb>+ Qc> + Qd> */
+void macroCallHead(int *a){/* >tag + Qa> +Qb> */
   int par[2];int Lptr;
   a[1]=QBUFFER->aupb;a[2]=Qshift;Lptr=LLOC->aupb;
   par[0]=a[0];macroArguments(par);
-  saveDiscPosition(par);a[3]=par[0];a[4]=par[1];
-  Qshift=LLOC->aupb-Lptr+LLOC->calibre;
+  Qshift=Lptr-LLOC->alwb+LLOC->calibre;
 }
-void macroCallTail(int *a){ /* >Qa+>Qb+>Qc+>Qd */
+void macroCallTail(int *a){ /* >Qa+>Qb */
   int par[2];
-  par[0]=a[2];par[1]=a[3];restoreDiscPosition(par);
   Qshift=a[1];par[0]=STACKpar(QBUFFER);par[1]=a[0];
   unstackto(par);
 }

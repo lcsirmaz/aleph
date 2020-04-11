@@ -8,6 +8,7 @@
 #include "types.h"
 #include "drules.h"
 #include "pragmats.h"
+#include "node.h"
 #include "obj.h"
 
 /* ---------------------------------------------------- */
@@ -19,12 +20,12 @@ macro_ignored,unknown_disc_symbol,wrong_pragmat_value;
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void add_messages(void){
- addMSG("\"%p\" not defined",tag_not_defined);
- addMSG("%p \"%p\" cannot be public (%l)",cannot_be_public);
- addMSG("%p \"%p\" cannot be macro (%l)",cannot_be_macro);
+ addMSG("%p: not defined",tag_not_defined);
+ addMSG("%p %p: cannot be public (%l)",cannot_be_public);
+ addMSG("%p %p: cannot be macro (%l)",cannot_be_macro);
  addMSG("external rule ",extrule);
  addMSG("imported rule ",imprule);
- addMSG("pragmat macro=%p is ignored",macro_ignored);
+ addMSG("pragmat macro=%p: ignored",macro_ignored);
  addMSG("pass II, unknown disc symbol",unknown_disc_symbol);
  addMSG("d read pragmat: unknown pragmat number %d",wrong_pragmat_value);
 }
@@ -45,6 +46,18 @@ void passII(void){
   par[0]=Dend;if(Q(par)){;}
   else{printf("unknown disc symbol\n"); exit(33); }
 }
+void passIII(void){
+  int par[1];nxt:
+  par[0]=Drule;if(Q(par)){mustQtag(par);generateRule(par);goto nxt;}
+  par[0]=Droot;if(Q(par)){mustQtag(par);generateRule(par);goto nxt;}
+  par[0]=Dpragmat;if(Q(par)){mustQcons(par);if(Qcons(par)){;}else{mustQtag(par);};goto nxt;}
+  par[0]=Dexpression;if(Q(par)){par[0]=Dpoint;Qskip(par);goto nxt;}
+  par[0]=Dfile;if(Q(par)){par[0]=Dpoint;Qskip(par);goto nxt;}
+  par[0]=Dfill;if(Q(par)){par[0]=Dpoint;Qskip(par);goto nxt;}
+  par[0]=Dlist;if(Q(par)){par[0]=Dpoint;Qskip(par);goto nxt;}
+  par[0]=Dend;if(Q(par)){;}
+  else{printf("passIII: wrong disc symbol\n");exit(33);}
+}
 /* ----------------------------------------------------------- */
 /* store macros */
 static void dStoreMacro(int *a){ /* >tag */
@@ -64,8 +77,8 @@ static void checkTagForPublic(int *a){ /* >tag */
       par[0]=cannot_be_public;par[1]=type;par[2]=a[0];par[3]=dl;Error(4,par);return;}
     par[0]=a[0];par[1]=timported;if(isTagFlag(par)){
       par[0]=cannot_be_public;par[1]=type;par[2]=a[0];par[3]=dl;Error(4,par);return;}}
-  else{par[0]=tag_not_defined;par[1]=a[0];Error(2,par);}
-
+  else{par[0]=a[0];par[1]=tpublic;if(isTagFlag(par)){par[0]=tag_not_defined;
+      par[1]=a[0];Error(2,par);}}
 }
 static void checkTagForMacro(int *a){ /* >tag */
   int par[4];int dl,type;

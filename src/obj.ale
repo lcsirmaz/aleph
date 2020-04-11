@@ -208,7 +208,10 @@ $  next free ITEM. External tags have LEXT string in "repr".
       [Irule],                      formal affixes+tag;
       internal error+"define OBJ: type=%p is wrong"+type),
      Wstring+raw;
-   +).
+    is tag flag+tag+tpublic,get defline+tag+dl,
+      (dl<=0; $ set by a pragmat, issue error message there
+       Xerror+dl+tag not defined+tag,clear tag flag+tag+tpublic);
+    +).
 
 $ call back routines for Xstring table filling ---------------- $
 'a'Xstring table filling head+>tag:

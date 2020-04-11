@@ -804,7 +804,7 @@ static void classifier(int *a){ /* >empy> */
   else{par[0]=tag1;par[1]=1;checkZoneMember(par);}
   if(cnt<2){;}else{a[0]=1;}
   par[0]=Dsemicolon;if(Q(par)){goto again;}
-  par[0]=Dzone;mustQ(par);
+  par[0]=Darea;mustQ(par);
 }
 static void ruleBody(int *a);       /*        canT>+canF>+>modT>+modF>+ jumpT>+ jumpF> */
 static void altTail(int *a);        /* >rloc+>canT>+canF>+>modT>+modF>+>jumpT>+ jumpF> */
@@ -813,7 +813,7 @@ static void classification(int *a){ /* >rloc +canT>+canF>+>modT>+modF>+ jumpT>+ 
   int empty,nextMod,jT,jF;
   a[1]=a[2]=a[5]=a[6]=0;a[4]=0;nextMod=a[3];nxt:
 //printf("\nCLASSIFICATION, next\n");
-  empty=0;par[0]=Dzone;mustQ(par);par[0]=empty;classifier(par);empty=par[0];
+  empty=0;par[0]=Darea;mustQ(par);par[0]=empty;classifier(par);empty=par[0];
    lT=1;jT=0;mT=nextMod;par[0]=a[0];par[1]=Ushield;clearRULEflag(par);
    par[0]=a[0];par[1]=lT;par[3]=mT;par[5]=jT;
    altTail(par);lT=par[1];lF=par[2];mT=par[3];mF=par[4];jT=par[5];jF=par[6];

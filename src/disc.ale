@@ -12,7 +12,7 @@ $ reading from DISC
 'f'save disc position+pos>+lnum>.
 'a'restore disc position+>pos+>lnum.
 $ open / close
-'a'open disc+>mode,close disc,delete disc.
+'a'open disc+>mode,close disc,delete disc,rewind disc.
 $ macro replacement
 'a'macro call head+>tag+Qa>+Qb>,
    macro call tail+>Qa+>Qb.
@@ -26,19 +26,19 @@ $ exported disc symbols
   Dor,Dand,Dxor,Dcompl,Ddiv,
     $ Dplus,Dminus,Dcalibre,Dlwb,Dupb,Dopen,Dclose
   $ other
-  Dbox,   Dbus, Dcalibre, Dclose, Dcolon,
+  Darea,  Dbox,   Dbus, Dcalibre, Dclose, Dcolon,
   Dcomma, Dend, Dexpression, Dextension, Dfill, Djump,
   Dlabel, Dline, Dlist, Dlocal, Dlwb, Dmodule, Dminus, Dnoarg,
   Dopen, Dplus, Dpoint, Dpragmat, Droot, Drule,
   Dsemicolon, Dstar, Dsub, Dtitle, Dto, Dupb,
-  Dvlwb, Dvupb, Dzone.
+  Dvlwb, Dvupb.
 
 'table'DSYMB.
 
 'pragmat'if=compile.
 
 'table'DSYMB=( $ disk symbols
-  "&":Dand,
+  "&":Dand,  "'area'":Darea,
   "=":Dbox,   "]":Dbus, 
   "<>":Dcalibre, ")":Dclose, ":":Dcolon, ",":Dcomma, "~":Dcompl,
   "/":Ddiv,
@@ -56,7 +56,6 @@ $ exported disc symbols
   "'upb'":Dupb,
   "'vlwb'":Dvlwb, "'vupb'":Dvupb,
   "^":Dxor,
-  "'zone'":Dzone,
   $ local usage only $
   "'const'":Dconst
 ).
@@ -77,13 +76,17 @@ $ temporary file(s)
 ).
 
 'a'open disc+>mode-err:
-   open file+DISC+mode+LEXT+disc file;
+   open file+DISC+mode+LEXT+disc file,
+     (mode=/r/,0->Qbuffer ptr->Qshift,0->linenum,next disc symbol;+);
    get file error+DISC+err,
      Xerror+0+cannot open disc file+disc file+err,internal error+fatal+_line_.
 'a'close disc:
    close file+DISC.
 'a'delete disc:
    close disc,unlink file+LEXT+disc file.
+'a'rewind disc:
+  $ rewind disc file, prepare for macro substitution
+  0->Qbuffer ptr->Qshift,restore disc position+0+0.
 
 'a'D+>x: $ x is a pointer to DSYMB, or coming from Dtag
     put data+DISC+x+pointer.
@@ -120,7 +123,7 @@ $   values are correct.)
 'variable'
   Qbuffer ptr=0,$ where to read from QBUFFER
   Qshift=0,	$ LLOC pointers are shifted by this amount
-  Qlocal=0.	$ LLOC replacement point for 
+  Qlocal=0.	$ LLOC replacement point 
 
 'a'read from QBUFFER:
   $ get next symbol from QBUFFER until Dend
@@ -141,19 +144,20 @@ $   values are correct.)
 
 'a'next disc symbol:
   is+Qbuffer ptr,0->Qlocal,read from QBUFFER;
-  (nxt:
+  set linenum+linenum,(nxt:
    get file pos+DISC+Qposition,linenum->Qlinenum,
     (get data+DISC+Qsymbol+Qtype,
-      ((Qsymbol=Dline,Qtype=1),incr+linenum,
-              set linenum+linenum,:nxt;
+      ((Qsymbol=Dline,Qtype=1),incr+linenum,:nxt;
        (is+Qshift,Qtype=1),substitute;
        +);
      Dend->Qsymbol,1->Qtype)).
 
 'f'save disc position+pos>+lnum>:
+   is+Qbuffer ptr,internal error+fatal+_line_;
    Qposition->pos,Qlinenum->lnum.
 'a'restore disc position+>pos+>lnum:
-   set file pos+DISC+pos,lnum->linenum,set linenum+linenum,next disc symbol.
+   is+Qbuffer ptr,internal error+fatal+_line_;
+   set file pos+DISC+pos,lnum->linenum,next disc symbol.
 
 'p'Q+>x: x=Qsymbol,is+Qtype,next disc symbol.
 'q'Qahead+>x: x=Qsymbol,is+Qtype.

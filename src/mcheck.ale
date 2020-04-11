@@ -28,7 +28,7 @@ $ BODY ********************************************************* $
   (Q+Dbox,Qskip+Dbox,classification;
    alt sequence).
 'a'classification:
-  mustQ+Dzone,Qskip+Dzone,mustQ+Dcomma,alternative,
+  mustQ+Darea,Qskip+Darea,mustQ+Dcomma,alternative,
     (Q+Dsemicolon,:classification;+).
 'a'alternative:
    member,(Q+Dcomma,:alternative;+).

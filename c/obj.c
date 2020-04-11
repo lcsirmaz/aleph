@@ -182,6 +182,9 @@ void defineObjTag(int *a){ /* >tag */
 //printf("++");par[0]=a[0];printPointer(par);par[0]=a[0];par[1]=tused;printf(" used=%d ++\n",isTagFlag(par)?1:0);
   par[0]=a[0];fixListUsage(par);
   par[0]=a[0];if(!isItemTag(par)){
+     par[0]=a[0];par[1]=tpublic;if(isTagFlag(par)){par[0]=a[0];getDefline(par);
+       dl=par[1];if(dl<=0){;}else{par[0]=tag_not_defined;par[1]=a[0];
+         Xerror(dl,2,par);par[0]=a[0];par[1]=tpublic;clearTagFlag(par);}}
 //    par[0]=a[0];if(notDefinedTag(par)){
 //      par[0]=tag_not_defined;par[1]=a[0];Xerror(0,2,par);}
     return; 

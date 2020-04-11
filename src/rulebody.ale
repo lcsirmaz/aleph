@@ -269,16 +269,16 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    (is+empty, error+wrong zone+rule tag;+),
    (R+Ssemicolon,D+Dsemicolon,:classifier;
     must+Sbus).
-'a'zone+>err>+last>:
-   R+Ssub,0->last,D+Dzone,classifier,D+Dzone,D+Dcomma,
+'a'area+>err>+last>:
+   R+Ssub,0->last,D+Darea,classifier,D+Darea,D+Dcomma,
      (R+Scomma;Eerror+err+expected+Scomma),
      alternative;
-   1->last,D+Dzone,D+Dcolon,D+Dzone,D+Dcomma,alternative.
+   1->last,D+Darea,D+Dcolon,D+Darea,D+Dcomma,alternative.
 $ classification: we are after =
 'a'classification-err-last:
   D+Dbox,0->err,source+Sbox+err,D+Dbox,
     (R+Sbox;Eerror+err+expected+Sbox),
-    (nxt:zone+err+last,(is+last;R+Ssemicolon,D+Dsemicolon,:nxt;+)),
+    (nxt:area+err+last,(is+last;R+Ssemicolon,D+Dsemicolon,:nxt;+)),
     (is+err,skip all;+).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'get rule tag+string>:

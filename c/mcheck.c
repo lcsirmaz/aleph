@@ -19,7 +19,7 @@ static void skipSource(void){
   if(Qcons(par)){;}
   else if((par[0]=Dlwb,Q(par))||(par[0]=Dupb,Q(par))||
     (par[0]=Dvlwb,Q(par))||(par[0]=Dvupb,Q(par))||(par[0]=Dcalibre,Q(par))){
-    mustQ(par);}
+    mustQtag(par);}
   else if((par[0]=Dsub,Q(par))){skipSource();par[0]=Dbus;mustQ(par);mustQtag(par);
     if(Qtag(par)){;}else{mustQcons(par);}}
   else if((par[0]=Dnoarg,Q(par))){;}
@@ -40,7 +40,7 @@ static void ruleBody(void){
 }
 static void classification(void){
   int par[1];nxt:
-  par[0]=Dzone;mustQ(par);par[0]=Dzone;Qskip(par);par[0]=Dcomma;mustQ(par);
+  par[0]=Darea;mustQ(par);par[0]=Darea;Qskip(par);par[0]=Dcomma;mustQ(par);
   alternative();par[0]=Dsemicolon;if(Q(par)){goto nxt;}
 }
 static void alternative(void){

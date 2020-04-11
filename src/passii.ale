@@ -9,29 +9,40 @@ $
 $ BODY ********************************************************* $
 'pragmat'if=compile.
 'pragmat'require=("display","disc","drules","tags","obj",
-          "types","pragmats").
+          "types","pragmats","node").
 
 'table'MESSAGE=(
-  """%p"" not defined":tag not defined,
+  "%p: not defined":tag not defined,
   "%p %p: cannot be public (%l)"  : cannot be public,
   "%p %p: cannot be a macro (%l)" : cannot be a macro,
   "external rule ":extrule,
   "imported rule ":imprule,
-  "pragmat macro=%p is ignored":macro ignored,
+  "pragmat macro=%p: ignored":macro ignored,
 $ internal error
   "pass II, unknown disc symbol" : unknown disc symbol,
   "d read pragmat: unknown pragmat number %d": wrong pragmat value
 ).
 
-'a'pass II:
-   Q+Drule,(-rtag: must Qtag+rtag,d store macro+rtag,d check rule+rtag),:pass II;
-   Q+Droot,d check rule+Xroot,:pass II;
+'a'pass II-rtag:
+   Q+Drule,must Qtag+rtag,d store macro+rtag,d check rule+rtag,:pass II;
+   Q+Droot,must Qtag+rtag,d check rule+rtag,:pass II; $ rtag=Xroot $
    Q+Dpragmat,d read pragmat,:pass II;
    Q+Dexpression,d expression,:pass II;
    Q+Dfile,d file data,:pass II;
    Q+Dfill,d list filling,:pass II;
    Q+Dlist,d list size,:pass II;
    Q+Dend;  $ last symbol
+   internal error+unknown disc symbol.
+
+'a'pass III-rtag:
+   Q+Drule,must Qtag+rtag,generate rule+rtag,:passIII;
+   Q+Droot,must Qtag+rtag,generate rule+rtag,:passIII;
+   Q+Dpragmat,mustQcons+#,(Qcons+#;mustQtag+#),:passIII;
+   Q+Dexpression,Qskip+Dpoint,:passIII;
+   Q+Dfile,Qskip+Dpoint,:passIII;
+   Q+Dfill,Qskip+Dpoint,:passIII;
+   Q+Dlist,Qskip+Dpoint,:passIII;
+   Q+Dend;
    internal error+unknown disc symbol.
 
 $ ===================================================== $
@@ -50,7 +61,8 @@ $  pgt warning level <cons>
      (is tag flag+tag+texternal,error+cannot be public+type+tag+dl;
       is tag flag+tag+timported,error+cannot be public+type+tag+dl;
       +);
-    error+tag not defined+tag.
+   is tag flag+tag+tpublic,error+tag not defined+tag;
+   +. $ if it had a prototype, we gave an error message
 
 'a'check tag for macro+>tag-type-dl:
    is tag flag+tag+tdefined,get defline+tag+dl,get type+tag+type,
