@@ -6,6 +6,7 @@
 #include "types.h"
 #include "display.h"
 /* ======================================= */
+#define Umark	0x1000
 #define Uopen	0x1001
 #define Uclose	0x1002
 #define Uhead	0x1003
@@ -119,15 +120,16 @@ static void gextension(void){
 /* classification */
 static void greadBox(void){
   int par[2];
-  pushRULE(Ubox,0);par[0]=Uin;gsimpleAffix(par);par[0]=Dbox;mustQ(par);
+  pushRULE(Unode,0);par[0]=Uin;gsimpleAffix(par);pushRULE(Utrue,0);
+  pushRULE(Ubox,0);par[0]=Dbox;mustQ(par);
 }
 static void gclassification(void){
   int par[2];int last;again:
   par[0]=Darea;mustQ(par);par[0]=Darea;Qskip(par);
   pushRULE(Unode,0);pushRULE(Ufalse,0);last=RULE->aupb;
-  pushRULE(Utrue,0);galtTail();par[0]=Dsemicolon;
+  pushRULE(Utrue,0);pushRULE(Uhead,0);galtTail();par[0]=Dsemicolon;
   if(Q(par)){pushRULE(Usemicolon,0);goto again;}
-  else{RULE->offset[last-RULE_flag]=0;}
+  else{RULE->offset[last-RULE_flag]=Umark;}
 }
 /* actual rule */
 static void ghandleAffix(int *a){ /* >tag + >utype */
@@ -238,6 +240,17 @@ static void gruleBody(void){
   else{galtSequence();}
   par[0]=rloc;closeRange(par);
 }
+/* ======================================================== */
+/* traversing the RULE stack */
+#define Uflag	0x01
+#define UTused	0x02
+#define UFused	0x04
+#define Ualt	0x08
+#define Uzero	0x10
+
+// static int UflagsChanged=0;
+
+
 /* -------------------------------- */
 static void goptimizeRule(int *a){/* >tag */
   int par[3];
@@ -246,7 +259,7 @@ static void goptimizeRule(int *a){/* >tag */
 }
 //DEBUG !!
 static void printRULEstack(int *a){
-  static char*C[]={"","open ","close","head ","node ","true ","false","sink ",
+  static char*C[]={"mark ","open ","close","head ","node ","true ","false","sink ",
               "plus ","minus","jump ","box  ","","","",               "scol ",
                    "","--use","--set","--spr"};
   int i,cnt;int f,d;
@@ -254,11 +267,11 @@ static void printRULEstack(int *a){
   i=RULE->alwb;cnt=-1;while(i<=RULE->aupb){
     cnt++; if(cnt==5){cnt=0;printf("\n");}
     d=RULE->offset[i];f=RULE->offset[i-1];i+=2;
-    if(0x1000<=f&&f<=0x1013){printf("(%s",C[f-0x1000]);}
-    else{printf("(%-5d",f);}
+    if(0x1000<=f&&f<=0x1013){printf("(%s",C[f-Umark]);}
+    else {printf("(%-5d",f);}
     if(RULE->alwb<=d && d<=RULE->aupb){printf(",R+%-3d) ",(d-RULE->alwb)/2);}
     else if(LLOC->alwb<=d && d<=RULE->aupb){printf(",L+%-3d) ",(d-LLOC->alwb)/6);}
-    else{ printf(",%-5d) ",d);}
+    else if(f==0){printf(",x%-4x) ",d);}else{ printf(",%-5d) ",d);}
   }
   printf("\n");
 }

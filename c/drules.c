@@ -30,7 +30,7 @@ static void init_msg1(void){
    addMSG("rule %p: ",in_rule);
    addMSG("macro %p: ",in_macro);
    addMSG("%p: not defined",not_defined);
-   addMSG("%m\"%p\" must be a table or stack (%l)",must_be_list);
+   addMSG("%m\"%p\" must be a table or stack (%p)",must_be_list);
    addMSG("%mno standard selector for \"%p\"",undefined_standard_selector);
    addMSG("%mselector %p not defined",undefined_selector);
 /* ------------- */
