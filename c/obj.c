@@ -14,8 +14,9 @@
 /* ================================== */
 /* messages */
 static int 
-tag_not_defined,tag_type_error,tag_list_type_error,cannot_be_external,
-tag_not_used,cannot_have_filling,undefined_selector,wrong_filling_block,
+tag_not_defined,type_tag_not_defined,
+tag_type_error,tag_list_type_error,cannot_be_external,
+type_tag_not_used,cannot_have_filling,undefined_selector,wrong_filling_block,
 double_selector,
 large_block_size,small_block_size,opening_OBJ,wrong_Wtag_argument,
 wrong_Wstring_argument;
@@ -23,9 +24,10 @@ wrong_Wstring_argument;
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void add_messages(void){
  addMSG("%p: not defined",tag_not_defined);
+ addMSG("%p %p: not defined",type_tag_not_defined);
  addMSG("%p %p: should be %p",tag_type_error);
  addMSG("%p %p: should be a list",tag_list_type_error);
- addMSG("%p %p: not used",tag_not_used);
+ addMSG("%p %p: not used",type_tag_not_used);
  addMSG("%p %p: not used, cannot have filling",cannot_have_filling);
  addMSG("%p %p: cannot be external (%l)",cannot_be_external);
  addMSG("filling %p: undefined selector %p",undefined_selector);
@@ -142,13 +144,14 @@ static void getNewItem(int *a){ /* item> */
   if(nextItem==0){nextItem=ITEM->alwb; a[0]=nextItem;}
   else{nextItem+=ITEM->calibre;a[0]=nextItem;}
 }
-static int isItemTag(int *a){ /* >tag */
-  int par[2];int type;
+static int isItemTag(int *a){ /* >tag+>type */
+  int par[2];
+  if(a[1]==Itable){par[0]=a[0];par[1]=tfill;if(isTagFlag(par)){return 1;}
+     par[1]=tused;if(isTagFlag(par)){return 1;}return 0;}
   par[0]=a[0];par[1]=tdefined;if(!isTagFlag(par)){return 0;}
   par[0]=a[0];par[1]=tused;if(!isTagFlag(par)){return 0;}
-  par[0]=a[0];getType(par);type=par[1];
-  if(type==Iempty){printf("**** ERROR ****, defined/used and Iempty\n");exit(28);}
-  if(type==Irule){
+  if(a[1]==Iempty){printf("**** ERROR ****, defined/used and Iempty\n");exit(28);}
+  if(a[1]==Irule){
     par[0]=a[0];par[1]=tpublic;if(isTagFlag(par)){return 1;}
     par[0]=a[0];par[1]=rmacro;if(isTagFlag(par)){return 0;}}
   return 1;
@@ -181,19 +184,18 @@ void defineObjTag(int *a){ /* >tag */
   if(a[0]==0){return;}
 //printf("++");par[0]=a[0];printPointer(par);par[0]=a[0];par[1]=tused;printf(" used=%d ++\n",isTagFlag(par)?1:0);
   par[0]=a[0];fixListUsage(par);
-  par[0]=a[0];if(!isItemTag(par)){
-     par[0]=a[0];par[1]=tpublic;if(isTagFlag(par)){par[0]=a[0];getDefline(par);
-       dl=par[1];if(dl<=0){;}else{par[0]=tag_not_defined;par[1]=a[0];
-         Xerror(dl,2,par);par[0]=a[0];par[1]=tpublic;clearTagFlag(par);}}
-//    par[0]=a[0];if(notDefinedTag(par)){
-//      par[0]=tag_not_defined;par[1]=a[0];Xerror(0,2,par);}
+  par[0]=a[0];getType(par);type=par[1];par[0]=a[0];getDefline(par);dl=par[1];
+  par[0]=a[0];par[1]=type;if(!isItemTag(par)){
+       par[0]=a[0];par[1]=tpublic;if(isTagFlag(par)){
+       par[0]=type_tag_not_defined;par[1]=a[0];par[2]=type;
+       Xerror(dl,3,par);par[0]=a[0];par[1]=tpublic;clearTagFlag(par);}
     return; 
   }
-  getNewItem(par); item=par[0];par[0]=a[0];getType(par);type=par[1];
+  getNewItem(par);item=par[0];
   par[0]=a[0];par[1]=texternal;if(isTagFlag(par)){getRepr(par);raw=par[1];}
   else{getTag(par);raw=par[1];}
-  par[0]=a[0];par[1]=objflags;getTagFlag(par);flag=par[2];par[0]=a[0];
-  getDefline(par);dl=par[1];par[0]=a[0];par[1]=item;putRepr(par);
+  par[0]=a[0];par[1]=objflags;getTagFlag(par);flag=par[2];
+  par[0]=a[0];par[1]=item;putRepr(par);
 //  par[0]=type;if(isPlainType(par)){par[0]=par[1];W(par);
   par[0]=type;Wtype(par);par[0]=item;W(par);
   par[0]=flag;Wcons(par);par[0]=dl;Wcons(par);
@@ -226,29 +228,28 @@ static void wrongType(int *a){/* >tag+>expected */
   par[0]=a[0];getType(par);type=par[1];
   if(type==Iempty){par[0]=tag_not_defined;par[1]=a[0];Error(2,par);}
   else if(par[1]==0){par[0]=tag_list_type_error;par[2]=a[0];par[1]=type;Error(3,par);}
-  else{par[0]=tag_type_error,par[2]=a[0];par[1]=type;par[3]=a[1];Error(4,par);}
+  else{par[0]=tag_type_error,par[2]=a[0];par[1]=type;par[2]=a[1];Error(3,par);}
 }
 static void noExternal(int *a){/* >tag */
   int par[4];int dl,type;
-  par[0]=a[0];par[1]=texternal;if(isTagFlag(par)){par[0]=a[0];getDefline(par);
-    dl=par[1];getType(par);type=par[1];par[0]=cannot_be_external;
-    par[1]=type;par[2]=a[0];par[3]=dl;Error(4,par);}
-  else if((par[1]=tdefined,isTagFlag(par))){;}
-  else{par[0]=tag_not_defined;par[1]=a[0];Error(2,par);}
+  par[0]=a[0];getType(par);type=par[1];par[0]=a[0];par[1]=texternal;
+  if(isTagFlag(par)){par[0]=a[0];getDefline(par);dl=par[1];
+    par[0]=cannot_be_external;par[1]=type;par[2]=a[0];par[3]=dl;Error(4,par);}
+  else if(type==Iempty){par[0]=tag_not_defined;par[1]=a[0];Error(2,par);}
 }
 /* ======================= */
 /* lists */
-static int isListUsed(int *a){ /* >tag */
-  int par[3];
-  par[0]=a[0];par[1]=tused;if(isTagFlag(par)){return 1;}
-  par[0]=a[0];getType(par);/* type=par[1]; */par[0]=tag_not_used;
-  par[2]=a[0];Warning(3,3,par);par[0]=a[0];par[1]=tfill;
-  if(isTagFlag(par)){return 1;}
-  return 0;
-}
+//static int isListUsed(int *a){ /* >tag */
+//  int par[3];
+//  par[0]=a[0];par[1]=tused;if(isTagFlag(par)){return 1;}
+//  par[0]=a[0];par[1]=tfill;if(isTagFlag(par)){return 1;}
+//  par[0]=a[0];getType(par);/* type=par[1]; */par[0]=type_tag_not_used;
+//  par[2]=a[0];Warning(3,3,par);
+//  return 0;
+//}
 void dListSize(void){
   int par[3];int tag,etype,esize,type;
-  mustQtag(par);tag=par[0];if(isListUsed(par)){
+  mustQtag(par);tag=par[0];par[1]=tused;if(isTagFlag(par)){
     mustQcons(par);etype=par[0];
     par[0]=Dlist;W(par);par[0]=tag;Wtag(par);par[0]=etype;Wcons(par);
     if(etype<=2){mustQcons(par);Wcons(par);}
@@ -256,8 +257,9 @@ void dListSize(void){
       if(type==Iconstant){par[0]=esize;noExternal(par);par[0]=esize;Wtag(par);}
       else{par[0]=esize;par[1]=Iconstant;wrongType(par);}}
     par[0]=Dpoint;W(par);par[0]=Dpoint;mustQ(par);}
-  else{par[0]=Dpoint;Qskip(par);}
-
+  else if((par[1]=tfill,isTagFlag(par))){par[0]=Dpoint;Qskip(par);}
+  else{par[0]=tag;getType(par);type=par[1];par[0]=type_tag_not_used;
+    par[1]=type;par[2]=tag;Warning(3,3,par);par[0]=Dpoint;Qskip(par);}
 }
 /* filling ================= */
 static void repeater(void){
@@ -274,7 +276,7 @@ static void initializer(void){
   par[0]=Dcolon;if(Q(par)){mustQtag(par);tag=par[0];
     par[0]=tag;par[1]=tused;if(isTagFlag(par)){
      par[0]=Dcolon;W(par);par[0]=tag;Wtag(par);}
-    else{par[0]=tag_not_used;par[1]=IpointerConstant;par[2]=tag;
+    else{par[0]=type_tag_not_used;par[1]=IpointerConstant;par[2]=tag;
     Warning(3,3,par);} goto nxt;}
 }
 static void checkListItemType(int *a){/* >tag */
@@ -388,9 +390,8 @@ static int isFillTagUsed(int *a){ /* >tag */
   int par[3]; int type;
   par[0]=a[0];par[1]=tused;if(isTagFlag(par)){return 1;}
   par[0]=a[0];getType(par);type=par[1];if(type==Itable){
-    par[0]=tag_not_used;par[1]=type;par[2]=a[0];Warning(3,3,par);return 1;}
-    else{par[0]=cannot_have_filling;par[1]=type;par[2]=a[0];Error(3,par);}
-  return 0;
+    par[0]=type_tag_not_used;par[1]=type;par[2]=a[0];Warning(3,3,par);return 1;}
+  par[0]=cannot_have_filling;par[1]=type;par[2]=a[0];Error(3,par); return 0;
 }
 
 void dListFilling(void){
@@ -420,8 +421,9 @@ void dFileData(void){
    par[0]=Dsub;if(Q(par)){par[0]=Dsub;W(par);fileArea();}
    mustQcons(par);Wcons(par);mustQtag(par);Wtag(par);
    mustQtag(par);Wtag(par);par[0]=Dpoint;mustQ(par);par[0]=Dpoint;W(par);}
-  else{par[0]=tag;getType(par);par[2]=tag;
-   par[0]=tag_not_used;Warning(3,3,par);par[0]=Dpoint;Qskip(par);}
+  else{
+   par[0]=tag;getType(par);par[2]=tag;par[0]=type_tag_not_used;Warning(3,3,par);
+   par[0]=Dpoint;Qskip(par);}
 }
 /* ====================================== */
 /* expression */
@@ -467,12 +469,13 @@ static void exprbase(void){
     W(par);}
 }
 void dExpression(void){
-  int par[3];int tag,level;
+  int par[3];int tag;
   mustQtag(par);tag=par[0];par[1]=tused;if(isTagFlag(par)){
      par[0]=Dexpression;W(par);par[0]=tag;Wtag(par);expression();
      par[0]=Dpoint;mustQ(par);W(par);}
-  else{par[0]=tag;getType(par);level=3;if(par[1]==Iconstant){level=1;}
-     par[0]=tag_not_used;par[2]=tag;Warning(level,3,par);par[0]=Dpoint;Qskip(par);}
+  else{par[0]=tag;getType(par);par[0]=type_tag_not_used;par[2]=tag;
+     if(par[1]==Iconstant){Warning(1,3,par);}else{Warning(3,3,par);}
+     par[0]=Dpoint;Qskip(par);}
 }
 /* ------------------------------------------------------ */
 

@@ -180,10 +180,6 @@ $   if was not defined, then set calibre=ssel=1
 'a'fix list usage+>tag-x-ssel-type:
    (get type+tag+type,(type=Itable;type=Istack;type=Istatic stack)),
      (is tag flag+tag+timported,set tag flag+tag+tused;+),
-     (is tag flag+tag+tfill,set tag flag+tag+tused;+),
-     (is tag flag+tag+tused;
-      is tag flag+tag+tpermanent;
-      get defline+tag+x,Xwarning+3+x+list tag not used+type+tag),
      (is tag flag+tag+tdefined;
       set tag flag+tag+tdefined,get calibre+tag+x,
         (x=0,put calibre+tag+1,put ssel+tag+1,

@@ -45,7 +45,6 @@ static void add_messages(void){
   addMSG("mixing declaration and prototype in %p declaration",mixing_proto);
   addMSG("size estimator ""%d"" out of allowed range",size_estimator_range);
   addMSG("%p %p: not used",list_tag_not_used);
-//  addMSG("stack or table %p not used",list_tag_not_used);
 }
 #undef addMSG
 /* ------------------------------------------------------------- */
@@ -152,11 +151,11 @@ void fixListUsage(int *a){ /* >tag */
   par[0]=a[0];getType(par);type=par[1];
   if(!(type==Itable ||type==Istack||type==IstaticStack)){return;}
   par[0]=a[0];par[1]=timported;if(isTagFlag(par)){par[0]=a[0];par[1]=tused;setTagFlag(par);}
-  par[0]=a[0];par[1]=tfill;if(isTagFlag(par)){par[0]=a[0];par[1]=tused;setTagFlag(par);}
-  par[0]=a[0];par[1]=tused;if(isTagFlag(par)){;}
-         else if((par[1]=tpermanent,isTagFlag(par))){;}else{
-         par[0]=a[0];getDefline(par);par[3]=par[1];par[1]=type;
-         par[0]=list_tag_not_used;par[2]=a[0];Xwarning(par[3],3,3,par);}
+//  par[0]=a[0];par[1]=tfill;if(isTagFlag(par)){par[0]=a[0];par[1]=tused;setTagFlag(par);}
+//  par[0]=a[0];par[1]=tused;if(isTagFlag(par)){;}
+//         else if((par[1]=tpermanent,isTagFlag(par))){;}else{
+//         par[0]=a[0];getDefline(par);par[3]=par[1];par[1]=type;
+//         par[0]=list_tag_not_used;par[2]=a[0];Xwarning(3,par[3],3,par);}
   par[0]=a[0];par[1]=tdefined;if(isTagFlag(par)){return;}
   par[0]=a[0];par[1]=tdefined;setTagFlag(par);par[0]=a[0];getCalibre(par);
   if(par[1]==0){par[0]=a[0];par[1]=1;putCalibre(par);par[0]=a[0];

@@ -920,7 +920,7 @@ $  check it, but don't generate code later
 ).
 
 'a'd check rule+>rtag-canT-canF-modT-modF:
-  (is tag flag+rtag+tused;warning+4+ruletag not used+rtag),
+  (is tag flag+rtag+tused;warning+3+ruletag not used+rtag),
   scratch+RULE,0->compound level,rtag->rule compiled,
   setup formal stack+rtag,0->modT,
   rule body+canT+canF+modT+modF+#+#,

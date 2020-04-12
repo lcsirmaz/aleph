@@ -264,18 +264,18 @@ static void printRULEstack(int *a){
 }
 //DEBUG
 
-static int isMacroRule(int *a){/* >tag */
+static int skipRuleGeneration(int *a){/* >tag */
   int par[2];
-  par[0]=a[0];par[1]=rmacro;if(isTagFlag(par)){
-    par[0]=a[0];par[1]=tpublic;if(isTagFlag(par)){return 0;}
-    return 1;}
-  return 0;
+  par[0]=a[0];par[1]=tpublic;if(isTagFlag(par)){return 0;}
+  par[1]=rmacro;if(isTagFlag(par)){return 1;}
+  par[1]=tused;if(isTagFlag(par)){return 0;}
+  return 1;
 }
 
 void generateRule(int *a){/* >tag */
   int par[2]; //int dpos,dnum;
 //  saveDiscPosition(par);dpos=par[0];dnum=par[1];
-  par[0]=a[0];if(isMacroRule(par)){par[0]=Dpoint;Qskip(par);}
+  par[0]=a[0];if(skipRuleGeneration(par)){par[0]=Dpoint;Qskip(par);}
   else{goptimizeRule(a);
     printRULEstack(a);
 }}

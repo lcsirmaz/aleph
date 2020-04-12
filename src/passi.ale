@@ -56,7 +56,7 @@ $ in library mode only
      (z=0,skip silently,Rskip+Spoint;
       z=2,get tag entry+tag+tag,get defline+tag+z,get linenum+l,
                   get type+tag+type,
-                  Xwarning+z+8+library item redefined+type+tag+l,
+                  Xwarning+8+z+library item redefined+type+tag+l,
                   skip silently,Rskip+Spoint;
       +);        $ execute what comes after it
   $ a tag must follow

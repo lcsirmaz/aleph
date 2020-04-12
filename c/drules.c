@@ -982,7 +982,6 @@ static void init_msg4(void){
 void dCheckRule(int *a){ /* >rtag */
   int par[7];int canT,canF,modT,modF,level;
   par[0]=a[0];par[1]=tused;if(isTagFlag(par)){;}
-//   par[0]=Drule;W(par);par[0]=a[0];Wtag(par);par[0]=Dpoint;W(par);}
   else{par[0]=ruletag_not_used;par[1]=a[0];Warning(3,2,par);}
 //printf("****** NEW RULE ");par[0]=a[0];printPointer(par);printf(" ****\n");
   par[0]=STACKpar(RULE);scratch(par);compoundLevel=0;ruleCompiled=a[0];

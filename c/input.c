@@ -127,6 +127,7 @@ static int isCmdlinePragmat(int *a){ /* >ptr+>twoarg>+pid>+value> */
   comparestringXXX(par,"-d");if(par[2]==0){a[2]=pgtDict;a[3]=1;return 1;}
   comparestringXXX(par,"-l");if(par[2]==0){a[2]=pgtText;a[3]=1;return 1;}
   comparestringXXX(par,"-W");if(par[2]==0){a[2]=pgtWarningLevel;a[3]=3;return 1;}
+  comparestringXXX(par,"-WW");if(par[2]==0){a[2]=pgtWarningLevel;a[3]=2;return 1;}
   comparestringXXX(par,"-Wall");if(par[2]==0){a[2]=pgtWarningLevel;a[3]=0;return 1;}
   comparestringXXX(par,"-o");if(par[2]==0){a[1]=1;a[2]=pgtTitle;a[3]=0;return 1;}
   comparestringXXX(par,"-I");if(par[2]==0){a[1]=1;a[2]=pgtPath;a[3]=0;return 1;}
@@ -175,7 +176,7 @@ static int nextInput(int *a){ /* >ptr> */
 //printf("now flag=%x\n",flag);
             }}
   else{va[0]=error_opening_source;va[1]=INPUT->offset[a[0]-INPUT_string];
-    Xwarning(0,9,2,va);par[0]=STACKpar(INPUT);par[1]=a[0];next(par);
+    Xwarning(9,0,2,va);par[0]=STACKpar(INPUT);par[1]=a[0];next(par);
     a[0]=par[1];goto again;}
 //printf("*** next input, p=");par[0]=pgtProto;getPragmatValue(par);printf("%d ***\n",par[1]);
   return 1;

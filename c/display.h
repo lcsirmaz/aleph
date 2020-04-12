@@ -9,7 +9,7 @@ int wasLocalError(int *a);
 void Error(int n,int *v);
 void Xerror(int line,int n,int *v);
 void Warning(int level,int n,int *v);
-void Xwarning(int line,int level,int n,int *v);
+void Xwarning(int level,int line,int n,int *v);
 void message(int n,int *v);
 /* this routine never returns */
 void internalError(int,int *a);

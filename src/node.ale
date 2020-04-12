@@ -199,7 +199,7 @@ $ actual rule --------------------------------------- $
    (out utype+utype,(utype>=Uslicein,extend BUFFER+Uuse;extend BUFFER+Uset),
      extend BUFFER+repr*LLOC[tag];+).
 'a'g handle vararg block+>ptr:
-   $ ptr points to the * formal affix of the rule, use the block
+   $ ptr points to the * formal affix of the rule, use that block
    (nxt: =type*LLOC[ptr]=
    [Ilabel],+; $ this is the last one
    [Iformal in],g handle affix+ptr+Uin,next+LLOC+ptr,:nxt;
@@ -295,12 +295,15 @@ $ --------------------------------------------------- $
 
 $ now traverse the RULE array ...
 
-'q'is macro rule+>tag:
-  is tag flag+tag+rmacro,(is tag flag+tag+tpublic,-;+).
+'q'skip rule generation+>tag:
+  is tag flag+tag+tpublic,-;
+  is tag flag+tag+rmacro;
+  is tag flag+tag+tused,-;
+  +.
 
 'a'generate rule+>tag-dpos-dnum:
   $ if macro and not public, dont't anything
-  is macro rule+tag,Qskip+Dpoint;
+  skip rule generation+tag,Qskip+Dpoint;
   save disc position+dpos+dnum,g optimize rule+tag,
   +.
   

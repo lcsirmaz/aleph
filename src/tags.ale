@@ -508,7 +508,7 @@ $    1 .. 2029: subtract that much
 $    2047:      subtract 2000
 
 $ pack and unpack two values (d,n), n has 11 bits
-'a'extend DICT+>x: (* x->DICT *)DICT;
+'a'extend DICT+>x: (* x->DICT *)DICT.
 'f'pack2+>d+>n+x>:
    d->x,left clear+x+11,bool or+x+n+x.
 'f'unpack2+>x+d>+n>:

@@ -260,7 +260,7 @@ void Warning(int level,int cnt,int *v){ /* >level+*+>mess */
   else{par[0]=-1;par[1]=level;messageHeader(par);
     formatPrint(cnt,v);nlcr();}
 }
-void Xwarning(int line,int level,int cnt,int *v){ /* >level+*+>mess */
+void Xwarning(int level,int line,int cnt,int *v){ /* >level+*+>mess */
   int par[2];
   par[0]=pgtWarningLevel;getPragmatValue(par);
 //printf("Xwarning, level=%d, pragmat=%d\n",level,par[1]);

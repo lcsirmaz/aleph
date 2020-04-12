@@ -67,7 +67,7 @@ static void tagEnquiry(void){
       par[0]=tag;getDefline(par);z=par[1];par[0]=tag;getType(par);
       type=par[1];getLinenum(par);
       par[3]=par[0];par[0]=library_item_redefined;par[1]=type;
-      par[2]=tag;Xwarning(z,8,4,par);skipSilently();par[0]=Spoint;
+      par[2]=tag;Xwarning(8,z,4,par);skipSilently();par[0]=Spoint;
       Rskip(par);}}
   else{par[0]=wrong_symbol;par[1]=Senquiry;Error(2,par);
     skipToPoint();}

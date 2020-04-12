@@ -80,9 +80,10 @@ $ BODY ******************************************************** $
 $ messages ---------------------------------------------------- $
 'table'MESSAGE=(
   "%p: not defined":tag not defined,
+  "%p %p: not defined":type tag not defined,
   "%p %p: should be %p":tag type error,
   "%p %p: should be list":tag list type error,
-  "%p %p: not used"                   : tag not used,
+  "%p %p: not used"                   :type tag not used,
   "%p %p: not used, cannot have filling":cannot have filling,
   "%p %p: cannot be external (%l)": cannot be external,
   "filling %p: undefined selector %p" :undefined selector,
@@ -104,7 +105,7 @@ $ each tag has an ITEM entry assigned consecutively
 'stack'[10](flag,type,tag,adm,tnext,fnext)NODE.
 
 $ obj file ==================================================== $
-'charfile' OBJ="aleph.alo">.
+'charfile' OBJ="aleph.ice">.
 'a'open obj file-err:
    create obj name, $ creates the name on >>LEXT $
    (open file+OBJ+/w/+LEXT+>>LEXT,forget string+>>LEXT;
@@ -166,10 +167,13 @@ $   either used or has a fill (warning/error will be given later)
   next item=0,<<ITEM->next item->item;
   next+ITEM+next item,next item->item.
 
-'q'is item tag+>tag-type:
+'q'is item tag+>tag+>type:
 $ tdefined implies type is set and not Iempty
 $ for type=Iselector tused is never set
-  is tag flag+tag+tdefined,is tag flag+tag+tused,get type+tag+type,
+$ for type=Itable allow filling without using the table,
+$   but not for stacks (imported stacks are exections)
+  type=Itable,(is tag flag+tag+tfill;is tag flag+tag+tused);
+  is tag flag+tag+tdefined,is tag flag+tag+tused,
     (type=Irule,(is tag flag+tag+tpublic;
                  is tag flag+tag+rmacro,-;+);
      +).
@@ -194,11 +198,12 @@ $  next free ITEM. External tags have LEXT string in "repr".
   $ item: next pointer to ITEM
   $ raw tag: LEXT string for externals; TTAG entry for others
   tag=0;
-  fix list usage+tag, $ add tdefined to lists with filling $
-   (is item tag+tag,get type+tag+type,
+  fix list usage+tag, $ add tused to lists with filling $
+  get defline+tag+dl,get type+tag+type,
+   (is item tag+tag+type,
      (is tag flag+tag+texternal,get repr+tag+raw;
       get tag+tag+raw),
-     get tag flag+tag+objflags+flag,get defline+tag+dl,
+     get tag flag+tag+objflags+flag,
      get new item+item,put repr+tag+item,
      Wtype+type,W+item,Wcons+flag,Wcons+dl,
      (=type=
@@ -208,9 +213,9 @@ $  next free ITEM. External tags have LEXT string in "repr".
       [Irule],                      formal affixes+tag;
       internal error+"define OBJ: type=%p is wrong"+type),
      Wstring+raw;
-    is tag flag+tag+tpublic,get defline+tag+dl,
-      (dl<=0; $ set by a pragmat, issue error message there
-       Xerror+dl+tag not defined+tag,clear tag flag+tag+tpublic);
+    $ error if public and not defined
+    is tag flag+tag+tpublic,
+       Xerror+dl+type tag not defined+type+tag,clear tag flag+tag+tpublic;
     +).
 
 $ call back routines for Xstring table filling ---------------- $
@@ -223,26 +228,20 @@ $ call back routines for Xstring table filling ---------------- $
 $ general error messages ====================================== $
 
 'a'wrong type+>tag+>expected-type:
-   get type+tag+type,
-   (type=Iempty,error+tag not defined+tag;
-    expected=0,error+type+tag list type error+tag;
-    error+tag type error+type+tag+expected).
+   (get type+tag+type,type=Iempty),error+tag not defined+tag;
+   expected=0,error+type+tag list type error+tag;
+   error+tag type error+type+tag+expected.
 'a'no external+>tag-dl-type:
-   is tag flag+tag+texternal,get type+tag+type,
+   (get type+tag+type,is tag flag+tag+texternal),
      get defline+tag+dl,error+cannot be external+type+tag+dl;
-   is tag flag+tag+tdefined;
-   error+tag not defined+tag.
+   type=Iempty,error+tag not defined+tag;
+   +.
 
 $ list declaration ============================================ $
 $   Dlist <tag> <etype> <esize>
-'p'is list used+>tag-type:
-   is tag flag+tag+tused;
-   get type+tag+type,warning+3+tag not used+type+tag,
-     is tag flag+tag+tfill.
-
 'a'd list size-tag-etype-esize-type:
-   must Qtag+tag,(is list used+tag,must Qcons+etype,
-     W+Dlist,Wtag+tag,Wcons+etype,
+   (must Qtag+tag,is tag flag+tag+tused),
+     must Qcons+etype,W+Dlist,Wtag+tag,Wcons+etype,
      (etype<=2,must Qcons+esize,Wcons+esize;
       $ [tag] or [=tag=]
       $ tag must be defined and have correct type
@@ -250,7 +249,10 @@ $   Dlist <tag> <etype> <esize>
         (type=Iconstant,no external+esize,Wtag+esize;
          wrong type+esize+Iconstant)),
      W+Dpoint,must Q+Dpoint;
-   Qskip+Dpoint).
+   is tag flag+tag+tfill,Qskip+Dpoint;
+     $ error/warning will be given at filling $
+   get type+tag+type,warning+3+type tag not used+type+tag,Qskip+Dpoint.
+
 $ list filling ================================================ $
 $ Dfill <tag> (<item><repeater?><initializer*>)* Dpoint
 $ <repeater>     Dstar <tag> | Dstar <cons>
@@ -271,7 +273,7 @@ $ <string> is replaced by a <block>, and a <block> has no Dstar
 'a'initializer-tag:
   Q+Dcolon,mustQtag+tag, $ this tag can not be used
    (is tag flag+tag+tused,W+Dcolon,Wtag+tag;
-    warning+3+tag not used+Ipointer constant+tag),:initializer;
+    warning+3+type tag not used+Ipointer constant+tag),:initializer;
   +.
 'a'check list item type+>tag-type:
    get type+tag+type,
@@ -358,20 +360,18 @@ $ a list item: tag, const, string, block
    Q+Dopen,W+Dopen,block+tag,W+Dclose;
    mustQ+Dextension,W+Dopen,block2+tag,W+Dclose.
 
-$ if the list tag is not tused, warning for table,
-$    error otherwise
+$ only if the list tag is table or used
 'p'is fill tag used+>tag-type:
-   is tag flag+tag+tused;
-   get type+tag+type,
-     (type=Itable,warning+3+tag not used+type+tag;
-      error+cannot have filling+type+tag,-).
-
+  is tag flag+tag+tused;
+  (get type+tag+type,type=Itable),
+    warning+3+type tag not used+type+tag;
+  error+cannot have filling+type+tag,-.
+    
 'a'd list filling-tag:
-   must Qtag+tag,
-     (is fill tag used+tag,W+Dfill,Wtag+tag,
-       (nxt:Q+Dpoint,W+Dpoint;
-            list item+tag,repeater,initializer,:nxt);
-      Qskip+Dpoint).
+   (must Qtag+tag,is fill tag used+tag),W+Dfill,Wtag+tag,
+      (nxt:Q+Dpoint,W+Dpoint;
+           list item+tag,repeater,initializer,:nxt);
+   Qskip+Dpoint.
 
 $ file declaration ============================================ $
 'a'file area-x-type:
@@ -390,7 +390,8 @@ $ file declaration ============================================ $
      mustQtag+x,Wtag+x,    $ Xstdstring
      mustQtag+x,Wtag+x,    $ init string
      mustQ+Dpoint,W+Dpoint;
-   get type+tag+x,warning+3+tag not used+x+tag,Qskip+Dpoint).
+   get type+tag+x,warning+3+type tag not used+x+tag,
+   Qskip+Dpoint).
    
 $ expression ================================================== $
 'a'check constant tag+>tag-type:
@@ -421,11 +422,13 @@ $ expression ================================================== $
   Q+Dcalibre,W+Dcalibre,mustQtag+x,Wtag+x,check list tag+x;
   mustQ+Dopen,W+Dopen,expression,mustQ+Dclose,W+Dclose.
 
-'a'd expression-tag-x-level:
-   mustQtag+tag,(is tag flag+tag+tused,
+'a'd expression-tag-x:
+   (mustQtag+tag,is tag flag+tag+tused),
      W+Dexpression,Wtag+tag,expression,mustQ+Dpoint,W+Dpoint;
-   get type+tag+x,(x=Iconstant,1->level;3->level),
-   warning+level+tag not used+x+tag,Qskip+Dpoint).
+   get type+tag+x,
+     (x=Iconstant,warning+1+type tag not used+x+tag;
+                  warning+3+type tag not used+x+tag),
+     Qskip+Dpoint.
 
 $ ============================================================ $
 
