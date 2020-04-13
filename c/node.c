@@ -242,15 +242,160 @@ static void gruleBody(void){
 }
 /* ======================================================== */
 /* traversing the RULE stack */
-#define Uflag	0x01
+#define Ufinal	0x01
 #define UTused	0x02
 #define UFused	0x04
-#define Ualt	0x08
-#define Uzero	0x10
+#define Uflag	0x08
+#define Ualt	0x10
+#define Uzero	0x20
 
-// static int UflagsChanged=0;
+static int UfinalChanged=0;
 
+static void setRULEflag(int *a){/* >base + >off + >v */
+  int ptr=a[1]*RULE_CALIBRE+a[0];
+//if(a[2]&0x20){printf("setRULEflag %x\n",a[2]);RULE->offset[0]=1;}
+  RULE->offset[ptr-RULE_flag]|=a[2];
+}
+static void clearRULEflag(int *a){/* >base + >off + >v */
+  int ptr=a[1]*RULE_CALIBRE+a[0];
+  RULE->offset[ptr-RULE_flag] &=~a[2];
+}
+static int isRULEflag(int *a){/* >base +>off+>v */
+  int ptr=a[1]*RULE_CALIBRE+a[0];
+  if((RULE->offset[ptr-RULE_flag]&a[2])!=0){ return 1;}
+  return 0;
+}
 
+static void copyUf1ToUf2(int *a){/* >base+>Uf1 + >Uf2 */
+  int par[3];int off;
+  off=1;nxt:par[0]=a[0];par[1]=off;par[2]=Umark;if(isRULEflag(par)){;}
+  else{par[0]=a[0];par[1]=off;par[2]=a[1];if(isRULEflag(par)){
+    par[2]=a[2];setRULEflag(par);}else{par[2]=a[2];clearRULEflag(par);}
+    off++;goto nxt;}
+}
+static void mergeUf1ToUf2(int *a){/* >base+>Uf1 + >Uf2 */
+  int par[3];int off;
+  off=1;nxt:par[0]=a[0];par[1]=off;par[2]=Umark;if(isRULEflag(par)){;}
+  else{par[0]=a[0];par[1]=off;par[2]=a[1];if(isRULEflag(par)){
+    if(a[2]!=Ufinal){;}else if((par[2]=a[2],isRULEflag(par))){;}
+    else{UfinalChanged=1;}
+    par[2]=a[2];setRULEflag(par);}off++;goto nxt;}
+}
+static void copyJumpUf(int *a){/* >from + >to */
+  int par[3];int off;
+  off=1;nxt1:par[0]=a[0];par[1]=off;par[2]=Umark;if(isRULEflag(par)){;}
+  else{par[0]=a[0];par[1]=off;par[2]=Ufinal;if(isRULEflag(par)){
+    par[0]=a[1];par[1]=off;par[2]=Uflag;setRULEflag(par);}
+    else{par[0]=a[1];par[1]=off;par[2]=Uflag;clearRULEflag(par);}
+    off++;goto nxt1;}
+  nxt2:par[0]=a[1];par[1]=off;par[2]=Umark;if(isRULEflag(par)){;}
+  else{par[0]=a[1];par[1]=off;par[2]=Uflag;clearRULEflag(par);off++;goto nxt2;}
+}
+static void setFlagsForRegion(int *a){/* >base+>region+>head */
+  int par[3];int off;
+  off=1;nxt:par[0]=a[0];par[1]=off;par[2]=Umark;if(isRULEflag(par)){;}
+  else{par[0]=a[0];par[1]=off;par[2]=Uflag;if(isRULEflag(par)){
+      par[0]=a[1];par[1]=off;par[2]=UTused;setRULEflag(par);}
+    par[0]=a[0];par[1]=off;par[2]=a[2];if(isRULEflag(par)){
+      par[0]=a[1];par[1]=off;par[2]=UFused;setRULEflag(par);}
+    par[0]=a[1];par[1]=off;par[2]=Uflag;clearRULEflag(par);
+    off++;goto nxt;}
+}
+static void recoverFlagsFromRegion(int *a){ /* >base+>region */
+  int par[3];int off;
+  off=1;nxt:par[0]=a[0];par[1]=off;par[2]=Umark;if(isRULEflag(par)){;}
+  else{par[0]=a[1];par[1]=off;par[2]=Uflag;if(isRULEflag(par)){par[0]=a[0];
+    par[1]=off;par[2]=Uflag;setRULEflag(par);}else{par[0]=a[0];par[1]=off;
+    par[2]=Uflag;clearRULEflag(par);}off++;goto nxt;}
+}
+
+static void setFlagsForRule(int *a){/* >rtag */
+  int par[3];int base,formal,type,cnt;
+  par[0]=a[0];getAdm(par);formal=par[1];cnt=0;base=RULE->offset[RULE->aupb-RULE_data];
+  nxt:if(formal==0){;}
+  else{par[0]=formal;getType(par);type=par[1];
+    if(type==IformalIn){cnt++;}
+    else if(type==IformalOut||type==IformalInout){cnt++;
+      par[0]=base;par[1]=cnt;par[2]=UTused;setRULEflag(par);}
+    par[0]=formal;getAdm(par);formal=par[1];goto nxt;}
+}
+/* - - - - - - - - - - - - - - - - - */
+static int Uptr=0;
+static int B(int *a){/* >x */
+  if(RULE->offset[Uptr-RULE_flag]==a[0]){Uptr-=RULE_CALIBRE;return 1;}
+  return 0;
+}
+static int Bdata(int *a){/* >x + d> */
+  if(RULE->offset[Uptr-RULE_flag]==a[0]){a[1]=RULE->offset[Uptr-RULE_data];
+     Uptr-=RULE_CALIBRE;return 1;}
+  return 0;
+}
+static void Breplace(int *a){/* >new */
+  RULE->offset[Uptr+RULE_CALIBRE-RULE_flag]=a[0];
+}
+/* ---------------------------------- */
+static void Ualternative(int *a);
+static int UactualRule(int *a),Umember(int *a);
+static void Uregion(int *a){/* >base */
+  int par[3]; 
+  par[0]=a[0];par[1]=UFused;par[2]=Ualt;copyUf1ToUf2(par);
+//printf("Uregion start at %d (%d)\n",(a[0]-RULE->alwb)/2,a[0]);
+  again:
+  par[0]=a[0];Ualternative(par);par[0]=a[0];par[1]=Uflag;par[2]=Ualt;
+  copyUf1ToUf2(par);
+//printf("ALT at %d ",(Uptr-RULE->alwb)/2);{int x=a[0]+2;while((RULE->offset[x-RULE_flag]&Umark)==0){printf("%02x ",RULE->offset[x-RULE_flag]);x+=2;}printf("\n");}
+  par[0]=Usemicolon;if(B(par)){goto again;}
+  par[0]=Ubox;if(B(par)){par[0]=a[0];par[1]=UFused;
+    if(UactualRule(par)){;}else{printf("Uregion: box wrong\n");exit(4);}}
+  /* skip the storage area */
+  nxt:par[0]=Uopen;if(B(par)){;}else{Uptr-=BUFFER_CALIBRE;goto nxt;}
+  par[0]=a[0];par[1]=Uflag;par[2]=Ufinal;mergeUf1ToUf2(par);
+//printf("MRG at %d ",(Uptr-RULE->alwb)/2);{int x=a[0]+2;while((RULE->offset[x-RULE_flag]&Umark)==0){printf("%02x ",RULE->offset[x-RULE_flag]);x+=2;}printf("\n");}
+}
+static int UactualRule(int *a){/* >base+ >Uf */
+  int par[3];int cnt;
+  par[0]=Utrue;if(B(par)){;}else if((par[0]=Usink,B(par))){
+    par[0]=a[0];par[1]=Uzero;par[2]=Uflag;copyUf1ToUf2(par);}
+  else{return 0;}
+  nxt:par[0]=Uuse;if(Bdata(par)){cnt=par[1];par[0]=a[0];par[1]=cnt;
+    par[2]=Uflag;setRULEflag(par);
+//printf("USE: cnt=%d,base=%d, flag=%x\n",cnt,(a[0]-RULE->alwb)/2,RULE->offset[a[0]+2*cnt-RULE_flag]);
+    goto nxt;}
+  par[0]=Uset;if(Bdata(par)){cnt=par[1];par[0]=a[0];par[1]=cnt;par[2]=Uflag;
+     if(isRULEflag(par)){;}else{par[0]=Uspare;Breplace(par);}
+     par[0]=a[0];par[1]=cnt;par[2]=Uflag;clearRULEflag(par);goto nxt;}
+  par[0]=Uspare;if(Bdata(par)){cnt=par[1];par[0]=a[0];par[1]=cnt;par[2]=Uflag;
+     if(isRULEflag(par)){par[0]=Uset;Breplace(par);}
+     par[0]=a[0];par[1]=cnt;par[2]=Uflag;clearRULEflag(par);goto nxt;}
+  par[0]=Umark;if(B(par)){goto nxt;}
+  par[0]=Ufalse;if(B(par)){par[0]=a[0];par[1]=a[1];par[2]=Uflag;mergeUf1ToUf2(par);
+     goto nxt;}
+  par[0]=Unode;if(B(par)){;}
+  else{printf("FATAL: Uactual node looking at unexpected\n");exit(4);}
+  return 1;
+}
+
+static int Umember(int *a){/* >base+ >Uf */
+  int par[3];int ptr;
+  par[0]=Ujump;if(Bdata(par)){par[0]=par[1];par[1]=a[0];copyJumpUf(par);return 1;}
+  par[0]=Uplus;if(B(par)){par[0]=a[0];par[1]=UTused;par[2]=Uflag;
+    copyUf1ToUf2(par);return 1;}
+  par[0]=Uminus;if(B(par)){par[0]=a[0];par[1]=a[1];par[2]=Uflag;
+    copyUf1ToUf2(par);return 1;}
+  par[0]=a[0];par[1]=a[1];if(UactualRule(par)){return 1;}
+  par[0]=Uclose;if(Bdata(par)){ptr=par[1];par[0]=a[0];par[1]=ptr;
+    par[2]=a[1];setFlagsForRegion(par);par[0]=ptr;Uregion(par);
+    par[0]=a[0];par[1]=ptr;recoverFlagsFromRegion(par);return 1;}
+  return 0;
+}
+static void Ualternative(int *a){/* >base */
+  int par[3];
+  par[0]=a[0];par[1]=UTused;par[2]=Uflag;copyUf1ToUf2(par);nxt:
+  par[0]=Uhead;if(B(par)){par[0]=a[0];par[1]=Ualt;
+   if(Umember(par)){;}else{printf("FATAL: Ualternativewrong member\n");exit(4);}
+   return;}
+  par[0]=a[0];par[1]=UFused;if(Umember(par)){goto nxt;}
+}
 /* -------------------------------- */
 static void goptimizeRule(int *a){/* >tag */
   int par[3];
@@ -268,7 +413,7 @@ static void printRULEstack(int *a){
     cnt++; if(cnt==5){cnt=0;printf("\n");}
     d=RULE->offset[i];f=RULE->offset[i-1];i+=2;
     if(0x1000<=f&&f<=0x1013){printf("(%s",C[f-Umark]);}
-    else {printf("(%-5d",f);}
+    else {printf("(%-5x",f);}
     if(RULE->alwb<=d && d<=RULE->aupb){printf(",R+%-3d) ",(d-RULE->alwb)/2);}
     else if(LLOC->alwb<=d && d<=RULE->aupb){printf(",L+%-3d) ",(d-LLOC->alwb)/6);}
     else if(f==0){printf(",x%-4x) ",d);}else{ printf(",%-5d) ",d);}
@@ -286,11 +431,20 @@ static int skipRuleGeneration(int *a){/* >tag */
 }
 
 void generateRule(int *a){/* >tag */
-  int par[2]; //int dpos,dnum;
+  int par[3]; //int dpos,dnum;
 //  saveDiscPosition(par);dpos=par[0];dnum=par[1];
   par[0]=a[0];if(skipRuleGeneration(par)){par[0]=Dpoint;Qskip(par);}
   else{goptimizeRule(a);
-    printRULEstack(a);
+
+//printRULEstack(a);printf("******************\n");
+setFlagsForRule(a);
+
+again:
+UfinalChanged=0;Uptr=RULE->aupb;
+par[0]=Uclose;if(Bdata(par)){par[0]=par[1];Uregion(par);}
+              else{printf("not Uclose\n");exit(8);}
+if(UfinalChanged){goto again;}
+printRULEstack(a);
 }}
 
 

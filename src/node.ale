@@ -291,13 +291,14 @@ $ structure ----------------------------------------- $
 $ traversing RULE stack ============================= $
 $ flags for formal/local stored variables
 'constant'
-  Uflag		= 0x01, $ 0: not used afterward, 1: used
+  Ufinal	= 0x01, $ final flag, 0: not used afterward, 1: used
   UTused	= 0x02, $ final value, used at true exit
   UFused	= 0x04, $ final value, used at false exit
-  Ualt		= 0x08, $ usage at the head of the next alternative
-  Uzero		= 0x10. $ this bit is always zero
+  Uflag		= 0x08, $ running flag
+  Ualt		= 0x10, $ usage at the head of the next alternative
+  Uzero		= 0x20. $ this bit is always zero
 
-'variable'Uflags changed=0.
+'variable'Ufinal changed=0.
 
 'a'set RULE flag+>base+>off+>v:
   addmult+off+<>RULE+base+base,bool or+flag*RULE[base]+v+flag*RULE[base].
@@ -305,8 +306,6 @@ $ flags for formal/local stored variables
   addmult+off+<>RULE+base+base,bool invert+v+v,bool and+flag*RULE[base]+v+flag*RULE[base].  
 'q'is RULE flag+>base+>off+>v-x:
   addmult+off+<>RULE+base+base,bool and+flag*RULE[base]+v+x,x!=0.
-'f'get RULE flag+>base+>off+v>:
-  addmult+off+<>RULE+base+base,flag*RULE[base]->v.
 
 'a'copy Uf1 to Uf2+>base+>Uf1+>Uf2-off:
   $ at the end of the region copy UF to Ualt (the last alternative fails)
@@ -316,27 +315,31 @@ $ flags for formal/local stored variables
          clear RULE flag+base+off+Uf2),incr+off,:nxt).
 'a'merge Uf1 to Uf2+>base+>Uf1+>Uf2-off:
   1->off,(nxt:is RULE flag+base+off+Umark;
-    (is RULE flag+base+off+Uf1,set RULE flag+base+off+Uf2;+),
+    (is RULE flag+base+off+Uf1,
+       (Uf2!=Ufinal;is RULE flag+base+off+Uf2;1->Ufinal changed),
+       set RULE flag+base+off+Uf2;+),
     incr+off,:nxt).
 'a'copy jump Uf+>from+>to-off:
+  $ copy final flags from -> to; clear local affixes
   1->off,(nxt:is RULE flag+from+off+Umark;
-    (is RULE flag+from+off+Uflag,set RULE flag+to+off+Uflag;
+    (is RULE flag+from+off+Ufinal,set RULE flag+to+off+Uflag;
      clear RULE flag+to+off+Uflag),incr+off,:nxt),
   (nxt:is RULE flag+to+off+Umark;
-       clear RULE flag+to+off+Umark,incr+off,:nxt).
+       clear RULE flag+to+off+Uflag,incr+off,:nxt).
 
-'a'set flags for region+>base+>region+>head-off-old-new:
+'a'set flags for region+>base+>region+>head-off:
   $ region is a pointer to an inner region; set UT/UF used flags
   $  UT is coming from Uflag, UF is from head (=Ualt or =UFused)
-  $  mark if there is a change
-  1->off,(nxt:is RULE flag+base+off+Umark; $  $
-     get RULE flag+region+off+old,
-     (is RULE flag+base+off+Uflag,set RULE flag+region+off+UTused;
-       clear RULE flag+region+off+UTused),
-     (is RULE flag+base+off+head,set RULE flag+region+off+UFused;
-       clear RULE flag+region+off+UFused),
-     get RULE flag+region+off+new,(old=new;1->Uflags changed),
-     incr+off,:nxt).
+  $ flags can only increase.
+  1->off,(nxt:is RULE flag+base+off+Umark;
+     (is RULE flag+base+off+Uflag,set RULE flag+region+off+UTused;+),
+     (is RULE flag+base+off+head,set RULE flag+region+off+UFused;+),
+     clear RULE flag+region+off+Uflag,incr+off,:nxt).
+'a'recover flags from region+>base+>region-off:
+  $ when the region is done, retrieve Uflags from the region
+  1->off,(nxt:is RULE flag+base+off+Umark;
+    (is RULE flag+region+off+Uflag,set RULE flag+base+off+Uflag;
+      clear RULE flag+base+off+Uflag),incr+off,:nxt).
 
 'a'set flags for rule+>rtag-base-formal-type-cnt:
    $ set the UTused, UFused flags for the rule.
@@ -357,16 +360,17 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - $
 
 $ Uptr is just before Uclose; UT,UF flags are set
 'a'Uregion+>base:
-  $ this is the end of an alternative $
-  copy Uf1 to Uf2+base+UTused+Uflag,
-    (nxt:Ualternative+base,copy Uf1 to Uf2+base+Uflag+Ualt,
-       (B+Usemicolon,:nxt;
-        B+Ubox,(Urule+base+UFused;internal error+_line_);
-        +)),
+  copy Uf1 to Uf2+base+UFused+Ualt,
+  (nxt:Ualternative+base,copy Uf1 to Uf2+base+Uflag+Ualt,
+    (B+Usemicolon,:nxt;
+     B+Ubox,(U actual rule+base+UFused;internal error+_line_);
+     +)),
   $ skip the storeage area $
-  (nxt:B+Uopen;previous+RULE+Uptr,:nxt).
+  (nxt:B+Uopen;previous+RULE+Uptr,:nxt),
+  $ set the final flags for this region
+  merge Uf1 to Uf2+base+Uflag+Ufinal.
 
-'p'Urule+>base+>Uf-cnt:
+'p'U actual rule+>base+>Uf-cnt:
   $ 'exit' clears all flags; otherwise keep Uflag
   $ Uf specifies the false branch
   (B+Utrue;B+Usink,copyUf1 to Uf2+base+Uzero+Uflag),
@@ -377,19 +381,19 @@ $ Uptr is just before Uclose; UT,UF flags are set
          Bdata+Uspare+cnt,
               (is RULE flag+base+cnt+Uflag,Breplace+Uset;+),
               clear RULE flag+base+cnt+Uflag,:nxt;
-         B+Umark,:nxt; $ replacement
+         B+Umark,:nxt; $ skip it over
          B+Ufalse, merge Uf1 to Uf2+base+Uf+Uflag,:nxt;
          B+Unode;
          internal error+_line_).
-'p'Umember+>base+>Uf-ptr:
+'p'U member+>base+>Uf-ptr:
   Bdata+Ujump+ptr, $ptr points to Uopen; copy Uflags from there
      copy jump Uf+ptr+base;
   B+Uplus,copy Uf1 to Uf2+base+UTused+Uflag;
   B+Uminus,copy Uf1 to Uf2+base+Uf+Uflag;
-  Urule+base+Uf;
+  U actual rule+base+Uf;
   Bdata+Uclose+ptr,$ set up flags for this region
      set flags for region+base+ptr+Uf,
-     Uregion+ptr.
+     Uregion+ptr,recover flags from region+base+ptr.
 'a'Ualternative+>base:
   copy Uf1 to Uf2+base+UTused+Uflag,(nxt:
     B+Uhead,(Umember+base+Ualt;internal error+_line_);
@@ -402,7 +406,7 @@ $ =================================================== $
   scratch+RULE,setup formal stack+tag,
   g rule body,mustQ+Dpoint,
   $========$
-  set flags for rule+tag,0->Uflags changed,
+  set flags for rule+tag,0->Ufinal changed,
   >>RULE->Uptr,(-ptr:Bdata+Uclose+ptr,Uregion+ptr;internal error+_line_).
 
 $ --------------------------------------------------- $
