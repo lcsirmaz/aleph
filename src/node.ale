@@ -50,7 +50,7 @@ $  if this is the last alternative.
 $ OPEN of the compound block is followed by entries for all in/out/
 $  /inout/local up to that block.
 $   UTused, UFused <- final values, set when entering the region
-$   Uused          <- to be computed, this is the final value
+$   Uflag          <- to be computed, this is the final value
 $   Ualt           <- value at the next alternative
 
 $ the RULE stack is filled
@@ -201,9 +201,9 @@ $ actual rule --------------------------------------- $
    $ ptr points to the * formal affix of the rule, use that block
    (nxt: =type*LLOC[ptr]=
    [Ilabel],+; $ this is the last one
-   [Iformal in],g handle affix+ptr+Uin,next+LLOC+ptr,:nxt;
-   [Iformal out],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
-   [Iformal inout],g handle affix+ptr+Uinout,next+LLOC+ptr,:nxt;
+$   [Iformal in],g handle affix+ptr+Uin,next+LLOC+ptr,:nxt;
+$   [Iformal out],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
+   [Iformal out;Iformal inout],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
    next+LLOC+ptr,:nxt).
 
 'p'g limit:
@@ -399,16 +399,63 @@ $ Uptr is just before Uclose; UT,UF flags are set
     B+Uhead,(Umember+base+Ualt;internal error+_line_);
     Umember+base+UFused,:nxt;
     +).
+$ --------------------------------------------------- $
+$ diagnostics: compute mentioned/used flags
+'constant'
+  UDuse		= 0x100, $ affix in Uuse
+  UDset		= 0x200. $ affix in Uset
+
+'a'merge DU flags+>base+>region-off:
+  1->off,(nxt:is RULE flag+base+off+Umark;
+    (is RULE flag+region+off+UDuse,set RULE flag+base+off+UDuse;+),
+    (is RULE flag+region+off+UDset,set RULE flag+base+off+UDset;+),
+    incr+off,:nxt).
+'p'DU rule+>base-cnt:
+  (B+Utrue;B+Usink),(nxt:
+    Bdata+Uuse+cnt,set RULE flag+base+cnt+UDuse,:nxt;
+    Bdata+Uset+cnt,set RULE flag+base+cnt+UDset,:nxt;
+    B+Uspare,:nxt;
+    B+Umark,:nxt;
+    B+Ufalse,:nxt;
+    B+Unode;
+    +).
+'p'DU member+>base-ptr:
+  B+Ujump;B+Uplus;B+Uminus;DU rule+base;
+  Bdata+Uclose+ptr,DU region+ptr,merge DU flags+base+ptr.
+'a'DU alternative+>base:
+  B+Uhead,(DU member+base;+);
+  DU member+base,:DU alternative;
+  +.
+'a'DU region+>base:
+  (nxt:DU alternative+base,(B+Usemicolon,:nxt;
+                       B+Ubox,(DU rule+base;+);+)),
+  $ skip storage region $
+  (nxt:B+Uopen;previous+RULE+Uptr,:nxt).
+'a'compute DU flags-ptr:
+  >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_line_),
+  DU region+ptr.
+$ for a formal/local
+$  UDuse:   the variable has been used somewhere
+$  Ufinal:  the original value is used
+$  UDset:   a value has been assigned to it
+$ formal in/inout: Ufinal should be set
+$ formal inout:  Udset=0: can be in
+$ local: complain if UDset but not UDuse;
+$        places where Uuse => Uspare
 
 $ =================================================== $
+'a'traverse RULE+>tag-ptr:
+  set flags for rule+tag,
+  (nxt: >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_line_),
+        0->Ufinal changed,Uregion+ptr,(Ufinal changed=0;:nxt)).
+
+
 
 'a'g optimize rule+>tag:
   scratch+RULE,setup formal stack+tag,
   g rule body,mustQ+Dpoint,
   $========$
-  set flags for rule+tag,0->Ufinal changed,
-  >>RULE->Uptr,(-ptr:Bdata+Uclose+ptr,Uregion+ptr;internal error+_line_).
-
+  traverse RULE+tag.
 $ --------------------------------------------------- $
 
 'q'skip rule generation+>tag:

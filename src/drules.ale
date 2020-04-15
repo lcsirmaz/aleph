@@ -908,7 +908,6 @@ $  check it, but don't generate code later
  "rule %p: has global side effect"      :rule has global side effect,
  "rule %p: has no global side effect"   :rule has no side effect,
  "rule %p: can have global side effect when fails"   :fail and rule side effect,
- "rule %p: local affix %p not used"                  :local not used,
  "rule %p: formal affix %p not used"                 :formal not used,
  "rule %p: not all repeat blocks might be visited"   :repeat blocks visited,
  "rule %p: formal stack affix %p can be a table"     :stack formal not set,
@@ -942,11 +941,10 @@ $  check it, but don't generate code later
                 warning+5+fail and rule side effect+rtag;
              error+fail and rule side effect+rtag);+)),
    (nxt: >>LLOC < <<LLOC;
-         (-check-tag: type*LLOC=Ilabel; $ check is label is used ??? $
+         (-check-tag: $ type*LLOC=Ilabel; $
           type*LLOC=Iformal shift;
           tag*LLOC->tag,
             (is local flag+>>LLOC+Lused;
-             type*LLOC=Ilocal,warning+4+local not used+rtag+tag;
              warning+4+formal not used+rtag+tag),
             (=type*LLOC=
              [Iformal repeat],0->check,

@@ -187,7 +187,7 @@ void variableDeclaration(int *a){ /* >ext */
   par[0]=a[0];par[1]=Ivariable;declarationSeries(par);
 }
 void staticVariableDeclaration(void){
-  int par[0];
+  int par[2];
   par[0]=0;par[1]=IstaticVar;declarationSeries(par);
 }
 /* ---------------------------------------------------- */

@@ -142,12 +142,12 @@ static void ghandleAffix(int *a){ /* >tag + >utype */
 static void ghandleVarargBlock(int *a){ /*> ptr */
   int par[3];int t;nxt:t=LLOC->offset[a[0]-LLOC_type];
   if(t==Ilabel){;}
-  else if(t==IformalIn){par[0]=a[0];par[1]=Uin;ghandleAffix(par);
+//  else if(t==IformalIn){par[0]=a[0];par[1]=Uin;ghandleAffix(par);
+//    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
+  else if(t==IformalOut||t==IformalInout){par[0]=a[0];par[1]=Uout;ghandleAffix(par);
     par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
-  else if(t==IformalOut){par[0]=a[0];par[1]=Uout;ghandleAffix(par);
-    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
-  else if(t==IformalInout){par[0]=a[0];par[1]=Uinout;ghandleAffix(par);
-    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
+//  else if(t==IformalInout){par[0]=a[0];par[1]=Uinout;ghandleAffix(par);
+//    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
   else{par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
 }
 static int glimit(void){
@@ -396,7 +396,70 @@ static void Ualternative(int *a){/* >base */
    return;}
   par[0]=a[0];par[1]=UFused;if(Umember(par)){goto nxt;}
 }
+/* ==================================================================== */
+/* disgnostic bits */
+#define UDuse	0x100
+#define UDset	0x200
+static void mergeDUflags(int *a){/* >base + >region */
+  int par[3];int off;
+  off=1;nxt:par[0]=a[0];par[1]=off;par[2]=Umark;
+  if(isRULEflag(par)){;}
+  else{par[0]=a[1];par[1]=off;par[2]=UDuse;if(isRULEflag(par)){
+      par[0]=a[0];setRULEflag(par);}
+    par[0]=a[1];par[1]=off;par[2]=UDset;if(isRULEflag(par)){ 
+      par[0]=a[0];setRULEflag(par);}
+   off++;goto nxt;}
+}
+static int DUrule(int *a){/* >base */
+  int par[3];int cnt;
+  par[0]=Utrue;if(B(par) || (par[0]=Usink,B(par))){nxt:
+    par[0]=Uuse;if(Bdata(par)){cnt=par[1];par[0]=a[0];par[1]=cnt;
+       par[2]=UDuse;setRULEflag(par);goto nxt;}
+    par[0]=Uset;if(Bdata(par)){par[0]=a[0];par[2]=UDset;
+       setRULEflag(par);goto nxt;}
+    par[0]=Uspare;if(B(par)){goto nxt;}
+    par[0]=Umark;if(B(par)){goto nxt;}
+    par[0]=Ufalse;if(B(par)){goto nxt;}
+    par[0]=Unode;if(B(par)){;}
+    return 1;}
+  return 0;
+}
+static void DUregion(int *a);
+static int DUmember(int *a){ /* >base */
+  int par[3];int ptr;
+  par[0]=Ujump;if(B(par)){return 1;}
+  par[0]=Uplus;if(B(par)){return 1;}
+  par[0]=Uminus;if(B(par)){return 1;}
+  par[0]=a[0];if(DUrule(par)){return 1;}
+  par[0]=Uclose;if(Bdata(par)){ptr=par[1];
+     par[0]=ptr;DUregion(par);par[0]=a[0];par[1]=ptr;mergeDUflags(par);
+     return 1;}
+  return 0;
+}
+static void DUalternative(int *a){/* >base */
+  int par[3];again:
+  par[0]=Uhead;if(B(par)){par[0]=a[0];DUmember(par);}
+  par[0]=a[0];if(DUmember(par)){goto again;}
+}
+static void DUregion(int *a){/* >base */
+  int par[3];nxt:
+  DUalternative(a);par[0]=Usemicolon;if(B(par)){goto nxt;}
+  par[0]=Ubox;if(B(par)){DUrule(a);}
+  nxt2:par[0]=Uopen;if(B(par)){;}else{Uptr-=RULE_CALIBRE;goto nxt2;}
+}
+static void computeDUflags(void){
+  int par[2];int ptr;
+  Uptr=RULE->aupb;par[0]=Uclose;Bdata(par);ptr=par[1];
+  par[0]=ptr;DUregion(par);
+}
 /* -------------------------------- */
+static void traverseRULE(int *a){ /* >tag */
+  int par[2];int ptr;
+  setFlagsForRule(a);nxt:Uptr=RULE->aupb;par[0]=Uclose;
+  if(Bdata(par)){ptr=par[1];}else{printf("not Uclose\n");exit(8);}
+  UfinalChanged=0;par[0]=ptr;Uregion(par);if(UfinalChanged){goto nxt;}
+}
+
 static void goptimizeRule(int *a){/* >tag */
   int par[3];
   par[0]=STACKpar(RULE);scratch(par);par[0]=a[0];setupFormalStack(par);
@@ -435,16 +498,10 @@ void generateRule(int *a){/* >tag */
 //  saveDiscPosition(par);dpos=par[0];dnum=par[1];
   par[0]=a[0];if(skipRuleGeneration(par)){par[0]=Dpoint;Qskip(par);}
   else{goptimizeRule(a);
-
-//printRULEstack(a);printf("******************\n");
-setFlagsForRule(a);
-
-again:
-UfinalChanged=0;Uptr=RULE->aupb;
-par[0]=Uclose;if(Bdata(par)){par[0]=par[1];Uregion(par);}
-              else{printf("not Uclose\n");exit(8);}
-if(UfinalChanged){goto again;}
-printRULEstack(a);
+       traverseRULE(a);
+       computeDUflags();
+       
+printRULEstack(a);printf("******************\n");
 }}
 
 

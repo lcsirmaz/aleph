@@ -76,7 +76,6 @@ $ ======================================================== $
  "mixing declaration and prototype in %p declaration" :mixing proto,
 $ warning $
  "size estimator ""%d"" out of allowed range" :size estimator range,
- "%p %p: not used" :list tag not used,
 $ internal error $
  "FATAL: selector list, missing tag": selector tag error
 ).
