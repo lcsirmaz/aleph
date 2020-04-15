@@ -6,6 +6,22 @@
 #include "types.h"
 #include "display.h"
 /* ======================================= */
+
+static int local_affix_set_only,out_affix_not_used,
+original_value_not_used,formal_can_be_in;
+#define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
+static void init_msg(void){
+   addMSG("rule %p: value of local affix %p not used",local_affix_set_only);
+   addMSG("rule %p: affix %p set but not used",out_affix_not_used);
+   addMSG("rule %p: original value of formal affix %p not used",original_value_not_used);
+   addMSG("rule %p: formal affix %p does not change, can be in",formal_can_be_in);
+}
+#undef addMSG
+static int ruleCompiled,ruleCalled;
+
+static void diagnoseOutAffix(int *a),diagnoseLocal(int *a);
+
+/* ======================================= */
 #define Umark	0x1000
 #define Uopen	0x1001
 #define Uclose	0x1002
@@ -23,10 +39,14 @@
 #define Uspare	0x1013
 #define Usemicolon 0x100f
 /* ------------------------------- */
+static int expandFlag=0,addRULEflag=3,RULEtop=0;
 static void pushRULE(int flag,int data){
   int par[4];
-  par[0]=STACKpar(RULE);par[1]=2,par[3-RULE_flag]=flag;par[3-RULE_data]=data;
-  expandstack(par);
+  RULEtop+=RULE_CALIBRE;if(addRULEflag==1){
+    par[0]=flag;par[1]=RULEtop;diagnoseOutAffix(par);}
+  else if(addRULEflag==3){
+     par[0]=STACKpar(RULE);par[1]=2,par[3-RULE_flag]=flag;
+     par[3-RULE_data]=data;expandstack(par);}
 }
 static void extendBUFFER(int *a){int par[2];par[0]=STACKpar(BUFFER);par[1]=a[0];extend(par);}
 /* ------------------------------------ */
@@ -61,12 +81,13 @@ static void setupLocals(void){
 /* ============================ */
 static void startRange(int *a){/* >label + rloc> */
   int par[4];int loc,cnt;
-  pushRULE(Uopen,0);a[1]=RULE->aupb;
+  pushRULE(Uopen,0);a[1]=RULEtop;
   if(a[0]){LLOC->offset[a[0]-LLOC_repr]=a[1];}
   loc=LLOC->alwb;cnt=0;nxt:if(loc>LLOC->aupb){;}
   else{int t=LLOC->offset[loc-LLOC_type];if(t==IformalIn||t==IformalOut||
     t==IformalInout||t==Ilocal){cnt++;pushRULE(0,loc);t=LLOC->offset[loc-LLOC_repr];
-    if(t<0){LLOC->offset[loc-LLOC_repr]=cnt;}
+    if(t<0){LLOC->offset[loc-LLOC_repr]=cnt;
+      par[0]=a[1];par[1]=cnt;par[2]=loc;diagnoseLocal(par);}
     else if(t==cnt){;}else{printf("startRange: cnt=%d, repr=%d, loc=%d\n",cnt,t,loc);exit(23);}}
     par[0]=STACKpar(LLOC);par[1]=loc;next(par);loc=par[1];goto nxt;}
 }
@@ -126,7 +147,7 @@ static void greadBox(void){
 static void gclassification(void){
   int par[2];int last;again:
   par[0]=Darea;mustQ(par);par[0]=Darea;Qskip(par);
-  pushRULE(Unode,0);pushRULE(Ufalse,0);last=RULE->aupb;
+  pushRULE(Unode,0);pushRULE(Ufalse,0);last=RULEtop;
   pushRULE(Utrue,0);pushRULE(Uhead,0);galtTail();par[0]=Dsemicolon;
   if(Q(par)){pushRULE(Usemicolon,0);goto again;}
   else{RULE->offset[last-RULE_flag]=Umark;}
@@ -137,17 +158,17 @@ static void ghandleAffix(int *a){ /* >tag + >utype */
   par[0]=a[1];if(inUtype(par)){pushRULE(Uuse,LLOC->offset[a[0]-LLOC_repr]);}
   par[0]=a[1];if(outUtype(par)){if(a[1]>=Uslicein){par[0]=Uuse;
     extendBUFFER(par);}else{par[0]=Uset;extendBUFFER(par);}
-    par[0]=LLOC->offset[a[0]-LLOC_repr];extendBUFFER(par);}
+    par[0]=a[0];extendBUFFER(par);}
 }
 static void ghandleVarargBlock(int *a){ /*> ptr */
   int par[3];int t;nxt:t=LLOC->offset[a[0]-LLOC_type];
   if(t==Ilabel){;}
-//  else if(t==IformalIn){par[0]=a[0];par[1]=Uin;ghandleAffix(par);
-//    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
-  else if(t==IformalOut||t==IformalInout){par[0]=a[0];par[1]=Uout;ghandleAffix(par);
+  else if(t==IformalIn){par[0]=a[0];par[1]=Uin;ghandleAffix(par);
     par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
-//  else if(t==IformalInout){par[0]=a[0];par[1]=Uinout;ghandleAffix(par);
-//    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
+  else if(t==IformalOut){par[0]=a[0];par[1]=Uout;ghandleAffix(par);
+    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
+  else if(t==IformalInout){par[0]=a[0];par[1]=Uinout;ghandleAffix(par);
+    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
   else{par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
 }
 static int glimit(void){
@@ -200,7 +221,9 @@ static void gactualRule(int *a){/*> tag */
    else{par[0]=frep;ghandleVarargBlock(par);}
    par[0]=a[0];par[1]=rcanFail;if(isTagFlag(par)){pushRULE(Ufalse,0);}
    frep=BUFFER->alwb;nxt2:if(frep>=BUFFER->aupb){;}
-   else{int flag=BUFFER->offset[frep];frep++;pushRULE(flag,BUFFER->offset[frep]);
+   else{int flag=BUFFER->offset[frep];frep++;par[0]=flag;par[1]=BUFFER->offset[frep];
+     diagnoseOutAffix(par);
+     pushRULE(flag,LLOC->offset[BUFFER->offset[frep]-LLOC_repr]);
      frep++;goto nxt2;}
    par[0]=a[0];par[1]=rnoReturn;if(isTagFlag(par)){
      pushRULE(Usink,0);}else{pushRULE(Utrue,0);}
@@ -227,8 +250,8 @@ static void gmember(void){
     pushRULE(Ujump,LLOC->offset[tag-LLOC_repr]); return;}
   par[0]=Dplus;if(Q(par)){pushRULE(Uplus,0);return;}
   par[0]=Dminus;if(Q(par)){pushRULE(Uminus,0);return;}
-  mustQtag(par);tag=par[0];par[1]=rmacro;if(isTagFlag(par)){
-    par[0]=tag;gexpandMacro(par);}
+  mustQtag(par);tag=par[0];ruleCalled=tag;par[1]=rmacro;
+    if(expandFlag!=0 && isTagFlag(par)){par[0]=tag;gexpandMacro(par);}
     else{par[0]=tag;gactualRule(par);}
 }
 static void gruleBody(void){
@@ -396,6 +419,12 @@ static void Ualternative(int *a){/* >base */
    return;}
   par[0]=a[0];par[1]=UFused;if(Umember(par)){goto nxt;}
 }
+static void traverseRULE(int *a){ /* >tag */
+  int par[2];int ptr;
+  setFlagsForRule(a);nxt:Uptr=RULE->aupb;par[0]=Uclose;
+  if(Bdata(par)){ptr=par[1];}else{printf("traverseRULE:not Uclose\n");exit(8);}
+  UfinalChanged=0;par[0]=ptr;Uregion(par);if(UfinalChanged){goto nxt;}
+}
 /* ==================================================================== */
 /* disgnostic bits */
 #define UDuse	0x100
@@ -452,25 +481,65 @@ static void computeDUflags(void){
   Uptr=RULE->aupb;par[0]=Uclose;Bdata(par);ptr=par[1];
   par[0]=ptr;DUregion(par);
 }
-/* -------------------------------- */
-static void traverseRULE(int *a){ /* >tag */
-  int par[2];int ptr;
-  setFlagsForRule(a);nxt:Uptr=RULE->aupb;par[0]=Uclose;
-  if(Bdata(par)){ptr=par[1];}else{printf("not Uclose\n");exit(8);}
-  UfinalChanged=0;par[0]=ptr;Uregion(par);if(UfinalChanged){goto nxt;}
+/* ================================================================= */
+static void diagnoseLocal(int *a){/* >base + >off+ >loc */
+   int par[3];
+   if(addRULEflag!=1){ return;}
+   if(LLOC->offset[a[2]-LLOC_type]!=Ilocal){return;}
+   par[0]=a[0];par[1]=a[1];par[2]=UDuse;if(isRULEflag(par)){return;}
+   par[2]=UDset;if(isRULEflag(par)){
+     par[0]=local_affix_set_only;par[1]=ruleCompiled;
+     par[2]=LLOC->offset[a[2]-LLOC_tag];Warning(4,3,par);}
 }
-
-static void goptimizeRule(int *a){/* >tag */
+static void diagnoseOutAffix(int *a){/* >flag + >loc */
   int par[3];
-  par[0]=STACKpar(RULE);scratch(par);par[0]=a[0];setupFormalStack(par);
-  gruleBody();par[0]=Dpoint;mustQ(par);
+  if(a[0]!=Uspare){return;}
+  par[0]=out_affix_not_used;par[1]=ruleCalled;
+  par[2]=LLOC->offset[a[1]-LLOC_tag];Warning(4,3,par);
 }
+static void diagnoseFormals(void){
+  int par[3];int loc,base,off;int t;
+  loc=LLOC->alwb;base=RULE->alwb;off=1;nxt:
+  if(loc>LLOC->aupb){;}
+  else{t=LLOC->offset[loc-LLOC_type];
+    if(t==IformalIn){par[0]=base;par[1]=off;par[2]=Ufinal;
+      if(isRULEflag(par)){;}
+      else{par[0]=original_value_not_used;par[1]=ruleCompiled;
+           par[2]=LLOC->offset[loc-LLOC_tag];Warning(4,3,par);};off++;}
+    else if(t==IformalInout){par[0]=base;par[1]=off;par[2]=Ufinal;
+      if(isRULEflag(par)){;}
+      else{par[0]=original_value_not_used;par[1]=ruleCompiled;
+            par[2]=LLOC->offset[loc-LLOC_tag];Warning(4,3,par);}
+      par[0]=base;par[1]=off;par[2]=UDset;if(isRULEflag(par)){;}
+      else{par[0]=formal_can_be_in;par[1]=ruleCompiled;par[2]=
+           LLOC->offset[loc-LLOC_tag];Warning(4,3,par);};off++;}
+    else if(t==IformalOut){off++;}
+    par[0]=STACKpar(LLOC);par[1]=loc;next(par);loc=par[1];
+    goto nxt;}
+}
+/* ================================ */
+static void diagnoseRule(int *a){/* + >tag */
+  int par[3];int dpos,dnum,rptr;
+  ruleCompiled=a[0];saveDiscPosition(par);dpos=par[0];dnum=par[1];
+  expandFlag=0;addRULEflag=3;par[0]=STACKpar(RULE);scratch(par);
+  RULEtop=rptr=RULE->aupb;par[0]=a[0];setupFormalStack(par);
+  gruleBody();par[0]=Dpoint;mustQ(par);
+  par[0]=a[0];traverseRULE(par);
+  computeDUflags();
+  par[0]=dpos;par[1]=dnum;restoreDiscPosition(par);
+  addRULEflag=1;RULEtop=rptr;par[0]=a[0];setupFormalStack(par);
+  diagnoseFormals();gruleBody();par[0]=Dpoint;mustQ(par);
+  par[0]=dpos;par[1]=dnum;restoreDiscPosition(par);
+}
+/* ----------
+---------------------- */
 //DEBUG !!
 static void printRULEstack(int *a){
   static char*C[]={"mark ","open ","close","head ","node ","true ","false","sink ",
               "plus ","minus","jump ","box  ","","","",               "scol ",
                    "","--use","--set","--spr"};
   int i,cnt;int f,d;
+  return;
   printf("RULE stack (");printPointer(a);printf(")\n");
   i=RULE->alwb;cnt=-1;while(i<=RULE->aupb){
     cnt++; if(cnt==5){cnt=0;printf("\n");}
@@ -494,15 +563,23 @@ static int skipRuleGeneration(int *a){/* >tag */
 }
 
 void generateRule(int *a){/* >tag */
-  int par[3]; //int dpos,dnum;
-//  saveDiscPosition(par);dpos=par[0];dnum=par[1];
+  int par[3]; int rptr;//int dpos,dnum;
+  par[0]=a[0];diagnoseRule(par);
+printRULEstack(a);
   par[0]=a[0];if(skipRuleGeneration(par)){par[0]=Dpoint;Qskip(par);}
-  else{goptimizeRule(a);
-       traverseRULE(a);
-       computeDUflags();
-       
-printRULEstack(a);printf("******************\n");
+  else{ruleCompiled=a[0];
+//  saveDiscPosition(par);dpos=par[0];dnum=par[1];
+      expandFlag=1;addRULEflag=3;par[0]=STACKpar(RULE);scratch(par);
+      rptr=RULEtop=RULE->aupb;par[0]=a[0];setupFormalStack(par);
+      gruleBody();par[0]=Dpoint;mustQ(par);
+      par[0]=a[0];traverseRULE(par);
+      addRULEflag=2;expandFlag=1;RULEtop=rptr;
 }}
+
+void initialize_node(void){
+  init_msg();
+}
+
 
 
 /* EOF */

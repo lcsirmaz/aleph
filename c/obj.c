@@ -186,10 +186,12 @@ void defineObjTag(int *a){ /* >tag */
   par[0]=a[0];fixListUsage(par);
   par[0]=a[0];getType(par);type=par[1];par[0]=a[0];getDefline(par);dl=par[1];
   par[0]=a[0];par[1]=type;if(!isItemTag(par)){
+       par[0]=a[0];par[1]=tdefined;if(isTagFlag(par)){return;}
        par[0]=a[0];par[1]=tpublic;if(isTagFlag(par)){
        par[0]=type_tag_not_defined;par[1]=a[0];par[2]=type;
        Xerror(dl,3,par);par[0]=a[0];par[1]=tpublic;clearTagFlag(par);}
-    return; 
+       else{par[0]=a[0];par[1]=Iempty;putType(par);}
+    return;
   }
   getNewItem(par);item=par[0];
   par[0]=a[0];par[1]=texternal;if(isTagFlag(par)){getRepr(par);raw=par[1];}

@@ -86,7 +86,19 @@ $        Ilabel  -- label                   repr: RULE ptr
 
 $ definitions from buffer
 'stack'(flag,data)RULE.
-'a'push RULE+>flag+>data.
+$ run data flow several times
+$  1) prepare diagnostics: do not expand macros;
+$  2) diagnostics: do not store anything
+$  3) prepare generation: expand macros
+$  4) node generatgion (with full affix expansion)
+
+'variable'
+  expand flag=0,  $ expand macros $
+  addRULE flag=3, $ push RULE adds new entry; 1=issue message
+  RULEtop=0.      $ RULE top pointer when RULEflag=0
+'a'push RULE+>flag+>data:
+   next+RULE+RULEtop,(addRULE flag=3,extend RULE+flag+data; +).
+
 
 'constant'
   Umark		= 0x100000,
@@ -134,12 +146,13 @@ $  fill calibre and ssel for lists
   +.
 $ rule structure =========================================== $
 'a'start range+>label+rloc>-loc-cnt:
-  push RULE+Uopen+0,>>RULE->rloc,(is+label,rloc->repr*LLOC[label];+),
+  push RULE+Uopen+0,RULEtop->rloc,(is+label,rloc->repr*LLOC[label];+),
   <<LLOC->loc,0->cnt,(nxt:loc>>>LLOC;
     (=type*LLOC[loc]=
      [Iformal in;Iformal out;Iformal inout;Ilocal],
         incr+cnt,push RULE+0+loc,
-        (repr*LLOC[loc]<0,cnt->repr*LLOC[loc];
+        (repr*LLOC[loc]<0,
+            cnt->repr*LLOC[loc],diagnose local+rloc+cnt+loc;
          repr*LLOC[loc]=cnt;
          internal error+_line_);
      +),
@@ -187,7 +200,7 @@ $ classification ------------------------------------ $
     push RULE+Ubox+0,mustQ+Dbox.
 'a'g classification-last:
     mustQ+Darea,Qskip+Darea,
-    push RULE+Unode+0,push RULE+Ufalse+0,>>RULE->last,push RULE+Utrue+0,
+    push RULE+Unode+0,push RULE+Ufalse+0,RULEtop->last,push RULE+Utrue+0,
     push RULE+Uhead+0,g alt tail,
     (Q+Dsemicolon,push RULE+Usemicolon+0,:g classification;
      $ the last area does not have false branch
@@ -196,7 +209,7 @@ $ actual rule --------------------------------------- $
 'a'g handle affix+>tag+>utype:
    (in utype+utype,push RULE+Uuse+repr*LLOC[tag];+),
    (out utype+utype,(utype>=Uslicein,extend BUFFER+Uuse;extend BUFFER+Uset),
-     extend BUFFER+repr*LLOC[tag];+).
+     extend BUFFER+tag;+).
 'a'g handle vararg block+>ptr:
    $ ptr points to the * formal affix of the rule, use that block
    (nxt: =type*LLOC[ptr]=
@@ -258,7 +271,8 @@ $   [Iformal out],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
   (is tag flag+tag+rcan fail,push RULE+Ufalse+0;+),
   <<BUFFER->frep,
   (nxt-flag:frep>>>BUFFER;
-    BUFFER[frep]->flag,incr+frep,push RULE+flag+BUFFER[frep],incr+frep,:nxt),
+    BUFFER[frep]->flag,incr+frep,diagnose out affix+flag+BUFFER[frep],
+    push RULE+flag+repr*LLOC[BUFFER[frep]],incr+frep,:nxt),
   (is tag flag+tag+rno return,push RULE+Usink+0;push RULE+Utrue+0).
 $ structure ----------------------------------------- $
 'a'g compound-loc:
@@ -277,8 +291,9 @@ $ structure ----------------------------------------- $
   Q+Djump,must Qtag+tag,push RULE+Ujump+repr*LLOC[tag];
   Q+Dplus,push RULE+Uplus+0;
   Q+Dminus,push RULE+Uminus+0;
-  must Qtag+tag,(is tag flag+tag+rmacro,g expand macro+tag;
-                 g actual rule+tag).
+  must Qtag+tag,tag->rule called,
+    ((is+expand flag,is tag flag+tag+rmacro),g expand macro+tag;
+     g actual rule+tag).
 
 'a'g rule body-label-rloc:
   setup label+label,$ add label to LLOC, if any $
@@ -308,7 +323,6 @@ $ flags for formal/local stored variables
   addmult+off+<>RULE+base+base,bool and+flag*RULE[base]+v+x,x!=0.
 
 'a'copy Uf1 to Uf2+>base+>Uf1+>Uf2-off:
-  $ at the end of the region copy UF to Ualt (the last alternative fails)
   $ at the end of an alternative copy UT to Uflag
   1->off,(nxt:is RULE flag+base+off+Umark; $ no more stored value $
     (is RULE flag+base+off+Uf1,set RULE flag+base+off+Uf2;
@@ -399,6 +413,10 @@ $ Uptr is just before Uclose; UT,UF flags are set
     B+Uhead,(Umember+base+Ualt;internal error+_line_);
     Umember+base+UFused,:nxt;
     +).
+'a'traverse RULE+>tag-ptr:
+  set flags for rule+tag,
+  (nxt: >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_line_),
+        0->Ufinal changed,Uregion+ptr,(Ufinal changed=0;:nxt)).
 $ --------------------------------------------------- $
 $ diagnostics: compute mentioned/used flags
 'constant'
@@ -439,24 +457,56 @@ $  UDuse:   the variable has been used somewhere
 $  Ufinal:  the original value is used
 $  UDset:   a value has been assigned to it
 $ formal in/inout: Ufinal should be set
-$ formal inout:  Udset=0: can be in
+$ formal inout:  UDset=0: can be in
 $ local: complain if UDset but not UDuse;
 $        places where Uuse => Uspare
-
+'variable'rule compiled=0, rule called=0.
+'table'MESSAGE=(
+  "rule %p: value of local affix %p not used":local affix set only,
+  "rule %p: affix %p set but not used": out affix not used,
+  "rule %p: original value of formal affix %p not used":
+       original value not used,
+  "rule %p: formal affix %p does not change, can be in":
+       formal can be in
+).
+'a'diagnose local+>base+>off+>loc:
+   addRULE flag!=1;
+   type*LLOC[loc]!=Ilocal;
+   is RULE flag+base+off+UDuse;
+   is RULE flag+base+off+UDset,
+     warning+4+local affix set only+rule compiled+tag*LLOC[loc];
+   +.
+'a'diagnose out affix+>flag+>loc:
+  flag!=Uspare;
+  warning+4+out affix not used+rule called+tag*LLOC[loc].
+'a'diagnose formals-loc-base-off:
+  <<LLOC->loc,<<RULE->base,1->off,
+  (nxt: loc>>>LLOC;
+    (=type*LLOC[loc]=
+     [Iformal in],(is RULE flag+base+off+Ufinal;
+         warning+4+original value not used+rule compiled+tag*LLOC[loc]),incr+off;
+     [Iformal inout],(is RULE flag+base+off+Ufinal;
+          warning+4+original value not used+rule compiled+tag*LLOC[loc]),
+         (is RULE flag+base+off+UDset;
+          warning+4+formal can be in+rule compiled+tag*LLOC[loc]),
+         incr+off;
+     [Iformal out],incr+off;
+     +),next+LLOC+loc,:nxt).
 $ =================================================== $
-'a'traverse RULE+>tag-ptr:
-  set flags for rule+tag,
-  (nxt: >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_line_),
-        0->Ufinal changed,Uregion+ptr,(Ufinal changed=0;:nxt)).
-
-
-
-'a'g optimize rule+>tag:
-  scratch+RULE,setup formal stack+tag,
-  g rule body,mustQ+Dpoint,
-  $========$
-  traverse RULE+tag.
-$ --------------------------------------------------- $
+'a'diagnose rule+>tag-dpos-dnum-rptr:
+   tag->rule compiled,save disc position+dpos+dnum,
+   0->expand flag,3->addRULE flag,scratch+RULE,
+   >>RULE->rptr->RULEtop,
+   setup formal stack+tag,g rule body,mustQ+Dpoint,
+   $ now RULE stack is filled
+   traverse RULE+tag, $ compute flags
+   compute DU flags,  $ and the diagnostic bits
+   $ redo, and give dignostic messages
+   restore disc position+dpos+dnum,1->add RULE flag,rptr->RULEtop,
+   setup formal stack+tag,diagnose formals,
+   g rule body,mustQ+Dpoint,
+   restore disc position+dpos+dnum.
+$ =================================================== $
 
 'q'skip rule generation+>tag:
   is tag flag+tag+tpublic,-;
@@ -464,11 +514,20 @@ $ --------------------------------------------------- $
   is tag flag+tag+tused,-;
   +.
 
-'a'generate rule+>tag-dpos-dnum:
-  $ if macro and not public, dont't anything
-  skip rule generation+tag,Qskip+Dpoint;
-  save disc position+dpos+dnum,g optimize rule+tag,
-  +.
+'a'generate rule+>tag-dpos-dnum-rptr:
+  diagnose rule+tag,
+  $ if macro and not public, dont't do anything
+  (skip rule generation+tag,Qskip+Dpoint;
+   tag->rule compiled,save disc position+dpos+dnum,
+   1->expand flag,3->addRULE flag,scratch+RULE,
+   >>RULE->rptr->RULEtop,
+   setup formal stack+tag,g rule body,mustQ+Dpoint,
+   traverse RULE+tag,
+   $ compute final destination for each node
+   $ restore dis position
+   2->addRULE flag,1->expand flag,rptr->RULEtop,
+   $ run node generation
+   +).
   
 
 'root'+.

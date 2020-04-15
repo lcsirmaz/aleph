@@ -171,7 +171,7 @@ $   either used or has a fill (warning/error will be given later)
 $ tdefined implies type is set and not Iempty
 $ for type=Iselector tused is never set
 $ for type=Itable allow filling without using the table,
-$   but not for stacks (imported stacks are exections)
+$   but not for stacks (imported stacks are exceptions)
   type=Itable,(is tag flag+tag+tfill;is tag flag+tag+tused);
   is tag flag+tag+tdefined,is tag flag+tag+tused,
     (type=Irule,(is tag flag+tag+tpublic;
@@ -213,9 +213,13 @@ $  next free ITEM. External tags have LEXT string in "repr".
       [Irule],                      formal affixes+tag;
       internal error+"define OBJ: type=%p is wrong"+type),
      Wstring+raw;
-    $ error if public and not defined
-    is tag flag+tag+tpublic,
-       Xerror+dl+type tag not defined+type+tag,clear tag flag+tag+tpublic;
+    $ error if public and not defined;
+    $ if has no definition, clear the type to get error messages when used.
+    $    If not used, ignore silently.
+    is tag flag+tag+tdefined,
+      (is tag flag+tag+tpublic,
+          Xerror+dl+type tag not defined+type+tag,clear tag flag+tag+tpublic;
+       put type+tag+Iempty);
     +).
 
 $ call back routines for Xstring table filling ---------------- $

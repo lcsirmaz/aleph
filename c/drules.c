@@ -841,8 +841,8 @@ static void member(int *a){/* >rloc+canT>+canF>+>modT>+modF>+jumpT>+jumpF>*/
   a[5]=a[6]=a[2]=0;a[1]=1;a[4]=a[3];par[0]=Dopen;
   if(Q(par)){par[2]=a[3];par[4]=a[5];compoundMember(par);
       a[1]=par[0];a[2]=par[1];a[3]=par[2];a[4]=par[3];a[5]=par[4];a[6]=par[5];}
-  else if((par[0]=Dextension,Q(par))){extension();a[3]=1;par[0]=a[0];
-      par[1]=Ushield;setRULEflag(par);}
+  else if((par[0]=Dextension,Q(par))){extension();a[3]=1;
+      par[0]=a[0];par[1]=Ushield;setRULEflag(par);}
   else if((par[0]=Djump,Q(par))){mustLtag(par);label=par[0];a[1]=0;
      par[0]=label;checkLabelShield(par);
      par[0]=a[3];par[1]=LLOC->offset[label-LLOC_repr];
@@ -850,7 +850,8 @@ static void member(int *a){/* >rloc+canT>+canF>+>modT>+modF>+jumpT>+jumpF>*/
   else if((par[0]=Dplus,Q(par))){;}
   else if((par[0]=Dminus,Q(par))){copyLocalTflagtoF();a[2]=1;a[1]=0;}
   else{copyLocalTflagtoF();par[2]=a[3];actualRule(par);a[1]=par[0];
-        a[2]=par[1];a[3]=par[2];par[0]=a[0];par[1]=Ushield;setRULEflag(par);}
+        a[2]=par[1];a[3]=par[2];
+        par[0]=a[0];par[1]=Ushield;setRULEflag(par);}
 //printf("member: (%d,%d),(%d,%d),%d\n",a[0],a[1],a[2],a[3],a[4]);
 //printf("member:jump=(%d,%d)\n",a[4],a[5]);if(a[5]==1){LLOC->offset[0]=2;}
 }

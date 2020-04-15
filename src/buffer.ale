@@ -3,7 +3,7 @@ $ provide an all purpose buffer
 $ HEADER ****************************************************** $
 'stack'BUFFER,(flag,data)RULE.
 'a'extend BUFFER+>x: (* x->BUFFER *)BUFFER.
-'a'push RULE+>flag+>data: (* flag->flag,data->data*)RULE.
+'a'extend RULE+>flag+>data: (* flag->flag,data->data*)RULE.
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 'stack'[1]BUFFER,

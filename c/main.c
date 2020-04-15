@@ -19,6 +19,7 @@
 #include "obj.h"
 #include "passii.h"
 #include "drules.h"
+#include "node.h"
 
 static void listDiscContent(void){
    int par[3];int d,type,cnt;
@@ -73,6 +74,7 @@ int main(int argc, char *argv[]){
   initialize_passii();	/* MESSAGE */
   initialize_obj();	/* MESSAGE */
   initialize_drules();	/* MESSAGE */
+  initialize_node();	/* MESSAGE */
   /* this adds standard TTAGs */
   initTags();
 

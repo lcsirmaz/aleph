@@ -199,8 +199,8 @@ $  flags for RULE - storing flags for a region
     Uallmod	= UETmod|Ualtmod,      $ entering the region with Tmod
     UtailBits	= UtailFset|UtailFmod.
 $ - - - - - - - - - - - - - - - - - - - - $
-$'a'push RULE+>data:
-$   (* 0->flag, data->data *)RULE.
+'a'push RULE+>data:
+   extend RULE+0+data.
 'a'set RULE flag+>ptr+>flag:
    bool or+flag*RULE[ptr]+flag+flag*RULE[ptr].
 'q'is RULE flag+>ptr+>flag-x:
@@ -211,11 +211,11 @@ $ - - - - - - - - - - - - - - - - - - - - $
 'a'open range+>modT-ptr:
    $ called after locals are pushed to LLOC. Original modT
    $ for the block, LTset/LTmod for formals
-   <<LLOC->ptr,push RULE+0+0,              $ border $
+   <<LLOC->ptr,push RULE+0,                 $ border $
    (is+modT,set RULE flag+>>RULE+UETmod;+), $ modT for the region $
    (nxt: >>LLOC > ptr;
       (type*LLOC[ptr]=Ilabel;
-       push RULE+0+ptr,
+       push RULE+ptr,
          $ how they entered the region $
          (is local flag+ptr+LTset,set RULE flag+>>RULE+Uallset;+),
          (is local flag+ptr+LTmod,set RULE flag+>>RULE+Uallmod;+)),
@@ -232,7 +232,7 @@ $ - - - - - - - - - - - - - - - - - - - - $
 'a'add label+>label+>ptr:
    $ the label comes after RULE block;
    $ to get the label tag add <>RULE to the block pointer
-   is+label,push RULE+0+tag*LLOC[label],ptr->repr*LLOC[label];
+   is+label,push RULE+tag*LLOC[label],ptr->repr*LLOC[label];
    +.
 'p'redo region+>optr+>canT+>canF+modT>-ptr:
    $ check if UTcan,UFcan flags changed (for jumps)
