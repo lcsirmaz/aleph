@@ -33,7 +33,7 @@ $ languages bulletin", molb 3.1.2, (1973).
                   gen node+tim op+n2+dg+n2,
                   gen node+pow op+f+g+n3,
                   gen node+tim op+n2+n3+n2,
-                  gen node+plus op+n1+n2+de;
+                  gen node+plus op+n1+n2+de
      ).
 'action'print expr+>e-zz:
    was+const+e,put int+out+const[e];

@@ -121,12 +121,13 @@ $  4) node generatgion (with full affix expansion)
 $ --------------------------------------- $
 $ create LLOC stack entries for formals;
 $  fill calibre and ssel for lists
-'a'setup formal stack+>rtag-formal-type:
+'a'setup formal stack+>rtag-formal-type-repr:
   $ this is called only once for the rule
   scratch+LLOC,get adm+rtag+formal,
+  (addRULE flag=2,0->repr;-1->repr),
   (nxt:formal=0;
-    get type+formal+type,
-    (*-1->repr,type->type,formal->tag,0->flag->calibre->ssel *)LLOC,
+    get type+formal+type,(addRULE flag=2,incr+repr;+),
+    (* repr->repr,type->type,formal->tag,0->flag->calibre->ssel *)LLOC,
     ((type=Iformal stack;type=Iformal table),
        get formal calibre+formal+calibre*LLOC,
        get formal ssel+formal+ssel*LLOC;
@@ -145,16 +146,40 @@ $  fill calibre and ssel for lists
     :nxt);
   +.
 $ rule structure =========================================== $
+'variable'min local=0,max local=0. $ number of local affixes $
+'variable'C1=0,C2=0,C3=0,          $ affix count for a rule $
+    TC1=0,TC2=0,TC3=0.             $ final counts $
+
+'a'count local+>cnt+>loc:
+  addRULE flag!=3;
+  type*LLOC[loc]!=Ilocal;
+  (min local=0,cnt->min local;+),
+  max+cnt+max local.
+'a'reset rule count:
+  0->C1->C2->C3.
+'a'count rule affix+>ftype+>repeat:
+  is+repeat,incr+C3; $ affix in the variable block $
+  incr+C1,(=ftype=[Iformal out;Iformal inout],incr+C2;+).
+'a'count star affix+>rep:
+  rep=0,add+C3+C1+C1,add+C3+C2+C2,0->C3; $ no trailing * affix $
+  decr+C3.
+'a'accumulate rule count:
+  max+C1+TC1,max+C2+TC2,max+C3+TC3.
+'pragmat'macro=(count local,reset rule count,count rule affix,
+                count star affix,accumulate rule count).
+
 'a'start range+>label+rloc>-loc-cnt:
   push RULE+Uopen+0,RULEtop->rloc,(is+label,rloc->repr*LLOC[label];+),
   <<LLOC->loc,0->cnt,(nxt:loc>>>LLOC;
     (=type*LLOC[loc]=
      [Iformal in;Iformal out;Iformal inout;Ilocal],
         incr+cnt,push RULE+0+loc,
-        (repr*LLOC[loc]<0,
-            cnt->repr*LLOC[loc],diagnose local+rloc+cnt+loc;
-         repr*LLOC[loc]=cnt;
-         internal error+_line_);
+        (repr*LLOC[loc]<0,cnt->repr*LLOC[loc],
+             count local+cnt+loc,
+             diagnose local+rloc+cnt+loc;
+         +);
+$         repr*LLOC[loc]=cnt;
+$         internal error+_line_);
      +),
     next+LLOC+loc,:nxt).
 'a'close range+>rloc:
@@ -258,21 +283,23 @@ $   [Iformal out],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
   $ If * is an actual affix, use and set all formal
   $  after the *, except for 'get affix blockno'
   push RULE+Unode+0,scratch+BUFFER,0->repeat->frep,get adm+tag+formal,
+  reset rule count,
   (nxt:Q+Dplus,get type+formal+ftype,
     (ftype=Iformal repeat,
       get adm+formal+formal,formal->repeat,get type+formal+ftype;+),
-    g match formal actual+ftype+frep,
+    count rule affix+ftype+repeat,g match formal actual+ftype+frep,
     get adm+formal+formal,(formal=0,repeat->formal;+),:nxt;
   +),
   $ frep: the last actual affix is *; this is a LLOC pointer
+  count star affix+frep,
   (frep=0;
    (is tag flag+tag+rshiftrule,tag!=Xshift affix),+;
    g handle vararg block+frep),
   (is tag flag+tag+rcan fail,push RULE+Ufalse+0;+),
   <<BUFFER->frep,
   (nxt-flag:frep>>>BUFFER;
-    BUFFER[frep]->flag,incr+frep,diagnose out affix+flag+BUFFER[frep],
-    push RULE+flag+repr*LLOC[BUFFER[frep]],incr+frep,:nxt),
+    BUFFER[frep]->flag,incr+frep,push RULE+flag+repr*LLOC[BUFFER[frep]],
+      diagnose out affix+BUFFER[frep],incr+frep,:nxt),
   (is tag flag+tag+rno return,push RULE+Usink+0;push RULE+Utrue+0).
 $ structure ----------------------------------------- $
 'a'g compound-loc:
@@ -293,7 +320,7 @@ $ structure ----------------------------------------- $
   Q+Dminus,push RULE+Uminus+0;
   must Qtag+tag,tag->rule called,
     ((is+expand flag,is tag flag+tag+rmacro),g expand macro+tag;
-     g actual rule+tag).
+     g actual rule+tag,accumulate rule count).
 
 'a'g rule body-label-rloc:
   setup label+label,$ add label to LLOC, if any $
@@ -314,7 +341,7 @@ $ flags for formal/local stored variables
   Uzero		= 0x20. $ this bit is always zero
 
 'variable'Ufinal changed=0.
-
+   $ repeat scanning until no more changes are
 'a'set RULE flag+>base+>off+>v:
   addmult+off+<>RULE+base+base,bool or+flag*RULE[base]+v+flag*RULE[base].
 'a'clear RULE flag+>base+>off+>v:
@@ -370,7 +397,10 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'variable' Uptr=0.
 'p'B+>x: flag*RULE[Uptr]=x,previous+RULE+Uptr.
 'p'Bdata+>x+d>: flag*RULE[Uptr]=x,data*RULE[Uptr]->d,previous+RULE+Uptr.
-'a'Breplace+>new-ptr:Uptr->ptr,next+RULE+ptr,new->flag*RULE[ptr].
+'a'Bset flag+>new-ptr:Uptr->ptr,next+RULE+ptr,new->flag*RULE[ptr].
+'a'Bset data+>new-ptr:Uptr->ptr,next+RULE+ptr,new->data*RULE[ptr].
+'a'Bback: previous+RULE+Uptr.
+'f'Bget ptr+n>:Uptr->n,next+RULE+n.
 
 $ Uptr is just before Uclose; UT,UF flags are set
 'a'Uregion+>base:
@@ -380,7 +410,7 @@ $ Uptr is just before Uclose; UT,UF flags are set
      B+Ubox,(U actual rule+base+UFused;internal error+_line_);
      +)),
   $ skip the storeage area $
-  (nxt:B+Uopen;previous+RULE+Uptr,:nxt),
+  (nxt:B+Uopen;Bback,:nxt),
   $ set the final flags for this region
   merge Uf1 to Uf2+base+Uflag+Ufinal.
 
@@ -390,10 +420,10 @@ $ Uptr is just before Uclose; UT,UF flags are set
   (B+Utrue;B+Usink,copyUf1 to Uf2+base+Uzero+Uflag),
     (nxt:Bdata+Uuse+cnt,set RULE flag+base+cnt+Uflag,:nxt;
          Bdata+Uset+cnt,
-              (is RULE flag+base+cnt+Uflag;Breplace+Uspare),
+              (is RULE flag+base+cnt+Uflag;Bset flag+Uspare),
               clear RULE flag+base+cnt+Uflag,:nxt;
          Bdata+Uspare+cnt,
-              (is RULE flag+base+cnt+Uflag,Breplace+Uset;+),
+              (is RULE flag+base+cnt+Uflag,Bset flag+Uset;+),
               clear RULE flag+base+cnt+Uflag,:nxt;
          B+Umark,:nxt; $ skip it over
          B+Ufalse, merge Uf1 to Uf2+base+Uf+Uflag,:nxt;
@@ -417,6 +447,43 @@ $ Uptr is just before Uclose; UT,UF flags are set
   set flags for rule+tag,
   (nxt: >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_line_),
         0->Ufinal changed,Uregion+ptr,(Ufinal changed=0;:nxt)).
+$ --------------------------------------------------- $
+$ find labels; at the end they should refer to nodes
+$ in the first backward scan fill true/false/open entries,
+$   all label is return, Unode, Uopen
+$ in the second forward scan follow all unresolved pointers
+$   No loop should occur, as they have been filtered out
+'constant'
+  Ltrue label   = -1,	$ true exit label
+  Lfalse label	= -2.	$ false exit label
+'a'Lscan i+>tlab+>flab+nlab>-alab-ulab:
+  flab->alab->ulab,tlab->nlab,
+  (nxt:B+Usemicolon,nlab->alab,tlab->nlab,flab->ulab,:nxt;
+       B+Uplus,Bset data+nlab,:nxt;
+       B+Uminus,Bset data+ulab,ulab->nlab,:nxt;
+       B+Uhead,alab->ulab,:nxt;
+       B+Utrue,Bset data+nlab,:nxt;
+       B+Ufalse,Bset data+ulab,ulab->nlab,:nxt;
+       B+Unode,Bget ptr+nlab,:nxt;
+       Bdata+Ujump+nlab,:nxt;
+       B+Uclose,Lscan i+nlab+ulab+nlab,:nxt;
+       B+Uopen,Bset data+nlab;
+       Bback,:nxt).
+'a'Lunroll+>ptr-data:
+   data*RULE[ptr]->data,
+     (data=Ltrue label;
+      data=Lfalse label;
+      data=0,internal error+_line_;
+      flag*RULE[data]=Unode;
+      0->data*RULE[ptr],Lunroll+data,data*RULE[data]->data*RULE[ptr]).
+'a'Lscan ii-ptr:
+   <<RULE->ptr,(nxt:ptr>>>RULE;
+    ((flag*RULE[ptr]=Utrue;flag*RULE[ptr]=Ufalse),Lunroll+ptr;+),
+    next+RULE+ptr,:nxt).
+'a'Lfind labels:
+  >>RULE->Uptr,(B+Uclose;internal error+_line_),
+  Lscan i+Ltrue label+Lfalse label+#,
+  Lscan ii.
 $ --------------------------------------------------- $
 $ diagnostics: compute mentioned/used flags
 'constant'
@@ -476,23 +543,28 @@ $        places where Uuse => Uspare
    is RULE flag+base+off+UDset,
      warning+4+local affix set only+rule compiled+tag*LLOC[loc];
    +.
-'a'diagnose out affix+>flag+>loc:
-  flag!=Uspare;
+'a'diagnose out affix+>loc:
+  addRULE flag!=1;
+  flag*RULE[RULEtop]!=Uspare;
   warning+4+out affix not used+rule called+tag*LLOC[loc].
 'a'diagnose formals-loc-base-off:
   <<LLOC->loc,<<RULE->base,1->off,
   (nxt: loc>>>LLOC;
     (=type*LLOC[loc]=
      [Iformal in],(is RULE flag+base+off+Ufinal;
-         warning+4+original value not used+rule compiled+tag*LLOC[loc]),incr+off;
+         is RULE flag+base+off+UDset,
+            warning+4+original value not used+rule compiled+tag*LLOC[loc];
+         +),incr+off;
      [Iformal inout],(is RULE flag+base+off+Ufinal;
-          warning+4+original value not used+rule compiled+tag*LLOC[loc]),
-         (is RULE flag+base+off+UDset;
-          warning+4+formal can be in+rule compiled+tag*LLOC[loc]),
+         is RULE flag+base+off+UDset,
+            warning+4+original value not used+rule compiled+tag*LLOC[loc];
+         warning+4+formal can be in+rule compiled+tag*LLOC[loc]),
          incr+off;
      [Iformal out],incr+off;
      +),next+LLOC+loc,:nxt).
-$ =================================================== $
+$ --------------------------------------------------- $
+$ run this without macro expansion as line numbers
+$   (and warnings) are untractable
 'a'diagnose rule+>tag-dpos-dnum-rptr:
    tag->rule compiled,save disc position+dpos+dnum,
    0->expand flag,3->addRULE flag,scratch+RULE,
@@ -502,33 +574,48 @@ $ =================================================== $
    traverse RULE+tag, $ compute flags
    compute DU flags,  $ and the diagnostic bits
    $ redo, and give dignostic messages
-   restore disc position+dpos+dnum,1->add RULE flag,rptr->RULEtop,
+   restore disc position+dpos+dnum,1->addRULE flag,rptr->RULEtop,
    setup formal stack+tag,diagnose formals,
    g rule body,mustQ+Dpoint,
    restore disc position+dpos+dnum.
 $ =================================================== $
-
-'q'skip rule generation+>tag:
-  is tag flag+tag+tpublic,-;
-  is tag flag+tag+rmacro;
-  is tag flag+tag+tused,-;
-  +.
+'q'skip node generation+>tag-repr:
+  get repr+tag+repr,repr=0.
 
 'a'generate rule+>tag-dpos-dnum-rptr:
   diagnose rule+tag,
   $ if macro and not public, dont't do anything
-  (skip rule generation+tag,Qskip+Dpoint;
+  (skip node generation+tag,Qskip+Dpoint;
    tag->rule compiled,save disc position+dpos+dnum,
    1->expand flag,3->addRULE flag,scratch+RULE,
    >>RULE->rptr->RULEtop,
+   0->min local->max local,0->TC1->TC2->TC3,
    setup formal stack+tag,g rule body,mustQ+Dpoint,
-   traverse RULE+tag,
-   $ compute final destination for each node
-   $ restore dis position
+   traverse RULE+tag,Lfind labels,
+   restore disc position+dpos+dnum,
    2->addRULE flag,1->expand flag,rptr->RULEtop,
-   $ run node generation
+   setup formal stack+tag, $ now repr*LLOC[formal] is the formal's count $
    +).
-  
+$ determining the size of the stack frame for each call:
+$  no * in the called rule:
+$   . number of all affixes (if all affixes are set/retrieved from the stack)
+$   . number of out/inout affixes (if only these are passed by name)
+$  there is a * affix in the called rule:
+$   the above numbers are BEFORE *. Affixes after * are passed on the stack
+$   . total number of variable affixes passed; this can be zero
+$   . whether there is a * actual affix (if the above number is zero, this
+$        flag must be set)
+$ if C4=0 (no tailing * affix) or C3=0, then this call requires stack size
+$  C1+C3 // C2+C3 // zero
+$ if C4!=0 and C3!=0, the stack sizes are
+$  C1  //  C2  // C3 + dynamic
+$ The maximum is in TC1,TC2,TC3. If TC3=0: don't allocate dymamic stack
+$   even if there is a * formal affix.
+$ Assignment is treated as a variable affix rule, thus stack is allocated
+$   a->b->c->d->e->f 
+$ requires 5 stack elements.
+
+
 
 'root'+.
 
