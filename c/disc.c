@@ -310,9 +310,8 @@ static void fsimpleAffix(int *a){/* atype> */
   else if((par[0]=Dnoarg,Q(par))){a[0]=Inoarg;}
   else{mustQlist(par);tag=par[0];loc=par[1];a[0]=0;par[0]=tag;getType(par);
     type=par[1];if(type==Iconstant||type==IpointerConstant||type==Ivariable
-      ||type==IstaticVar||type==IpointerConstant||type==IformalIn
-      ||type==IformalOut||type==IformalInout||type==Ilocal){par[0]=tag;
-        putQ(1,par);}
+      ||type==IstaticVar||type==IformalIn||type==IformalOut
+      ||type==IformalInout||type==Ilocal){par[0]=tag;putQ(1,par);}
     else if(type==Istack||type==Itable||type==IstaticStack||
       type==IformalTable||type==IformalStack){par[0]=tag;par[1]=loc;
       finalSsel(par);x=par[2];par[0]=Dsub;par[1]=Dupb;par[2]=tag;

@@ -229,7 +229,7 @@ $ - - - - - - - - - - - - $
     read selector+x,putQ+Dbus+tag+Dconst+x;
   Q+Dnoarg,Inoarg->atype;
   must Qlist+tag+loc,0->atype,get type+tag+type,(=type=
-    [Iconstant;Ipointer constant;Ivariable;Istatic var;Ipointer constant;
+    [Iconstant;Ipointer constant;Ivariable;Istatic var;
      Iformal in;Iformal out;Iformal inout;Ilocal],putQ+tag;
     [Istack;Itable;Istatic stack;Iformal stack;Iformal table],
      $ T ==> T*T[>>T] $
