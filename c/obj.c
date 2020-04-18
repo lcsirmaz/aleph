@@ -105,8 +105,14 @@ void Wcons(int *a){ /* >x */
 void Wtag(int *a){/* >tag */
   int par[2];
   par[0]=STACKpar(LADM);par[1]=a[0];if(was(par)){par[0]=a[0];
-    getRepr(par);par[0]=par[1];if(par[0]!=0){W(par);}
+    getRepr(par);par[0]=par[1];if(par[0]>0){W(par);}
     else{printf("\n *** Wtag repr=0 ***");par[0]=a[0];printPointer(par);printf(" ***\n");}}
+  else if((par[0]=STACKpar(LLOC),was(par))){
+    if(LLOC->offset[a[0]-LLOC_type]==Ilocal){par[0]=CHFILEpar(OBJ);
+       par[1]='L';Aputstring(par);par[0]=LLOC->offset[a[0]-LLOC_repr];
+       printInt(par);separator();}
+    else{par[0]=CHFILEpar(OBJ);par[1]='F';par[0]=a[0]-LLOC->alwb;
+       printInt(par);separator();}}
   else{par[0]=wrong_Wtag_argument;par[1]=a[0];internalError(2,par);}
 }
 static void Wstring(int *a){ /* >str */

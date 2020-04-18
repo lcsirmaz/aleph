@@ -28,7 +28,7 @@ void initialize_stdstacks(int argc,char *argv[]){
 //  init_stack(EXPRESSION,5700000,5800000,EXPRESSION_CALIBRE);
   init_stack(INPUT,    5800000,5900000,INPUT_CALIBRE);
   init_stack(RETAG,    5900000,6000000,RETAG_CALIBRE);
-//  init_stack(ZONE,     6000000,6100000,ZONE_CALIBRE);
+  init_stack(NODE,     6000000,6100000,NODE_CALIBRE);
   init_stack(RULE,     6100000,6200000,RULE_CALIBRE);
   init_stack(DICT,     7000000,9900000,DICT_CALIBRE);
   init_stack(ITEM,     6300000,6400000,ITEM_CALIBRE);

@@ -21,7 +21,7 @@
 #define aa_DSYMB        (11*sizeof_STACK)
 #define aa_INPUT        (13*sizeof_STACK)
 #define aa_RETAG        (14*sizeof_STACK)
-// #define aa_ZONE         (15*sizeof_STACK)
+#define aa_NODE         (15*sizeof_STACK)
 #define aa_RULE         (16*sizeof_STACK)
 #define aa_DICT         (17*sizeof_STACK)
 #define aa_ITEM         (18*sizeof_STACK)
@@ -53,7 +53,7 @@
 #define DSYMB           parSTACK(aa_DSYMB)
 #define INPUT           parSTACK(aa_INPUT)
 #define RETAG           parSTACK(aa_RETAG)
-//#define ZONE            parSTACK(aa_ZONE)
+#define NODE            parSTACK(aa_NODE)
 #define RULE            parSTACK(aa_RULE)
 #define DICT            parSTACK(aa_DICT)
 #define ITEM            parSTACK(aa_ITEM)
@@ -143,6 +143,7 @@
 #define RULE_flag	1
 #define RULE_data	0
 #define RULE_CALIBRE	2
+#define NODE_CALIBRE	6
 #define DSYMB_CALIBRE	1
 #define STDARG_CALIBRE	1
 /*--------------------------------------------------------*/

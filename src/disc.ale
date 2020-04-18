@@ -17,7 +17,6 @@ $ macro replacement
 'a'macro call head+>tag+Qa>+Qb>,
    macro call tail+>Qa+>Qb.
 
-
 $ exported disc symbols
 'constant'
   $ files
@@ -26,7 +25,7 @@ $ exported disc symbols
   Dor,Dand,Dxor,Dcompl,Ddiv,
     $ Dplus,Dminus,Dcalibre,Dlwb,Dupb,Dopen,Dclose
   $ other
-  Darea,  Dbox,   Dbus, Dcalibre, Dclose, Dcolon,
+  Darea,  Dbox,   Dbus, Dcalibre, Dclose, Dcolon, Dconst,
   Dcomma, Dend, Dexpression, Dextension, Dfill, Djump,
   Dlabel, Dline, Dlist, Dlocal, Dlwb, Dmodule, Dminus, Dnoarg,
   Dopen, Dplus, Dpoint, Dpragmat, Droot, Drule,
@@ -40,7 +39,7 @@ $ exported disc symbols
 'table'DSYMB=( $ disk symbols
   "&":Dand,  "'area'":Darea,
   "=":Dbox,   "]":Dbus, 
-  "<>":Dcalibre, ")":Dclose, ":":Dcolon, ",":Dcomma, "~":Dcompl,
+  "<>":Dcalibre, ")":Dclose, ":":Dcolon, ",":Dcomma, "~":Dcompl, "'const'":Dconst,
   "/":Ddiv,
   "'end'":Dend, "'expression'":Dexpression, "'extension'":Dextension,
   "'file'":Dfile, "'fill'":Dfill,
@@ -55,9 +54,7 @@ $ exported disc symbols
   "'title'":Dtitle, "'to'":Dto,
   "'upb'":Dupb,
   "'vlwb'":Dvlwb, "'vupb'":Dvupb,
-  "^":Dxor,
-  $ local usage only $
-  "'const'":Dconst
+  "^":Dxor
 ).
 
 'pragmat'require=("lexical","display","obj","tags","types","symbols").

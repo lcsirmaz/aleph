@@ -76,8 +76,8 @@ int isSpecialRule(int *a);
 #define rexit		rnoReturn
 #define rtype		(rsideEffect|rcanFail|rnoReturn)
 
-#define objflags	(tpublic|timported|texternal|rtype|rvararg|routvararg\
-                         |rtrace|rcount|rbounds)
+#define ruleflags	(rtype|rvararg|routvararg|rtrace|rcount|rbounds)
+#define objflags	(tpublic|timported|texternal|ruleflags)
 
 extern int Xstar,Xarrow,Xroot,Xexit,Xstringtable,Xshiftaffix;
 /* assigning items */

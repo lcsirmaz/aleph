@@ -81,20 +81,24 @@ $        Ilocal  -- local                   otherwise -1
 $        Imacro  -- textual replacement     repr: QBUFFER ptr, tag: formal (LADM)
 $        Ilabel  -- label                   repr: RULE ptr
 
-'pragmat'require=("disc","tags","types","display","buffer"
+'pragmat'require=("disc","tags","types","display","buffer","obj"
 ).
 
 $ definitions from buffer
 'stack'(flag,data)RULE.
+
 $ run data flow several times
 $  1) prepare diagnostics: do not expand macros;
 $  2) diagnostics: do not store anything
 $  3) prepare generation: expand macros
-$  4) node generatgion (with full affix expansion)
+$  4) node generation (with full affix expansion)
 
 'variable'
   expand flag=0,  $ expand macros $
-  addRULE flag=3, $ push RULE adds new entry; 1=issue message
+  addRULE flag=3, $ push RULE adds new entry;
+                  $   3: create RULE entries, fill data (before 1 and 2)
+                  $   2: generate code
+                  $   1: diagnostics
   RULEtop=0.      $ RULE top pointer when RULEflag=0
 'a'push RULE+>flag+>data:
    next+RULE+RULEtop,(addRULE flag=3,extend RULE+flag+data; +).
@@ -121,13 +125,12 @@ $  4) node generatgion (with full affix expansion)
 $ --------------------------------------- $
 $ create LLOC stack entries for formals;
 $  fill calibre and ssel for lists
-'a'setup formal stack+>rtag-formal-type-repr:
+'a'setup formal stack+>rtag-formal-type:
   $ this is called only once for the rule
   scratch+LLOC,get adm+rtag+formal,
-  (addRULE flag=2,0->repr;-1->repr),
   (nxt:formal=0;
-    get type+formal+type,(addRULE flag=2,incr+repr;+),
-    (* repr->repr,type->type,formal->tag,0->flag->calibre->ssel *)LLOC,
+    get type+formal+type,
+    (* -1->repr,type->type,formal->tag,0->flag->calibre->ssel *)LLOC,
     ((type=Iformal stack;type=Iformal table),
        get formal calibre+formal+calibre*LLOC,
        get formal ssel+formal+ssel*LLOC;
@@ -146,9 +149,29 @@ $  fill calibre and ssel for lists
     :nxt);
   +.
 $ rule structure =========================================== $
+$ determining the size of the stack frame for each call:
+$  no * in the called rule:
+$   C1: number of all affixes (if all affixes are set/retrieved from the stack)
+$   C2: number of out/inout affixes (if only these are passed by name)
+$  there is a * affix in the called rule:
+$   the above numbers are BEFORE *. Affixes after * are passed on the stack
+$   C3: total number of variable affixes passed; this can be zero
+$   C4: whether there is a * actual affix (if the above number is zero, this
+$        flag must be set)
+$ if C4=0 (no tailing * affix) or C3=0, then this call requires stack size
+$  C1+C3 // C2+C3 // zero
+$ if C4!=0 and C3!=0, the stack sizes are
+$  C1  //  C2  // C3 + dynamic
+$ The maximum is in TC1,TC2,TC3. If TC3=0: no need to allocate dymamic
+$   stack even if there is a * formal affix.
+$ Assignment is a variable affix rule, thus
+$   a->b->c->d->e->f 
+$ gives C1=6, C2=5. Optimizing assignments reduces this numbers.
+
 'variable'min local=0,max local=0. $ number of local affixes $
 'variable'C1=0,C2=0,C3=0,          $ affix count for a rule $
     TC1=0,TC2=0,TC3=0.             $ final counts $
+'variable'node count=0.            $ node count $
 
 'a'count local+>cnt+>loc:
   addRULE flag!=3;
@@ -165,8 +188,14 @@ $ rule structure =========================================== $
   decr+C3.
 'a'accumulate rule count:
   max+C1+TC1,max+C2+TC2,max+C3+TC3.
+'a'assign nodes-node-ptr:
+  <<NODE->node,0->node count,<<RULE->ptr,
+  (nxt:ptr>>>RULE;
+   ((flag*RULE[ptr]=Unode,data*RULE[ptr]=0),
+       node->data*RULE[ptr],incr+node count,next+NODE+node;+),
+   next+RULE+ptr,:nxt).
 'pragmat'macro=(count local,reset rule count,count rule affix,
-                count star affix,accumulate rule count).
+                count star affix,accumulate rule count,assign nodes).
 
 'a'start range+>label+rloc>-loc-cnt:
   push RULE+Uopen+0,RULEtop->rloc,(is+label,rloc->repr*LLOC[label];+),
@@ -178,8 +207,6 @@ $ rule structure =========================================== $
              count local+cnt+loc,
              diagnose local+rloc+cnt+loc;
          +);
-$         repr*LLOC[loc]=cnt;
-$         internal error+_line_);
      +),
     next+LLOC+loc,:nxt).
 'a'close range+>rloc:
@@ -197,21 +224,22 @@ $ use/set values ------------------------------------ $
      $ used before the call
 'q'out utype+>utype-x:bool and+utype+2+x,x!=0.
      $ used after the call
-$ OPTIMIZATION ====================================== $
-$ read the rule, populate the RULE stack, 
-$   traverse it, then read the rule again.
-$ this part populates RULE; rule names start with "g"
-
 $ macro replacement --------------------------------- $
-'a'g expand macro+>tag-loc-Qa-Qb-dpos-dnum-mpos-mnum:
+'a'expand macro+>tag-loc-Qa-Qb-dpos-dnum-mpos-mnum:
   $ tag has the rmacro flag; it behaves as a compound block
   $ formals of the macro are on LLOC with type Imacro or Ilocal
   >>LLOC->loc,
   macro call head+tag+Qa+Qb,save disc position+dpos+dnum,
     search macro rule+tag+mpos+mnum,restore disc position+mpos+mnum,
-    g rule body,mustQ+Dpoint,
+    (addRULE flag=2,w rule body;g rule body),mustQ+Dpoint,
   restore disc position+dpos+dnum,macro call tail+Qa+Qb,
   unstack to+LLOC+loc.
+
+$ OPTIMIZATION ====================================== $
+$ read the rule, populate the RULE stack, 
+$   traverse it, then read the rule again.
+$ this part populates RULE; rule names start with "g"
+
 $ extension ----------------------------------------- $
 'a'g transport list:
   g simple affix+Uin+#,$ skip destination
@@ -220,12 +248,23 @@ $ extension ----------------------------------------- $
 'a'g extension:
   must Qtag+#,push RULE+Unode+0,g transport list,push RULE+Utrue+0.
 $ classification ------------------------------------ $
+$ if addRULE flag=3 then store classification areas in a linked
+$  list in BUFFER so that whole classification can be generated
+$  The Utrue data of the box is the first classification Unode;
+$  the classification Unode data is a BUFFER pointer.
 'a'g read box:
     push RULE+Unode+0,g simple affix+Uin+#,push RULE+Utrue+0,
     push RULE+Ubox+0,mustQ+Dbox.
-'a'g classification-last:
-    mustQ+Darea,Qskip+Darea,
-    push RULE+Unode+0,push RULE+Ufalse+0,RULEtop->last,push RULE+Utrue+0,
+'a'g area+buff>-x:
+    addRULE flag!=3,Qskip+Darea,0->buff;
+    >>BUFFER->buff,(nxt:Q+Darea,extend BUFFER+Darea;
+      Q+Dcolon,extend BUFFER+Dcomma,:nxt;
+      Q+Dsemicolon,extend BUFFER+Dsemicolon,:nxt;
+      Qcons+x,extend BUFFER+Dconst,extend BUFFER+x,:nxt;
+      must Qtag+x,extend BUFFER+x,:nxt).
+'a'g classification-last-buff:
+    mustQ+Darea,g area+buff,
+    push RULE+Unode+buff,push RULE+Ufalse+0,RULEtop->last,push RULE+Utrue+0,
     push RULE+Uhead+0,g alt tail,
     (Q+Dsemicolon,push RULE+Usemicolon+0,:g classification;
      $ the last area does not have false branch
@@ -272,7 +311,7 @@ $   [Iformal out],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
   [Iformal inout], g simple affix+Uinout+repeat;
   internal error+_line_.
 
-'a'g actual rule+>tag-formal-ftype-repeat-frep:
+'a'g actual rule+>tag-oldBUFF-formal-ftype-repeat-frep:
   $ collect which formal/local this rule uses and sets
   $  Uuse <#counter>
   $ before calling, collect in and inout (plus slice)
@@ -282,8 +321,8 @@ $   [Iformal out],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
   $  can fail).
   $ If * is an actual affix, use and set all formal
   $  after the *, except for 'get affix blockno'
-  push RULE+Unode+0,scratch+BUFFER,0->repeat->frep,get adm+tag+formal,
-  reset rule count,
+  push RULE+Unode+0,>>BUFFER->oldBUFF,
+  0->repeat->frep,get adm+tag+formal,reset rule count,
   (nxt:Q+Dplus,get type+formal+ftype,
     (ftype=Iformal repeat,
       get adm+formal+formal,formal->repeat,get type+formal+ftype;+),
@@ -296,10 +335,11 @@ $   [Iformal out],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
    (is tag flag+tag+rshiftrule,tag!=Xshift affix),+;
    g handle vararg block+frep),
   (is tag flag+tag+rcan fail,push RULE+Ufalse+0;+),
-  <<BUFFER->frep,
-  (nxt-flag:frep>>>BUFFER;
-    BUFFER[frep]->flag,incr+frep,push RULE+flag+repr*LLOC[BUFFER[frep]],
-      diagnose out affix+BUFFER[frep],incr+frep,:nxt),
+  oldBUFF->frep,
+  (nxt-flag:frep>=>>BUFFER;
+    incr+frep,BUFFER[frep]->flag,incr+frep,push RULE+flag+repr*LLOC[BUFFER[frep]],
+      diagnose out affix+BUFFER[frep],:nxt),
+  unstack to+BUFFER+oldBUFF,
   (is tag flag+tag+rno return,push RULE+Usink+0;push RULE+Utrue+0).
 $ structure ----------------------------------------- $
 'a'g compound-loc:
@@ -319,7 +359,7 @@ $ structure ----------------------------------------- $
   Q+Dplus,push RULE+Uplus+0;
   Q+Dminus,push RULE+Uminus+0;
   must Qtag+tag,tag->rule called,
-    ((is+expand flag,is tag flag+tag+rmacro),g expand macro+tag;
+    ((is+expand flag,is tag flag+tag+rmacro),expand macro+tag;
      g actual rule+tag,accumulate rule count).
 
 'a'g rule body-label-rloc:
@@ -567,7 +607,7 @@ $ run this without macro expansion as line numbers
 $   (and warnings) are untractable
 'a'diagnose rule+>tag-dpos-dnum-rptr:
    tag->rule compiled,save disc position+dpos+dnum,
-   0->expand flag,3->addRULE flag,scratch+RULE,
+   0->expand flag,3->addRULE flag,scratch+RULE,scratch+BUFFER,
    >>RULE->rptr->RULEtop,
    setup formal stack+tag,g rule body,mustQ+Dpoint,
    $ now RULE stack is filled
@@ -578,44 +618,103 @@ $   (and warnings) are untractable
    setup formal stack+tag,diagnose formals,
    g rule body,mustQ+Dpoint,
    restore disc position+dpos+dnum.
-$ =================================================== $
-'q'skip node generation+>tag-repr:
-  get repr+tag+repr,repr=0.
+$ code generation ==================================== $
 
+$ extension ------------------------------------------ $
+'a'w transport list+cnt>-x: $ store in BUFFER $
+   0->cnt,
+   (nxt:w simple affix+Uin,
+     (nxt:Q+Dto,extend BUFFER+Dto,incr+cnt,
+               (Qcons+x,extend BUFFER+x;
+                must Qtag+x,get repr+x+x,extend BUFFER+x),
+               :nxt;
+          +),
+    (Q+Dextension;Q+Dend;:nxt)).
+'a'w extension-tag-cnt-optr-ptr:
+   must Qtag+tag,push RULE+Unode+0,
+   W+Dextension,W+data*RULE[RULEtop],Wtag+tag,
+   >>BUFFER->optr,w transport list+cnt,Wcons+cnt,
+   optr->ptr,(nxt:ptr>=>>BUFFER;
+     $ hm, not clear how to copy this $
+     incr+ptr,:nxt),
+   unstack+BUFFER+optr,W+Dextension.
+
+'a'w simple affix+>utype:+.
+'a'w actual rule+>tag:+.
+
+$ classification ------------------------------------- $
+'a'w area+>buff:
+   W+Darea,incr+buff,(nxt:BUFFER[buff]=Darea;
+     BUFFER[buff]=Dconst,incr+buff,Wcons+BUFFER[buff],incr+buff,:nxt;
+     W+BUFFER[buff],incr+buff,:nxt).
+   $ BUFFER[buff] contains the area description until Darea
+'a'w read box-ptr-buff-fptr-tptr:
+   push RULE+Unode+0,W+Dbox,W+data*RULE[RULEtop], $ node $
+   w simple affix+Uin,push RULE+Utrue+0,data*RULE[RULEtop]->ptr,
+   push RULE+Ubox+0,mustQ+Dbox,
+   (nxt:ptr=0;
+      $ RULE[ptr] is (Unode,BUFFER),(???,next),(Utrue,tptr)
+      data*RULE[ptr]->buff,next+RULE+ptr,data*RULE[ptr]->fptr,
+      next+RULE+ptr,data*RULE[ptr]->tptr,fptr->ptr,
+      w area+buff,W+Dto,W+data*RULE[tptr],:nxt),
+   W+Dbox.
+'a'w classification:
+   mustQ+Darea,Qskip+Darea,push RULE+Unode+0,push RULE+Ufalse+0,
+   push RULE+Utrue+0,push RULE+Uhead+0,w alt tail,
+   (Q+Dsemicolon,push RULE+Usemicolon+0,:w classification;+).
+$ structure ------------------------------------------ $
+'a'w compound-loc:
+  >>LLOC->loc,w rule body,unstack to+LLOC+loc.
+'a'w alt sequence:
+   w member,push RULE+Uhead+0,w alt tail,
+     (Q+Dsemicolon,push RULE+Usemicolon+0,:w alt sequence;+).
+'a'w alt tail:
+   Q+Dcomma,w member,:w alt tail;+.
+'a'w member-tag:
+   Q+Dopen,w compound,mustQ+Dclose;
+   Q+Dextension,w extension;
+   Q+Djump,must Qtag+#,push RULE+Ujump+0;
+   Q+Dplus,push RULE+Uplus+0;
+   Q+Dminus,push RULE+Uminus+0;
+   must Qtag+tag,(is tag flag+tag+rmacro,expand macro+tag;
+     w actual rule+tag).
+'a'w rule body-label-rloc:
+   setup label+label, $ add label to LLOC, if any $
+   setup locals,      $ add locals to LLOC $
+   start range+label+rloc,
+    (Q+Dbox,w read box,w classification;
+     w alt sequence),
+   close range+rloc.
+
+$ ==================================================== $
 'a'generate rule+>tag-dpos-dnum-rptr:
   diagnose rule+tag,
+  ((-repr:get repr+tag+repr,repr=0),Qskip+Dpoint;
   $ if macro and not public, dont't do anything
-  (skip node generation+tag,Qskip+Dpoint;
+  $  (skip node generation+tag,Qskip+Dpoint;
    tag->rule compiled,save disc position+dpos+dnum,
-   1->expand flag,3->addRULE flag,scratch+RULE,
+   1->expand flag,3->addRULE flag,scratch+RULE,scratch+BUFFER,
    >>RULE->rptr->RULEtop,
    0->min local->max local,0->TC1->TC2->TC3,
    setup formal stack+tag,g rule body,mustQ+Dpoint,
    traverse RULE+tag,Lfind labels,
-   restore disc position+dpos+dnum,
+   restore disc position+dpos+dnum,assign nodes,
    2->addRULE flag,1->expand flag,rptr->RULEtop,
-   setup formal stack+tag, $ now repr*LLOC[formal] is the formal's count $
+   setup formal stack+tag,
    +).
-$ determining the size of the stack frame for each call:
-$  no * in the called rule:
-$   . number of all affixes (if all affixes are set/retrieved from the stack)
-$   . number of out/inout affixes (if only these are passed by name)
-$  there is a * affix in the called rule:
-$   the above numbers are BEFORE *. Affixes after * are passed on the stack
-$   . total number of variable affixes passed; this can be zero
-$   . whether there is a * actual affix (if the above number is zero, this
-$        flag must be set)
-$ if C4=0 (no tailing * affix) or C3=0, then this call requires stack size
-$  C1+C3 // C2+C3 // zero
-$ if C4!=0 and C3!=0, the stack sizes are
-$  C1  //  C2  // C3 + dynamic
-$ The maximum is in TC1,TC2,TC3. If TC3=0: don't allocate dymamic stack
-$   even if there is a * formal affix.
-$ Assignment is treated as a variable affix rule, thus stack is allocated
-$   a->b->c->d->e->f 
-$ requires 5 stack elements.
 
-
+$  w rule head+>tag-x:
+$    <RULE>,<tag>,C1,C2,C3,#locals,#nodes, <point>
+$    W+Drule,Wtag+tag,Wcons+TC1,Wcons+TC2,Wcons+TC3,
+$    Wcons+min local,Wcons+max local,Wcons+node count,
+$    Dnode,<node>,<tag>,<source>*,<node/0>,<source>*,<node/0>
+$    Dbox,<node>,<source>,(Darea,<area>,Dto,#node)*,Dbox
+$    Dextension,<node>,<list>,#width,(<source>,(Dto,off)+)+,Dextension,
+$    <source> ::= <tag> | <formal> | <local> | Dnoarg | <index> |
+$                  Dstar
+$    <index> ::= Dsub, <source>, Dbus, <list>, #offset
+$    <list> ::= <tag> | <formal>
+$    W+Dpoint.
 
 'root'+.
 

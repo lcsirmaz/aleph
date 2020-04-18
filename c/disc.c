@@ -10,15 +10,13 @@
 
 int
   Dand,   Dbox,   Dbus, Dcalibre, Dclose, Dcolon,
-  Dcomma, Dcompl, Ddiv, Dend, Dexpression,
+  Dcomma, Dcompl, Dconst, Ddiv, Dend, Dexpression,
   Dextension, Dfile, Dfill, Dinput, Djump,
   Dlabel, Dline, Dlist, Dlocal, Dlwb, Dminus, Dnoarg,
   Dopen, Dor, Dplus, Dpoint, Dpragmat,
   Droot, Drule, Dsemicolon, Dstack, Dmodule,
   Dstar, Dsub, Dtitle, Dto, Dupb, Dvlwb, Dvupb, 
   Dxor, Darea;
-static int Dconst;
-
 
 static int discFile=0;
 static int cannot_open_disc_file,disc_type_error,dtag_error;
