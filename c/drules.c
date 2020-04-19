@@ -36,7 +36,7 @@ static void init_msg1(void){
 /* ------------- */
    addMSG("%maffix type error",syntax_error);
    addMSG("%m\"%p\" has wrong type %p",wrong_affix_type);
-   addMSG("%m\"%p\" unitialized",affix_no_value);
+   addMSG("%m\"%p\" uninitialized",affix_no_value);
    addMSG("%mcannot be a constant",cannot_be_constant);
    addMSG("%mlimit with \"%p\" cannot be used",limit_cannot_be_used);
    addMSG("%m\"%p\" has incompatible type (%l)",provides_wrong_type);
@@ -92,7 +92,7 @@ static void resetAffixBlockFlags(int *a){/* >rtag */
      par[0]=no_pending_repeat_block;par[1]=a[0];Warning(4,2,par);}
      par[0]=ptr;par[1]=LTset;if(isLocalFlag(par)){clear=0;}
      par[0]=ptr;par[1]=LFmod;clearLocalFlag(par);par[1]=LFset;setLocalFlag(par);}
-   else if((par[0]=ptr,par[1]=LFmod,isLocalFlag(par))&&clear 
+   else if((par[0]=ptr,par[1]=Lvararg,isLocalFlag(par))&&clear!=0
       && LLOC->offset[ptr-LLOC_type]==IformalOut){
      if((par[0]=ptr,par[1]=LTset,isLocalFlag(par))){par[0]=ptr;
         par[1]=LTset;clearLocalFlag(par);}
@@ -527,7 +527,6 @@ static void fsimpleAffix(int *a){ /* >rtag+ >cnt+ >utype + mod> */
       destListTypeError(par);}}
   else if(par[0]=Dsub,Q(par)){par[0]=a[0];par[1]=a[1];par[2]=Uslice;
     fsimpleAffix(par);a[3]=par[3];par[0]=Dbus;mustQ(par);mustLtag(par);
-//printf("\nindex utan, tag=%d\n",par[0]);
     atag=par[0];par[0]=a[0];par[1]=a[1];readSelector(par);par[0]=atag;
     getFtype(par);type=par[1];
      if(type==Itable||type==IformalTable){par[0]=a[2];
@@ -674,7 +673,9 @@ static void actualRule(int *a){ /* canT> + canF> + >modT> */
   else if(type!=Irule){par[0]=undefined_rule;par[1]=rtag;par[2]=type;par[3]=dl;
      Error(4,par);skipAffixes();}
   else{par[0]=rtag;checkMacroRule(par);
+//printf("RULE ");par[0]=rtag;printPointer(par); printf(" ");printLocal();
   if(rtag==Xshiftaffix){par[0]=rtag;resetAffixBlockFlags(par);}
+//printf(" ....");printLocal();
   par[0]=rtag;par[1]=rnoReturn;if(isTagFlag(par)){a[0]=0;}
   par[0]=rtag;par[1]=rcanFail;if(isTagFlag(par)){;}else{a[1]=0;}
   par[0]=rtag;par[1]=rsideEffect;if(isTagFlag(par)){a[2]=1;}
@@ -973,7 +974,7 @@ static void init_msg4(void){
   addMSG("rule %p: formal stack affix %p can be a table",stack_formal_not_set);
   addMSG("rule %p: formal affix %p might change on true exit",formal_might_change_on_true);
   addMSG("rule %p: out formal affix %p can be uninitialized",out_formal_not_set);
-  addMSG("rule %p: out formal affix in repeat block unitialized",out_formal_in_repeat_block);
+  addMSG("rule %p: out formal affix in repeat block uninitialized",out_formal_in_repeat_block);
   addMSG("rule %p: formal affix %p does not change",formal_does_not_change);
   addMSG("rule %p: formal affix %p might change on false exit",formal_might_change_on_false);
 //  addMSG("",);

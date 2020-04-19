@@ -95,9 +95,12 @@ void W(int *a){ /* +>x */
 //     par[1]=STACKpar(INDICATOR);par[2]=a[0];Aputstring(par);
 //     par[1]='\'';Aputchar(par);}
   else if(ITEM->vlwb<=a[0]&&a[0]<=ITEM->vupb){par[0]=CHFILEpar(OBJ);
-     par[1]='I';Aputchar(par);par[0]=a[0]-ITEM->alwb;printInt(par);
+     par[1]='I';Aputchar(par);par[0]=(a[0]-ITEM->vlwb)/ITEM_CALIBRE+1;printInt(par);
      separator();}
-  else { printf("ERROR: W(%d) with unknown pointer (%d -- %d)\n",a[0],DSYMB->vlwb,DSYMB->vupb); exit(88);}
+  else if(NODE->vlwb<=a[0]&&a[0]<=NODE->vupb){par[0]=CHFILEpar(OBJ);
+     par[1]='N';Aputchar(par);par[0]=(a[0]-NODE->vlwb)/NODE_CALIBRE+1;printInt(par);
+     separator();}
+  else { printf("ERROR: W(%d) with unknown pointer (",a[0]);printPointer(a);printf(")\n"); /* ITEM->offset[0]=0;*/ exit(88);}
 }
 void Wcons(int *a){ /* >x */
   printInt(a);separator();
@@ -109,10 +112,10 @@ void Wtag(int *a){/* >tag */
     else{printf("\n *** Wtag repr=0 ***");par[0]=a[0];printPointer(par);printf(" ***\n");}}
   else if((par[0]=STACKpar(LLOC),was(par))){
     if(LLOC->offset[a[0]-LLOC_type]==Ilocal){par[0]=CHFILEpar(OBJ);
-       par[1]='L';Aputstring(par);par[0]=LLOC->offset[a[0]-LLOC_repr];
+       par[1]='L';Aputchar(par);par[0]=LLOC->offset[a[0]-LLOC_repr];
        printInt(par);separator();}
-    else{par[0]=CHFILEpar(OBJ);par[1]='F';par[0]=a[0]-LLOC->alwb;
-       printInt(par);separator();}}
+    else{par[0]=CHFILEpar(OBJ);par[1]='F';Aputchar(par);
+       par[0]=(a[0]-LLOC->alwb)/LLOC_CALIBRE+1;printInt(par);separator();}}
   else{par[0]=wrong_Wtag_argument;par[1]=a[0];internalError(2,par);}
 }
 static void Wstring(int *a){ /* >str */

@@ -415,7 +415,7 @@ $   inout         E       E     E      .    .M     .M
 'table'MESSAGE=(
  "%maffix type error"              :wrong affix syntax,
  "%m""%p"" has wrong type %p"      :wrong affix type,
- "%m""%p"" unitialized"            :affix no value,
+ "%m""%p"" uninitialized"          :affix no value,
  "%mcannot be a constant"          :cannot be constant,
  "%mlimit with ""%p"" cannot be used":limit cannot be used,
  "%m""%p"" has incompatible type (%l)" :provides wrong type,
@@ -913,7 +913,7 @@ $  check it, but don't generate code later
  "rule %p: formal stack affix %p can be a table"     :stack formal not set,
  "rule %p: formal affix %p might change on true exit":formal might change on true,
  "rule %p: out formal affix %p can be uninitialized" :out formal not set,
- "rule %p: out formal affix in repeat block unitialized": out formal in repeat block,
+ "rule %p: out formal affix in repeat block uninitialized": out formal in repeat block,
  "rule %p: formal affix %p does not change"          :formal does not change,
  "rule %p: formal affix %p might change on false exit":formal might change on false
 ).

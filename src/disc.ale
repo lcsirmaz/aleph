@@ -38,7 +38,7 @@ $ exported disc symbols
 
 'table'DSYMB=( $ disk symbols
   "&":Dand,  "'area'":Darea,
-  "=":Dbox,   "]":Dbus, 
+  "'box'":Dbox,   "]":Dbus, 
   "<>":Dcalibre, ")":Dclose, ":":Dcolon, ",":Dcomma, "~":Dcompl, "'const'":Dconst,
   "/":Ddiv,
   "'end'":Dend, "'expression'":Dexpression, "'extension'":Dextension,
@@ -46,7 +46,7 @@ $ exported disc symbols
   "'jump'":Djump,
   "'label'":Dlabel, "\n":Dline, "'list'":Dlist, "'local'":Dlocal, "'lwb'":Dlwb, 
   "'module'":Dmodule,"-":Dminus,
-  "#":Dnoarg,
+  "# ":Dnoarg,
   "(":Dopen, "|":Dor,
   "+":Dplus, ".":Dpoint, "'pragmat'":Dpragmat,
   "'root'":Droot, "'rule'":Drule,

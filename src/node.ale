@@ -202,6 +202,10 @@ $ read the rule, populate the RULE stack,
 $   traverse it, then read the rule again.
 $ this part populates RULE; rule names start with "g"
 
+$ BUFFER
+'a'push BUFFER+*+>x: 
+  extend BUFFER+x,(shift affix block+*,:push BUFFER;+).
+
 $ extension ----------------------------------------- $
 'a'g transport list:
   g simple affix+Uin+#,$ skip destination
@@ -219,10 +223,10 @@ $  the classification Unode data is a BUFFER pointer.
     push RULE+Ubox+0,mustQ+Dbox.
 'a'g area+buff>-x:
     addRULE flag!=3,Qskip+Darea,0->buff;
-    >>BUFFER->buff,(nxt:Q+Darea,extend BUFFER+Darea;
+    >>BUFFER->buff,(nxt:Q+Darea,extend BUFFER+Dplus;
       Q+Dcolon,extend BUFFER+Dcomma,:nxt;
       Q+Dsemicolon,extend BUFFER+Dsemicolon,:nxt;
-      Qcons+x,extend BUFFER+Dconst,extend BUFFER+x,:nxt;
+      Qcons+x,push BUFFER+Dconst+x,:nxt;
       must Qtag+x,extend BUFFER+x,:nxt).
 'a'g classification-last-buff:
     mustQ+Darea,g area+buff,
@@ -608,7 +612,8 @@ $ node 0 and 1 are the true and false returns, respectively
   incr+C1,(=ftype=[Iformal out;Iformal inout],incr+C2;+).
 'a'count star affix+>rep:
   rep=0,add+C3+C1+C1,add+C3+C2+C2,0->C3; $ no trailing * affix $
-  decr+C3.
+  C3>0,decr+C3;
+  +.
 'pragmat'macro=(reset rule count,count rule affix,count star affix).
 
 'a'assign nodes-node-ptr:
@@ -622,29 +627,26 @@ $ exit label ----------------------------------------- $
    $ we are looking at Utrue,Ufalse,Umark. Figure out the label
    W+Dcolon,(ptr=0,Wcons+0;
       data*RULE[ptr]->label,
-      (flag*RULE[ptr]=Umark,Wcons+0; $ this should never happen $
+      (flag*RULE[ptr]=Usink,Wcons+0; $ final label for 'exit' $
        label=-1,Wcons+-1;
        label=-2,Wcons+-2;
-       W+label)). $ otherwise this is a NODE $
+       W+data*RULE[label])). $ otherwise this is a NODE $
 $ extension ------------------------------------------ $
 'a'w transport list+cnt>-x: $ store in BUFFER $
    0->cnt,
    (nxt:w simple affix+Uin+#,
      (nxt:Q+Dto,extend BUFFER+Dto,incr+cnt,
              (Qcons+x;must Qtag+x,get repr+x+x),
-             extend BUFFER+Dconst,extend BUFFER+x,:nxt;
+             push BUFFER+Dconst+x,:nxt;
           +),
     (Q+Dextension;Q+Dend;:nxt)).
 'a'w extension-tag-cnt-optr-ptr:
    must Qtag+tag,push RULE+Unode+0,
    W+Dextension,W+data*RULE[RULEtop],Wtag+tag,
    >>BUFFER->optr,w transport list+cnt,Wcons+cnt,
-   optr->ptr,(nxt:ptr>=>>BUFFER;
-     $ hm, not clear how to copy this $
-     incr+ptr,:nxt),
+   optr->ptr,incr+ptr,w copy affix from BUFFER+0+ptr,
    unstack to+BUFFER+optr,push RULE+Utrue+0,w label+RULEtop.
 $ actual rule --------------------------------------- $
-'a'push BUFFER+*+>x: extend BUFFER+x,(shift affix block+*,:push BUFFER;+).
 'p'w limit+x>:
   Q+Dupb,Dupb->x;
   Q+Dlwb,Dlwb->x;
@@ -731,18 +733,18 @@ $ replacement for L*L[>>L], figure out the standard selector
           W+Dstar,Wcons+cnt,(is+rep,Wcons+1;Wcons+0),
           get adm+formal+formal,formal->repeat;
        incr+b,                   $ skip Dplus $
-       (BUFFER[b]=Dstar,W+Dstar,incr+b;
-           $ last affix; rep!=0 (formal * should be added)
-        ftype=Iformal out, $ out affix, no value $
-          W+Dnoarg,w skip affix in BUFFER+0+b;
-        w copy affix from BUFFER+0+b),
-       get adm+formal+formal,(formal=0,repeat->formal;+)
+        (BUFFER[b]=Dstar,W+Dstar,incr+b;
+            $ last affix; rep!=0 (formal * should be added)
+         ftype=Iformal out, $ out affix, no value $
+           W+Dnoarg,w skip affix in BUFFER+0+b;
+         w copy affix from BUFFER+0+b),
+        get adm+formal+formal,(formal=0,repeat->formal;+)
       ),:nxt).
 
 'a'w after affixes+>tag+>b-formal-ftype-repeat:
   incr+b, $ now BUFFER[b] looks at Dplus $
   get adm+tag+formal,0->repeat,
-  (nxt:b>>BUFFER; $ no more affixes
+  (nxt:b>>>BUFFER; $ no more affixes
     get type+formal+ftype,
       (ftype=Iformal repeat, $ formal * affix
              get adm+formal+formal,formal->repeat,:nxt;
@@ -752,13 +754,13 @@ $ replacement for L*L[>>L], figure out the standard selector
             (BUFFER[b]=Dminus,incr+b,push RULE+Uuse+0,
                 (flag*RULE[RULEtop]=Uspare,W+Dnoarg,wskip affix in BUFFER+1+b;
                  w copy affix from BUFFER+1+b);
-             w skip affix in BUFFER+1+b);
-        w skip affix in BUFFER+1+b),
+             w copy affix from BUFFER+1+b);
+        W+Dnoarg,w skip affix in BUFFER+1+b),
        get adm+formal+formal,(formal=0,repeat->formal;+),
        :nxt)).
 
 'a'w actual rule+>tag-oldBUFF-formal-ftype-repeat-count-frep:
-   push RULE+Unode+0,W+Drule,W+data*RULE[RULEtop],W+tag,$ node ID+rule $
+   push RULE+Unode+0,W+Drule,W+data*RULE[RULEtop],Wtag+tag,$ node ID+rule $
    >>BUFFER->oldBUFF,get adm+tag+formal,reset rule count,
    0->repeat->frep->count,
    $ store all affixes in BUFFER as they come
@@ -783,19 +785,17 @@ $ replacement for L*L[>>L], figure out the standard selector
 
 $ classification ------------------------------------- $
 'a'w area+>buff:
-   $ BUFFER[buff] contains the area description until Darea
-   W+Darea,incr+buff,(nxt:BUFFER[buff]=Darea;
-     BUFFER[buff]=Dconst,incr+buff,Wcons+BUFFER[buff],incr+buff,:nxt;
-     W+BUFFER[buff],incr+buff,:nxt).
-'a'w read box-ptr-buff-fptr-tptr:
+   $ BUFFER[buff] contains the area description until Dplus
+   W+Darea,incr+buff,w copy affix from BUFFER+0+buff.
+'a'w read box-ptr-buff-fptr:
    push RULE+Unode+0,W+Dbox,W+data*RULE[RULEtop], $ the node ID $
-   w simple affix+Uin+#,push RULE+Utrue+0,data*RULE[RULEtop]->ptr,
-   push RULE+Ubox+0,mustQ+Dbox,
+   >>BUFFER->buff->ptr,w simple affix+Uin+#,incr+ptr,
+   w copy affix from BUFFER+0+ptr,unstack to+BUFFER+buff,
+   push RULE+Utrue+0,data*RULE[RULEtop]->ptr,push RULE+Ubox+0,mustQ+Dbox,
    (nxt:ptr=0;
       $ RULE[ptr] is (Unode,BUFFER),(Ufalse/Umark,next),(Utrue,tptr)
       data*RULE[ptr]->buff,next+RULE+ptr,data*RULE[ptr]->fptr,
-      next+RULE+ptr,data*RULE[ptr]->tptr,fptr->ptr,
-      w area+buff,w label+tptr,:nxt),
+      next+RULE+ptr,w area+buff,w label+ptr,fptr->ptr,:nxt),
    W+Dbox.
 'a'w classification:
    mustQ+Darea,Qskip+Darea,push RULE+Unode+0,push RULE+Ufalse+0,

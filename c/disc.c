@@ -23,7 +23,7 @@ static int cannot_open_disc_file,disc_type_error,dtag_error;
 #define addtoDSYMB(x,y) add_new_string(x,DSYMB);y=DSYMB->aupb
 static void init_DSYMB(void){
    addtoDSYMB("&",Dand);
-   addtoDSYMB("=",Dbox);
+   addtoDSYMB("'box'",Dbox);
    addtoDSYMB("]",Dbus);
    addtoDSYMB("<>",Dcalibre);
 //   addtoDSYMB("'charfile'",Dcharfile);
@@ -50,7 +50,7 @@ static void init_DSYMB(void){
    addtoDSYMB("'lwb'",Dlwb);
    addtoDSYMB("-",Dminus);
    addtoDSYMB("'module'",Dmodule);
-   addtoDSYMB("#",Dnoarg);
+   addtoDSYMB("# ",Dnoarg);
    addtoDSYMB("(",Dopen);
    addtoDSYMB("|",Dor);
    addtoDSYMB("+",Dplus);

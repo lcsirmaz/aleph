@@ -131,8 +131,8 @@ $ writing to the OBJ file
 'a'W+>x: =x=
    [DSYMB],put string+OBJ+DSYMB+x;
 $   [INDICATOR],put as string+OBJ+INDICATOR+x,separator;
-   [ITEM], put char+OBJ+/I/,subtr+x+<<ITEM+x,print int+x,separator;
-   [NODE], put char+OBJ+/N/,subtr+x+<<NODE+x,print int+x,separator;
+   [ITEM], put char+OBJ+/I/,subtr+x+<ITEM+x,print int+x,separator;
+   [NODE], put char+OBJ+/N/,subtr+x+<NODE+x,print int+x,separator;
    internal error+wrong W argument+x.
 'a'Wcons+>x:print int+x,separator.
 'a'Wtag+>tag-repr:
@@ -140,7 +140,7 @@ $   [INDICATOR],put as string+OBJ+INDICATOR+x,separator;
      (repr=0;W+repr);
    was+LLOC+tag,
      (type*LLOC[tag]=Ilocal,put char+OBJ+/L/,print int+repr*LLOC[tag],separator;
-      put char+OBJ+/F/,subtr+tag+<<LLOC+repr,print int+repr,separator;
+      put char+OBJ+/F/,subtr+tag+<<LLOC+repr,print int+repr,separator);
    internal error+wrong Wtag argument+tag. $ this should not happen $
 $ these are local to OBJ header
 'a'Wstring+>str: $ str is either LEXT string or TTAG block
