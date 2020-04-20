@@ -188,7 +188,10 @@ static void ghandleAffix(int *a){ /* >tag + >utype */
     par[0]=a[0];extendBUFFER(par);}
 }
 static void ghandleVarargBlock(int *a){ /*> ptr */
-  int par[3];int t;nxt:t=LLOC->offset[a[0]-LLOC_type];
+  int par[3];int t;
+//DEBUG !!!
+if(LLOC->offset[a[0]-LLOC_type]!=IformalRepeat){printf("ghandle: ptr=%d, type!=*\n",a[0]);exit(99);}
+  nxt:t=LLOC->offset[a[0]-LLOC_type];
   if(t==Ilabel){;}
   else if(t==IformalIn){/* par[0]=a[0];par[1]=Uin;ghandleAffix(par); */
     par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
@@ -244,7 +247,10 @@ static void gactualRule(int *a){/*> tag */
      goto nxt;}
    if(frep==0){;}
    else if((par[0]=a[0],par[1]=rshiftrule,isTagFlag(par))&&(a[0]!=Xshiftaffix)){;}
-   else{par[0]=frep;ghandleVarargBlock(par);}
+   else{
+//DEBUF !!!
+if(formal!=repeat){printf("gactualRULE, formal=%d,repeat=%d different\n",formal,repeat);exit(99);}
+      par[0]=frep;ghandleVarargBlock(par);}
    par[0]=a[0];par[1]=rcanFail;if(isTagFlag(par)){pushRULE(Ufalse,0);}
    frep=oldBUFF;nxt2:if(frep>=BUFFER->aupb){;}
    else{int flag; frep++;flag=BUFFER->offset[frep];frep++;
@@ -608,7 +614,7 @@ static void diagnoseRule(int *a){/* + >tag */
   gruleBody();par[0]=Dpoint;mustQ(par);
   par[0]=a[0];traverseRULE(par);
   computeDUflags();
-//printf("*** RULE stuff set\n");printRULEstack(a);
+printf("*** diagnose *** ");printRULEstack(a);
   par[0]=dpos;par[1]=dnum;restoreDiscPosition(par);
   addRULEflag=1;RULEtop=rptr;par[0]=a[0];setupFormalStack(par);
   diagnoseFormals();gruleBody();par[0]=Dpoint;mustQ(par);

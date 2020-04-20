@@ -497,13 +497,14 @@ $ formal: shift
    Ltag+atag,get type+atag+atype,
      (atype=Iformal repeat;error+missing repeat affix+rtag);
    error+missing repeat affix+rtag,skip source.
-$ ---------------------------------------------------- $
+$ ----------------------------------------------------- $
 $ destination type
 'constant'
     Uout	=0x452300,	$  x>
     Uinout	=0x452301,	$ >x>
     Uin		=0x452302,	$ >x
-    Uslice	=0x452303.	$ [x]
+    Uslice	=0x452303,	$ [x]
+    Usliceout	=0x452304.
 $ read only types: Uin and Uslice
 'q'u read only+>utype: utype>=Uin.
 $ utype: Uin,Uout,Uinout,Uslice
@@ -511,6 +512,26 @@ $  rtag: actual rule, extension (formal/local stack), 0 (box)
 $   cnt: affix position, 0 for extension and box
 $ sets local/formal flags LTset and LTmod
 $ mod: 0/1 for global side effect
+'f'u slice type+>utype+slice>:
+  =utype= [Uout;Usliceout],Usliceout->slice;
+  Uslice->slice.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+$ store out affixes in BUFFER
+'a'push BUFFER+>u+>cnt+>tag:
+  extend BUFFER+u,extend BUFFER+cnt,extend BUFFER+tag.
+'a'check out affixes+>rtag+>ptr-u-cnt-tag-type:
+  ptr>=>>BUFFER;
+  incr+ptr,BUFFER[ptr]->u,incr+ptr,BUFFER[ptr]->cnt,
+  incr+ptr,BUFFER[ptr]->tag,
+  (u=Usliceout,(is local flag+tag+LTset;
+         affix uninitialized error+rtag+cnt+tag);
+   set local flag+tag+LTset,get type+tag+type,
+         (type=Ilocal;set local flag+tag+LTmod)),
+   :check out affixes.
+$ second scan: <utype,cnt,atag>
+$   utype=Usliceout: is local flag+atag+LTset; error uninitialized error
+$   utype=Uout,set local flag+atag+LTset,(type=Ilocal;set LTmod)
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'f'get ftype+>tag+type>:
    $ determine if a static stack/variable is read only
    get type+tag+type,
@@ -529,7 +550,7 @@ $ mod: 0/1 for global side effect
    Q+Dcalibre,0->mod,must Ltag+atag,
      (has list type+atag;must be of list type+rtag+cnt+atag),
      (utype=Uin;dest list type error+rtag+cnt+atag);
-   Q+Dsub,fsimple affix+rtag+cnt+Uslice+mod,
+   Q+Dsub,u slice type+utype+type,fsimple affix+rtag+cnt+type+mod,
      mustQ+Dbus,must Ltag+atag,read selector+rtag+cnt+#,
      get ftype+atag+type,(=type=
        [Itable;Iformal table],
@@ -548,7 +569,7 @@ $ mod: 0/1 for global side effect
      [Iformal stack],check ssel+rtag+cnt+atag,
         (u read only+utype;1->mod,set local flag+atag+LTmod);
      [Iconstant],(-w:utype=Uin;
-         utype=Uslice,where+rtag+cnt+w,warning+2+maybe wrong index+w+rtag+atag;
+         u read only+utype,where+rtag+cnt+w,warning+2+maybe wrong index+w+rtag+atag;
          dest type error+rtag+cnt+atag);
      [Ipointer constant],(u read only+utype;dest type error+rtag+cnt+atag);
      [Ivariable],(u read only+utype;1->mod);
@@ -561,12 +582,14 @@ $ mod: 0/1 for global side effect
            +));
      [Iformal inout],(u read only+utype;set local flag+atag+LTmod);
      [Iformal out;Ilocal],
-         (utype=Uout,set local flag+atag+LTset;
-          is local flag+atag+LTset;
-          affix uninitialized error+rtag+cnt+atag),
-         (u read only+utype;type=Ilocal;set local flag+atag+LTmod);
+         ((utype=Uout;utype=Usliceout),push BUFFER+utype+cnt+atag;
+          (is local flag+atag+LTset;
+           affix uninitialized error+rtag+cnt+atag),
+          (u read only+utype;type=Ilocal;
+           set local flag+atag+LTmod));
      affix type error+rtag+cnt+atag
    ).
+
 $ -------------------------------------------- $
 'a'match formal actual+>rtag+>cnt+>formal+mod>-ftype:
   get type+formal+ftype,(=ftype=
@@ -656,8 +679,9 @@ $  canF: rule can fail
 $  modT: has global side effect when returns
 $ if the rule is "shift affix block", call "reset affix block flags"
 $ local/formal affixes have correct flags at entry, update them
+$ postpone set/check out affixes (including indices)
 'a'actual rule+canT>+canF>+>modT>
-    -rtag-type-formal-repeat-cnt-lmod-dl:
+    -rtag-type-formal-repeat-cnt-lmod-dl-oldptr:
    1->canT->canF,must Qtag+rtag,get type+rtag+type,get defline+rtag+dl,
      (type=Iempty,error+not defined+rtag,skip affixes;
       type!=Irule,error+undefined rule+rtag+type+dl,skip affixes;
@@ -666,7 +690,7 @@ $ local/formal affixes have correct flags at entry, update them
       (is tag flag+rtag+rno return,0->canT;+),
       (is tag flag+rtag+rcan fail;0->canF),
       (is tag flag+rtag+rside effect,1->modT;+),
-      get adm+rtag+formal,0->repeat,1->cnt,
+      get adm+rtag+formal,0->repeat,1->cnt,>>BUFFER->oldptr,
       (nxt:formal=0,
             (Qahead+Dplus,
                (repeat=0,error+additional affix+rtag+dl,skip affixes;
@@ -680,7 +704,8 @@ $ local/formal affixes have correct flags at entry, update them
               Q+Dplus,match formal actual+rtag+cnt+formal+lmod,
                    (is+lmod,1->modT;+),
                    incr+cnt,get adm+formal+formal,:nxt;
-              error+missing affix+rtag+dl))
+              error+missing affix+rtag+dl)),
+      check out affixes+rtag+oldptr,unstack to+BUFFER+oldptr
      ).
 
 $ EXTENSION ------------------------------------------ $

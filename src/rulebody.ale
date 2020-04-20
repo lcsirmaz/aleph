@@ -13,7 +13,7 @@ $ BODY ********************************************************* $
 'pragmat'public=(rule body,root body).
 
 
-'table'MESSAGES=(
+'table'MESSAGE=(
   "symbol %p is expected here"     :expected,
   "symbol %p is expected after %p" :expected after,
   "tag expected after %p"          :tag expected after,

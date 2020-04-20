@@ -240,13 +240,22 @@ $ actual rule --------------------------------------- $
    (in utype+utype,push RULE+Uuse+repr*LLOC[tag];+),
    (out utype+utype,(utype>=Uslicein,extend BUFFER+Uuse;extend BUFFER+Uset),
      extend BUFFER+tag;+).
-'a'g handle vararg block+>ptr:
-   $ ptr points to the * formal affix of the rule, use that block
-   (nxt: =type*LLOC[ptr]=
-   [Ilabel],+; $ this is the last one
-   [Iformal out;Iformal inout],g handle affix+ptr+Uout,next+LLOC+ptr,:nxt;
-   next+LLOC+ptr,:nxt).
+'a'g handle vararg block+>ptr+>formal:
+   $ ptr points to the * formal affix of the rule (actual affix);
+   $ formal is the first after * in the actual rule
+   $ in/inout are used, inout/out are set
+   next+LLOC+ptr,get type+formal+ftype,get adm+formal+formal,
+   (=ftype=
+   [Iformal in],   g handle affix+ptr+Uin,next+LLOC+ptr;
+   [Iformal out],  g handle affix+ptr+Uout,next+LLOC+ptr;
+   [Iformal inout],g handle affix+ptr+Uinout,next+LLOC+ptr;
+   +),
+   (formal=0;:g handle vararg block).
 
+'a'g handle shiftrule+>tag+>ptr:
+   $ shift affix block+* 
+   tag!=Xshift affix;
+   +.
 'p'g limit:
    Q+Dvlwb;Q+Dvupb;Q+Dlwb;Q+Dupb;Q+Dcalibre.
 'a'g simple affix+>utype+repeat>-tag-type:
@@ -262,7 +271,6 @@ $ actual rule --------------------------------------- $
         [Iformal in;Iformal out;Iformal inout;Ilocal],
            g handle affix+tag+utype;
          +)).
-
 'a'g match formal actual+>ftype+repeat>-tag-type:
   $ we are expecting an affix of type "ftype"
   $ we can get the formal affix *
@@ -282,10 +290,11 @@ $ actual rule --------------------------------------- $
   $ before calling, collect in and inout (plus slice)
   $ after return, set out and inout (plus slice)
   $ collect out/inout affixes in BUFFER, and copy from
-  $  there to RULE after the Ufalse entry (if the rule
-  $  can fail).
-  $ If * is an actual affix, use and set all formal
-  $  after the *, except for 'get affix blockno'
+  $   there to RULE after the Ufalse entry (if the rule
+  $   can fail).
+  $ If * is the last actual affix, all in/inout is used,
+  $   and all inout/out is set
+  $ 'get affix blockno' and 'shift affix block' are exceptions
   push RULE+Unode+0,>>BUFFER->oldBUFF,
   0->repeat->frep,get adm+tag+formal,
   (nxt:Q+Dplus,get type+formal+ftype,
@@ -296,8 +305,8 @@ $ actual rule --------------------------------------- $
   +),
   $ frep: the last actual affix is *; this is a LLOC pointer
   (frep=0;
-   (is tag flag+tag+rshiftrule,tag!=Xshift affix),+;
-   g handle vararg block+frep),
+   is tag flag+tag+rshiftrule,g handle shiftrule+tag+frep;
+   g handle vararg block+frep+repeat),
   (is tag flag+tag+rcan fail,push RULE+Ufalse+0;+),
   oldBUFF->frep,
   (nxt-flag:frep>=>>BUFFER;
@@ -680,7 +689,7 @@ $ replacement for L*L[>>L], figure out the standard selector
      Q+Dsub,push BUFFER+Dbus,utype to slice+utype+type,
        w simple affix+type+#,mustQ+Dbus,must Qtag+tag,
          $ this is the selector $
-       (Qcons+x;must Qtag+x,get repr+tag+x),
+       (Qcons+x;must Qtag+x,get repr+x+x),
        push BUFFER+Dbus+tag+Dconst+x;
      must Qlist+tag+local,get type+tag+type,(=type=
        [Iformal repeat],push BUFFER+Dstar,tag->repeat; $ actual * affix $

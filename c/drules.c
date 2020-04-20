@@ -493,13 +493,36 @@ static void fshiftAffix(int *a){ /* >rtag+>cnt */
   else{par[0]=missing_repeat_affix;par[1]=a[0];Error(2,par);skipSource();}
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-#define Uout	0x452300
-#define Uinout	0x452301
-#define Uin	0x452302
-#define Uslice	0x452303
+#define Uout	  0x452300
+#define Uinout	  0x452301
+#define Uin	  0x452302
+#define Uslice	  0x452303
+#define Usliceout 0x452304
 
 inline static int uReadOnly(int *a){
   if(a[0]>=Uin){ return 1;} else {return 0;}
+}
+static void usliceType(int *a){/* >utype + slice> */
+  if(a[0]==Uout||a[0]==Usliceout){a[1]=Usliceout;}
+  else {a[1]=Uslice;}
+}
+static void pushBUFFER(int u,int cnt,int tag){
+  int par[2];
+  par[0]=STACKpar(BUFFER);par[1]=u;extend(par);
+  par[1]=cnt;extend(par);par[1]=tag;extend(par);
+}
+static void checkOutAffixes(int *a){/* >rtag + >ptr */
+  int par[3];int u,cnt,tag,type; nxt:
+  if(a[1]>=BUFFER->aupb){return;}
+  a[1]++;u=BUFFER->offset[a[1]];a[1]++;cnt=BUFFER->offset[a[1]];
+  a[1]++;tag=BUFFER->offset[a[1]];
+  if(u==Usliceout){par[0]=tag;par[1]=LTset;if(isLocalFlag(par)){;}
+    else{par[0]=a[0];par[1]=cnt;par[2]=tag;
+      affixUninitializedError(par);}}
+  else{par[0]=tag;par[1]=LTset;setLocalFlag(par);par[0]=tag;
+    getType(par);type=par[1];if(type==Ilocal){;}
+    else{par[1]=LTmod;setLocalFlag(par);}}
+  goto nxt;
 }
 static void getFtype(int *a){/* >tag + type> */
   int par[2];
@@ -525,7 +548,8 @@ static void fsimpleAffix(int *a){ /* >rtag+ >cnt+ >utype + mod> */
       mustBeOfListType(par);}
     if(a[2]==Uin){;}else{par[0]=a[0];par[1]=a[1];par[2]=atag;
       destListTypeError(par);}}
-  else if(par[0]=Dsub,Q(par)){par[0]=a[0];par[1]=a[1];par[2]=Uslice;
+  else if(par[0]=Dsub,Q(par)){par[0]=a[2];usliceType(par);
+    type=par[1];par[0]=a[0];par[1]=a[1];par[2]=type;
     fsimpleAffix(par);a[3]=par[3];par[0]=Dbus;mustQ(par);mustLtag(par);
     atag=par[0];par[0]=a[0];par[1]=a[1];readSelector(par);par[0]=atag;
     getFtype(par);type=par[1];
@@ -550,7 +574,7 @@ static void fsimpleAffix(int *a){ /* >rtag+ >cnt+ >utype + mod> */
        checkSsel(par);par[0]=a[2];if(uReadOnly(par)){;}else{a[3]=1;
          par[0]=atag;par[1]=LTmod;setLocalFlag(par);}}
     else if(type==Iconstant){if(a[2]==Uin){;}
-       else if(a[2]==Uslice){par[0]=a[0];par[1]=a[1];where(par);
+       else if((par[0]=a[2],uReadOnly(par))){par[0]=a[0];par[1]=a[1];where(par);
          par[0]=maybe_wrong_index;par[1]=par[2];par[2]=a[0];par[3]=atag;
          Warning(2,4,par);}
        else{par[0]=a[0];par[1]=a[1];par[2]=atag;destTypeError(par);}}
@@ -566,8 +590,9 @@ static void fsimpleAffix(int *a){ /* >rtag+ >cnt+ >utype + mod> */
             par[1]=atag;Error(3,par);}}}}
    else if(type==IformalInout){par[0]=a[2];if(uReadOnly(par)){;}
        else{par[0]=atag;par[1]=LTmod;setLocalFlag(par);}}
-   else if(type==IformalOut||type==Ilocal){if(a[2]==Uout){par[0]=atag;
-       par[1]=LTset;setLocalFlag(par);}else if((par[0]=atag,par[1]=LTset,
+   else if(type==IformalOut||type==Ilocal){
+       if(a[2]==Uout||a[2]==Usliceout){pushBUFFER(a[2],a[1],atag);}
+       else if((par[0]=atag,par[1]=LTset,
        isLocalFlag(par))){;}else{par[0]=a[0];par[1]=a[1];par[2]=atag;
        affixUninitializedError(par);}par[0]=a[2];if(uReadOnly(par)){;}
        else if(type==Ilocal){;}else{par[0]=atag;par[1]=LTmod;setLocalFlag(par);}}
@@ -666,7 +691,7 @@ static void checkMacroRule(int *a){ /* >rtag */
 //}
 // DEBUG !!!!!!!!!!!
 static void actualRule(int *a){ /* canT> + canF> + >modT> */
-  int par[5];int rtag,type,formal,repeat,cnt,dl;
+  int par[5];int rtag,type,formal,repeat,cnt,dl,oldptr;
   a[0]=a[1]=1;mustQtag(par);rtag=par[0];getType(par);type=par[1];
   getDefline(par);dl=par[1];
   if(type==Iempty){par[0]=not_defined;par[1]=rtag;Error(2,par);skipAffixes();}
@@ -679,7 +704,8 @@ static void actualRule(int *a){ /* canT> + canF> + >modT> */
   par[0]=rtag;par[1]=rnoReturn;if(isTagFlag(par)){a[0]=0;}
   par[0]=rtag;par[1]=rcanFail;if(isTagFlag(par)){;}else{a[1]=0;}
   par[0]=rtag;par[1]=rsideEffect;if(isTagFlag(par)){a[2]=1;}
-  par[0]=rtag;getAdm(par);formal=par[1];repeat=0;cnt=1;nxt:
+  par[0]=rtag;getAdm(par);formal=par[1];repeat=0;cnt=1;
+  oldptr=BUFFER->aupb;nxt:
   if(formal==0){par[0]=Dplus;if(Qahead(par)){
       if(repeat==0){par[0]=additional_affix;par[1]=rtag;par[2]=dl;
             Error(3,par);skipAffixes();}
@@ -694,6 +720,8 @@ static void actualRule(int *a){ /* canT> + canF> + >modT> */
         matchFormalActual(par);if(par[3]){a[2]=1;}cnt++;par[0]=formal;
         getAdm(par);formal=par[1];goto nxt;}
     else{par[0]=missing_affix;par[1]=rtag;par[2]=dl;Error(3,par);}}
+  par[0]=rtag;par[1]=oldptr;checkOutAffixes(par);
+  par[0]=STACKpar(BUFFER);par[1]=oldptr;unstackto(par);
 //printf("act.rule ");par[0]=rtag;printPointer(par);printf(" ");printLocal();//(%d,%d),(%d,0)\n",a[0],a[1],a[2]);
 }}
 /* extension -------------------------- */

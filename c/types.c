@@ -44,7 +44,7 @@ void initialize_types(void){
   addtoIND("formal out",IformalOut);
   addtoIND("formal inout",IformalInout);
   addtoIND("formal repeat",IformalRepeat);
-  addtoIND("formalshift",IformalShift);
+  addtoIND("formal shift",IformalShift);
   addtoIND("macro parameter",Imacro);
   addtoIND("dummy argument",Inoarg);
   addtoIND("local",Ilocal);
