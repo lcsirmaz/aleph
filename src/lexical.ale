@@ -495,7 +495,7 @@ $ _line_, _file_, _rule_
      [3],$ rule  $ Sdummy symb->x; $ get "rule tag" from rulebody $
      [4],$ title $ Sdummy symb->x; $ get title from pragmats $
      $ none of the above $ Sdummy symb->x);
-  n=0,error+illegal character+/_/,Sdummy symb->x;
+  n=1,error+illegal character+/_/,Sdummy symb->x;
   pack string+BUFFER+n+LEXT,error+unrecognized builtin+>>LEXT,
    unstack string+LEXT,Sdummy symb->x).
 $ **************************************************************** $

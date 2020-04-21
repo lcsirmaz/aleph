@@ -1,9 +1,9 @@
 $ check macros
-'pragmat'module="checkmacros".
+'pragmat'module="macros".
 $ HEADER ******************************************************* $
 $ read from DISC and check that macros do not call each other
 $
-'a'm check macro rules.
+'a'check macro rules.
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.
@@ -54,7 +54,7 @@ $ BODY ********************************************************* $
      rule body,clear tag flag+tag+rmchecking,set tag flag+tag+rmchecked,
      restore disc position+dpos+dnum.
 
-'a'm check macro rules-tag:
+'a'check macro rules-tag:
    0->tag,(nxt:next macro rule+tag,check macro rule+tag,:nxt;+).
 
 'root'+.

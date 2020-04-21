@@ -441,7 +441,7 @@ again:
 /* bold symbols */
 static int B1,B2,B3,B4,B5,B6,B7,B8,B9,B10,B11,B12,B13,B14,B15,firstBold,
   B17,B18,B19,B20,B21,B22,B23,B24,B25,B26,B27,B28,B29,B30,B31;
-static int D1,D3,firstBin;
+static int D1,D3,D4,firstBin;
 #define addtoBOLD(x,y)	add_new_string(x,BOLD);y=BOLD->aupb
 
 static void init_BOLD_table(void){
@@ -481,6 +481,7 @@ static void init_BOLD_table(void){
   addtoBOLD("_file_",D1);       par[4]=1;expandstack(par);
   addtoBOLD("_line_",firstBin); par[4]=2;expandstack(par);
   addtoBOLD("_rule_",D3);	par[4]=3;expandstack(par);
+  addtoBOLD("_title_",D4);      par[4]=4;expandstack(par);
   // links
   BOLD->offset[firstBold+1]=B8;	BOLD->offset[firstBold+2]=B24;
   BOLD->offset[B8+1]=B4;	BOLD->offset[B8+2]=B12;
@@ -499,6 +500,7 @@ static void init_BOLD_table(void){
   BOLD->offset[B30+1]=B29;	BOLD->offset[B30+2]=B31;
   //
   BOLD->offset[firstBin+1]=D1;	BOLD->offset[firstBin+2]=D3;
+  BOLD->offset[D3+2]=D4;
 }
 //'a' read bold+x>
 static void readBold(int *a){
@@ -534,7 +536,7 @@ static void readBuiltin(int *a){/* x> */
   par[0]=STACKpar(BUFFER);scratch(par);par[0]='_';extendBUFFER(par);n=1;nxt1:
   if(boldLetter(par)){extendBUFFER(par);n++;goto nxt1;}
   else if(Achar=='_'){par[0]='_';extendBUFFER(par);n++;nextChar();}
-  else if(n==0){par[0]=illegal_character;par[1]='_';Error(2,par);a[0]=Sdummysymb;return;}
+  else if(n==1){par[0]=illegal_character;par[1]='_';Error(2,par);a[0]=Sdummysymb;return;}
   else{par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);packstring(par);
        par[0]=unrecognized_builtin;par[1]=LEXT->aupb;Error(2,par);
        par[0]=STACKpar(LEXT);unstackstring(par);a[0]=Sdummysymb; return;}
@@ -547,10 +549,11 @@ static void readBuiltin(int *a){/* x> */
     else if(n<0){a[0]=BOLD->offset[a[0]-BOLD_right]; goto nxt2;}
     else{a[0]=BOLD->offset[a[0]-BOLD_adm];}}
   par[0]=STACKpar(LEXT);unstackstring(par);
-  if(a[0]==1){par[0]=0;findLinenum(par);a[0]=par[2];}
-  else if(a[0]==2){par[0]=0;findLinenum(par);a[0]=par[1];par[0]=a[0];
+  if(a[0]==1){/*_file_*/par[0]=0;findLinenum(par);a[0]=par[2];}
+  else if(a[0]==2){/*_line_*/par[0]=0;findLinenum(par);a[0]=par[1];par[0]=a[0];
     enterConst(par);a[0]=par[1];}
   else if(a[0]==3){/*_rule_*/a[0]=Sdummysymb;}
+  else if(a[0]==4){/*_title_*/a[0]=Sdummysymb;}
   else{a[0]=Sdummysymb;}
 }
 /*--------------------------------------------------------------------*/

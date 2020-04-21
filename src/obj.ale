@@ -229,8 +229,8 @@ $ call back routines for Xstring table filling ---------------- $
 'a'Xstring table filling head+>tag:
    W+Dfill,Wtag+tag.
 'a'Xstring table item+>tag+>str-x:
-   W+Dopen,string width+LEXT+str+x,subtr+str+x+x,
-   (nxt:x<str,incr+x,Wcons+LEXT[x],:nxt;W+Dclose),
+   string width+LEXT+str+x,subtr+str+x+x,
+   (nxt:x<str,incr+x,Wcons+LEXT[x],:nxt;+),
    W+Dcolon,Wtag+tag.
 $ general error messages ====================================== $
 
@@ -365,7 +365,7 @@ $ a list item: tag, const, string, block
    Qcons+x,Wcons+x;
    Qstring+x,write string+x;
    Q+Dopen,W+Dopen,block+tag,W+Dclose;
-   mustQ+Dextension,W+Dopen,block2+tag,W+Dclose.
+   mustQ+DextensionW+Dopen,block2+tag,W+Dclose.
 
 $ only if the list tag is table or used
 'p'is fill tag used+>tag-type:

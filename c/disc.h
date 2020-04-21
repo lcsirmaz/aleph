@@ -4,8 +4,8 @@ extern int
   Darea, Dand,   Dbox,   Dbus, Dcalibre, Dclose, Dcolon,
   Dcomma, Dcompl, Dconst, Ddiv, Dend, Dexpression,
   Dextension, Dfile, Dfill, Dinput, Djump,
-  Dlabel, Dline, Dlist, Dlocal, Dlwb, Dminus, Dnoarg,
-  Dopen, Dor, Dplus, Dpoint, Dpragmat,
+  Dlabel, Dline, Dlist, Dlocal, Dlwb, Dminus, Dnoarg, Dnode,
+  Dopen, Dor, Dout, Dplus, Dpoint, Dpragmat,
   Droot, Drule, Dsemicolon, Dstack, Dmodule,
   Dstar, Dsub, Dtitle, Dto, Dupb, Dvlwb, Dvupb, 
   Dxor;

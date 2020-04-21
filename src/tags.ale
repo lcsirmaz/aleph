@@ -34,8 +34,6 @@ $  LLOC - local tags (such as formal, local, label)
    $ create a new Ipointer constant entry for the string
 'f'get tag hash+>tag+hash>.
    $ compute the hash of the tag
-'a'init tags.
-   $ add all strings is TTAG to the search tree. Should be called first.
 $ dictionary $
 'a'add DICT+>rawtag+>line.
    $ save line number for an occurrence of a raw tag
@@ -114,29 +112,6 @@ $ macro handling
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("display","pragmats","types","lexical","obj","buffer").
-
-$ exported data 
-'pragmat' public=(
-  TTAG,LADM,LLOC,
-  was tag pointer,
-  find raw usage,
-  enter tag, get tag entry,pack selector,
-  redefine tag,restore tags,init tags,
-  add tag definition,add tag import,add tag external,
-  add tag prototype,add tag public,
-  add DICT,print dictionary,
-  get tag,get repr,get adm,get type,get defline,
-  get calibre,get ssel,
-  get formal calibre,get formal ssel,
-  put repr,put adm,put type,put defline,
-  put calibre,put ssel,
-  put formal calibre,put formal ssel,
-  new stdstring,get tag hash,
-  is tag flag,set tag flag,clear tag flag,get tag flag,use tag,
-  is special rule,
-  Xexit,Xarrow,Xroot,Xstring table,Xstring table filling,
-  assign items
-).
 
 $ standard local stuff $
 $ tag flags for predefined rules
@@ -600,7 +575,7 @@ $ store and retrieve macro
           get adm+link+link,:nxt)),
     is+link,tag*LADM[link]->tag.
     
-'root'+. $ should be called before anything happens
+'root'init tags.
 
 'pragmat'endif=compile.
 'end'

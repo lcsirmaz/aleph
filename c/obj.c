@@ -226,10 +226,10 @@ void XstringTableFillingHead(int *a){
 }
 void XstringTableItem(int *a){/* >tag + >str */
    int par[3];int x;
-   par[0]=Dopen;W(par);par[0]=STACKpar(LEXT);par[1]=a[1];
+   par[0]=STACKpar(LEXT);par[1]=a[1];
    stringwidth(par);x=a[1]-par[2];nxt:
    if(x<a[1]){x++;par[0]=LEXT->offset[x];Wcons(par);goto nxt;}
-   par[0]=Dclose;W(par);par[0]=Dcolon;W(par);par[0]=a[0];
+   par[0]=Dcolon;W(par);par[0]=a[0];
    Wtag(par);
 }
 /* ------------------------------------------------------ */

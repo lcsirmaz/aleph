@@ -27,10 +27,12 @@ $ exported disc symbols
   $ other
   Darea,  Dbox,   Dbus, Dcalibre, Dclose, Dcolon, Dconst,
   Dcomma, Dend, Dexpression, Dextension, Dfill, Djump,
-  Dlabel, Dline, Dlist, Dlocal, Dlwb, Dmodule, Dminus, Dnoarg,
+  Dlabel, Dline, Dlist, Dlocal, Dlwb, Dminus, Dnoarg,
   Dopen, Dplus, Dpoint, Dpragmat, Droot, Drule,
-  Dsemicolon, Dstar, Dsub, Dtitle, Dto, Dupb,
-  Dvlwb, Dvupb.
+  Dsemicolon, Dstar, Dsub, Dto, Dupb,
+  Dvlwb, Dvupb,
+  $ obj entries
+  Dtitle, Dmodule, Dout, Dnode.
 
 'table'DSYMB.
 
@@ -46,8 +48,8 @@ $ exported disc symbols
   "'jump'":Djump,
   "'label'":Dlabel, "\n":Dline, "'list'":Dlist, "'local'":Dlocal, "'lwb'":Dlwb, 
   "'module'":Dmodule,"-":Dminus,
-  "# ":Dnoarg,
-  "(":Dopen, "|":Dor,
+  "# ":Dnoarg,"'node'":Dnode,
+  "(":Dopen, "|":Dor, ">":Dout,
   "+":Dplus, ".":Dpoint, "'pragmat'":Dpragmat,
   "'root'":Droot, "'rule'":Drule,
   ";":Dsemicolon, "*":Dstar, "[":Dsub,

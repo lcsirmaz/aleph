@@ -5,7 +5,7 @@ $ pass one
 $
 'a'pass I.
    $ the main program
-'q'was root scanned.
+'a'was root scanned.
    $ had we a 'root'?
 
 $ BODY ********************************************************* $
@@ -20,12 +20,15 @@ $error:
  "misplaced symbol %p"          :wrong symbol,
  "'external' can be used in library mode only":external in library mode,
  "more than one 'root'"         :more than one root,
+ "no 'root'"                    :no root,
 $ warning:
  "%p %p: library item redefined (%l)" :library item redefined
 ).
 
 'variable'root scanned=0.
-'q'was root scanned: is+root scanned.
+'a'was root scanned: 
+   is+root scanned;
+   Xerror+0+no root.
 
 'a'pass I-err:
   ahead+Send symb;      $ we reached the end

@@ -4,7 +4,7 @@ $ HEADER ******************************************************* $
 $ read from DISC and generate all definitions.
 $   give error for tags used but not defined
 $
-'a'pass II.
+'a'pass II,pass III.
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.

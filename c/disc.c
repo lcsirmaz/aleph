@@ -12,8 +12,8 @@ int
   Dand,   Dbox,   Dbus, Dcalibre, Dclose, Dcolon,
   Dcomma, Dcompl, Dconst, Ddiv, Dend, Dexpression,
   Dextension, Dfile, Dfill, Dinput, Djump,
-  Dlabel, Dline, Dlist, Dlocal, Dlwb, Dminus, Dnoarg,
-  Dopen, Dor, Dplus, Dpoint, Dpragmat,
+  Dlabel, Dline, Dlist, Dlocal, Dlwb, Dminus, Dnoarg, Dnode,
+  Dopen, Dor, Dout, Dplus, Dpoint, Dpragmat,
   Droot, Drule, Dsemicolon, Dstack, Dmodule,
   Dstar, Dsub, Dtitle, Dto, Dupb, Dvlwb, Dvupb, 
   Dxor, Darea;
@@ -23,6 +23,7 @@ static int cannot_open_disc_file,disc_type_error,dtag_error;
 #define addtoDSYMB(x,y) add_new_string(x,DSYMB);y=DSYMB->aupb
 static void init_DSYMB(void){
    addtoDSYMB("&",Dand);
+   addtoDSYMB("'area'",Darea);
    addtoDSYMB("'box'",Dbox);
    addtoDSYMB("]",Dbus);
    addtoDSYMB("<>",Dcalibre);
@@ -51,8 +52,10 @@ static void init_DSYMB(void){
    addtoDSYMB("-",Dminus);
    addtoDSYMB("'module'",Dmodule);
    addtoDSYMB("# ",Dnoarg);
+   addtoDSYMB("'node'",Dnode);
    addtoDSYMB("(",Dopen);
    addtoDSYMB("|",Dor);
+   addtoDSYMB(">",Dout);
    addtoDSYMB("+",Dplus);
    addtoDSYMB(".",Dpoint);
    addtoDSYMB("'pragmat'",Dpragmat);
@@ -73,7 +76,6 @@ static void init_DSYMB(void){
    addtoDSYMB("'vlwb'",Dvlwb);
    addtoDSYMB("'vupb'",Dvupb);
    addtoDSYMB("^",Dxor);
-   addtoDSYMB("'area'",Darea);
    /* local */
    addtoDSYMB("'const'",Dconst);
    /* --- LEXT     ---- */

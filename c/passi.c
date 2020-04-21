@@ -16,7 +16,7 @@
 /* ---------------------------------------------------- */
 /* messages */
 static int
-wrong_symbol,external_in_library_mode,more_than_one_root,
+wrong_symbol,external_in_library_mode,more_than_one_root,no_root,
 library_item_redefined;
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
@@ -24,6 +24,7 @@ static void init_messages(void){
   addMSG("misplaced symbol %p",wrong_symbol);
   addMSG("'external' can be used in library mode only",external_in_library_mode);
   addMSG("more than one 'root'",more_than_one_root);
+  addMSG("no 'root'",no_root);
   addMSG("%p %p: library item redefined (%l)",library_item_redefined);
 }
 #undef addMSG
@@ -36,8 +37,9 @@ static void staticDeclaration(void);
 static void root(void);
 
 static int rootScanned=0;
-int wasRootScanned(void){
-  if(rootScanned){return 1;}else{return 0;}
+void wasRootScanned(void){
+  int par[2];
+  if(rootScanned){;}else{par[0]=no_root;Xerror(0,1,par);}
 }
 
 void passI(void){

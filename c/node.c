@@ -183,24 +183,33 @@ static void gclassification(void){
 static void ghandleAffix(int *a){ /* >tag + >utype */
   int par[3];
   par[0]=a[1];if(inUtype(par)){pushRULE(Uuse,LLOC->offset[a[0]-LLOC_repr]);}
-  par[0]=a[1];if(outUtype(par)){if(a[1]>=Uslicein){par[0]=Uuse;
-    extendBUFFER(par);}else{par[0]=Uset;extendBUFFER(par);}
+  par[0]=a[1];if(outUtype(par)){par[0]=a[1];extendBUFFER(par);
+    if(a[1]>=Uslicein){par[0]=Uuse;extendBUFFER(par);}
+    else{par[0]=Uset;extendBUFFER(par);}
     par[0]=a[0];extendBUFFER(par);}
 }
-static void ghandleVarargBlock(int *a){ /*> ptr */
-  int par[3];int t;
+static void ghandleVarargBlock(int *a){ /*> ptr + >formal */
+  int par[3];int ftype;
 //DEBUG !!!
 if(LLOC->offset[a[0]-LLOC_type]!=IformalRepeat){printf("ghandle: ptr=%d, type!=*\n",a[0]);exit(99);}
-  nxt:t=LLOC->offset[a[0]-LLOC_type];
-  if(t==Ilabel){;}
-  else if(t==IformalIn){/* par[0]=a[0];par[1]=Uin;ghandleAffix(par); */
-    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
-  else if(t==IformalOut){par[0]=a[0];par[1]=Uout;ghandleAffix(par);
-    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
-  else if(t==IformalInout){par[0]=a[0];par[1]=Uout;ghandleAffix(par);
-    par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
-  else{par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];goto nxt;}
+  nxt:par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];
+  par[0]=a[1];getType(par);ftype=par[1];getAdm(par);a[1]=par[1];
+  if(ftype==IformalIn){par[0]=a[0];par[1]=Uin;ghandleAffix(par);}
+  else if(ftype==IformalOut){par[0]=a[0];par[1]=Uout;ghandleAffix(par);}
+  else if(ftype==IformalInout){par[0]=a[0];par[1]=Uinout;ghandleAffix(par);}
+  if(a[1]==0){;}else{goto nxt;}
 }
+static void ghandleShiftRule(int *a){/* > ptr */
+  int par[3];int t; nxt:
+  par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];
+  t=LLOC->offset[a[0]-LLOC_type];
+  if(t==Ilabel){;}
+  else if(t==IformalIn){par[0]=a[0];par[1]=Uin;ghandleAffix(par);goto nxt;}
+  else if(t==IformalOut){par[0]=a[0];par[1]=Uout;ghandleAffix(par);goto nxt;}
+  else if(t==IformalInout){par[0]=a[0];par[1]=Uinout;ghandleAffix(par);goto nxt;}
+  else{goto nxt;}
+}
+
 static int glimit(void){
   int par[1];
   par[0]=Dvlwb;if(Q(par)){return 1;}
@@ -246,16 +255,18 @@ static void gactualRule(int *a){/*> tag */
      par[0]=formal;getAdm(par);formal=par[1];if(formal==0){formal=repeat;}
      goto nxt;}
    if(frep==0){;}
-   else if((par[0]=a[0],par[1]=rshiftrule,isTagFlag(par))&&(a[0]!=Xshiftaffix)){;}
+   else if(a[0]==Xshiftaffix){par[0]=frep;ghandleShiftRule(par);}
+   else if((par[0]=a[0],par[1]=rshiftrule,isTagFlag(par))){;}
    else{
 //DEBUF !!!
 if(formal!=repeat){printf("gactualRULE, formal=%d,repeat=%d different\n",formal,repeat);exit(99);}
-      par[0]=frep;ghandleVarargBlock(par);}
+      par[0]=frep;par[1]=repeat;ghandleVarargBlock(par);}
    par[0]=a[0];par[1]=rcanFail;if(isTagFlag(par)){pushRULE(Ufalse,0);}
    frep=oldBUFF;nxt2:if(frep>=BUFFER->aupb){;}
-   else{int flag; frep++;flag=BUFFER->offset[frep];frep++;
+   else{int flag,utype; frep++;utype=BUFFER->offset[frep];
+     frep++;flag=BUFFER->offset[frep];frep++;
      pushRULE(flag,LLOC->offset[BUFFER->offset[frep]-LLOC_repr]);
-     par[0]=BUFFER->offset[frep];diagnoseOutAffix(par);goto nxt2;}
+     par[0]=utype;par[1]=BUFFER->offset[frep];diagnoseOutAffix(par);goto nxt2;}
    par[0]=STACKpar(BUFFER);par[1]=oldBUFF;unstackto(par);
    par[0]=a[0];par[1]=rnoReturn;if(isTagFlag(par)){
      pushRULE(Usink,0);}else{pushRULE(Utrue,0);}
@@ -575,13 +586,14 @@ static void diagnoseLocal(int *a){/* >base + >off+ >loc */
 }
 static void printRULEstack(int *a);
 
-static void diagnoseOutAffix(int *a){/* >loc */
+static void diagnoseOutAffix(int *a){/* >utype+>loc */
   int par[3];
   if(addRULEflag!=1){ return;}
   if(Uspare!=RULE->offset[RULEtop-RULE_flag]){return;}
 //printf("RULEtop=%d, flag=%x\n",RULEtop,RULE->offset[RULEtop-RULE_flag]);printRULEstack(NULL);RULE->offset[0]=1;
   par[0]=out_affix_not_used;par[1]=ruleCalled;
-  par[2]=LLOC->offset[a[0]-LLOC_tag];Warning(4,3,par);
+  par[2]=LLOC->offset[a[1]-LLOC_tag];
+  Warning(a[0]==Uinout?1:4,3,par);
 }
 static void diagnoseFormals(void){
   int par[3];int loc,base,off;int t;
@@ -614,7 +626,7 @@ static void diagnoseRule(int *a){/* + >tag */
   gruleBody();par[0]=Dpoint;mustQ(par);
   par[0]=a[0];traverseRULE(par);
   computeDUflags();
-printf("*** diagnose *** ");printRULEstack(a);
+//printf("*** diagnose *** ");printRULEstack(a);
   par[0]=dpos;par[1]=dnum;restoreDiscPosition(par);
   addRULEflag=1;RULEtop=rptr;par[0]=a[0];setupFormalStack(par);
   diagnoseFormals();gruleBody();par[0]=Dpoint;mustQ(par);
@@ -645,7 +657,7 @@ static void wsimpleAffix(int *a),wcopyAffixFromBUFFER(int *a);
 /* - - - - - - - - - - - - */
 static void wlabel(int *a){/* >ptr */
   int par[3];int label,j;
-  par[0]=Dcolon;W(par);if(a[0]==0){par[0]=0;Wcons(par);}
+  par[0]=Dout;W(par);if(a[0]==0){par[0]=0;Wcons(par);}
   else{label=RULE->offset[a[0]-RULE_data];j=RULE->offset[a[0]-RULE_flag];
     if(j!=Utrue && j!=Ufalse &&j!=Usink){printf("wlabel: wrong flag %x, ptr=%d\n",j,a[0]);exit(31);}
     if(j==Usink){par[0]=0;Wcons(par);}
@@ -690,13 +702,35 @@ static void whandleAffix(int *a){/* >utype */
   par[0]=a[0];if(inUtype(par)){pushRULE(Uuse,0);}
   par[0]=a[0];if(outUtype(par)){par[0]=Dminus;pushBUFFER(1,par);}
 }
-static void wskipVarargBlock(int*a){/* >ptr */
-  int t;nxt:
-  t=LLOC->offset[a[0]-LLOC_type];if(t==Ilabel){;}
-  else if(t==IformalOut||t==IformalInout){pushRULE(Uuse,0);
-    a[0]+=LLOC_CALIBRE;goto nxt;}
-  else{a[0]+=LLOC_CALIBRE;goto nxt;}
+static void wbeforeVarargBlock(int *a){/* >ptr + >formal */
+  int par[3];int ftype;
+  nxt:par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];
+  par[0]=a[1];getType(par);ftype=par[1];getAdm(par);a[1]=par[1];
+  if(ftype==IformalIn||ftype==IformalInout){pushRULE(Uuse,0);}
+  if(a[1]==0){;}else{goto nxt;}
 }
+static void wbeforeShiftRule(int *a){/* >ptr */
+  int par[3];int t;nxt:
+  par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];
+  t=LLOC->offset[a[0]-LLOC_type];if(t==Ilabel){;}
+  else if(t==IformalIn||t==IformalInout){pushRULE(Uuse,0);goto nxt;}
+  else{goto nxt;}
+}
+static void wafterVarargBlock(int *a){/* >ptr+>formal */
+  int par[3];int ftype; nxt:
+  par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];
+  par[0]=a[1];getType(par);ftype=par[1];getAdm(par);a[1]=par[1];
+  if(ftype==IformalOut||ftype==IformalInout){pushRULE(Uset,0);}
+  if(a[1]==0){;}else{goto nxt;}
+}
+static void wafterShiftRule(int *a){/*>ptr */
+  int par[3];int t;nxt:
+  par[0]=STACKpar(LLOC);par[1]=a[0];next(par);a[0]=par[1];
+  t=LLOC->offset[a[0]-LLOC_type];if(t==Ilabel){;}
+  else if(t==IformalOut||t==IformalInout){pushRULE(Uset,0);goto nxt;}
+  else{goto nxt;}
+}
+
 static void wsimpleAffix(int *a){/* >utype+ repeat> */
   int par[7];int tag,type,local,x;
   a[1]=0;if(Qcons(par)){par[1]=par[0];par[0]=Dconst,pushBUFFER(2,par);return;}
@@ -769,13 +803,13 @@ static void wbeforeAffixes(int *a){/*>tag + >b + >cnt + >rep */
   par[0]=formal;getType(par);ftype=par[1];
   if(ftype==IformalRepeat){par[0]=Dstar;W(par);par[0]=a[2];Wcons(par);
     if(a[3]){par[0]=1;Wcons(par);}else{par[0]=0;Wcons(par);}
-    par[0]=formal;getAdm(par);formal=par[1];repeat=formal;}
-  else{a[1]++;if(BUFFER->offset[a[1]]==Dstar){par[0]=Dstar;W(par);a[1]++;}
-    else if(ftype==IformalOut){par[0]=Dnoarg;W(par);par[0]=0;
-      par[1]=a[1];wskipAffixInBUFFER(par);a[1]=par[1];}
-    else{par[0]=0;par[1]=a[1];wcopyAffixFromBUFFER(par);a[1]=par[1];}
+    par[0]=formal;getAdm(par);formal=par[1];repeat=formal;goto nxt;}
+  else{a[1]++;
     par[0]=formal;getAdm(par);formal=par[1];if(formal==0){formal=repeat;}}
-  goto nxt;
+    if(BUFFER->offset[a[1]]==Dstar){par[0]=Dstar;W(par);}
+    else if(ftype==IformalOut){/* par[0]=Dnoarg;W(par);*/ par[0]=0;
+      par[1]=a[1];wskipAffixInBUFFER(par);a[1]=par[1];goto nxt;}
+    else{par[0]=0;par[1]=a[1];wcopyAffixFromBUFFER(par);a[1]=par[1];goto nxt;}
 }
 static void wafterAffixes(int *a){/* >tag + >b */
   int par[3];int formal,ftype,repeat;
@@ -795,17 +829,17 @@ static void wafterAffixes(int *a){/* >tag + >b */
           printf("wafterAffixes: RULEtop=%d, should be Uset (%x)\n",RULEtop,RULE->offset[RULEtop-RULE_flag]);exit(35);}
       else{par[0]=1;par[1]=a[1];wcopyAffixFromBUFFER(par);a[1]=par[1];}}
     else{par[0]=1;par[1]=a[1];wcopyAffixFromBUFFER(par);a[1]=par[1];}}
-  else{par[0]=Dnoarg;W(par);par[0]=1;par[1]=a[1];wskipAffixInBUFFER(par);a[1]=par[1];}
+  else{/*par[0]=Dnoarg;W(par);*/par[0]=1;par[1]=a[1];wskipAffixInBUFFER(par);a[1]=par[1];}
   par[0]=formal;getAdm(par);formal=par[1];if(formal==0){formal=repeat;}
   goto nxt;
 }
 static void wactualRule(int *a){/* >tag */
   int par[4];int oldBUFF,formal,ftype,repeat,count,frep;
-  pushRULE(Unode,0);par[0]=Drule;W(par);
+  pushRULE(Unode,0);par[0]=Dnode;W(par);
 //printf("rule RULE=%d (%x,%d) ",RULEtop,RULE->offset[RULEtop-RULE_flag],RULE->offset[RULEtop-RULE_data]);printPointer(a);printf("\n");
   par[0]=RULE->offset[RULEtop-RULE_data];W(par);par[0]=a[0];Wtag(par);
-  oldBUFF=BUFFER->aupb;par[0]=a[0];getAdm(par);formal=par[1];
-  resetRuleCount();repeat=frep=count=0; nxt:
+  oldBUFF=BUFFER->aupb;resetRuleCount();repeat=frep=count=0; 
+  par[0]=a[0];getAdm(par);formal=par[1];nxt:
   par[0]=Dplus;if(Q(par)){extendBUFFER(par);par[0]=formal;getType(par);
     ftype=par[1];if(ftype==IformalRepeat){par[0]=formal;
       getAdm(par);formal=par[1];repeat=formal;par[0]=formal;getType(par);
@@ -816,16 +850,20 @@ static void wactualRule(int *a){/* >tag */
   countStarAffix(frep);par[0]=C1;Wcons(par);par[0]=C2;
   Wcons(par);par[0]=C3;Wcons(par);
 //printf("BUFFER (%d--%d): ",oldBUFF+1,BUFFER->aupb);{int i=oldBUFF+1;while(i<=BUFFER->aupb){par[0]=BUFFER->offset[i];if(par[0]==Dconst){printf("%d ",BUFFER->offset[i+1]);i+=2;}else{printPointer(par);printf(" ");i++;}}}printf("***\n");
-  par[0]=a[0];par[1]=oldBUFF;par[2]=count;par[3]=frep;
-  wbeforeAffixes(par);par[0]=a[0];par[1]=rcanFail;
-  if(isTagFlag(par)){pushRULE(Ufalse,0);
-    par[0]=RULEtop;wlabel(par);}
+  par[0]=a[0];par[1]=oldBUFF;par[2]=count;par[3]=frep;wbeforeAffixes(par);
+  if(frep==0){;}
+  else if(a[0]==Xshiftaffix){par[0]=frep;wbeforeShiftRule(par);}
+  else if((par[0]=a[0],par[1]=rshiftrule,isTagFlag(par))){;}
+  else{par[0]=frep;par[1]=repeat;wbeforeVarargBlock(par);}
+  par[0]=a[0];par[1]=rcanFail;
+  if(isTagFlag(par)){pushRULE(Ufalse,0);par[0]=RULEtop;wlabel(par);}
   else{par[0]=0;wlabel(par);}
 //printf("BUFFER2 %d--%d\n",oldBUFF+1,BUFFER->aupb);
   par[0]=a[0];par[1]=oldBUFF;wafterAffixes(par);
   if(frep==0){;}
-  else{par[0]=a[0];par[1]=rshiftrule;if(isTagFlag(par)&& a[0]!=Xshiftaffix){;}
-    else{par[0]=frep;wskipVarargBlock(par);}}
+  else if(a[0]==Xshiftaffix){par[0]=frep;wafterShiftRule(par);}
+  else if((par[0]=a[0],par[1]=rshiftrule,isTagFlag(par))){;}
+  else{par[0]=frep;par[1]=repeat;wafterVarargBlock(par);}
   pushRULE(Utrue,0);par[0]=RULEtop;wlabel(par);
   par[0]=STACKpar(BUFFER);par[1]=oldBUFF;unstackto(par);
 }
@@ -900,7 +938,7 @@ static void printRULEstack(int *a){
               "plus ","minus","jump ","box  ","","","",               "scol ",
                    "","--use","--set","--spr"};
   int i,cnt;int f,d;
-//  return;
+  return;
   printf("RULE stack (");if(a){printPointer(a);}printf("), nodes=%d\n",nodeCount);
   i=RULE->alwb;cnt=-1;while(i<=RULE->aupb){
     cnt++; if(cnt==5){cnt=0;printf("\n");}
@@ -934,7 +972,7 @@ void generateRule(int *a){/* >tag */
       gruleBody();par[0]=Dpoint;mustQ(par);
       par[0]=a[0];traverseRULE(par);LfindLabels();assignNodes();
       par[0]=dpos;par[1]=dnum;restoreDiscPosition(par);
-//printRULEstack(a);
+printRULEstack(a);
       par[0]=Drule;W(par);par[0]=a[0];Wtag(par);
       par[0]=minLocal;Wcons(par);par[0]=maxLocal;Wcons(par);
       par[0]=nodeCount;Wcons(par);

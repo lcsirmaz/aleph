@@ -79,9 +79,10 @@ int main(int argc, char *argv[]){
   initTags();
 
   par[0]='w';openDisc(par);
-   readSources();readStdlib();
-  closeDisc();
-  if(wasError()){return 0;}
+   readSources();wasRootScanned();
+   if(wasError()){;}else{readStdlib();}
+   closeDisc();
+  if(wasError()){return 1;}
  
 //  listDiscContent(); exit(7);
 //  printf("\n**********************\n\n");

@@ -1,0 +1,26 @@
+$ main
+'pragmat'title="complier".
+'pragmat'require=("disc","input","display","obj","passi","passii",
+     "mcheck").
+
+'a'first pass:
+   open disc+/w/, $ give error messages if canno open $
+   read sources,was root scanned,(was error;read stdlib),
+   close disc,(was error,delete disc;+).
+'a'second pass:
+   was error;
+   open obj file,create obj header,
+   open disc+/r/,passII,
+   (was error;check macro rules),
+   (was error,delete disc,delete obj file;+).
+'a'third pass:
+   was error;
+   rewind disc, $ and prepare for macro substitution $
+   pass III,
+   delete disc,close obj file.
+
+'root'
+   first pass,second pass,third pass.
+
+'end'
+

@@ -19,12 +19,6 @@ $ BODY ******************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("lexical","display","pragmats","symbols","disc","passi").
 
-'pragmat'public=(
-  read sources,read stdlib,
-  add required source,add included source,
-  find linenum, next input entry
-).
-
 'table'MESSAGE=(
  "missing argument for cmdline pragmat ""-o""": missing argument for pragmat,
  "source file ""%p"" is in command line, ignored": added as cmdline source,

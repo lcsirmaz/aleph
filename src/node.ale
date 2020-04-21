@@ -238,24 +238,28 @@ $  the classification Unode data is a BUFFER pointer.
 $ actual rule --------------------------------------- $
 'a'g handle affix+>tag+>utype:
    (in utype+utype,push RULE+Uuse+repr*LLOC[tag];+),
-   (out utype+utype,(utype>=Uslicein,extend BUFFER+Uuse;extend BUFFER+Uset),
+   (out utype+utype,extend BUFFER+utype,
+     (utype>=Uslicein,extend BUFFER+Uuse;extend BUFFER+Uset),
      extend BUFFER+tag;+).
-'a'g handle vararg block+>ptr+>formal:
+'a'g handle vararg block+>ptr+>formal-ftype:
    $ ptr points to the * formal affix of the rule (actual affix);
    $ formal is the first after * in the actual rule
    $ in/inout are used, inout/out are set
    next+LLOC+ptr,get type+formal+ftype,get adm+formal+formal,
    (=ftype=
-   [Iformal in],   g handle affix+ptr+Uin,next+LLOC+ptr;
-   [Iformal out],  g handle affix+ptr+Uout,next+LLOC+ptr;
-   [Iformal inout],g handle affix+ptr+Uinout,next+LLOC+ptr;
+   [Iformal in],   g handle affix+ptr+Uin;
+   [Iformal out],  g handle affix+ptr+Uout;
+   [Iformal inout],g handle affix+ptr+Uinout;
    +),
    (formal=0;:g handle vararg block).
-
-'a'g handle shiftrule+>tag+>ptr:
-   $ shift affix block+* 
-   tag!=Xshift affix;
-   +.
+'a'g handle shiftrule+>ptr: $ shift affix block+* 
+   next+LLOC+ptr,(=type*LLOC[ptr]=
+     [Ilabel],+;
+     [Iformal in],   g handle affix+ptr+Uin,:g handle shiftrule;
+     [Iformal out],  g handle affix+ptr+Uout,:g handle shiftrule;
+     [Iformal inout],g handle affix+ptr+Uinout,:g handle shiftrule;
+     :g handle shiftrule).
+     
 'p'g limit:
    Q+Dvlwb;Q+Dvupb;Q+Dlwb;Q+Dupb;Q+Dcalibre.
 'a'g simple affix+>utype+repeat>-tag-type:
@@ -305,13 +309,15 @@ $ actual rule --------------------------------------- $
   +),
   $ frep: the last actual affix is *; this is a LLOC pointer
   (frep=0;
-   is tag flag+tag+rshiftrule,g handle shiftrule+tag+frep;
+   tag=Xshift affix,g handle shiftrule+frep;
+   is tag flag+tag+rshiftrule;
    g handle vararg block+frep+repeat),
   (is tag flag+tag+rcan fail,push RULE+Ufalse+0;+),
   oldBUFF->frep,
-  (nxt-flag:frep>=>>BUFFER;
-    incr+frep,BUFFER[frep]->flag,incr+frep,push RULE+flag+repr*LLOC[BUFFER[frep]],
-      diagnose out affix+BUFFER[frep],:nxt),
+  (nxt-flag-utype:frep>=>>BUFFER;
+    incr+frep,BUFFER[frep]->utype,incr+frep,BUFFER[frep]->flag,
+      incr+frep,push RULE+flag+repr*LLOC[BUFFER[frep]],
+      diagnose out affix+utype+BUFFER[frep],:nxt),
   unstack to+BUFFER+oldBUFF,
   (is tag flag+tag+rno return,push RULE+Usink+0;push RULE+Utrue+0).
 $ structure ----------------------------------------- $
@@ -556,9 +562,10 @@ $        places where Uuse => Uspare
    is RULE flag+base+off+UDset,
      warning+4+local affix set only+rule compiled+tag*LLOC[loc];
    +.
-'a'diagnose out affix+>loc:
+'a'diagnose out affix+>utype+>loc:
   addRULE flag!=1;
   flag*RULE[RULEtop]!=Uspare;
+  utype=Uinout,warning+1+out affix not used+rule called+tag*LLOC[loc];
   warning+4+out affix not used+rule called+tag*LLOC[loc].
 'a'diagnose formals-loc-base-off:
   <<LLOC->loc,<<RULE->base,1->off,
@@ -634,7 +641,7 @@ $ node 0 and 1 are the true and false returns, respectively
 $ exit label ----------------------------------------- $
 'a'w label+>ptr-label:
    $ we are looking at Utrue,Ufalse,Umark. Figure out the label
-   W+Dcolon,(ptr=0,Wcons+0;
+   W+Dout,(ptr=0,Wcons+0;
       data*RULE[ptr]->label,
       (flag*RULE[ptr]=Usink,Wcons+0; $ final label for 'exit' $
        label=-1,Wcons+-1;
@@ -671,12 +678,22 @@ $ replacement for L*L[>>L], figure out the standard selector
   (in utype+utype,push RULE+Uuse+0;+),
   $ Dminus marks the affix to have a RULE entry $
   (out utype+utype,push BUFFER+Dminus;+).
-'a'w skip vararg block+>ptr:
-  $ the last actual affix is *; skip RULE entries
-  (nxt: =type*LLOC[ptr]=
-  [Ilabel],+; $ the last one
-  [Iformal out;Iformal inout],push RULE+Uuse+0,next+LLOC+ptr,:nxt;
-  next+LLOC+ptr,:nxt).
+'a'w before vararg block+>ptr+>formal-ftype:
+  next+LLOC+ptr,get type+formal+ftype,get adm+formal+formal,
+  (=ftype=[Iformal in;Iformal inout],push RULE+Uuse+0;+),
+  (formal=0;:w before vararg block).
+'a'w before shiftrule+>ptr:
+  next+LLOC+ptr,(=type*LLOC[ptr]= [Ilabel],+;
+    [Iformal in;Iformal inout],push RULE+Uuse+0,:w before shiftrule;
+    :w before shiftrule).
+'a'w after vararg block+>ptr+>formal-ftype:
+  next+LLOC+ptr,get type+formal+ftype,get adm+formal+formal,
+  (=ftype=[Iformal out;Iformal inout],push RULE+Uset+0;+),
+  (formal=0;:w after vararg block).
+'a'w after shiftrule+>ptr:
+  next+LLOC+ptr,(=type*LLOC[ptr]= [Ilabel],+;
+   [Iformal out;Iformal inout],push RULE+Uset+0,:w after shiftrule;
+   :w after shiftrule).
 
 'a'w simple affix+>utype+repeat>-tag-type-local-x:
    0->repeat,
@@ -736,19 +753,19 @@ $ replacement for L*L[>>L], figure out the standard selector
   $ cnt: repeat block number; rep: !=0 if * is at the end
   incr+b, $ now BUFFER[b] looks at Dplus $
   get adm+tag+formal,0->repeat,
-  (nxt:b>>>BUFFER; $ we run out of affixes
+  (nxt:b>>>BUFFER; $ we run out of stored affixes
      get type+formal+ftype,
       (ftype=Iformal repeat, $ formal * affix; number of blocks,actual *
           W+Dstar,Wcons+cnt,(is+rep,Wcons+1;Wcons+0),
-          get adm+formal+formal,formal->repeat;
+          get adm+formal+formal,formal->repeat,:nxt;
        incr+b,                   $ skip Dplus $
-        (BUFFER[b]=Dstar,W+Dstar,incr+b;
+        get adm+formal+formal,(formal=0,repeat->formal;+),
+        (BUFFER[b]=Dstar,W+Dstar;
             $ last affix; rep!=0 (formal * should be added)
          ftype=Iformal out, $ out affix, no value $
-           W+Dnoarg,w skip affix in BUFFER+0+b;
-         w copy affix from BUFFER+0+b),
-        get adm+formal+formal,(formal=0,repeat->formal;+)
-      ),:nxt).
+           w skip affix in BUFFER+0+b,:nxt;
+         w copy affix from BUFFER+0+b,:nxt)
+      )).
 
 'a'w after affixes+>tag+>b-formal-ftype-repeat:
   incr+b, $ now BUFFER[b] looks at Dplus $
@@ -764,31 +781,34 @@ $ replacement for L*L[>>L], figure out the standard selector
                 (flag*RULE[RULEtop]=Uspare,W+Dnoarg,wskip affix in BUFFER+1+b;
                  w copy affix from BUFFER+1+b);
              w copy affix from BUFFER+1+b);
-        W+Dnoarg,w skip affix in BUFFER+1+b),
+        w skip affix in BUFFER+1+b),
        get adm+formal+formal,(formal=0,repeat->formal;+),
        :nxt)).
 
 'a'w actual rule+>tag-oldBUFF-formal-ftype-repeat-count-frep:
-   push RULE+Unode+0,W+Drule,W+data*RULE[RULEtop],Wtag+tag,$ node ID+rule $
-   >>BUFFER->oldBUFF,get adm+tag+formal,reset rule count,
-   0->repeat->frep->count,
+   push RULE+Unode+0,W+Dnode,W+data*RULE[RULEtop],Wtag+tag,$ node ID+rule $
+   >>BUFFER->oldBUFF,reset rule count,
+   0->repeat->frep->count,get adm+tag+formal,
    $ store all affixes in BUFFER as they come
    (nxt:Q+Dplus,extend BUFFER+Dplus,get type+formal+ftype,
-     (ftype=Iformal repeat,get adm+formal+formal,formal->repeat,
-         get type+formal+ftype;
-      +),
+     (ftype=Iformal repeat,
+       get adm+formal+formal,formal->repeat,get type+formal+ftype;+),
      count rule affix+ftype+repeat,w match formal actual+ftype+frep,
      get adm+formal+formal,(formal=0,incr+count,repeat->formal;+),:nxt;
    +),
    count star affix+frep,Wcons+C1,Wcons+C2,Wcons+C3,
    w before affixes+tag+oldBUFF+count+frep,
+   (frep=0;
+    tag=Xshift affix, w before shiftrule+frep;
+    is tag flag+tag+rshiftrule;
+    w before vararg block+frep+repeat),
    (is tag flag+tag+rcan fail,push RULE+Ufalse+0,w label+RULEtop;
     w label+0),
    w after affixes+tag+oldBUFF,
-   $ go over in affixes, skip RULE entries if appropriate
    (frep=0;
-    (is tag flag+tag+rshiftrule,tag!=Xshift affix),+;
-    w skip vararg block+frep),
+    tag=Xshift affix,w after shiftrule+frep;
+    is tag flag+tag+rshiftrule;
+    w after vararg block+frep+repeat),
    push RULE+Utrue+0,w label+RULEtop,
    unstack to+BUFFER+oldBUFF.
 
