@@ -75,7 +75,7 @@ void setPragmatValue(int *a){ /* >what + >to */
 /* initialize */
 static int
   Pon,Poff,Pall,Pno,Pnone,Ptitle,Plist,Ptabwidth,Pmargin,
-  Pwarninglevel,Pdict,Pstdlib,Pcompile,Plibrary,
+  Pwarninglevel,Pdict,Pstdlib,Pcompile,Plibrary,Pimport,
   Prequire,Pinclude,Pmodule,Pmacro,Pinline,Ppublic,Pproto,
   Pexternal,Pexport,Ptrace,Pbounds,Pcount,Pif,Pifnot,
   Pifdef,Pifndef,Pelse,Pendif;
@@ -110,6 +110,7 @@ void initialize_pragmats(void){
   addTTAG("require"   ,Prequire);
   addTTAG("include"   ,Pinclude);
   addTTAG("module"    ,Pmodule);
+  addTTAG("import"    ,Pimport);
   addTTAG("inline"    ,Pinline);
   addTTAG("macro"     ,Pmacro);
   addTTAG("public"    ,Ppublic);
@@ -350,7 +351,7 @@ static void tagPragmat2(int *a){ /* >x+>y+>dl */
   else if(a[0]==Pcompile){if(a[1]==Pon){inCompile=1;}else if(a[1]==Poff){inCompile=0;}
       else{par[0]=wrong_pragmat_value;par[1]=a[0];par[2]=a[1];Error(3,par);}}
   else if(a[0]==Pproto){if(a[1]==Pno||a[1]==Pnone){protoLevel=0;}
-      else if(a[1]==Ppublic){protoLevel=1;}else if(a[1]==Pexternal){protoLevel=2;}
+      else if(a[1]==Ppublic){protoLevel=2;}else if(a[1]==Pimport){protoLevel=1;}
       else{par[0]=wrong_pragmat_value;par[1]=a[0];par[2]=a[1];Error(3,par);}}
   else if(a[0]==Pmacro||a[0]==Pinline){par[0]=a[1];par[1]=a[2];markRawTagAsMacro(par);}
   else if(a[0]==Ppublic||a[0]==Pexport){par[0]=a[1];par[1]=a[2];markRawTagAsPublic(par);}

@@ -1,0 +1,12 @@
+$ error 
+$ HEADER *********************************************** $
+'e'internal error+>lineno.
+'e'corrupted obj file+>lineno.
+
+$ BODY ************************************************* $
+'pragmat'if=compile.
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'

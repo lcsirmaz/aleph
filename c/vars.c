@@ -163,11 +163,11 @@ static void prototype(int *a){ /* >tag+>type+>dl */
 static void declaration(int *a){/* >ext> + >type */
   int par[4];int tag,dl;
   if(isTagdl(par)){tag=par[0];dl=par[1];par[0]=Sequals;
-    if(R(par)){if(a[0]==3){par[0]=mixing_proto;Error(1,par);skipAll();}
+    if(R(par)){if(a[0]==3){par[0]=mixing_proto;par[1]=a[1];Error(1,par);skipAll();}
       else if(a[0]==1){par[0]=tag;par[1]=a[1];par[2]=dl;externalDeclarer(par);}
       else{a[0]=2;par[0]=tag;par[1]=a[1];par[2]=dl;declarer(par);}}
     else if(a[0]==1){par[0]=no_external_init;par[1]=a[1];par[2]=tag;Error(3,par);skipAll();}
-    else if(a[0]==2){par[0]=mixing_proto;par[2]=a[1];Error(2,par);skipAll();}
+    else if(a[0]==2){par[0]=mixing_proto;par[1]=a[1];Error(2,par);skipAll();}
     else{a[0]=3;par[0]=tag;par[1]=a[1];par[2]=dl;prototype(par);}}
   else{par[0]=tag_expected_for;par[1]=a[1];Error(2,par);skipAll();}
 }

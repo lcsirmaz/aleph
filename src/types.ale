@@ -9,7 +9,7 @@ $
 'constant' $ types
   Iempty,
   Iconstant,		Irecconst,		Ivariable,
-  Istatic var,		Istatic const,		Itable,
+  Istatic var,		Itable,
   Istack,		Istatic stack,
   Iselector,		Ipointer constant,	Ichar file,
   Idata file,		Irule,			Ifirst formal type,
@@ -26,25 +26,6 @@ $
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 
-'pragmat'public=(
-$ types
-  Iempty,	Iconstant,	Irecconst,
-  Ivariable,	Istatic var,	Istatic const,
-  Itable,	Istack,		Istatic stack,	Iselector,
-  Ipointer constant,
-  Ichar file,	Idata file,	Irule,
-$ formal affixes
-  Ifirst formal type,		$ not an actual type
-  Iformal selector,		Iformal stack,
-  Iformal table,		Iformal file,
-  Iformal in,			Iformal out,
-  Iformal inout,		Iformal repeat,
-  Iformal shift,
-  Imacro,	Inoarg,		Ilocal,		Ilabel,
-$ rules
-  was type pointer,has formal type
-).
-
 'pragmat'require="tags".
 
 'table'INDICATOR=(
@@ -53,7 +34,6 @@ $ rules
   "constant"            :Irecconst, $ expression under evaluation
   "variable"		:Ivariable,
   "static variable"	:Istatic var,
-  "static constant"     :Istatic const,
   "table"		:Itable,
   "stack"		:Istack,
   "static stack"	:Istatic stack,

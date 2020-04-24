@@ -342,7 +342,7 @@ $ constants
   [/x/;/X/], next char, read hex+sign+x;
   const zero->x.
 'a'read const+>sign+x>-v:
-  $ a digit
+  $ a digit; this works for minint and maxint
   subtr+char+/0/+v, next char,
     (nxt-d: digit+d, addmult+v+10+d+v,:nxt;
             is+sign,subtr+0+v+v;

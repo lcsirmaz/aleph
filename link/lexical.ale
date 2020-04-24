@@ -1,0 +1,257 @@
+$ lexital parsing for .ice files
+'pragmat'module="lexical".
+$ HEAD **************************************************** $
+'constant'
+   Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
+   Dlist,Dlwb,Dmodule,Dnode,Drule,Dtitle,Dto,Dupb,Dvlwb,
+   Dvupb,
+   Dand,Dbus,Dclose,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
+   Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
+   Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
+   $ types $
+   Iconstant,Ivariable,Istatic var,Itable,Istack,Istatic stack,
+   Ipointer constant,Ichar file,Idata file,Irule,
+   Iformal stack,Iformal table,Iformalfile,Iformal in,
+   Iformal out,Iformal inout,Iformal repeat,Iformal shift.
+
+'a'next symbol. $ read next symbol
+'variable' inpt,     $ next symbol     $
+           inpt value. $ auxiliary value $
+'p'R+>x:x=inpt,next symbol.
+'a'must+>x+y>:x=inpt,inpt value->y,next symbol;
+              corrupted obj file+_line_.
+
+
+$ BODY **************************************************** $
+'pragmat'if=compile.
+'pragmat'require="error".
+
+'stack'BUFFER,LEXT.
+
+'pragmat'prototype=import.
+'a'extend BUFFER+>x.
+'pragmat'prototype=none.
+
+'variable'inpt=0,inpt value=0.
+
+$ .ice file constituents:
+$ 'bold'
+$ "string" (quote is doubled)
+$ signed integer
+$ <type>
+$  I54 (item), F54 (formal), L54 (local), N54 (node)
+$ other characters: ()[] .*;:> +-/~|^
+
+'charfile'SOURCE="objfile">.   $ obj file $
+
+'variable'char=/ /.
+'constant'end char=1.
+  
+'p'read char+char>:
+   get char+SOURCE+char.
+'a'next char:
+   read char+char,
+     (=char=
+      [newline],+;
+      [:31],:next char;
+      +);
+   end char->char.
+$ CHARACTERS ****************************** $
+'p'bold letter+x>:
+  =char= [/a/:/z/],char->x,nextchar;-.
+'p'digit+x>:
+  =char=[/0/:/9/],subtr+char+/0/+x,next char;
+  -.
+$ NUMBER ********************************** $
+'a'read index+>sign+x>-d:
+  (=char=[/0/:/9/],+;corrupted obj file+_line_),
+  subtr+char+/0/+x,next char,
+  (nxt:digit+d,addmult+x+10+d+x,:nxt;
+       is+sign,subtr+0+x+x;
+       +).
+'a'read minus+x>+y>:
+   next char,
+     (=char=[/0/:/9/],Tconst->x,read index+1+y;
+      Dminus->x,0->y).
+   
+$ STRING ********************************** $
+$ strings identify tags, sources and titles.
+$ each tag has at most one unique global definition,
+$   but can have several local definitions.
+$
+'variable'
+  HASH size=511,  $ size of HASH stack, grows by 512 $
+  HASH entries=1. $ string entries in LEXT table
+'stack'[20](next,def)LEXT=("",(0,0):Squote image).
+'stack'[1]HASH.
+
+'a'enter string+>ptr+out>-string-hash-ptr2-string2-eq:
+  subtr+ptr+<>LEXT+string,simple hash+LEXT+string+hash,
+  bool and+hash+max int+hash,divrem+hash+HASH size+#+hash,
+  add+hash+<<HASH+hash,HASH[hash]->ptr2,
+    (nxt:ptr2=0,HASH[hash]->next*LEXT[ptr],ptr->HASH[hash]->out,
+       incr+HASH entries,
+       (HASH entries<HASH size;
+        add+HASH size+512+HASH size,rehash);
+     subtr+ptr2+<>LEXT+string2,compare string+LEXT+string+LEXT+string2+eq,
+       (eq=0,ptr2->out,previous string+LEXT+string,
+                unstack to+LEXT+string;
+        next*LEXT[ptr2]->ptr2,:nxt)).
+
+'a'rehash-ptr-block:
+   >>HASH->ptr, $ clear all entries in HASH
+     (nxt:ptr<<<HASH;0->HASH[ptr],previous+HASH+ptr,:nxt),
+   $ makes sure there atr HASH size entries
+   subtr+<<HASH+>>HASH+block,incr+block,
+     (nxt:block>=HASH size;(*0->HASH*)HASH,incr+block,:nxt),
+   >>LEXT->ptr,(nxt:ptr<<<LEXT; $ done $
+   enter string+ptr+block,
+     (block=ptr,previous+LEXT+ptr,previous string+LEXT+ptr,:nxt;
+      internal error+_line_)).
+
+'a'read string+x>-n:
+  next char,scratch+BUFFER,0->n,
+  (nxt: next char,(=char=
+   [/"/],next char, $ closing quote mark
+     (char=/"/,extend BUFFER+char,incr+n,:nxt;
+      n=0,Squote image->x;
+      pack string+BUFFER+n+LEXT,(*0->next->def*)LEXT,
+         enter string+>>LEXT+x);
+   [newline;end char],corrupted obj file+_line_;
+   extend BUFFER+char,incr+n,:nxt)).
+
+$ BOLD ************************************ $
+
+'table'BOLD = (
+ "area"		:Darea:first BOLD,
+ "box"		:Dbox,
+ "calibre"	:Dcalibre,
+ "expression"	:Dexpression,
+ "extension"	:Dextension,
+ "file"		:Dfile,
+ "fill"		:Dfill,
+ "list"		:Dlist,
+ "lwb"		:Dlwb,
+ "module"	:Dmodule,
+ "node"		:Dnode,
+ "rule"		:Drule,
+ "title"	:Dtitle,
+ "to"		:Dto,
+ "upb"		:Dupb,
+ "vlwb"		:Dvlwb,
+ "vupb"		:Dvupb:last BOLD,
+$ types $
+ "constant"	:Iconstant:first TYPE,
+ "variable"	:Ivariable,
+ "static variable":Istatic var,
+ "table"	:Itable,
+ "stack"	:Istack,
+ "static stack"	:Istatic stack,
+ "pointer constant":Ipointer constant,
+ "charfile"	:Ichar file,
+ "datafile"	:Idata file,
+ "rule"		:Irule,
+$ formal types $
+ "formal stack"	:Iformal stack,
+ "formal table"	:Iformal table,
+ "formal file"	:Iformal file,
+ "formal in"	:Iformal in,
+ "formal out"	:Iformal out,
+ "formal inout"	:Iformal inout,
+ "formal repeat":Iformal repeat,
+ "formal shift"	:Iformal shift:last TYPE, 
+$ single characters $
+ "&"		:Dand,
+ "]"		:Dbus,
+ ")"		:Dclose,
+ ":"		:Dcolon,
+ "~"		:Dcompl,
+ "/"		:Ddiv,
+ "-"		:Dminus,
+ "#"		:Dnoarg,
+ "("		:Dopen,
+ "|"		:Dor,
+ ">"		:Dout,
+ "+"		:Dplus,
+ "."		:Dpoint,
+ ";"		:Dsemicolon,
+ "*"		:Dstar,
+ "["		:Dsub,
+ "^"		:Dxor,
+$ internal $
+ "const"        :Tconst,
+ "type"		:Ttype,
+ "node"		:Tnode,
+ "item"		:Titem,
+ "formal"	:Tformal,
+ "local"	:Tlocal,
+ "string"       :Tstring,
+ "***"		:Dend
+).
+
+'a'read bold+x>-n:
+  $ read a bold symbol 'abc'
+  next char,scratch+BUFFER,0->n,
+  (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
+        char=/'/,next char;
+        corrupted obj file+_line_),
+   pack string+BUFFER+n+LEXT,last BOLD->x,
+   (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
+        (n=0;
+         x=first BOLD,corrupted obj file+_line_;
+         previous string+BOLD+x,:nxt)),
+   unstack string+LEXT.
+$ TYPES *********************************** $
+$ <type>
+'a'read type+x>-n:
+  next char,scratch+BUFFER,0->n,
+  (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
+         char=/ /,next char,:nxt;
+         char=/>/,next char;
+         corrupted obj file+_line_),
+  pack string+BUFFER+n+LEXT,last TYPE->x,
+  (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
+       (n=0;
+        x=first TYPE,corrupted obj file+_line_;
+        previous string+BOLD+x,:nxt)),
+   unstack string+LEXT.
+$ READ ************************************ $
+'a'next symbol:
+   =char=
+   [/ /;newline], next char,:next symbol;
+   [/0/:/9/],Tconst->inpt,read index+0+inpt value;
+   [/F/],Tformal->inpt,next char,read index+0+inpt value;
+   [/I/],Titem->inpt,next char,read index+0+inpt value;
+   [/L/],Tlocal->inpt,next char,read index+0+inpt value;
+   [/N/],Tnode->inpt,next char,read index+0+inpt value;
+   [/'/],read bold+inpt;
+   [/</],Ttype->inpt,read type+inpt value;
+   [/"/],Tstring->inpt,read string+inpt value;
+   [/&/],Dand->inpt,next char;
+   [/]/],Dbus->inpt,next char;
+   [/)/],Dclose->inpt,next char;
+   [/:/],Dcolon->inpt,next char;
+   [/~/],Dcompl->inpt,next char;
+   [///],Ddiv->inpt,next char;
+   [/-/],next char,read minus+inpt+inpt value;
+   [/#/],Dnoarg->inpt,next char;
+   [/(/],Dopen->inpt,next char;
+   [/|/],Dor->inpt,next char;
+   [/>/],Dout->inpt,next char;
+   [/+/],Dplus->inpt,next char;
+   [/./],Dpoint->inpt,next char;
+   [/;/],Dsemicolon->inpt,next char;
+   [/*/],Dstar->inpt,next char;
+   [/[/],Dsub->inpt,next char;
+   [/^/],Dxor->inpt,next char;
+   [end char],Dend->inpt;
+   corrupted obj file+_line_.
+
+
+'root'rehash. $ initialize the HASH table for strings $
+
+'pragmat'endif=compile.
+
+'end'
+
+
