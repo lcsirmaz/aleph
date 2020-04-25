@@ -327,7 +327,7 @@ static void prototype(int *a){/* >typer + >dl + >ext> */
    if(err){skipAll();}
    else{par[0]=a[0];par[1]=tag;par[2]=0;par[3]=-1;listDeclarationTail(par);
      par[0]=a[0];par[1]=tag;par[2]=calibre;selectorList(par);
-     if(proto==1){par[0]=a[0];par[1]=tag;par[2]=calibre;noSelectorList(par);}
+     if(proto==0){;}else{par[0]=a[0];par[1]=tag;par[2]=calibre;noSelectorList(par);}
      par[0]=tag;Rskip(par);par[0]=Sequals;if(R(par)){
      par[0]=a[0];par[1]=tag;listFill(par);}}
 }}

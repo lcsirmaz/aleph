@@ -10,6 +10,7 @@
 #include "pragmats.h"
 #include "tags.h"
 #include "types.h"
+#include "symbols.h"
 
 /* ================================== */
 /* messages */
@@ -222,7 +223,7 @@ void defineObjTag(int *a){ /* >tag */
 /* call back routines for XstringTableFill */
 void XstringTableFillingHead(int *a){
    int par[1];
-   par[0]=Dfill;W(par);par[0]=a[0];Wtag(par);
+   par[0]=Dfill;W(par);par[0]=a[0];Wtag(par);par[0]=0;Wcons(par);
 }
 void XstringTableItem(int *a){/* >tag + >str */
    int par[3];int x;
@@ -409,6 +410,7 @@ void dListFilling(void){
   int par[3];int tag;
   mustQtag(par);tag=par[0];if(isFillTagUsed(par)){
     par[0]=Dfill;W(par);par[0]=tag;Wtag(par);
+    getLinenum(par);Wcons(par);
     nxt:par[0]=Dpoint;if(Q(par)){par[0]=Dpoint,W(par);}
     else{par[0]=tag;listItem(par);repeater();initializer();goto nxt;}}
   else{par[0]=Dpoint;Qskip(par);}

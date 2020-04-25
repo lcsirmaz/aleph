@@ -75,7 +75,7 @@ $    expression
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("display","lexical","pragmats","disc","input",
-    "tags","types","lists","buffer").
+    "tags","types","lists","buffer","symbols").
 
 $ messages ---------------------------------------------------- $
 'table'MESSAGE=(
@@ -227,7 +227,7 @@ $  next free ITEM. External tags have LEXT string in "repr".
 
 $ call back routines for Xstring table filling ---------------- $
 'a'Xstring table filling head+>tag:
-   W+Dfill,Wtag+tag.
+   W+Dfill,Wtag+tag,Wcons+0.
 'a'Xstring table item+>tag+>str-x:
    string width+LEXT+str+x,subtr+str+x+x,
    (nxt:x<str,incr+x,Wcons+LEXT[x],:nxt;+),
@@ -261,7 +261,7 @@ $   Dlist <tag> <etype> <esize>
    get type+tag+type,warning+3+type tag not used+type+tag,Qskip+Dpoint.
 
 $ list filling ================================================ $
-$ Dfill <tag> (<item><repeater?><initializer*>)* Dpoint
+$ Dfill <tag> <lineno> (<item><repeater?><initializer*>)* Dpoint
 $ <repeater>     Dstar <tag> | Dstar <cons>
 $ <item>         <tag> | <cons> | <string> | Dopen <block> Dclose
 $                 | Dextension <block2> Dextension
@@ -374,8 +374,9 @@ $ only if the list tag is table or used
     warning+3+type tag not used+type+tag;
   error+cannot have filling+type+tag,-.
     
-'a'd list filling-tag:
-   (must Qtag+tag,is fill tag used+tag),W+Dfill,Wtag+tag,
+'a'd list filling-tag-l:
+   (must Qtag+tag,is fill tag used+tag),
+      W+Dfill,Wtag+tag,get linenum+l,Wcons+l,
       (nxt:Q+Dpoint,W+Dpoint;
            list item+tag,repeater,initializer,:nxt);
    Qskip+Dpoint.

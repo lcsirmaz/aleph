@@ -493,7 +493,7 @@ $ _line_, _file_, _rule_
      [1],$ file  $ find linenum+0+#+x;
      [2],$ line  $ find linenum+0+x+#,enter const+x+x;
      [3],$ rule  $ Sdummy symb->x; $ get "rule tag" from rulebody $
-     [4],$ title $ Sdummy symb->x; $ get title from pragmats $
+     [4],$ title $ get pragmat value+pgt title+x,(is+x;Squote image->x);
      $ none of the above $ Sdummy symb->x);
   n=1,error+illegal character+/_/,Sdummy symb->x;
   pack string+BUFFER+n+LEXT,error+unrecognized builtin+>>LEXT,

@@ -10,20 +10,23 @@ $ read al items from the .ice file
 'a'put vupb+>item+>x,put vlwb+>item+>x.
 'q'is item flag+>item+>flag.
 'a'set item flag+>item+>flag.
+'a'clear item flag+>item+>flag.
 
 'a'head section.
 'a'skip head section.
 'a'item section.
 'a'skip item section.
 
-'f'find lineno+>lineno+line>+str>.
-
+'f'find lineno+>item+line>+str>+module>.
 
 $ item flags $
 'constant'
   tpublic	= 0x0004, $ public 
   timported	= 0x0008, $ imported
   texternal	= 0x0010, $ external
+$ constant, pointer constant
+  tvalue	= 0x0020, $ repr contains the final value
+  teval		= 0x0040, $ constant expression is under evaluation
 $ rule flags
   rside effect	= 0x0100, $ 'a','p'
   rcan fail	= 0x0200, $ 'q','p'
@@ -52,14 +55,16 @@ $ BODY *************************************************** $
 
 'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
 $ type: Irule      adm => formals
-$       variable   adm => expression
+$       variable   adm => expression (to be filled)
 $       list       adm => vlwb,vupb,calibre,ssel
-$       file       adm => (item,hash),...,(0,0)
 
 'q'is item flag+>item+>flag-x:
   bool and+flag*ITEM[item]+flag+x,is+x.
 'a'set item flag+>item+>flag:
   bool or+flag*ITEM[item]+flag+flag*ITEM[item].
+'a'clear item flag+>item+>flag-mask
+  bool invert+flag+mask,bool and+mask+flag*ITEM[item]+flag*ITEM[item].
+
 'constant'
   tglobal	= tpublic|timported|texternal,
   titem mask	= ~(tglobal|rtype|rvararg|routvararg|
@@ -81,9 +86,9 @@ $
 
 $ compatibility ------------------------------------------ $
 'table'MESSAGE=(
-  "incompatible types %i and %i" :incompatible global types,
-  "mixing external %i and %i"    :incompatible external,
-  "doubly defined %i and %i"     :doubly defined
+  "%p: incompatible types at %i and %i" :incompatible global types,
+  "%p: mixing external at %i and %i"    :incompatible external,
+  "%p: doubly defined at %i and %i"     :doubly defined
 ).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - -  $
 'q'stack size mismatch+>item1+>item2-x1-x2:
@@ -93,23 +98,24 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - -  $
 'q'incompatible types+>item1+>item2-type:
   (type*ITEM[item1]->type,type!=type*ITEM[item2]);
   type=Irule,adm*ITEM[item1]!=adm*ITEM[item2];  $ have different formal list $
-  (type=Istack;type=Itable;type=Istatic stack),stack size mismatch+item1+item2.
+  (type=Istack;type=Itable;type=Istatic stack),stack size mismatch+item1+item2;
+  -.
 
-'a'check compatibility+>item1+>item2:
-   incompatible types+item1+item2,error+incompatible global types+item1+item2;
+'a'check compatibility+>tag+>item1+>item2:
+   incompatible types+item1+item2,error+incompatible global types+tag+item1+item2;
    is item flag+item1+texternal,
-     (is item flag+item2+texternal;error+incompatible external+item1+item2);
-   is item flag+item2+texternal,error+incompatible external+item2+item1;
+     (is item flag+item2+texternal;error+incompatible external+tag+item1+item2);
+   is item flag+item2+texternal,error+incompatible external+tag+item2+item1;
    is item flag+item1+tpublic,
-     (is item flag+item2+tpublic,error+doubly defined+item1+item2;+);
-   is item flag+item2+tpublic,put tag definition+tag*ITEM[item2]+item2;
+     (is item flag+item2+tpublic,error+doubly defined+tag+item1+item2;+);
+   is item flag+item2+tpublic,put tag definition+tag+item2;
    +.
 
-'a'enter item+>item-def:
+'a'enter item+>item-tag-def:
   (is item flag+item+tglobal,-); $ if not global, don't do anything
-  get tag definition+tag*ITEM[item]+def,
-  (def=0,put tag definition+tag*ITEM[item]+item;
-   check compatibility+def+item).
+  tag*ITEM[item]->tag,get tag definition+tag+def,
+  (def=0,put tag definition+tag+item;
+   check compatibility+tag+def+item).
 
 $ module header ---------------------------------------- $
 'variable'link formals=0. $ link all formals $
@@ -150,21 +156,22 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    >>AUX->bounds.
 
 'f'check item ID+>n:
-   addmult+n+<>ITEM+base item+n,(n=>>ITEM;corrupted obj file+_line_).
+   addmult+n+<>ITEM+base item+n,(n=>>ITEM;corrupted obj file+_title_+_line_).
 
 'a'read item-ID-flag-lineno:
    (* 0->flag->type->lineno->tag->adm->repr *)ITEM,
    must+Ttype+type*ITEM,must+Titem+ID,check item ID+ID,
    must+Tconst+flag,bool and+flag+titem mask+flag*ITEM,
    must+Tconst+lineno,
-   (lineno<=0;lineno>max lineno,corrupted obj file+_line_;
-    add+base lineno+lineno+lineno),lineno->lineno*ITEM,
+   (lineno<=0;
+    lineno>max lineno,corrupted obj file+_title_+_line_;
+    lineno->lineno*ITEM),
    (=type*ITEM=
     [Irule], store formal affixes+adm*ITEM;
     [Istack;Itable;Istatic stack], store list bounds+adm*ITEM;
     [Iconstant;Ivariable;Istatic var;Ipointer constant;
      Ichar file;Idata file],+;
-    corrupted obj file+_line_),
+    corrupted obj file+_title_+_line_),
    must+Tstring+tag*ITEM, enter item+>>ITEM.
 
 'a'item section:
@@ -176,12 +183,11 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 $ head section ******************************************* $
 $ each module has an ITEM entry linked through the repr field
 'variable'
-   base lineno=0,  $ base lineno, this is added to the given lineno $
    max lineno=0,   $ maximal lineno in this module
    base item=0.    $ ITEM[base] describes this module
 
 'table'MESSAGE=(
-  "module %p included twice" :same title
+  "module %p: included twice" :same title
 ).
 
 'a'check module title-ptr:
@@ -189,32 +195,34 @@ $ each module has an ITEM entry linked through the repr field
      tag*ITEM=tag*ITEM[ptr],warning+same title+tag*ITEM;
      repr*ITEM[ptr]->ptr,:nxt).
 
-'a'head section-n-str-next lineno:
+'a'head section-n-str:
   (* 0->flag->type->lineno->tag->adm->repr *)ITEM,
-  (R+Dmodule,Dmodule->type*ITEM;R+Dtitle,Dtitle->type*ITEM;corrupted obj file+_line_),
+  (R+Dmodule,Dmodule->type*ITEM;R+Dtitle,Dtitle->type*ITEM;
+   corrupted obj file+_title_+_line_),
   must+Tstring+tag*ITEM, check module title, $ warn for the same title 
-  (base item=0,0->base lineno;lineno*ITEM[base item]->base lineno),
-  base lineno->next lineno,0->max lineno,
-  (nxt: must+Tconst+n,(n>=max lineno,n->max lineno;corrupted obj file+_line_),
-         add+next lineno+n+next lineno,must+Tstring+str,
-         (* next lineno->width,str->data *)AUX,(adm*ITEM=0,>>AUX->adm*ITEM;+),
+  0->max lineno,
+  (nxt: must+Tconst+n,(n>max lineno,n->max lineno;
+                       corrupted obj file+_title_+_line_),
+         must+Tstring+str,
+         (* n->width,str->data *)AUX,(adm*ITEM=0,>>AUX->adm*ITEM;+),
          (R+Dpoint;:nxt)),
-  next lineno->lineno*ITEM,
+  max lineno->lineno*ITEM,
   (base item=0;>>ITEM->repr*ITEM[base item]),>>ITEM->base item.
   
 'a'skip head section: $ advance base item $
   (nxt:R+Dpoint; next symbol,:nxt),
-  (base item=0,<<ITEM->base item,0->base lineno;
-   lineno*ITEM[base item]->base lineno,repr*ITEM[base item]->base item).
+  (base item=0,<<ITEM->base item;
+   repr*ITEM[base item]->base item),
+  lineno*ITEM[base item]->max lineno.
 
-'f'find lineno+>lineno+line>+str>-ptr:
-   lineno<=0,0->line,Squote image->str;
+'f'find lineno+>item+line>+str>+module>-ptr-nptr-l:
    <<ITEM->ptr,
-     (nxt:ptr=0,lineno->line,Squote image->str; $ error $
-      lineno>=lineno*ITEM[ptr],repr*ITEM[ptr]->ptr,:nxt;
-      adm*ITEM[ptr]->ptr,
-       (nxt:lineno>=width*AUX[ptr],add+2+ptr+ptr,:nxt;
-            data*AUX[ptr]->str,subtr+lineno+width*AUX[ptr]+line)).
+   (nxt:repr*ITEM[ptr]->nptr,((is+nptr,nptr<item),nptr->ptr,:nxt;+)),
+   tag*ITEM[ptr]->module,lineno*ITEM[item]->l,
+   ((l<=0;l>lineno*ITEM[ptr]),0->line,Squote image->str;
+    adm*ITEM[ptr]->ptr,l->line,
+      (nxt:l>width*AUX[ptr],subtr+l+width*AUX[ptr]+line,add+ptr+2+ptr,:nxt;
+           data*AUX[ptr]->str)).
 
 $ check items for definition *********************************** $
 'table'MESSAGE=(

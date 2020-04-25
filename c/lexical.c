@@ -553,7 +553,8 @@ static void readBuiltin(int *a){/* x> */
   else if(a[0]==2){/*_line_*/par[0]=0;findLinenum(par);a[0]=par[1];par[0]=a[0];
     enterConst(par);a[0]=par[1];}
   else if(a[0]==3){/*_rule_*/a[0]=Sdummysymb;}
-  else if(a[0]==4){/*_title_*/a[0]=Sdummysymb;}
+  else if(a[0]==4){/*_title_*/par[0]=pgtTitle;getPragmatValue(par);a[0]=par[1];
+     if(a[0]){;}else{a[0]=Squoteimage;}}
   else{a[0]=Sdummysymb;}
 }
 /*--------------------------------------------------------------------*/

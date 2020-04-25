@@ -1,8 +1,9 @@
-$ data
 $ HEADER ************************************************** $
 'pragmat'module="data".
 $ handle data:
 $  expression, fill, list, file $
+'a'list entry,read expression.
+
 
 $ BODY **************************************************** $
 'pragmat'if=compile.
@@ -13,15 +14,14 @@ $ BODY **************************************************** $
 'a'push EXPR+>x:
   (* x->EXPRESSION *)EXPRESSION.
 
-
 'f'check list type+>item:
   =type*ITEM[item]=
   [Itable;Istack;Istatic stack],+;
-  corrupted obj file+_line_.
+  corrupted obj file+_title_+_line_.
 'f'check constant type+>item:
   =type*ITEM[item]=
   [Iconstant;Ipointer constant],+;
-  corrupted obj file+_line_.
+  corrupted obj file+_title_+_line_.
 
 'a'list entry-idx-item-etype-esize:
    $ we are just after the 'list' keyword
@@ -31,9 +31,9 @@ $ BODY **************************************************** $
      must+Tconst+etype,
      (=etype=[1;2],must+Tconst+esize;
              [3;4],must+Titem+idx,get item+idx+esize;
-             corrupted obj file+_line_),
+             corrupted obj file+_title_+_line_),
      put vupb+item+etype,put vlwb+item+esize,
-     (R+Dpoint;corrupted obj file+_line_).
+     (R+Dpoint;corrupted obj file+_title_+_line_).
 
 'a'skip file entry:
    $ skip file entry at the first scan $
@@ -45,10 +45,9 @@ $ BODY **************************************************** $
 'a'read expression-idx-item:
    $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
    must+Titem+idx,get item+idx+item,
-     (=type*ITEM[item]= [Iconstant;Ivariable],+;corrupted obj file+_line_),
+     (=type*ITEM[item]= [Iconstant;Ivariable],+;corrupted obj file+_title_+_line_),
      >>EXPRESSION->adm*ITEM[item],(nxt:=inpt=
      [Dpoint],next symbol,push EXPR+Dpoint;
-     [Dend;Ttype;Tnode;Tformal;Tlocal;Tstring],corrupted obj file+_line_;
      [Tconst],push EXPR+Tconst,push EXPR+inpt value,next symbol,:nxt;
      [Titem], get item+inpt value+item,check constant type+item,
         push EXPR+item,next symbol,:nxt;
@@ -56,10 +55,57 @@ $ BODY **************************************************** $
         get item+idx+item,push EXPR+item,check list type+item,:nxt;
      [Dplus;Dminus;Dstar;Ddiv;Dand;Dor;Dxor;Dcompl;
       Dopen;Dclose],push EXPR+inpt,next symbol,:nxt;
-      corrupted obj file+_line_).
+      corrupted obj file+_title_+_line_).
 
-'a'loose eval
+'table'MESSAGE=(
+  "%p: constant definition refers to itself (%i)": constant refers to itself
+).
 
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'variable'eptr=0.
+'p'E+>x:
+    EXPRESSION[eptr]=x,incr+eptr.
+'p'Eitem+x>:
+    EXPRESSION[eptr]->x,was+ITEM+x,incr+eptr.
+'p'Eop+>prio+op>+p>:
+    EXPRESSION[eptr]->op,(=op=
+       [Dxor],        prio=0,1->p,incr+eptr;
+       [Dand],        prio<=1,2->p,incr+eptr;
+       [Dor],         prio<=2,3->p,incr+eptr;
+       [Dplus;Dminus],prio<=3,4->p,incr+eptr;
+       [Ddiv;Dstar],  prio<=4,5->p,incr+eptr;
+       -).
+'f'optor+>op+>w+>v>:
+  =op=
+  [Dxor], bool xor+v+w+v;
+  [Dand], bool and+v+w+v;
+  [Dor],  bool or+v+w+v;
+  [Dplus],add+v+w+v;
+  [Dminus],subtr+v+w+v;
+  [Dstar], mult+v+w+v;
+  [Ddiv], div+v+w+v.
+
+'p'loose base+v>:
+   E+Dopen,loose expr+0+v,E+Dclose;
+   E+Dcompl,loose base+v,bool invert+v+v;
+   E+Dminus,loose base+v,subtr+0+v+v;
+   E+Dcalibre,get calibre+EXPRESSION[eptr]+v,incr+eptr;
+   Eitem+v,type*ITEM[v]=Iconstant,loose eval+v,
+       is item flag+v+tvalue,repr*ITEM[v]->v.
+'p'loose expr+>prio+v>-op-p-w:
+   loose base+v,
+      (nxt:Eop+prio+op+p,loose expr+p+w,optor+op+w+v,:nxt;+).
+
+'a'loose eval+>item:
+   is item flag+item+tvalue;
+   is item flag+item+teval,clear item flag+item+teval,
+      error+constant refers to itself+tag*ITEM[item]+item,
+      set item flag+item+tvalue,0->repr*ITEM[item];
+   set item flag+item+teval,adm*ITEM[item]->eptr,
+      (-v:loose expr+0+v,set item flag+item+tvalue,v->repr*ITEM[item];+),
+   clear item flag+item+teval.
+
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 
 'root'+.
 'pragmat'endif=compile.

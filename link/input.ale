@@ -1,0 +1,17 @@
+$ inputs
+$ HEADER ********************************************** $
+
+'f'get obj file+obj>. $ a LEXT entry $
+'a'clean up.          $ for fatal errors $
+
+$ BODY ************************************************ $
+
+'pragmat'if=compile.
+
+
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+
+

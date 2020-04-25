@@ -84,7 +84,7 @@ $stack and tables
 ?scratch      'x''a'scratch+[]st[]       ="@scratch".
 ?release      'x''a'release+[]st[]       ="@release".
 ?request space'x''p'request space+[]st[]+>n="@requestspace".
-?expand stack 'x''a'expand stack+[]st[]+*+v> ="@expandstack".
+?expand stack 'x''a'expand stack+[]st[]+*+>v ="@expandstack".
 
 $ strings
 ?string length   'x''f'string length+t[]+>p+n> ="stringlength".

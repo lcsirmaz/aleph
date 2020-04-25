@@ -1,14 +1,104 @@
 $ error 
+'pragmat'module="error".
 $ HEADER *********************************************** $
-'e'internal error+>lineno.
-'e'corrupted obj file+>lineno.
+'e'internal error+T[]+>file+>lineno.
+'e'corrupted obj file+T[]+>file+>lineno.
 'a'error+*+>msg.
 'a'warning+*+>msg.
 'table'MESSAGE.
 
 $ BODY ************************************************* $
 'pragmat'if=compile.
-'table'MESSAGE=().
+'pragmat'require=("input","lexical","item").
+
+'table'MESSAGE=(
+  "too many errors, quitting" :too many errors,
+  "F fatal: internal error in %l/" :fatal head,
+  " program aborted" :fatal tail,
+  "F fatal: obj file %p corrupted (%l/" :corrupted head,
+  ") program aborted": corrupted tail
+).
+$ messages go here $
+'charfile' PRINTFILE="stdout">.
+
+'a'print char+>ch: put char+PRINTFILE+ch.
+'a'nlcr: put char+PRINTFILE+newline.
+
+$ simple output $
+'a'print int+>n:
+   $ print n in decimal; min int does not end with 9
+   n=min int, print char+/-/,subtr+-1+n+n,print int1+n+/1/;
+   n<0, print char+/-/,get abs+n+n,print int1+n+/0/;
+   print int1+n+/0/.
+'a'print int1+>n+>c-q-r:
+   divrem+n+10+q+r,(q=0; print int1+q+/0/),
+        add+r+c+r, print char+r.
+'a'print form+>n: print form1+n+4.
+   $ print n for 4 places
+'a'print form1+>n+>m -q-r:
+   m=0;
+   decr+m,divrem+n+10+q+r,print form1+q+m,add+r+/0/+r,print char+r.
+'a'print+T[]+>p:
+   $ print a string
+   was+T+p,put string+PRINTFILE+T+p;+.
+$ formatted printing $
+'a'print pointer+>ptr:
+   ptr=0,print+"[NULL]";
+   was+MESSAGE+ptr,print+MESSAGE+ptr;
+   was+LEXT+ptr,get tag image+ptr+ptr,print+LEXT+ptr;
+   print+"[?",print int+ptr,print+"]".
+'a'print base+>str-obuff-ptr:
+   $ print the base of a source file
+   get tag image+str+str,>>BUFFER->obuff,
+   unpack string+LEXT+str+BUFFER,>>BUFFER->ptr,
+   $ go back until / or \
+   (nxt: ptr<=obuff;
+         BUFFER[ptr]=///;BUFFER[ptr]=/\/;BUFFER[ptr]=/:/;
+         decr+ptr,:nxt),incr+ptr,
+   $ print until the first dot
+   (nxt: >>BUFFER>ptr;BUFFER[ptr]=/./;
+         print char+BUFFER[ptr],incr+ptr,:nxt),
+   unstack to+BUFFER+obuff.         
+'a'print item+>item-line-source-module:
+   $ print line number/source(module) for a given item
+   find lineno+item+line+source+module,
+   (line>0;decr+line,print form+line),
+   (source=Squote image;print char+///,print base+source),
+   print char+/(/,print pointer+module,print char+/)/.
+
+'a'format print+*+>fmt-optr-ptr:
+   >>BUFFER->optr,unpack string+MESSAGE+fmt+BUFFER,add+optr+1+ptr,
+   (nxt:>>BUFFER<ptr;
+          BUFFER[ptr]!=/%/,print char+BUFFER[ptr],incr+ptr,:nxt;
+          incr+ptr,(>>BUFFER<ptr,print char+/%/;
+                    (=BUFFER[ptr]=
+                     [/p/],(shift affix block+*,print pointer+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/i/],(shift affix block+*,print item+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/l/],(shift affix block+*,print form+fmt;print+"[?]"),incr+ptr,:nxt;
+                     print char+BUFFER[ptr],incr+ptr,:nxt))),
+   (shift affix block+*,print+"[...]";+),
+   unstack to+BUFFER+optr.
+
+$ error handling ******************************************** $
+'variable'error no=0.
+'constant'maximal errors=51.
+
+'a'error+*+>mess:
+   print char+/E/,print char+/ /,format print+*,nlcr,
+   incr+error no,(error no<maximal errors;
+    print char+/E/,print char+/ /,format print+too many errors,nlcr,
+    clean up,exit+1).
+'a'warning+*+>mess:
+   print char+/W/,print char+/ /,format print+*,nlcr.
+
+'e'internal error+T[]+>file+>line:
+   format print+fatal head+line,print+T+file,
+   format print+fatal tail,nlcr,clean up,exit+2.
+
+'e'corrupted obj file+T[]+>source+>line-obj:
+   get obj file+obj,format print+corrupted head+obj+line,
+   print+T+source,format print+corrupted tail,
+   nlcr,clean up,exit+3.
 
 'root'+.
 

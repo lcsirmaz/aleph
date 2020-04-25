@@ -3,8 +3,8 @@ $ lexital parsing for .ice files
 $ HEAD **************************************************** $
 'constant'
    Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
-   Dlist,Dlwb,Dmodule,Dnode,Drule,Dtitle,Dto,Dupb,Dvlwb,
-   Dvupb,
+   Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
+   Dlibrary,Dmodule,Dtitle,
    Dand,Dbus,Dclose,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
    Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
    Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
@@ -15,25 +15,25 @@ $ HEAD **************************************************** $
    Iformal out,Iformal inout,Iformal repeat,Iformal shift.
 'constant'Squote image.
 
-'a'next symbol. $ read next symbol
-'variable' inpt,     $ next symbol     $
-           inpt value. $ auxiliary value $
+'a'next symbol.        $ read next symbol
+'variable' inpt,       $ next symbol
+           inpt value. $ auxiliary value
 'p'R+>x:x=inpt,next symbol.
 'a'must+>x+y>:x=inpt,inpt value->y,next symbol;
-              corrupted obj file+_line_.
+              corrupted obj file+_title_+_line_.
 
-'f'get tag definition+>tag+def>.
+'f'get tag definition+>tag+def>,get tag image+>tag+img>.
 'a'put tag definition+>tag+>def.
+
+'stack'BUFFER,(next,def)LEXT.
+
 
 $ BODY **************************************************** $
 'pragmat'if=compile.
 'pragmat'require="error".
 
-'stack'BUFFER,LEXT.
-
-'pragmat'prototype=import.
-'a'extend BUFFER+>x.
-'pragmat'prototype=none.
+'stack'[2]BUFFER.
+'a'extend BUFFER+>x: (* x->BUFFER *)BUFFER.
 
 'variable'inpt=0,inpt value=0.
 
@@ -65,9 +65,16 @@ $ CHARACTERS ****************************** $
 'p'digit+x>:
   =char=[/0/:/9/],subtr+char+/0/+x,next char;
   -.
+'p'hex digit+x>:
+  =char=[/0/:/9/],subtr+char+/0/+x,next char;
+  [/a/:/f/],subtr+char+/a/+x,add+x+10+x,next char;
+  [/A/:/F/],subtr+char+/A/+x,add+x+10+x,next char;
+  -.
+'a'comment:
+  char=newline;char=end char;next char,:comment.
 $ NUMBER ********************************** $
 'a'read index+>sign+x>-d:
-  (=char=[/0/:/9/],+;corrupted obj file+_line_),
+  (=char=[/0/:/9/],+;corrupted obj file+_title_+_line_),
   subtr+char+/0/+x,next char,
   (nxt:digit+d,addmult+x+10+d+x,:nxt;
        is+sign,subtr+0+x+x;
@@ -76,7 +83,14 @@ $ NUMBER ********************************** $
    next char,
      (=char=[/0/:/9/],Tconst->x,read index+1+y;
       Dminus->x,0->y).
-   
+'a'read hex+x>-d:
+   0->x,(nxt:hexdigit+d,left clear+x+4,bool or+x+d+x,:nxt;+).
+
+'a'read zero+x>:
+   next char,(=char=
+   [/0/:/9/],read index+0+x;
+   [/x/;/X/],read hex+x;
+   0->x).
 $ STRING ********************************** $
 $ strings identify tags, sources and titles.
 $ each tag has at most one unique global definition,
@@ -92,6 +106,8 @@ $
 
 'f'get tag definition+>tag+def>:
   def*LEXT[tag]->def.
+'f'get tag image+>tag+ptr>:
+  subtr+tag+<>LEXT+ptr.
 'a'put tag definition+>tag+>def:
   def->def*LEXT[tag].
 
@@ -117,7 +133,7 @@ $
    >>LEXT->ptr,(nxt:ptr<<<LEXT; $ done $
    enter string+ptr+block,
      (block=ptr,previous+LEXT+ptr,previous string+LEXT+ptr,:nxt;
-      internal error+_line_)).
+      internal error+_title_+_line_)).
 
 'a'read string+x>-n:
   next char,scratch+BUFFER,0->n,
@@ -127,7 +143,7 @@ $
       n=0,Squote image->x;
       pack string+BUFFER+n+LEXT,(*0->next->def*)LEXT,
          enter string+>>LEXT+x);
-   [newline;end char],corrupted obj file+_line_;
+   [newline;end char],corrupted obj file+_title_+_line_;
    extend BUFFER+char,incr+n,:nxt)).
 
 $ BOLD ************************************ $
@@ -140,6 +156,7 @@ $ BOLD ************************************ $
  "extension"	:Dextension,
  "file"		:Dfile,
  "fill"		:Dfill,
+ "library"	:Dlibrary,
  "list"		:Dlist,
  "lwb"		:Dlwb,
  "module"	:Dmodule,
@@ -171,23 +188,23 @@ $ formal types $
  "formal repeat":Iformal repeat,
  "formal shift"	:Iformal shift:last TYPE, 
 $ single characters $
- "&"		:Dand,
  "]"		:Dbus,
  ")"		:Dclose,
  ":"		:Dcolon,
- "~"		:Dcompl,
  "/"		:Ddiv,
  "-"		:Dminus,
  "#"		:Dnoarg,
  "("		:Dopen,
+ "~"		:Dcompl,
+ "&"		:Dand,
  "|"		:Dor,
+ "^"		:Dxor,
  ">"		:Dout,
  "+"		:Dplus,
  "."		:Dpoint,
  ";"		:Dsemicolon,
  "*"		:Dstar,
  "["		:Dsub,
- "^"		:Dxor,
 $ internal $
  "const"        :Tconst,
  "type"		:Ttype,
@@ -204,11 +221,11 @@ $ internal $
   next char,scratch+BUFFER,0->n,
   (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
         char=/'/,next char;
-        corrupted obj file+_line_),
+        corrupted obj file+_title_+_line_),
    pack string+BUFFER+n+LEXT,last BOLD->x,
    (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
         (n=0;
-         x=first BOLD,corrupted obj file+_line_;
+         x=first BOLD,corrupted obj file+_title_+_line_;
          previous string+BOLD+x,:nxt)),
    unstack string+LEXT.
 $ TYPES *********************************** $
@@ -218,18 +235,20 @@ $ <type>
   (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
          char=/ /,next char,:nxt;
          char=/>/,next char;
-         corrupted obj file+_line_),
+         corrupted obj file+_title_+_line_),
   pack string+BUFFER+n+LEXT,last TYPE->x,
   (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
        (n=0;
-        x=first TYPE,corrupted obj file+_line_;
+        x=first TYPE,corrupted obj file+_title_+_line_;
         previous string+BOLD+x,:nxt)),
    unstack string+LEXT.
 $ READ ************************************ $
 'a'next symbol:
    =char=
    [/ /;newline], next char,:next symbol;
-   [/0/:/9/],Tconst->inpt,read index+0+inpt value;
+   [/$/],comment,:next symbol;
+   [/0/],Tconst->inpt,read zero+inpt value;
+   [/1/:/9/],Tconst->inpt,read index+0+inpt value;
    [/F/],Tformal->inpt,next char,read index+0+inpt value;
    [/I/],Titem->inpt,next char,read index+0+inpt value;
    [/L/],Tlocal->inpt,next char,read index+0+inpt value;
@@ -255,7 +274,7 @@ $ READ ************************************ $
    [/[/],Dsub->inpt,next char;
    [/^/],Dxor->inpt,next char;
    [end char],Dend->inpt;
-   corrupted obj file+_line_.
+   corrupted obj file+_title_+_line_.
 
 
 'root'rehash. $ initialize the HASH table for strings $

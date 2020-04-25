@@ -349,7 +349,7 @@ $     ext: 0/3 prototype, 0/4 fill
       (is+err,skip all;
        list declaration tail+typer+tag+0+-1,
          selector list+typer+tag+calibre,
-         (proto=1,no selector list+typer+tag+calibre;+),
+         (proto=0;no selector list+typer+tag+calibre),
          Rskip+tag,(R+Sequals,list fill+typer+tag;+))).
 
 $ 'stack'[]<field option>tag<filler option> with size estimate
