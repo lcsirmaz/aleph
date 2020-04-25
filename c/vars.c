@@ -103,6 +103,8 @@ static int exprbase(int *a){ /* >err> */
   else if(par[0]=Supb,R(par)){va[0]=virtual_bounds_only;
     Warning(1,1,va);par[0]=Dupb;D(par);par[0]=a[0];expectListTag(par);
     a[0]=par[0];}
+  else if(par[0]=Scalibre,R(par)){par[0]=Dcalibre;D(par);par[0]=a[0];
+    expectListTag(par);a[0]=par[0];}
   else if(par[0]=Sopen,R(par)){par[0]=Dopen;D(par);par[0]=a[0];
     if(isExpression(par)){a[0]=par[0];}
     else{a[0]=1;par[0]=wrong_expression;Error(1,par);}

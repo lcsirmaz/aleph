@@ -7,12 +7,13 @@ $ HEAD **************************************************** $
    Dvupb,
    Dand,Dbus,Dclose,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
    Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
-   Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
+   Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
    $ types $
    Iconstant,Ivariable,Istatic var,Itable,Istack,Istatic stack,
    Ipointer constant,Ichar file,Idata file,Irule,
    Iformal stack,Iformal table,Iformalfile,Iformal in,
    Iformal out,Iformal inout,Iformal repeat,Iformal shift.
+'constant'Squote image.
 
 'a'next symbol. $ read next symbol
 'variable' inpt,     $ next symbol     $
@@ -21,6 +22,8 @@ $ HEAD **************************************************** $
 'a'must+>x+y>:x=inpt,inpt value->y,next symbol;
               corrupted obj file+_line_.
 
+'f'get tag definition+>tag+def>.
+'a'put tag definition+>tag+>def.
 
 $ BODY **************************************************** $
 'pragmat'if=compile.
@@ -79,11 +82,18 @@ $ strings identify tags, sources and titles.
 $ each tag has at most one unique global definition,
 $   but can have several local definitions.
 $
+'constant'
+  HASH increment = 512. $ HASH size grows by that much
 'variable'
-  HASH size=511,  $ size of HASH stack, grows by 512 $
-  HASH entries=1. $ string entries in LEXT table
+  HASH size=HASH increment-1, $current HASH size $
+  HASH entries=1.       $ string entries in LEXT table
 'stack'[20](next,def)LEXT=("",(0,0):Squote image).
 'stack'[1]HASH.
+
+'f'get tag definition+>tag+def>:
+  def*LEXT[tag]->def.
+'a'put tag definition+>tag+>def:
+  def->def*LEXT[tag].
 
 'a'enter string+>ptr+out>-string-hash-ptr2-string2-eq:
   subtr+ptr+<>LEXT+string,simple hash+LEXT+string+hash,
@@ -92,7 +102,7 @@ $
     (nxt:ptr2=0,HASH[hash]->next*LEXT[ptr],ptr->HASH[hash]->out,
        incr+HASH entries,
        (HASH entries<HASH size;
-        add+HASH size+512+HASH size,rehash);
+        add+HASH size+HASH increment+HASH size,rehash);
      subtr+ptr2+<>LEXT+string2,compare string+LEXT+string+LEXT+string2+eq,
        (eq=0,ptr2->out,previous string+LEXT+string,
                 unstack to+LEXT+string;

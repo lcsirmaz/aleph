@@ -2,9 +2,13 @@ $ error
 $ HEADER *********************************************** $
 'e'internal error+>lineno.
 'e'corrupted obj file+>lineno.
+'a'error+*+>msg.
+'a'warning+*+>msg.
+'table'MESSAGE.
 
 $ BODY ************************************************* $
 'pragmat'if=compile.
+'table'MESSAGE=().
 
 'root'+.
 

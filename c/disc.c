@@ -26,7 +26,7 @@ static void init_DSYMB(void){
    addtoDSYMB("'area'",Darea);
    addtoDSYMB("'box'",Dbox);
    addtoDSYMB("]",Dbus);
-   addtoDSYMB("<>",Dcalibre);
+   addtoDSYMB("'calibre'",Dcalibre);
 //   addtoDSYMB("'charfile'",Dcharfile);
    addtoDSYMB(")",Dclose);
    addtoDSYMB(":",Dcolon);

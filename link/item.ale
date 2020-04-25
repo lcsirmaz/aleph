@@ -3,12 +3,21 @@ $ HEADER ************************************************ $
 'pragmat'module="item".
 $ read al items from the .ice file
 
-'f'get calibre+>item+cal>.
-'f'get ssel+>item+ssel>.
+'f'get item+>idx+item>:
+   addmult+idx+<>ITEM+base item+item.
+
+'f'get calibre+>item+cal>,get ssel+>item+ssel>.
+'a'put vupb+>item+>x,put vlwb+>item+>x.
+'q'is item flag+>item+>flag.
+'a'set item flag+>item+>flag.
+
 'a'head section.
 'a'skip head section.
 'a'item section.
 'a'skip item section.
+
+'f'find lineno+>lineno+line>+str>.
+
 
 $ item flags $
 'constant'
@@ -21,7 +30,7 @@ $ rule flags
   rno return	= 0x0400, $ 'e'
   rvararg	= 0x8000, $ has formal *
   routvararg	=0x10000, $ has out formal vararg
-  rtace       =0x1000000, $ trace=on, print when enter the rule
+  rtrace      =0x1000000, $ trace=on, print when enter the rule
   rcount      =0x2000000, $ count=on, profiling
   rbounds     =0x4000000, $ bound checks
 $ rule types
@@ -33,7 +42,8 @@ $ rule types
   rtype		=rside effect|rcan fail|rno return.
 
 
-'stack'ITEM.
+'stack'(flag,type,tag,lineno,adm,repr)ITEM.
+'variable'base item.
 
 $ BODY *************************************************** $
 'pragmat'if=compile.
@@ -43,24 +53,77 @@ $ BODY *************************************************** $
 'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
 $ type: Irule      adm => formals
 $       variable   adm => expression
-$       list       calibre,ssel
+$       list       adm => vlwb,vupb,calibre,ssel
+$       file       adm => (item,hash),...,(0,0)
 
-$ variables for a module $
-'variable'
-   base lineno=0,  $ base lineno, this is added to the given lineno $
-   base item=0.    $ ITEM[base] describes this module
-
-'stack'[10](count,width=calibre,link=data=ssel)AUX.
+'q'is item flag+>item+>flag-x:
+  bool and+flag*ITEM[item]+flag+x,is+x.
+'a'set item flag+>item+>flag:
+  bool or+flag*ITEM[item]+flag+flag*ITEM[item].
+'constant'
+  tglobal	= tpublic|timported|texternal,
+  titem mask	= ~(tglobal|rtype|rvararg|routvararg|
+                        rtrace|rcount|rbounds).
+  
+$ AUX stack ---------------------------------------------- $
+'stack'[10](vlwb,vupb=count,width=calibre=item,link=data=ssel)AUX.
+$ adm*rule => <count,width,link>
+$  followed by <count> many formal types; formal lists have two
+$  additional entries: calibre and ssel (<width> is the total 
+$  width of the list)
+$  the same formal list is stored only once (linear search)
+$ adm*list => <vlwb,vupb,calibre,ssel>
+$  where vlwb,vupb will be used to store size estimate and filling
+$  size
+$ 
 
 'a'push AUX+>x: (* x->data *)AUX.
 
+$ compatibility ------------------------------------------ $
+'table'MESSAGE=(
+  "incompatible types %i and %i" :incompatible global types,
+  "mixing external %i and %i"    :incompatible external,
+  "doubly defined %i and %i"     :doubly defined
+).
+$ - - - - - - - - - - - - - - - - - - - - - - - - - -  $
+'q'stack size mismatch+>item1+>item2-x1-x2:
+  (get ssel+item1+x1,get ssel+item2+x2,x1!=x2);
+  (get calibre+item1+x1,get calibre+item2+x2,x1!=x2).
+
+'q'incompatible types+>item1+>item2-type:
+  (type*ITEM[item1]->type,type!=type*ITEM[item2]);
+  type=Irule,adm*ITEM[item1]!=adm*ITEM[item2];  $ have different formal list $
+  (type=Istack;type=Itable;type=Istatic stack),stack size mismatch+item1+item2.
+
+'a'check compatibility+>item1+>item2:
+   incompatible types+item1+item2,error+incompatible global types+item1+item2;
+   is item flag+item1+texternal,
+     (is item flag+item2+texternal;error+incompatible external+item1+item2);
+   is item flag+item2+texternal,error+incompatible external+item2+item1;
+   is item flag+item1+tpublic,
+     (is item flag+item2+tpublic,error+doubly defined+item1+item2;+);
+   is item flag+item2+tpublic,put tag definition+tag*ITEM[item2]+item2;
+   +.
+
+'a'enter item+>item-def:
+  (is item flag+item+tglobal,-); $ if not global, don't do anything
+  get tag definition+tag*ITEM[item]+def,
+  (def=0,put tag definition+tag*ITEM[item]+item;
+   check compatibility+def+item).
+
+$ module header ---------------------------------------- $
 'variable'link formals=0. $ link all formals $
 
 'f'get calibre+>item+cal>:
    calibre*AUX[adm*ITEM[item]]->cal.
 'f'get ssel+>item+ssel>:
    ssel*AUX[adm*ITEM[item]]->ssel.
+'a'put vlwb+>item+>x:
+   x->vlwb*AUX[adm*ITEM[item]].
+'a'put vupb+>item+>x:
+   x->vupb*AUX[adm*ITEM[item]].
 
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'q'compare formals+>p1+>p2-w:
    count*AUX[p1]=count*AUX[p2],
    width*AUX[p1]->w,width*AUX[p2]=w,(nxt:w=0;
@@ -82,30 +145,85 @@ $ variables for a module $
      search formals+formals.
 
 'a'store list bounds+bounds>-cal-ssel:
-   must+Tconst+cal,must+Tconst+ssel,(* cal->calibre,ssel->ssel*)AUX,
+   must+Tconst+cal,must+Tconst+ssel,
+   (* 0->vlwb->vupb,cal->calibre,ssel->ssel*)AUX,
    >>AUX->bounds.
 
 'f'check item ID+>n:
    addmult+n+<>ITEM+base item+n,(n=>>ITEM;corrupted obj file+_line_).
 
-'a'read item-ID-lineno:
+'a'read item-ID-flag-lineno:
    (* 0->flag->type->lineno->tag->adm->repr *)ITEM,
    must+Ttype+type*ITEM,must+Titem+ID,check item ID+ID,
-   must+Tconst+flag*ITEM,must+Tconst+lineno,
-   (lineno<=0;add+base lineno+lineno+lineno),lineno->lineno*ITEM,
+   must+Tconst+flag,bool and+flag+titem mask+flag*ITEM,
+   must+Tconst+lineno,
+   (lineno<=0;lineno>max lineno,corrupted obj file+_line_;
+    add+base lineno+lineno+lineno),lineno->lineno*ITEM,
    (=type*ITEM=
     [Irule], store formal affixes+adm*ITEM;
     [Istack;Itable;Istatic stack], store list bounds+adm*ITEM;
-    +),
-   must+Tstring+tag*ITEM.
+    [Iconstant;Ivariable;Istatic var;Ipointer constant;
+     Ichar file;Idata file],+;
+    corrupted obj file+_line_),
+   must+Tstring+tag*ITEM, enter item+>>ITEM.
+
 'a'item section:
    R+Dpoint; read item,:item section.
+
 'a'skip item section:
    R+Dpoint;next symbol,:skip item section.
 
 $ head section ******************************************* $
-'a'head section:+.
-'a'skip head section:+.  
+$ each module has an ITEM entry linked through the repr field
+'variable'
+   base lineno=0,  $ base lineno, this is added to the given lineno $
+   max lineno=0,   $ maximal lineno in this module
+   base item=0.    $ ITEM[base] describes this module
+
+'table'MESSAGE=(
+  "module %p included twice" :same title
+).
+
+'a'check module title-ptr:
+   base item->ptr,(nxt:ptr=0;
+     tag*ITEM=tag*ITEM[ptr],warning+same title+tag*ITEM;
+     repr*ITEM[ptr]->ptr,:nxt).
+
+'a'head section-n-str-next lineno:
+  (* 0->flag->type->lineno->tag->adm->repr *)ITEM,
+  (R+Dmodule,Dmodule->type*ITEM;R+Dtitle,Dtitle->type*ITEM;corrupted obj file+_line_),
+  must+Tstring+tag*ITEM, check module title, $ warn for the same title 
+  (base item=0,0->base lineno;lineno*ITEM[base item]->base lineno),
+  base lineno->next lineno,0->max lineno,
+  (nxt: must+Tconst+n,(n>=max lineno,n->max lineno;corrupted obj file+_line_),
+         add+next lineno+n+next lineno,must+Tstring+str,
+         (* next lineno->width,str->data *)AUX,(adm*ITEM=0,>>AUX->adm*ITEM;+),
+         (R+Dpoint;:nxt)),
+  next lineno->lineno*ITEM,
+  (base item=0;>>ITEM->repr*ITEM[base item]),>>ITEM->base item.
+  
+'a'skip head section: $ advance base item $
+  (nxt:R+Dpoint; next symbol,:nxt),
+  (base item=0,<<ITEM->base item,0->base lineno;
+   lineno*ITEM[base item]->base lineno,repr*ITEM[base item]->base item).
+
+'f'find lineno+>lineno+line>+str>-ptr:
+   lineno<=0,0->line,Squote image->str;
+   <<ITEM->ptr,
+     (nxt:ptr=0,lineno->line,Squote image->str; $ error $
+      lineno>=lineno*ITEM[ptr],repr*ITEM[ptr]->ptr,:nxt;
+      adm*ITEM[ptr]->ptr,
+       (nxt:lineno>=width*AUX[ptr],add+2+ptr+ptr,:nxt;
+            data*AUX[ptr]->str,subtr+lineno+width*AUX[ptr]+line)).
+
+$ check items for definition *********************************** $
+'table'MESSAGE=(
+).
+'a'check all items-ptr:
+  <<ITEM->ptr,
+  (nxt:ptr>>>ITEM;+).
+  
+
 
 'root'+.
 'pragmat'endif=compile.

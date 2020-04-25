@@ -1,0 +1,66 @@
+$ data
+$ HEADER ************************************************** $
+'pragmat'module="data".
+$ handle data:
+$  expression, fill, list, file $
+
+$ BODY **************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("error","item","lexical").
+
+
+'stack'[7]EXPRESSION.
+'a'push EXPR+>x:
+  (* x->EXPRESSION *)EXPRESSION.
+
+
+'f'check list type+>item:
+  =type*ITEM[item]=
+  [Itable;Istack;Istatic stack],+;
+  corrupted obj file+_line_.
+'f'check constant type+>item:
+  =type*ITEM[item]=
+  [Iconstant;Ipointer constant],+;
+  corrupted obj file+_line_.
+
+'a'list entry-idx-item-etype-esize:
+   $ we are just after the 'list' keyword
+   $ <item> <etype> <esize> .
+   $   1: [const], 2: [=const=], 3: [tag], 4: [=tag=]
+   must+Titem+idx,get item+idx+item,check list type+item,
+     must+Tconst+etype,
+     (=etype=[1;2],must+Tconst+esize;
+             [3;4],must+Titem+idx,get item+idx+esize;
+             corrupted obj file+_line_),
+     put vupb+item+etype,put vlwb+item+esize,
+     (R+Dpoint;corrupted obj file+_line_).
+
+'a'skip file entry:
+   $ skip file entry at the first scan $
+   $ I8 [I9 670911447 I75 208619606 I77 -1497425117 I76 -1890251351 ]2 I1 I168 .
+   $ <item> Dsub (<tag> <hash>)* Dbus 
+   $     <direction 0..3> <stdstr> <ptr> Dpoint
+   R+Dpoint;next symbol,:skip file entry.
+
+'a'read expression-idx-item:
+   $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
+   must+Titem+idx,get item+idx+item,
+     (=type*ITEM[item]= [Iconstant;Ivariable],+;corrupted obj file+_line_),
+     >>EXPRESSION->adm*ITEM[item],(nxt:=inpt=
+     [Dpoint],next symbol,push EXPR+Dpoint;
+     [Dend;Ttype;Tnode;Tformal;Tlocal;Tstring],corrupted obj file+_line_;
+     [Tconst],push EXPR+Tconst,push EXPR+inpt value,next symbol,:nxt;
+     [Titem], get item+inpt value+item,check constant type+item,
+        push EXPR+item,next symbol,:nxt;
+     [Dlwb;Dupb;Dcalibre],push EXPR+inpt,next symbol,must+Titem+idx,
+        get item+idx+item,push EXPR+item,check list type+item,:nxt;
+     [Dplus;Dminus;Dstar;Ddiv;Dand;Dor;Dxor;Dcompl;
+      Dopen;Dclose],push EXPR+inpt,next symbol,:nxt;
+      corrupted obj file+_line_).
+
+'a'loose eval
+
+
+'root'+.
+'pragmat'endif=compile.
+'end'
