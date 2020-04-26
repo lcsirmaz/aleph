@@ -81,7 +81,7 @@ $        Ilocal  -- local                   otherwise -1
 $        Imacro  -- textual replacement     repr: QBUFFER ptr, tag: formal (LADM)
 $        Ilabel  -- label                   repr: RULE ptr
 
-'pragmat'require=("disc","tags","types","display","buffer","obj"
+'pragmat'require=("disc","tags","types","display","buffer","obj","symbols"
 ).
 
 $ definitions from buffer
@@ -223,7 +223,8 @@ $  the classification Unode data is a BUFFER pointer.
     push RULE+Ubox+0,mustQ+Dbox.
 'a'g area+buff>-x:
     addRULE flag!=3,Qskip+Darea,0->buff;
-    >>BUFFER->buff,(nxt:Q+Darea,extend BUFFER+Dplus;
+    >>BUFFER->buff,get linenum+x,push BUFFER+Dconst+x,
+    (nxt:Q+Darea,extend BUFFER+Dplus;
       Q+Dcolon,extend BUFFER+Dcomma,:nxt;
       Q+Dsemicolon,extend BUFFER+Dsemicolon,:nxt;
       Qcons+x,push BUFFER+Dconst+x,:nxt;

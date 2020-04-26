@@ -1,14 +1,53 @@
 $ inputs
 $ HEADER ********************************************** $
-
-'f'get obj file+obj>. $ a LEXT entry $
+'pragmat'module="input".
+'p'next source.
+   $ if there is a next source, open it
+   $ if fails, the next call repeats the same sequence
+'f'get obj file+obj>. $ an STDARG entry $
 'a'clean up.          $ for fatal errors $
 
 $ BODY ************************************************ $
-
 'pragmat'if=compile.
 
+'pragmat'require=("lexical","error").
 
+'variable'
+  arg ptr=0.       $ pointer to next argument $
+
+
+'a'extend BUFFER+>x: (*x->BUFFER*)BUFFER.
+
+'a'add extension-n:
+  scratch+BUFFER,unpack string+STDARG+arg ptr+BUFFER,
+  extend BUFFER+/./,extend BUFFER+/i/,extend BUFFER+/c/,extend BUFFER+/e/,
+  list length+BUFFER+n,pack string+BUFFER+n+LEXT,scratch+BUFFER.
+
+'p'next argument:
+  arg ptr=0,>>STDARG->arg ptr;
+  arg ptr>=<<STDARG,previous string+STDARG+arg ptr.
+
+'a'open next argument+res>:
+  close source,copy string+STDARG+arg ptr+LEXT,
+    try to open source+res,unstack string+LEXT,
+    (res!=1; $ not found, try with extension $
+     add extension,try to open source+res,unstack string+LEXT).
+
+'table'MESSAGE=(
+   "no input file was specified":no input,
+   "erro opening file %p"       :opening source
+).
+
+'p'next source-res:
+   >>STDARG<<<STDARG,Ferror+no input;
+   next argument,open next argument+res,
+     (res=0;Ferror+opening source+arg ptr);
+   close source,0->arg ptr,-.
+
+'f'get obj file+ptr>:arg ptr->ptr.
+   $ to report the source file $
+'a'clean up:
+   close source.
 
 'root'+.
 'pragmat'endif=compile.

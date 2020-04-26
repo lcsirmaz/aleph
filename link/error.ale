@@ -3,6 +3,7 @@ $ error
 $ HEADER *********************************************** $
 'e'internal error+T[]+>file+>lineno.
 'e'corrupted obj file+T[]+>file+>lineno.
+'e'Ferror+*+>msg. $ fatal error $
 'a'error+*+>msg.
 'a'warning+*+>msg.
 'table'MESSAGE.
@@ -13,16 +14,23 @@ $ BODY ************************************************* $
 
 'table'MESSAGE=(
   "too many errors, quitting" :too many errors,
-  "F fatal: internal error in %l/" :fatal head,
-  " program aborted" :fatal tail,
-  "F fatal: obj file %p corrupted (%l/" :corrupted head,
-  ") program aborted": corrupted tail
+  "internal error at %l/" :fatal head,
+  ", program aborted" :fatal tail,
+  "corrupt ice file, found at %l/" :corrupted head
 ).
 $ messages go here $
 'charfile' PRINTFILE="stdout">.
+'variable'prpos=0.
 
-'a'print char+>ch: put char+PRINTFILE+ch.
-'a'nlcr: put char+PRINTFILE+newline.
+'a'print char+>ch: 
+   incr+prpos,put char+PRINTFILE+ch.
+'a'nlcr: 
+   prpos<=1,1->prpos;
+   0->prpos,put char+PRINTFILE+newline.
+'a'tab line+>pos:
+   prpos=pos;
+   prpos>pos,nlcr,:tab line;
+   print char+/ /,:tab line.
 
 $ simple output $
 'a'print int+>n:
@@ -38,19 +46,24 @@ $ simple output $
 'a'print form1+>n+>m -q-r:
    m=0;
    decr+m,divrem+n+10+q+r,print form1+q+m,add+r+/0/+r,print char+r.
-'a'print+T[]+>p:
+'a'print+T[]+>p-n:
    $ print a string
-   was+T+p,put string+PRINTFILE+T+p;+.
+   was+T+p,put string+PRINTFILE+T+p,
+     string length+T+p+n,add+prpos+n+prpos;
+   +.
 $ formatted printing $
 'a'print pointer+>ptr:
    ptr=0,print+"[NULL]";
    was+MESSAGE+ptr,print+MESSAGE+ptr;
+   was+STDARG+ptr,print+STDARG+ptr;
    was+LEXT+ptr,get tag image+ptr+ptr,print+LEXT+ptr;
-   print+"[?",print int+ptr,print+"]".
+   internal error+_title_+_line_.
 'a'print base+>str-obuff-ptr:
-   $ print the base of a source file
-   get tag image+str+str,>>BUFFER->obuff,
-   unpack string+LEXT+str+BUFFER,>>BUFFER->ptr,
+   >>BUFFER->obuff,
+   (was+LEXT+str,get tag image+str+str,unpack string+LEXT+str+BUFFER;
+    was+STDARG+str,unpack string+STDARG+str+BUFFER;
+    internal error+_title_+_line_),
+   >>BUFFER->ptr,
    $ go back until / or \
    (nxt: ptr<=obuff;
          BUFFER[ptr]=///;BUFFER[ptr]=/\/;BUFFER[ptr]=/:/;
@@ -58,13 +71,14 @@ $ formatted printing $
    $ print until the first dot
    (nxt: >>BUFFER>ptr;BUFFER[ptr]=/./;
          print char+BUFFER[ptr],incr+ptr,:nxt),
-   unstack to+BUFFER+obuff.         
+   unstack to+BUFFER+obuff.
 'a'print item+>item-line-source-module:
-   $ print line number/source(module) for a given item
+   $ print item definition as "0034/aleph (aleph)"
    find lineno+item+line+source+module,
    (line>0;decr+line,print form+line),
-   (source=Squote image;print char+///,print base+source),
-   print char+/(/,print pointer+module,print char+/)/.
+   (source=Squote image;
+    print char+///,print base+source),
+   print char+/ /,print char+/(/,print pointer+module,print char+/)/.
 
 'a'format print+*+>fmt-optr-ptr:
    >>BUFFER->optr,unpack string+MESSAGE+fmt+BUFFER,add+optr+1+ptr,
@@ -75,6 +89,7 @@ $ formatted printing $
                      [/p/],(shift affix block+*,print pointer+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/i/],(shift affix block+*,print item+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/l/],(shift affix block+*,print form+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/d/],(shift affix block+*,print int+fmt;print+"[?]"),incr+ptr,:nxt;
                      print char+BUFFER[ptr],incr+ptr,:nxt))),
    (shift affix block+*,print+"[...]";+),
    unstack to+BUFFER+optr.
@@ -82,23 +97,29 @@ $ formatted printing $
 $ error handling ******************************************** $
 'variable'error no=0.
 'constant'maximal errors=51.
+'constant'message col=16.
+
+'a'message head+>M-obj:
+  nlcr,print char+M,print char+/ /,get obj file+obj,
+  (obj=0;print base+obj),tab line+message col.
 
 'a'error+*+>mess:
-   print char+/E/,print char+/ /,format print+*,nlcr,
+   message head+/E/,format print+*,nlcr,
    incr+error no,(error no<maximal errors;
-    print char+/E/,print char+/ /,format print+too many errors,nlcr,
-    clean up,exit+1).
+                  Ferror+too many errors).
 'a'warning+*+>mess:
-   print char+/W/,print char+/ /,format print+*,nlcr.
+   message head+/W/,format print+*,nlcr.
 
-'e'internal error+T[]+>file+>line:
-   format print+fatal head+line,print+T+file,
+'e'Ferror+*+>mess:
+   message head+/F/,format print+*,nlcr,
+   clean up,exit+1.
+
+'e'internal error+T[]+>source+>line:
+   message head+/F/,format print+fatal head+line,print+T+source,
    format print+fatal tail,nlcr,clean up,exit+2.
-
-'e'corrupted obj file+T[]+>source+>line-obj:
-   get obj file+obj,format print+corrupted head+obj+line,
-   print+T+source,format print+corrupted tail,
-   nlcr,clean up,exit+3.
+'e'corrupted obj file+T[]+>source+>line:
+   message head+/F/,format print+corrupted head+line,
+   print+T+source,format print+fatal tail,nlcr,clean up,exit+1.
 
 'root'+.
 

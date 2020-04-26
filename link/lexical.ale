@@ -22,8 +22,17 @@ $ HEAD **************************************************** $
 'a'must+>x+y>:x=inpt,inpt value->y,next symbol;
               corrupted obj file+_title_+_line_.
 
-'f'get tag definition+>tag+def>,get tag image+>tag+img>.
-'a'put tag definition+>tag+>def.
+$ manupulating LEXT entries
+$ each entry has a data field (zero), and an image (string)
+'f'get tag data+>tag+d>,get tag image+>tag+img>.
+'a'put tag data+>tag+>d.
+'a'add LEXT entry+out>.
+   $ string at the top of LEXT is merged; returns unique ID
+
+'a'try to open source+res>.
+   $ >>LEXT is the string to be opened.
+   $ res=0: success, res=1: file not found; -1: other error
+'a'close source.
 
 'stack'BUFFER,(next,def)LEXT.
 
@@ -46,6 +55,11 @@ $  I54 (item), F54 (formal), L54 (local), N54 (node)
 $ other characters: ()[] .*;:> +-/~|^
 
 'charfile'SOURCE="objfile">.   $ obj file $
+'a'try to open source+res>-errno:
+   open file+SOURCE+/r/+LEXT+>>LEXT,0->res,next char,next symbol;
+   get file error+SOURCE+errno,(errno=2,1->res;-1->res).
+'a'close source:
+   close file+SOURCE.
 
 'variable'char=/ /.
 'constant'end char=1.
@@ -104,12 +118,16 @@ $
 'stack'[20](next,def)LEXT=("",(0,0):Squote image).
 'stack'[1]HASH.
 
-'f'get tag definition+>tag+def>:
+'f'get tag data+>tag+def>:
   def*LEXT[tag]->def.
 'f'get tag image+>tag+ptr>:
   subtr+tag+<>LEXT+ptr.
-'a'put tag definition+>tag+>def:
+'a'put tag data+>tag+>def:
   def->def*LEXT[tag].
+'a'add LEXT entry+x>:
+  (*0->next->def*)LEXT,enter string+>>LEXT+x,
+  (x=>>LEXT;
+   unstack+LEXT,unstack string+LEXT).
 
 'a'enter string+>ptr+out>-string-hash-ptr2-string2-eq:
   subtr+ptr+<>LEXT+string,simple hash+LEXT+string+hash,
@@ -141,8 +159,7 @@ $
    [/"/],next char, $ closing quote mark
      (char=/"/,extend BUFFER+char,incr+n,:nxt;
       n=0,Squote image->x;
-      pack string+BUFFER+n+LEXT,(*0->next->def*)LEXT,
-         enter string+>>LEXT+x);
+      pack string+BUFFER+n+LEXT,add LEXT entry+x);
    [newline;end char],corrupted obj file+_title_+_line_;
    extend BUFFER+char,incr+n,:nxt)).
 

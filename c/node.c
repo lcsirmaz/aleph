@@ -6,6 +6,7 @@
 #include "types.h"
 #include "display.h"
 #include "obj.h"
+#include "symbols.h"
 /* ======================================= */
 
 static int local_affix_set_only,out_affix_not_used,
@@ -164,7 +165,8 @@ static void greadBox(void){
 static void garea(int *a){ /* buff> */
    int par[3];int x;
    if(addRULEflag!=3){par[0]=Darea;Qskip(par);a[0]=0;return; }
-   a[0]=BUFFER->aupb;nxt:par[0]=Darea;if(Q(par)){par[0]=Dplus;extendBUFFER(par);return;}
+   a[0]=BUFFER->aupb;getLinenum(par);x=par[0];par[0]=Dconst;par[1]=x;pushBUFFER(2,par);
+   nxt:par[0]=Darea;if(Q(par)){par[0]=Dplus;extendBUFFER(par);return;}
    par[0]=Dcolon;if(Q(par)){extendBUFFER(par);goto nxt;}
    par[0]=Dsemicolon;if(Q(par)){extendBUFFER(par);goto nxt;}
    if(Qcons(par)){x=par[0];par[0]=Dconst;par[1]=x;pushBUFFER(2,par);

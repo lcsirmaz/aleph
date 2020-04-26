@@ -4,9 +4,10 @@ $ HEADER ************************************************ $
 $ read al items from the .ice file
 
 'f'get item+>idx+item>:
+   $ given I<idx> return the corresponding item
    addmult+idx+<>ITEM+base item+item.
-
 'f'get calibre+>item+cal>,get ssel+>item+ssel>.
+   $ item is a list, get/set data
 'a'put vupb+>item+>x,put vlwb+>item+>x.
 'q'is item flag+>item+>flag.
 'a'set item flag+>item+>flag.
@@ -14,10 +15,12 @@ $ read al items from the .ice file
 
 'a'head section.
 'a'skip head section.
+   $ process/skip head section of the next input file
 'a'item section.
 'a'skip item section.
-
+   $ process/skip item section of module/main
 'f'find lineno+>item+line>+str>+module>.
+   $ for an item find out line/source (module) data
 
 $ item flags $
 'constant'
@@ -44,7 +47,6 @@ $ rule types
   rexit		=rno return,
   rtype		=rside effect|rcan fail|rno return.
 
-
 'stack'(flag,type,tag,lineno,adm,repr)ITEM.
 'variable'base item.
 
@@ -62,7 +64,7 @@ $       list       adm => vlwb,vupb,calibre,ssel
   bool and+flag*ITEM[item]+flag+x,is+x.
 'a'set item flag+>item+>flag:
   bool or+flag*ITEM[item]+flag+flag*ITEM[item].
-'a'clear item flag+>item+>flag-mask
+'a'clear item flag+>item+>flag-mask:
   bool invert+flag+mask,bool and+mask+flag*ITEM[item]+flag*ITEM[item].
 
 'constant'
@@ -108,13 +110,13 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - -  $
    is item flag+item2+texternal,error+incompatible external+tag+item2+item1;
    is item flag+item1+tpublic,
      (is item flag+item2+tpublic,error+doubly defined+tag+item1+item2;+);
-   is item flag+item2+tpublic,put tag definition+tag+item2;
+   is item flag+item2+tpublic,put tag data+tag+item2;
    +.
 
 'a'enter item+>item-tag-def:
   (is item flag+item+tglobal,-); $ if not global, don't do anything
-  tag*ITEM[item]->tag,get tag definition+tag+def,
-  (def=0,put tag definition+tag+item;
+  tag*ITEM[item]->tag,get tag data+tag+def,
+  (def=0,put tag data+tag+item;
    check compatibility+tag+def+item).
 
 $ module header ---------------------------------------- $
@@ -180,6 +182,36 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'skip item section:
    R+Dpoint;next symbol,:skip item section.
 
+$ library section **************************************** $
+$ library defines external rules, lists, files
+'table'MESSAGE=(
+  "external %p: type mismatch in %i":external type mismatch
+).
+
+'a'skip library item-type:
+   must+Ttype+type,must+Tconst+#,$ flag $
+   (=type=
+    [Irule],+;
+    [Istack;Itable],+;
+    [Ichar file;Idata file],+;
+    [Iconstant;Ivariable],+;
+    corrupted obj file+_title_+_line_).
+'a'check library item+>item-type-x:
+   must+Ttype+type,must+Tconst+x,
+   ((type=type*ITEM[item],x=flag*ITEM[item]);
+     Ferror+external type mismatch+tag*ITEM[item]+item),
+   +.   
+
+'a'read library item-tag-item:
+  must+Tstring+tag,get tag data+tag+item,
+   ((item=0,is item flag+item+texternal),
+       check library item+item;
+    skip library item).
+
+
+'a'library section:
+   R+Dpoint;read library item,:library section.
+
 $ head section ******************************************* $
 $ each module has an ITEM entry linked through the repr field
 'variable'
@@ -187,7 +219,7 @@ $ each module has an ITEM entry linked through the repr field
    base item=0.    $ ITEM[base] describes this module
 
 'table'MESSAGE=(
-  "module %p: included twice" :same title
+  "module with the same title %p included before" :same title
 ).
 
 'a'check module title-ptr:
@@ -195,18 +227,27 @@ $ each module has an ITEM entry linked through the repr field
      tag*ITEM=tag*ITEM[ptr],warning+same title+tag*ITEM;
      repr*ITEM[ptr]->ptr,:nxt).
 
-'a'head section-n-str:
+'a'read definition list-n-str:
+   must+Tconst+n,
+     (n>max lineno,n->max lineno;
+      corrupted obj file+_title_+_line_),
+     must+Tstring+str,
+     (* n->width,str->data *)AUX,
+     (adm*ITEM=0,>>AUX->adm*ITEM;+),
+     (R+Dpoint;:read definition list).
+
+'a'head section:
   (* 0->flag->type->lineno->tag->adm->repr *)ITEM,
-  (R+Dmodule,Dmodule->type*ITEM;R+Dtitle,Dtitle->type*ITEM;
+  (R+Dmodule,Dmodule->type*ITEM;
+   R+Dtitle,Dtitle->type*ITEM;
+   R+Dlibrary,Dlibrary->type*ITEM;
    corrupted obj file+_title_+_line_),
   must+Tstring+tag*ITEM, check module title, $ warn for the same title 
   0->max lineno,
-  (nxt: must+Tconst+n,(n>max lineno,n->max lineno;
-                       corrupted obj file+_title_+_line_),
-         must+Tstring+str,
-         (* n->width,str->data *)AUX,(adm*ITEM=0,>>AUX->adm*ITEM;+),
-         (R+Dpoint;:nxt)),
+  (type*ITEM=Dlibrary,must+Dpoint+#;
+   read definition list),
   max lineno->lineno*ITEM,
+  $ finally link them $
   (base item=0;>>ITEM->repr*ITEM[base item]),>>ITEM->base item.
   
 'a'skip head section: $ advance base item $
