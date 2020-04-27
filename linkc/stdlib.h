@@ -110,8 +110,8 @@ void scratch(int *a);		// 'a' scratch + []st[]
 void release(int *a);		// 'a' release + []st[]
 int requestspace(int *a);	// 'p' request space + []st[] + >size
 void expandstack(int *a);	// 'a' expand stack + []st[] + >n + >f1 + ... + >fn
-void extend(int *a);		// 'a' extend + []st[] + >v
-void extendStack(int *a);	// 'a' extend stack + []st[]
+//void extend(int *a);		// 'a' extend + []st[] + >v
+//void extendStack(int *a);	// 'a' extend stack + []st[]
 
 #define maxchar	0x10FFFF
 void stringlength(int *a);	// 'f' string length + text[] + >p + len>
@@ -123,6 +123,7 @@ void unstackstring(int *a);	// 'a' unstack string+ []stack[]
 void packstring(int *a);	// 'a' pack string + from[] + >n + []to[]
 void unpackstring(int *a);	// 'a' unpack string + from[] + >p + []to[]
 void copystring(int *a);	// 'a' copy string + from[]+>p + []to[]
+void previousstring(int *a);	// 'a' previous string + t[] + >ptr>
 /*===============================================================*/
 /* charfile */
 #include <stdio.h>

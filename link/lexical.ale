@@ -5,7 +5,7 @@ $ HEAD **************************************************** $
    Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
    Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
    Dlibrary,Dmodule,Dtitle,
-   Dand,Dbus,Dclose,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
+   Dand,Dbus,Dclose,Dcolon,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
    Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
    Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
    $ types $
@@ -118,12 +118,9 @@ $
 'stack'[20](next,def)LEXT=("",(0,0):Squote image).
 'stack'[1]HASH.
 
-'f'get tag data+>tag+def>:
-  def*LEXT[tag]->def.
-'f'get tag image+>tag+ptr>:
-  subtr+tag+<>LEXT+ptr.
-'a'put tag data+>tag+>def:
-  def->def*LEXT[tag].
+'f'get tag data+>tag+def>:   def*LEXT[tag]->def.
+'f'get tag image+>tag+ptr>:  subtr+tag+<>LEXT+ptr.
+'a'put tag data+>tag+>def:   def->def*LEXT[tag].
 'a'add LEXT entry+x>:
   (*0->next->def*)LEXT,enter string+>>LEXT+x,
   (x=>>LEXT;
@@ -146,7 +143,7 @@ $
    >>HASH->ptr, $ clear all entries in HASH
      (nxt:ptr<<<HASH;0->HASH[ptr],previous+HASH+ptr,:nxt),
    $ makes sure there atr HASH size entries
-   subtr+<<HASH+>>HASH+block,incr+block,
+   subtr+>>HASH+<<HASH+block,incr+block,
      (nxt:block>=HASH size;(*0->HASH*)HASH,incr+block,:nxt),
    >>LEXT->ptr,(nxt:ptr<<<LEXT; $ done $
    enter string+ptr+block,
@@ -205,23 +202,23 @@ $ formal types $
  "formal repeat":Iformal repeat,
  "formal shift"	:Iformal shift:last TYPE, 
 $ single characters $
+ "&"		:Dand,
  "]"		:Dbus,
  ")"		:Dclose,
  ":"		:Dcolon,
+ "~"		:Dcompl,
  "/"		:Ddiv,
  "-"		:Dminus,
  "#"		:Dnoarg,
  "("		:Dopen,
- "~"		:Dcompl,
- "&"		:Dand,
  "|"		:Dor,
- "^"		:Dxor,
  ">"		:Dout,
  "+"		:Dplus,
  "."		:Dpoint,
  ";"		:Dsemicolon,
  "*"		:Dstar,
  "["		:Dsub,
+ "^"		:Dxor,
 $ internal $
  "const"        :Tconst,
  "type"		:Ttype,
@@ -250,7 +247,7 @@ $ <type>
 'a'read type+x>-n:
   next char,scratch+BUFFER,0->n,
   (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
-         char=/ /,next char,:nxt;
+         char=/ /,extend BUFFER+/ /,incr+n,next char,:nxt;
          char=/>/,next char;
          corrupted obj file+_title_+_line_),
   pack string+BUFFER+n+LEXT,last TYPE->x,

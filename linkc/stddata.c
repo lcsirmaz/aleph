@@ -43,11 +43,11 @@ void add_new_string(char *what, aSTACK *st){
    par[0]=STACKpar(BUFFER); par[1]=oldupb; unstackto(par);
 }
 
-// DISC, OBJ, PRINTFILE, SOURCE
+// DISC, SOURCE, PRINTFILE, SOURCE
 
 void initialize_stdfiles(void){
   int par[5]; int oldupb;
-  OBJ->openflag=0;		// charfile
+  SOURCE->openflag=0;		// charfile
   PRINTFILE->openflag=0;	// charfile
   TARGET->openflag=0;		// charfile
 // open file(PRINTFILE,stdstring,"stdout")

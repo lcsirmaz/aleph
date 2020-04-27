@@ -14,9 +14,9 @@ $ BODY ************************************************* $
 
 'table'MESSAGE=(
   "too many errors, quitting" :too many errors,
-  "internal error at %l/" :fatal head,
+  "internal error at %f/" :fatal head,
   ", program aborted" :fatal tail,
-  "corrupt ice file, found at %l/" :corrupted head
+  ".ice file is corrupt; found at %f/" :corrupted head
 ).
 $ messages go here $
 'charfile' PRINTFILE="stdout">.
@@ -26,7 +26,7 @@ $ messages go here $
    incr+prpos,put char+PRINTFILE+ch.
 'a'nlcr: 
    prpos<=1,1->prpos;
-   0->prpos,put char+PRINTFILE+newline.
+   0->prpos,print char+newline.
 'a'tab line+>pos:
    prpos=pos;
    prpos>pos,nlcr,:tab line;
@@ -73,12 +73,15 @@ $ formatted printing $
          print char+BUFFER[ptr],incr+ptr,:nxt),
    unstack to+BUFFER+obuff.
 'a'print item+>item-line-source-module:
-   $ print item definition as "0034/aleph (aleph)"
-   find lineno+item+line+source+module,
+   $ print item as "0034/aleph (aleph)"
+   find item lineno+item+line+source+module,
    (line>0;decr+line,print form+line),
    (source=Squote image;
     print char+///,print base+source),
    print char+/ /,print char+/(/,print pointer+module,print char+/)/.
+'a'print line+>l-line-source:
+   $ error in this module; print "0034/static"
+   find 
 
 'a'format print+*+>fmt-optr-ptr:
    >>BUFFER->optr,unpack string+MESSAGE+fmt+BUFFER,add+optr+1+ptr,
@@ -88,7 +91,8 @@ $ formatted printing $
                     (=BUFFER[ptr]=
                      [/p/],(shift affix block+*,print pointer+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/i/],(shift affix block+*,print item+fmt;print+"[?]"),incr+ptr,:nxt;
-                     [/l/],(shift affix block+*,print form+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/f/],(shift affix block+*,print form+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/l/],(shift affix block+*,print line+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/d/],(shift affix block+*,print int+fmt;print+"[?]"),incr+ptr,:nxt;
                      print char+BUFFER[ptr],incr+ptr,:nxt))),
    (shift affix block+*,print+"[...]";+),

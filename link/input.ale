@@ -1,8 +1,11 @@
 $ inputs
 $ HEADER ********************************************** $
 'pragmat'module="input".
-'p'next source.
+'p'next source+>how+ext>.
    $ if there is a next source, open it
+   $   how=0: guess extension
+   $   how=1: no extension
+   $   how=2: with extension
    $ if fails, the next call repeats the same sequence
 'f'get obj file+obj>. $ an STDARG entry $
 'a'clean up.          $ for fatal errors $
@@ -12,9 +15,14 @@ $ BODY ************************************************ $
 
 'pragmat'require=("lexical","error").
 
-'variable'
-  arg ptr=0.       $ pointer to next argument $
+'table'MESSAGE=(
+   "no input file was specified":no input,
+   "error opening file %p"      :opening source
+).
 
+'variable'
+  arg ptr=0,       $ pointer to the next argument $
+  with extension=0.$ 1: no extension, 2: extension added
 
 'a'extend BUFFER+>x: (*x->BUFFER*)BUFFER.
 
@@ -27,21 +35,21 @@ $ BODY ************************************************ $
   arg ptr=0,>>STDARG->arg ptr;
   arg ptr>=<<STDARG,previous string+STDARG+arg ptr.
 
-'a'open next argument+res>:
-  close source,copy string+STDARG+arg ptr+LEXT,
-    try to open source+res,unstack string+LEXT,
-    (res!=1; $ not found, try with extension $
-     add extension,try to open source+res,unstack string+LEXT).
+'a'open as it is+res>:
+   1->with extension,copy string+STDARG+arg ptr+LEXT,
+      try to open source+res,unstack string+LEXT.
+'a'open with extension+res>:
+   2->with extension,add extension,
+      try to open source+res,unstack string+LEXT.
+'a'open argument+>how-res:
+   (how=1,open as it is+res;
+    how=2,open with extension+res;
+    open as it is+res,(res!=1;open with extension+res)),
+   (res=0;Ferror+opening source+arg ptr).
 
-'table'MESSAGE=(
-   "no input file was specified":no input,
-   "erro opening file %p"       :opening source
-).
-
-'p'next source-res:
+'p'next source+>how+ext>:
    >>STDARG<<<STDARG,Ferror+no input;
-   next argument,open next argument+res,
-     (res=0;Ferror+opening source+arg ptr);
+   next argument,close source,open argument+how,with extension->ext;
    close source,0->arg ptr,-.
 
 'f'get obj file+ptr>:arg ptr->ptr.

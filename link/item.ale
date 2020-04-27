@@ -6,9 +6,11 @@ $ read al items from the .ice file
 'f'get item+>idx+item>:
    $ given I<idx> return the corresponding item
    addmult+idx+<>ITEM+base item+item.
-'f'get calibre+>item+cal>,get ssel+>item+ssel>.
+'f'get calibre+>item+x>,get ssel+>item+x>,
+   get vupb+>item+x>,get vlwb+>item+x>.
    $ item is a list, get/set data
 'a'put vupb+>item+>x,put vlwb+>item+>x.
+
 'q'is item flag+>item+>flag.
 'a'set item flag+>item+>flag.
 'a'clear item flag+>item+>flag.
@@ -18,9 +20,14 @@ $ read al items from the .ice file
    $ process/skip head section of the next input file
 'a'item section.
 'a'skip item section.
-   $ process/skip item section of module/main
-'f'find lineno+>item+line>+str>+module>.
-   $ for an item find out line/source (module) data
+   $ process/skip item section of a module/main
+'a'check all items.
+   $ check that imported tags have a definition
+
+'f'find item lineno+>item+line>+str>+module>.
+   $ %i format: find line/source (module) for an item
+'f'find lineno+>old+line>+str>.
+   $ %l format: find a place in this module
 
 $ item flags $
 'constant'
@@ -90,7 +97,8 @@ $ compatibility ------------------------------------------ $
 'table'MESSAGE=(
   "%p: incompatible types at %i and %i" :incompatible global types,
   "%p: mixing external at %i and %i"    :incompatible external,
-  "%p: doubly defined at %i and %i"     :doubly defined
+  "%p: doubly defined at %i and %i"     :doubly defined,
+  "%p: no definition, requested at %i"  :not defined
 ).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - -  $
 'q'stack size mismatch+>item1+>item2-x1-x2:
@@ -122,14 +130,12 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - -  $
 $ module header ---------------------------------------- $
 'variable'link formals=0. $ link all formals $
 
-'f'get calibre+>item+cal>:
-   calibre*AUX[adm*ITEM[item]]->cal.
-'f'get ssel+>item+ssel>:
-   ssel*AUX[adm*ITEM[item]]->ssel.
-'a'put vlwb+>item+>x:
-   x->vlwb*AUX[adm*ITEM[item]].
-'a'put vupb+>item+>x:
-   x->vupb*AUX[adm*ITEM[item]].
+'f'get calibre+>item+x>: calibre*AUX[adm*ITEM[item]]->x.
+'f'get ssel+>item+x>: ssel*AUX[adm*ITEM[item]]->x.
+'f'get vupb+>item+x>: vupb*AUX[adm*ITEM[item]]->x.
+'f'get vlwb+>item+x>: vlwb*AUX[adm*ITEM[item]]->c.
+'a'put vlwb+>item+>x: x->vlwb*AUX[adm*ITEM[item]].
+'a'put vupb+>item+>x: x->vupb*AUX[adm*ITEM[item]].
 
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'q'compare formals+>p1+>p2-w:
@@ -219,7 +225,7 @@ $ each module has an ITEM entry linked through the repr field
    base item=0.    $ ITEM[base] describes this module
 
 'table'MESSAGE=(
-  "module with the same title %p included before" :same title
+  "module with the same title %p" :same title
 ).
 
 'a'check module title-ptr:
@@ -256,24 +262,34 @@ $ each module has an ITEM entry linked through the repr field
    repr*ITEM[base item]->base item),
   lineno*ITEM[base item]->max lineno.
 
-'f'find lineno+>item+line>+str>+module>-ptr-nptr-l:
+$ find position ------------------------------------------- $
+
+'f'search for line+>ptr+>old+line>+str>:
+   (old<=0;old>lineno*ITEM[ptr]),0->line,Squote image->str;
+   adm*ITEM[ptr]->ptr,old->line,
+      (nxt:old>width*AUX[ptr],subtr+old+width*AUX[ptr]+line,add+ptr+2+ptr,:nxt;
+           data*AUX[ptr]->str).
+
+'f'find lineno+>old+line>+str>:
+   base item=0,old->line,Squote image->str;
+   search for line+base item+old+line+str.
+
+'f'find item lineno+>item+line>+str>+module>-ptr-nptr:
    <<ITEM->ptr,
    (nxt:repr*ITEM[ptr]->nptr,((is+nptr,nptr<item),nptr->ptr,:nxt;+)),
-   tag*ITEM[ptr]->module,lineno*ITEM[item]->l,
-   ((l<=0;l>lineno*ITEM[ptr]),0->line,Squote image->str;
-    adm*ITEM[ptr]->ptr,l->line,
-      (nxt:l>width*AUX[ptr],subtr+l+width*AUX[ptr]+line,add+ptr+2+ptr,:nxt;
-           data*AUX[ptr]->str)).
+   tag*ITEM[ptr]->module,search for line+ptr+lineno*ITEM[item]+line+str.
+
 
 $ check items for definition *********************************** $
-'table'MESSAGE=(
-).
-'a'check all items-ptr:
-  <<ITEM->ptr,
-  (nxt:ptr>>>ITEM;+).
+'a'check all items-ptr-def:
+  <<ITEM->ptr,(nxt:ptr>>>ITEM;
+  (type*ITEM[ptr]=Dtitle;type*ITEM[ptr]=Dmodule;type*ITEM[ptr]=Dlibrary),
+     next+ITEM+ptr,:nxt;
+  is item flag+ptr+timported,get tag data+tag*ITEM[ptr]+def,
+     (is item flag+def+tpublic;
+      error+not defined+tag*ITEM[ptr]+ptr),next+ITEM+ptr,:nxt;
+  next+ITEM+ptr,:nxt).
   
-
-
 'root'+.
 'pragmat'endif=compile.
 'end'

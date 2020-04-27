@@ -4,15 +4,25 @@ $ handle data:
 $  expression, fill, list, file $
 'a'list entry,read expression.
 
+$ expressions are stored in the stack EXPRESSION,
+$  linked so we can walk them.
+$ expressions are evaluated twice. loose evaluation
+$  determines values which do not depend on pointers
+$  and limits. The second evaluation determines all
+$  final values for expressions; after that the stack
+$  can be freed.
+'a'loose evaluation.
+'a'final evaluation.
 
 $ BODY **************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("error","item","lexical").
 
-
 'stack'[7]EXPRESSION.
 'a'push EXPR+>x:
   (* x->EXPRESSION *)EXPRESSION.
+
+'variable'link expr=0. $link all expressions
 
 'f'check list type+>item:
   =type*ITEM[item]=
@@ -42,10 +52,11 @@ $ BODY **************************************************** $
    $     <direction 0..3> <stdstr> <ptr> Dpoint
    R+Dpoint;next symbol,:skip file entry.
 
-'a'read expression-idx-item:
+'a'read expression-idx-item-ptr:
    $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
    must+Titem+idx,get item+idx+item,
      (=type*ITEM[item]= [Iconstant;Ivariable],+;corrupted obj file+_title_+_line_),
+     push EXPR+item,>>EXPRESSION->ptr,push EXPR+link expr,ptr->link expr,
      >>EXPRESSION->adm*ITEM[item],(nxt:=inpt=
      [Dpoint],next symbol,push EXPR+Dpoint;
      [Tconst],push EXPR+Tconst,push EXPR+inpt value,next symbol,:nxt;
@@ -57,11 +68,10 @@ $ BODY **************************************************** $
       Dopen;Dclose],push EXPR+inpt,next symbol,:nxt;
       corrupted obj file+_title_+_line_).
 
+$ loose evaluation ****************************************** $
 'table'MESSAGE=(
   "%p: constant definition refers to itself (%i)": constant refers to itself
 ).
-
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'variable'eptr=0.
 'p'E+>x:
     EXPRESSION[eptr]=x,incr+eptr.
@@ -87,6 +97,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 
 'p'loose base+v>:
    E+Dopen,loose expr+0+v,E+Dclose;
+   E+Tconst,EXPRESSION[eptr]->v,incr+eptr;
    E+Dcompl,loose base+v,bool invert+v+v;
    E+Dminus,loose base+v,subtr+0+v+v;
    E+Dcalibre,get calibre+EXPRESSION[eptr]+v,incr+eptr;
@@ -101,10 +112,39 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    is item flag+item+teval,clear item flag+item+teval,
       error+constant refers to itself+tag*ITEM[item]+item,
       set item flag+item+tvalue,0->repr*ITEM[item];
-   set item flag+item+teval,adm*ITEM[item]->eptr,
+   set item flag+item+teval,adm*ITEM[item]->eptr,incr+eptr,
       (-v:loose expr+0+v,set item flag+item+tvalue,v->repr*ITEM[item];+),
-   clear item flag+item+teval.
+      clear item flag+item+teval.
+'a'loose evaluation-ptr:
+   link expr->ptr,(nxt:ptr=0;
+     loose eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt).
 
+$ final evaluation ****************************************** $
+$  *** a pointer constant MUST HAVE its tvalue flag set ***
+'a'final base+v>:
+   E+Dopen,final expr+0+v,(E+Dclose;+);
+   E+Tconst,EXPRESSION[eptr]->v,incr+eptr;
+   E+Dcompl,final base+v,bool invert+v+v;
+   E+Dminus,final base+v,subtr+0+v+v;
+   E+Dcalibre,EXPRESSION[eptr]->v,get calibre+v+v,incr+eptr;
+   E+Dlwb,EXPRESSION[eptr]->v,get vlwb+v+v,incr+eptr;
+   E+Dupb,EXPRESSION[eptr]->v,get vupb+v+v,incr+eptr;
+   Eitem+v,final eval+v,repr*ITEM[v]->v;
+   corrupted obj file+_title_+_line_.
+   
+'a'final expr+>prio+v>-op-p-w:
+   final base+v,(nxt:Eop+prio+op+p,final expr+p+w,optor+op+w+v,:nxt;+).
+'a'final eval+>item-v:
+   is item flag+item+tvalue;
+   is item flag+item+teval,clear item flag+item+teval,
+      error+constant refers to itself+tag*ITEM[item]+item,
+      set item flag+item+tvalue,0->repr*ITEM[item];
+   set item flag+item+teval,adm*ITEM[item]->eptr,incr+eptr,
+      final expr+0+v,clear item flag+item+teval,
+      set item flag+item+tvalue,v->repr*ITEM[item].
+'a'final evaluation-ptr:
+   link expr->ptr,(nxt:ptr=0;
+     final eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 
 'root'+.

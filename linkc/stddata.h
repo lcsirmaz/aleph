@@ -28,10 +28,10 @@
 //#define aa_OBJ          (aa_DISC+sizeof_DFILE)
 //#define aa_SOURCE       (aa_DISC+2*sizeof_DFILE)
 #define aa_TARGET       (aa_PRINTFILE+sizeof_CHFILE)
-#define aa_OBJ          (aa_PRINTFILE+2*sizeof_CHFILE)
+#define aa_SOURCE       (aa_PRINTFILE+2*sizeof_CHFILE)
 
 /* total */
-#define aa_TOTAL        (aa_OBJ+sizeof_CHFILE)
+#define aa_TOTAL        (aa_SOURCE+sizeof_CHFILE)
 /*--------------------------------------------------------*/
 /* stacks and files as pointers */
 #define LEXT            parSTACK(aa_LEXT)
@@ -47,7 +47,7 @@
 
 #define TARGET          parCHFILE(aa_TARGET)
 #define PRINTFILE       parCHFILE(aa_PRINTFILE)
-#define OBJ             parCHFILE(aa_OBJ)
+#define SOURCE          parCHFILE(aa_SOURCE)
 /*--------------------------------------------------------*/
 /* selector offsets and calibre  for each list */
 #define LEXT_next	1

@@ -1,0 +1,301 @@
+/* lexical.ale main file */
+#include "stddata.h"
+#include "lexical.h"
+#include "error.h"
+#include <limits.h> /* INT_MAX */
+
+/* exported variables */
+int inpt=0,inptValue=0;
+
+/* prototypes */
+static void nextChar(void),enterString(int *a),rehash(void);
+/* other stuff */
+
+static void extendBUFFER(int *a){
+  int par[3];par[0]=STACKpar(BUFFER);par[1]=1;par[2]=a[0];
+  expandstack(par);
+}
+void tryToOpenSource(int *a){/* >res */
+  int par[4];
+  par[0]=CHFILEpar(SOURCE);par[1]='r';par[2]=STACKpar(LEXT);
+  par[3]=LEXT->aupb;if(openFile(par)){a[0]=0;nextChar();nextSymbol();return;}
+  par[0]=CHFILEpar(SOURCE);getFileError(par);if(par[1]==2){a[0]=1;}else{a[0]=-1;}
+}
+static int Achar=' ';
+#define endChar	1
+static int readChar(int *a){int par[2];
+  par[0]=CHFILEpar(SOURCE);if(Agetchar(par)){a[0]=par[1];return 1;}
+  return 0;
+}
+static void nextChar(void){
+  int par[1];nxt:
+  if(readChar(par)){Achar=par[0];if(Achar==newline){;}else if(Achar<=31){goto nxt;}}
+  else{Achar=endChar;}
+}
+/* ----------------------------------------- */
+static int boldLetter(int *a){
+  if('a'<=Achar&&Achar<='z'){a[0]=Achar;nextChar();return 1;}
+  else{return 0;}
+}
+static int digit(int *a){
+  if('0'<=Achar&&Achar<='9'){a[0]=Achar-'0';nextChar();return 1;}
+  return 0;
+}
+static int hexDigit(int *a){
+  if('0'<=Achar&&Achar<='9'){a[0]=Achar-'0';nextChar();return 1;}
+  else if('a'<=Achar&&Achar<='f'){a[0]=Achar-'a'+10;nextChar();return 1;}
+  else if('A'<=Achar&&Achar<='F'){a[0]=Achar-'A'+10;nextChar();return 1;}
+  else return 0;
+}
+static void comment(void){
+  nxt:if(Achar==newline||Achar==endChar){;}
+  else{nextChar();goto nxt;}
+}
+/* ------------------------------------------ */
+static void readIndex(int *a){/* >sign+x> */
+  int par[3];
+  if('0'<=Achar&&Achar<='9'){;}else{corruptedObjFile(__FILE__,__LINE__);}
+  a[1]=Achar-'0';nextChar();nxt:
+  if(digit(par)){a[1]=a[1]*10+par[0];goto nxt;}
+  else if(a[0]){a[1]=0-a[1];}
+}
+static void readMinus(int *a){/* x> + y> */
+  int par[2];
+  nextChar();if('0'<Achar&&Achar<='0'){a[0]=Tconst;
+    par[0]=1;readIndex(par);a[1]=par[1];}
+  else{par[0]=Dminus;par[1]=0;}
+}
+static void readHex(int *a){ /* x> */
+  int par[1]; a[0]=0;
+  nxt:if(hexDigit(par)){a[0]<<=4;a[0]|=par[0];goto nxt;}
+}
+static void readZero(int *a){/* x> */
+   int par[2];
+   nextChar();if('0'<=Achar&&Achar<='9'){par[0]=0;readIndex(par);a[0]=par[1];}
+   else if(Achar=='x'||Achar=='X'){readHex(a);}
+   else{a[0]=0;}
+}
+/* strings */
+int Squoteimage;
+#define HASHincrement	512
+static int HASHsize=(HASHincrement-1),
+           HASHentries=1;
+
+static void init_LEXT(void){
+  int par[4];
+  add_new_string("",LEXT);par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
+  expandstack(par);Squoteimage=LEXT->aupb;
+}
+/* ------------- */
+void getTagData(int *a){/* >tag+def> */
+  a[1]=LEXT->offset[a[0]-LEXT_def];
+}
+void getTagImage(int *a){ /* >tag+ptr> */
+  a[0]=a[0]-LEXT_CALIBRE;
+}
+void putTagData(int *a){/* >tag +>def */
+  LEXT->offset[a[0]-LEXT_def]=a[1];
+}
+void addLEXTentry(int *a){/* x> */
+ int par[4];
+ par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;expandstack(par);
+ par[0]=LEXT->aupb;enterString(par);a[0]=par[1];if(a[0]==LEXT->aupb){;}
+ else{par[0]=STACKpar(LEXT);unstack(par);unstackstring(par);}
+}
+static void enterString(int *a){/* >ptr + out> */
+  int par[5];int string,hash,ptr2,string2;
+  string=a[0]-LEXT_CALIBRE;par[0]=STACKpar(LEXT);par[1]=string;
+  simplehash(par);hash=par[2]&INT_MAX;hash=hash % HASHsize;
+  if(hash<0){printf(" *** mod =%d<0",hash);exit(7);}
+  hash+=HASH->alwb;ptr2=HASH->offset[hash];nxt:
+  if(ptr2==0){LEXT->offset[a[0]-LEXT_next]=HASH->offset[hash];
+     a[1]=HASH->offset[hash]=a[0];HASHentries++;
+     if(HASHentries<HASHsize){;}
+     else{HASHsize+=HASHincrement;rehash();}}
+  else{string2=ptr2-LEXT_CALIBRE;par[0]=STACKpar(LEXT);par[1]=string;
+     par[2]=STACKpar(LEXT);par[3]=string2;comparestring(par);
+     if(par[4]==0){a[1]=ptr2;par[0]=STACKpar(LEXT);par[1]=string;
+       previous(par);unstackto(par);}
+     else{ptr2=LEXT->offset[ptr2-LEXT_next];goto nxt;}}
+}
+static void rehash(void){
+  int par[4];int ptr,block;
+  ptr=HASH->aupb;nxt1:if(ptr<HASH->alwb){;}
+  else{HASH->offset[ptr]=0;ptr-=HASH_CALIBRE;goto nxt1;}
+  block=HASH->aupb-HASH->alwb+1;nxt2:if(block>=HASHsize){;}
+  else{par[0]=STACKpar(HASH);par[1]=1;par[2]=0;expandstack(par);
+    block++;goto nxt2;}
+  ptr=LEXT->aupb;nxt3:if(ptr<=LEXT->alwb){;}
+  else{par[0]=ptr;enterString(par);block=par[1];
+   if(block==ptr){par[0]=STACKpar(LEXT);par[1]=ptr;previous(par);
+      previousstring(par);ptr=par[1];goto nxt3;}
+   else{printf("rehash: block!=ptr, aborting\n");exit(10);}}
+}
+static void readString(int *a){/* x> */
+  int par[3];int n;
+  nextChar();par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt:
+  nextChar();if(Achar=='"'){nextChar();if(Achar=='"'){
+     par[0]=Achar;extendBUFFER(par);n++;goto nxt;}
+     else if(n==0){a[0]=Squoteimage;}
+     else{par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
+       packstring(par);addLEXTentry(par);a[0]=par[0];}}
+  else if(Achar==newline||Achar==endChar){corruptedObjFile(__FILE__,__LINE__);}
+  else{par[0]=Achar;extendBUFFER(par);n++;goto nxt;}
+}
+/* BOLD ---------------------------------------- */
+static int firstBOLD,lastBOLD,firstTYPE,lastTYPE;
+int Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
+   Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
+   Dlibrary,Dmodule,Dtitle,
+   Dand,Dbus,Dclose,Dcolon,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
+   Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
+   Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
+   Iconstant,Ivariable,IstaticVar,Itable,Istack,IstaticStack,
+   IpointerConstant,Icharfile,Idatafile,Irule,
+   IformalStack,IformalTable,IformalFile,IformalIn,
+   IformalOut,IformalInout,IformalRepeat,IformalShift;
+
+#define addBOLD(x,y)	add_new_string(x,BOLD);y=BOLD->aupb
+static void init_BOLD(void){
+  addBOLD("area",Darea);firstBOLD=Darea;
+  addBOLD("box",Dbox);
+  addBOLD("calibre",Dcalibre);
+  addBOLD("expression",Dexpression);
+  addBOLD("extension",Dextension);
+  addBOLD("file",Dfile);
+  addBOLD("fill",Dfill);
+  addBOLD("library",Dlibrary);
+  addBOLD("list",Dlist);
+  addBOLD("lwb",Dlwb);
+  addBOLD("module",Dmodule);
+  addBOLD("node",Dnode);
+  addBOLD("rule",Drule);
+  addBOLD("title",Dtitle);
+  addBOLD("to",Dto);
+  addBOLD("upb",Dupb);
+  addBOLD("vlwb",Dvlwb);
+  addBOLD("vupb",Dvupb);lastBOLD=Dvupb;
+/* types */
+  addBOLD("constant",Iconstant);firstTYPE=Iconstant;
+  addBOLD("variable",Ivariable);
+  addBOLD("static variable",IstaticVar);
+  addBOLD("table",Itable);
+  addBOLD("stack",Itable);
+  addBOLD("static stack",IstaticStack);
+  addBOLD("pointer constant",IpointerConstant);
+  addBOLD("charfile",Icharfile);
+  addBOLD("datafile",Idatafile);
+  addBOLD("rule",Irule);
+  addBOLD("formal stack",IformalStack);
+  addBOLD("formal table",IformalTable);
+  addBOLD("formal file",IformalFile);
+  addBOLD("formal in",IformalIn);
+  addBOLD("formal out",IformalOut);
+  addBOLD("formal inout",IformalInout);
+  addBOLD("formal repeat",IformalRepeat);
+  addBOLD("formal shift",IformalShift);lastTYPE=IformalShift;
+/* chars */
+  addBOLD("&",Dand);
+  addBOLD("]",Dbus);
+  addBOLD(")",Dclose);
+  addBOLD(":",Dcolon);
+  addBOLD("~",Dcompl);
+  addBOLD("/",Ddiv);
+  addBOLD("-",Dminus);
+  addBOLD("#",Dnoarg);
+  addBOLD("(",Dopen);
+  addBOLD("|",Dor);
+  addBOLD(">",Dout);
+  addBOLD("+",Dplus);
+  addBOLD(".",Dpoint);
+  addBOLD(";",Dsemicolon);
+  addBOLD("*",Dstar);
+  addBOLD("[",Dsub);
+  addBOLD("^",Dxor);
+/* internal */
+  addBOLD("const",Tconst);
+  addBOLD("type",Ttype);
+  addBOLD("node",Tnode);
+  addBOLD("item",Titem);
+  addBOLD("formal",Tformal);
+  addBOLD("local",Tlocal);
+  addBOLD("string",Tstring);
+  addBOLD("***",Dend);
+}
+
+static void readBold(int *a){ /* x> */
+  int par[5];int n;
+  nextChar();par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt:
+  if(boldLetter(par)){extendBUFFER(par);n++;goto nxt;}
+  else if(Achar=='\''){nextChar();}
+  else{corruptedObjFile(__FILE__,__LINE__);}
+  par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
+  packstring(par);a[0]=lastBOLD;nxt2:
+  par[0]=STACKpar(BOLD);par[1]=a[0];par[2]=STACKpar(LEXT);par[3]=LEXT->aupb;
+  comparestring(par);if(par[4]==0){;}
+  else if(a[0]==firstBOLD){corruptedObjFile(__FILE__,__LINE__);}
+  else{par[0]=STACKpar(BOLD);par[1]=a[0];previousstring(par);a[0]=par[1];goto nxt2;}
+  par[0]=STACKpar(LEXT);unstackstring(par);
+}
+/* types */
+static void readType(int *a){ /* x> */
+  int par[5];int n;
+  nextChar();par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt:
+  if(boldLetter(par)){extendBUFFER(par);n++;goto nxt;}
+  else if(Achar==' '){par[0]=' ';extendBUFFER(par);n++;nextChar();goto nxt;}
+  else if(Achar=='>'){nextChar();}
+  else{corruptedObjFile(__FILE__,__LINE__);}
+  par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
+  packstring(par);a[0]=lastTYPE;nxt2:
+  par[0]=STACKpar(BOLD);par[1]=a[0];par[2]=STACKpar(LEXT);par[3]=LEXT->aupb,
+  comparestring(par);if(par[4]==0){;}
+  else if(a[0]==firstTYPE){corruptedObjFile(__FILE__,__LINE__);}
+  else{par[0]=STACKpar(BOLD);par[1]=a[0];previousstring(par);a[0]=par[1];goto nxt2;}
+  par[0]=STACKpar(LEXT);unstackstring(par);
+}
+/* READ ----------------------------------- */
+int inpt,inptValue;
+
+void nextSymbol(void){
+  int par[3];nxt:
+  if(Achar==' '||Achar==newline){nextChar();goto nxt;}
+  if(Achar=='$'){comment();goto nxt;}
+  if(Achar=='0'){inpt=Tconst;readZero(par);inptValue=par[0];}
+  else if('1'<=Achar&&Achar<='9'){inpt=Tconst;par[0]=0;readIndex(par);inptValue=par[1];}
+  else if(Achar=='F'){inpt=Tformal;nextChar();par[0]=0;readIndex(par);inptValue=par[1];}
+  else if(Achar=='I'){inpt=Titem;nextChar();par[0]=0;readIndex(par);inptValue=par[1];}
+  else if(Achar=='L'){inpt=Tlocal;nextChar();par[0]=0;readIndex(par);inptValue=par[1];}
+  else if(Achar=='N'){inpt=Tnode;nextChar();par[0]=0;readIndex(par);inptValue=par[1];}
+  else if(Achar=='\''){readBold(par);inpt=par[0];}
+  else if(Achar=='<'){inpt=Ttype;readType(par);inptValue=par[0];}
+  else if(Achar=='"'){inpt=Tstring;readString(par);inptValue=par[0];}
+  else if(Achar=='&'){inpt=Dand;nextChar();}
+  else if(Achar==']'){inpt=Dbus;nextChar();}
+  else if(Achar==')'){inpt=Dclose;nextChar();}
+  else if(Achar==':'){inpt=Dcolon;nextChar();}
+  else if(Achar=='~'){inpt=Dcompl;nextChar();}
+  else if(Achar=='/'){inpt=Ddiv;nextChar();}
+  else if(Achar=='-'){nextChar();readMinus(par);inpt=par[0];inptValue=par[1];}
+  else if(Achar=='#'){inpt=Dnoarg;nextChar();}
+  else if(Achar=='('){inpt=Dopen;nextChar();}
+  else if(Achar=='|'){inpt=Dor;nextChar();}
+  else if(Achar=='>'){inpt=Dout;nextChar();}
+  else if(Achar=='+'){inpt=Dplus;nextChar();}
+  else if(Achar=='.'){inpt=Dpoint;nextChar();}
+  else if(Achar==';'){inpt=Dsemicolon;nextChar();}
+  else if(Achar=='*'){inpt=Dstar;nextChar();}
+  else if(Achar=='['){inpt=Dsub;nextChar();}
+  else if(Achar=='^'){inpt=Dxor;nextChar();}
+  else if(Achar==endChar){inpt=Dend;}
+  else{corruptedObjFile(__FILE__,__LINE__);}
+}
+
+
+void initialize_lexical(void){
+  init_LEXT();init_BOLD();
+  rehash();
+}
+
+
+/* EOF */
+
