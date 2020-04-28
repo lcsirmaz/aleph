@@ -20,8 +20,9 @@
 //#define aa_RULE         (16*sizeof_STACK)
 //#define aa_DICT         (17*sizeof_STACK)
 #define aa_ITEM         (7*sizeof_STACK)
-#define aa_ZONE         (8*sizeof_STACK)
-#define aa_STDARG       (9*sizeof_STACK)  /* arguments */
+#define aa_AUX		(8*sizeof_STACK)
+#define aa_ZONE         (9*sizeof_STACK)
+#define aa_STDARG       (10*sizeof_STACK)  /* arguments */
 
 /* files */
 #define aa_PRINTFILE    (21*sizeof_STACK)
@@ -42,6 +43,7 @@
 #define EXPRESSION	parSTACK(aa_EXPRESSION)
 #define NODE            parSTACK(aa_NODE)
 #define ITEM            parSTACK(aa_ITEM)
+#define AUX		parSTACK(aa_AUX)
 #define ZONE		parSTACK(aa_ZONE)
 #define STDARG          parSTACK(aa_STDARG)
 
@@ -56,7 +58,7 @@
 
 #define BUFFER_CALIBRE	1
 #define BOLD_CALIBRE	1
-                          #define HASH_CALIBRE	1
+#define HASH_CALIBRE	1
 
 #define MESSAGE_CALIBRE	1
 #define EXPRESSION_CALIBRE 1
@@ -83,6 +85,18 @@
 #define NODE_fnext	0
 #define NODE_CALIBRE	6
 #define STDARG_CALIBRE	1
+
+#define AUX_vlwb	3
+#define AUX_vupb	2
+#define AUX_count	2
+#define AUX_width	1
+#define AUX_calibre	1
+#define AUX_item	1
+#define AUX_link	0
+#define AUX_data	0
+#define AUX_ssel	0
+#define AUX_CALIBRE	4
+
 /*--------------------------------------------------------*/
 /* add lwb,upb,calibre for all stacks */
 void initialize_stdstacks(int argc,char* argv[]);

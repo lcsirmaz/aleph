@@ -23,6 +23,7 @@ void initialize_stdstacks(int argc,char *argv[]){
 //  init_stack(INPUT,    5800000,5900000,INPUT_CALIBRE);
   init_stack(NODE,     6000000,6100000,NODE_CALIBRE);
   init_stack(ITEM,     6300000,6400000,ITEM_CALIBRE);
+  init_stack(AUX,      5500000,5600000,AUX_CALIBRE);
   init_stack(ZONE,     6400000,6500000,ZONE_CALIBRE);
   init_stack(STDARG,   6200000,6300000,STDARG_CALIBRE);
   /* add all arguments to STDARGS */

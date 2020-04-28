@@ -55,7 +55,6 @@ $ rule types
   rtype		=rside effect|rcan fail|rno return.
 
 'stack'(flag,type,tag,lineno,adm,repr)ITEM.
-'variable'base item.
 
 $ BODY *************************************************** $
 'pragmat'if=compile.
@@ -66,6 +65,8 @@ $ BODY *************************************************** $
 $ type: Irule      adm => formals
 $       variable   adm => expression (to be filled)
 $       list       adm => vlwb,vupb,calibre,ssel
+'variable'base item=0.
+  $ module base in ITEM
 
 'q'is item flag+>item+>flag-x:
   bool and+flag*ITEM[item]+flag+x,is+x.
@@ -143,20 +144,21 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    width*AUX[p1]->w,width*AUX[p2]=w,(nxt:w=0;
      incr+p1,incr+p2,data*AUX[p1]=data*AUX[p2],decr+w,:nxt).
 
-'a'search formals+>ptr>-link:
+'a'search formals+>old+>ptr>-link:
    link formals->link,
    (nxt:link=0,link formals->link*AUX[ptr],ptr->link formals;
-    compare formals+link+ptr,previous+AUX+ptr,unstack to+AUX+ptr,link->ptr;
+    compare formals+link+ptr,unstack to+AUX+old,link->ptr;
     link*AUX[link]->link,:nxt).
 
-'a'store formal affixes+formals>-cnt-type-x:
-   must+Tconst+cnt,(*cnt->count->width,0->link *)AUX,>>AUX->formals,
+'a'store formal affixes+formals>-cnt-old-type-x:
+   must+Tconst+cnt,>>AUX->old,
+     (* cnt->count->width,0->link *)AUX,>>AUX->formals,
      (nxt:cnt=0;
         decr+cnt,must+Ttype+type,push AUX+type,
         ((type=Iformal stack;type=Iformal table),
         incr+width*AUX[formals],must+Tconst+x,push AUX+x,
         incr+width*AUX[formals],must+Tconst+x,push AUX+x;+),:nxt),
-     search formals+formals.
+     search formals+old+formals.
 
 'a'store list bounds+bounds>-cal-ssel:
    must+Tconst+cal,must+Tconst+ssel,

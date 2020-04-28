@@ -15,7 +15,7 @@ void findItemLineno(int *a),findLineno(int*a);
 
 #define tpublic		0x0004
 #define timported	0x0008
-#define texternsl	0x0010
+#define texternal	0x0010
 #define tvalue		0x0020
 #define teval		0x0040
 #define rsideeffect	0x0100
@@ -33,7 +33,8 @@ void findItemLineno(int *a),findLineno(int*a);
 #define rexit		rnoreturn
 #define rtype		(rsideeffect|rcanfail|rnoreturn)
 
-
+/* -------------------------------------------- */
+void initialize_item(void);
 
 /* EOF */
 
