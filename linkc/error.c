@@ -19,6 +19,7 @@ static void init_MSG(void){
  addMSG("[?]",std_q);
  addMSG("[...]",std_dots);
 }
+#undef addMSG
 static int prpos=0;
 static void printChar(int ch){
   int par[3];
@@ -65,6 +66,8 @@ void printPointer(int *a){
     par[0]=STACKpar(MESSAGE);par[1]=a[0];print(par);}
   else if(par[0]=STACKpar(STDARG),par[1]=a[0],was(par)){
     par[0]=STACKpar(STDARG);par[1]=a[0];print(par);}
+  else if(par[0]=STACKpar(BOLD),par[1]=a[0],was(par)){
+    par[0]=STACKpar(BOLD);par[1]=a[0];print(par);}
   else{internalError(__FILE__,__LINE__);}
 }
 static void printBase(int *a){/* >str */
@@ -80,8 +83,8 @@ static void printBase(int *a){/* >str */
   ptr=BUFFER->aupb;nxt1:if(ptr<=obuff){;}
   else if(BUFFER->offset[ptr]=='/'||BUFFER->offset[ptr]=='\\'
          ||BUFFER->offset[ptr]==':'){;}
-  else{ptr--;goto nxt1;}nxt2:
-  if(BUFFER->aupb>ptr){;}
+  else{ptr--;goto nxt1;}ptr++;nxt2:
+  if(BUFFER->aupb<ptr){;}
   else if(BUFFER->offset[ptr]=='.'){;}
   else{ printChar(BUFFER->offset[ptr]);ptr++;goto nxt2;}
   par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
@@ -120,13 +123,17 @@ static void formatPrint(int cnt,int *a){
     else if(t=='d'){if(cnt>0){SHIFT;printInt(a[0]);}else{
       par[0]=STACKpar(MESSAGE);par[1]=std_q;print(par);} ptr++;goto nxt;}
     else{printChar(t);ptr++;goto nxt;}}}
-  if(cnt>0){par[0]=STACKpar(MESSAGE);par[1]=std_dots;print(par);}
+  if(cnt>1){par[0]=STACKpar(MESSAGE);par[1]=std_dots;print(par);}
   par[0]=STACKpar(BUFFER);par[1]=optr;unstackto(par);
 }
 #undef SHIFT
 static int errorNo=0;
 #define maximalErrors	51
 #define messageCol	16
+
+int wasError(void){
+  return errorNo>0?1 : 0;
+}
 
 static void messageHead(int M){
   int par[3];
@@ -150,13 +157,13 @@ void Ferror(int n,int *a){
 void internalError(const char*file,int line){
   int par[2];
   messageHead('F');par[0]=fatal_head;par[1]=line;formatPrint(2,par);
-   printf("%s",file);par[0]=fatal_tail;formatPrint(1,par);
+   printf("%s",file);par[0]=fatal_tail;formatPrint(1,par);nlcr();
    cleanUp();exit(2);
 }
 void corruptedObjFile(const char*file,int line){
   int par[2];
   messageHead('F');par[0]=corrupted_head;par[1]=line;formatPrint(2,par);
-  printf("%s",file);par[0]=fatal_tail;formatPrint(1,par);
+  printf("%s",file);par[0]=fatal_tail;formatPrint(1,par);nlcr();
   cleanUp();exit(1);
 }
 /* ----------------------------------------------------- */

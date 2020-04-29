@@ -1,10 +1,12 @@
 /* lexical.ale header file */
 
+#include "error.h"
+
 extern int
    Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
    Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
    Dlibrary,Dmodule,Dtitle,
-   Dand,Dbus,Dclose,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
+   Dand,Dbus,Dclose,Dcolon,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
    Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
    Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
    Iconstant,Ivariable,IstaticVar,Itable,Istack,IstaticStack,
@@ -23,7 +25,7 @@ static void must() UNUSED
 
 static int R(int *a){if(inpt==a[0]){nextSymbol(); return 1;}return 0;}
 static void must(int *a){if(inpt==a[0]){a[1]=inptValue;nextSymbol();}
-  else{printf("** must() failed, a[0]=%d, got=%d\n",a[0],inpt);exit(8);}}
+  else{printf("** must() failed, a[0]=%d ",a[0]);printPointer(a); printf(" got=%d ",inpt);a[0]=inpt;printPointer(a);printf("\n");exit(8);}}
 
 void nextSymbol(void);
 

@@ -33,7 +33,7 @@ $ BODY ************************************************ $
 
 'p'next argument:
   arg ptr=0,>>STDARG->arg ptr;
-  arg ptr>=<<STDARG,previous string+STDARG+arg ptr.
+  arg ptr>=<<STDARG,previous string+STDARG+arg ptr,arg ptr>=<<STDARG.
 
 'a'open as it is+res>:
    1->with extension,copy string+STDARG+arg ptr+LEXT,

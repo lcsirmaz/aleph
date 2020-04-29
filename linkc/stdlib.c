@@ -42,6 +42,7 @@ void expandstack(int *a){
 //if(a[1]<0){*(int*)(a[1])=0;}
    if(! requestspace(a) ){
       fprintf(stderr, "expandstack %0x n=%d, out of memory\n",a[0],a[1]);
+      fprintf(stderr, "aupb=%d, vupb=%d\n",parSTACK(a[0])->aupb,parSTACK(a[0])->vupb);
       exit(12);
    }
    int *ptr=&(parSTACK(a[0])->offset)[1+parSTACK(a[0])->aupb];

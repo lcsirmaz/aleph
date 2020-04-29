@@ -51,12 +51,12 @@ void initialize_stdfiles(void){
   SOURCE->openflag=0;		// charfile
   PRINTFILE->openflag=0;	// charfile
   TARGET->openflag=0;		// charfile
-// open file(PRINTFILE,stdstring,"stdout")
-  oldupb=BUFFER->aupb; add_new_string("stdout",BUFFER);
-  par[0]=CHFILEpar(PRINTFILE); par[1]='w';par[2]=STACKpar(BUFFER);
-  par[3]=BUFFER->aupb; 
+// open file(PRINTFILE,stdstring,"stdout"), do not use BUFFER for LEXT
+  oldupb=LEXT->aupb; add_new_string("stdout",LEXT);
+  par[0]=CHFILEpar(PRINTFILE); par[1]='w';par[2]=STACKpar(LEXT);
+  par[3]=LEXT->aupb; 
   if(!openFile(par)){fprintf(stderr,"Cannot open PRINTFILE\n"); exit(11); }
-  par[0]=STACKpar(BUFFER); par[1]=oldupb; unstackto(par);
+  par[0]=STACKpar(LEXT); par[1]=oldupb; unstackto(par);
 }
 
 

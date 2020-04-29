@@ -94,9 +94,8 @@ $ NUMBER ********************************** $
        is+sign,subtr+0+x+x;
        +).
 'a'read minus+x>+y>:
-   next char,
-     (=char=[/0/:/9/],Tconst->x,read index+1+y;
-      Dminus->x,0->y).
+  =char=[/0/:/9/],Tconst->x,read index+1+y;
+      Dminus->x,0->y.
 'a'read hex+x>-d:
    0->x,(nxt:hexdigit+d,left clear+x+4,bool or+x+d+x,:nxt;+).
 
@@ -133,16 +132,15 @@ $
     (nxt:ptr2=0,HASH[hash]->next*LEXT[ptr],ptr->HASH[hash]->out,
        incr+HASH entries,
        (HASH entries<HASH size;
-        add+HASH size+HASH increment+HASH size,rehash);
+        add+HASH size+HASH increment+HASH size,0->HASH entries,rehash);
      subtr+ptr2+<>LEXT+string2,compare string+LEXT+string+LEXT+string2+eq,
-       (eq=0,ptr2->out,previous string+LEXT+string,
-                unstack to+LEXT+string;
+       (eq=0,ptr2->out;
         next*LEXT[ptr2]->ptr2,:nxt)).
 
 'a'rehash-ptr-block:
    >>HASH->ptr, $ clear all entries in HASH
      (nxt:ptr<<<HASH;0->HASH[ptr],previous+HASH+ptr,:nxt),
-   $ makes sure there atr HASH size entries
+   $ makes sure there are HASH size entries
    subtr+>>HASH+<<HASH+block,incr+block,
      (nxt:block>=HASH size;(*0->HASH*)HASH,incr+block,:nxt),
    >>LEXT->ptr,(nxt:ptr<<<LEXT; $ done $
@@ -184,7 +182,7 @@ $ BOLD ************************************ $
 $ types $
  "constant"	:Iconstant:first TYPE,
  "variable"	:Ivariable,
- "static variable":Istatic var,
+ "static var"   :Istatic var,
  "table"	:Itable,
  "stack"	:Istack,
  "static stack"	:Istatic stack,
@@ -264,9 +262,9 @@ $ READ ************************************ $
    [/0/],Tconst->inpt,read zero+inpt value;
    [/1/:/9/],Tconst->inpt,read index+0+inpt value;
    [/F/],Tformal->inpt,next char,read index+0+inpt value;
-   [/I/],Titem->inpt,next char,read index+0+inpt value;
+   [/I/],Titem->inpt,next char,read index+0+inpt value,convert to item;
    [/L/],Tlocal->inpt,next char,read index+0+inpt value;
-   [/N/],Tnode->inpt,next char,read index+0+inpt value;
+   [/N/],Tnode->inpt,next char,read index+0+inpt value$,convert to node$;
    [/'/],read bold+inpt;
    [/</],Ttype->inpt,read type+inpt value;
    [/"/],Tstring->inpt,read string+inpt value;

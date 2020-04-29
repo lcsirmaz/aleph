@@ -2,6 +2,7 @@
 #include "stddata.h"
 #include "lexical.h"
 #include "error.h"
+#include "item.h"
 #include <limits.h> /* INT_MAX */
 
 /* exported variables */
@@ -21,6 +22,11 @@ void tryToOpenSource(int *a){/* >res */
   par[3]=LEXT->aupb;if(openFile(par)){a[0]=0;nextChar();nextSymbol();return;}
   par[0]=CHFILEpar(SOURCE);getFileError(par);if(par[1]==2){a[0]=1;}else{a[0]=-1;}
 }
+void closeSource(void){
+  int par[2];
+  par[0]=CHFILEpar(SOURCE);closeFile(par);
+}
+
 static int Achar=' ';
 #define endChar	1
 static int readChar(int *a){int par[2];
@@ -61,9 +67,9 @@ static void readIndex(int *a){/* >sign+x> */
 }
 static void readMinus(int *a){/* x> + y> */
   int par[2];
-  nextChar();if('0'<Achar&&Achar<='0'){a[0]=Tconst;
+  if('0'<Achar&&Achar<='9'){a[0]=Tconst;
     par[0]=1;readIndex(par);a[1]=par[1];}
-  else{par[0]=Dminus;par[1]=0;}
+  else{a[0]=Dminus;a[1]=0;}
 }
 static void readHex(int *a){ /* x> */
   int par[1]; a[0]=0;
@@ -111,18 +117,20 @@ static void enterString(int *a){/* >ptr + out> */
   if(ptr2==0){LEXT->offset[a[0]-LEXT_next]=HASH->offset[hash];
      a[1]=HASH->offset[hash]=a[0];HASHentries++;
      if(HASHentries<HASHsize){;}
-     else{HASHsize+=HASHincrement;rehash();}}
+     else{HASHsize+=HASHincrement;HASHentries=0;rehash();}}
   else{string2=ptr2-LEXT_CALIBRE;par[0]=STACKpar(LEXT);par[1]=string;
+//if(LEXT->offset[string2]>30){printf("%d=(%d,%d), HASH=%d\n",ptr2,LEXT->offset[ptr2],LEXT->offset[ptr2-1],HASH->offset[hash]);exit(88);}
      par[2]=STACKpar(LEXT);par[3]=string2;comparestring(par);
-     if(par[4]==0){a[1]=ptr2;par[0]=STACKpar(LEXT);par[1]=string;
-       previous(par);unstackto(par);}
+     if(par[4]==0){a[1]=ptr2;}
      else{ptr2=LEXT->offset[ptr2-LEXT_next];goto nxt;}}
 }
 static void rehash(void){
   int par[4];int ptr,block;
   ptr=HASH->aupb;nxt1:if(ptr<HASH->alwb){;}
   else{HASH->offset[ptr]=0;ptr-=HASH_CALIBRE;goto nxt1;}
-  block=HASH->aupb-HASH->alwb+1;nxt2:if(block>=HASHsize){;}
+  block=HASH->aupb-HASH->alwb+1;
+printf("rehash, block=%d, needed %d, entries=%d\n",block,HASHsize,HASHentries);
+  nxt2:if(block>=HASHsize){;}
   else{par[0]=STACKpar(HASH);par[1]=1;par[2]=0;expandstack(par);
     block++;goto nxt2;}
   ptr=LEXT->aupb;nxt3:if(ptr<=LEXT->alwb){;}
@@ -178,9 +186,9 @@ static void init_BOLD(void){
 /* types */
   addBOLD("constant",Iconstant);firstTYPE=Iconstant;
   addBOLD("variable",Ivariable);
-  addBOLD("static variable",IstaticVar);
+  addBOLD("static var",IstaticVar);
   addBOLD("table",Itable);
-  addBOLD("stack",Itable);
+  addBOLD("stack",Istack);
   addBOLD("static stack",IstaticStack);
   addBOLD("pointer constant",IpointerConstant);
   addBOLD("charfile",Icharfile);
@@ -249,7 +257,9 @@ static void readType(int *a){ /* x> */
   packstring(par);a[0]=lastTYPE;nxt2:
   par[0]=STACKpar(BOLD);par[1]=a[0];par[2]=STACKpar(LEXT);par[3]=LEXT->aupb,
   comparestring(par);if(par[4]==0){;}
-  else if(a[0]==firstTYPE){corruptedObjFile(__FILE__,__LINE__);}
+  else if(a[0]==firstTYPE){
+printf("type: ");for(n=BUFFER->alwb;n<=BUFFER->aupb;n++){printf("%c",BUFFER->offset[n]);}printf("\n");
+      corruptedObjFile(__FILE__,__LINE__);}
   else{par[0]=STACKpar(BOLD);par[1]=a[0];previousstring(par);a[0]=par[1];goto nxt2;}
   par[0]=STACKpar(LEXT);unstackstring(par);
 }
@@ -257,13 +267,15 @@ static void readType(int *a){ /* x> */
 int inpt,inptValue;
 
 void nextSymbol(void){
-  int par[3];nxt:
+  int par[3];
+printf("<%d,%d>\n",inpt,inptValue);
+  nxt:
   if(Achar==' '||Achar==newline){nextChar();goto nxt;}
   if(Achar=='$'){comment();goto nxt;}
   if(Achar=='0'){inpt=Tconst;readZero(par);inptValue=par[0];}
   else if('1'<=Achar&&Achar<='9'){inpt=Tconst;par[0]=0;readIndex(par);inptValue=par[1];}
   else if(Achar=='F'){inpt=Tformal;nextChar();par[0]=0;readIndex(par);inptValue=par[1];}
-  else if(Achar=='I'){inpt=Titem;nextChar();par[0]=0;readIndex(par);inptValue=par[1];}
+  else if(Achar=='I'){inpt=Titem;nextChar();par[0]=0;readIndex(par);inptValue=par[1];convertToItem();}
   else if(Achar=='L'){inpt=Tlocal;nextChar();par[0]=0;readIndex(par);inptValue=par[1];}
   else if(Achar=='N'){inpt=Tnode;nextChar();par[0]=0;readIndex(par);inptValue=par[1];}
   else if(Achar=='\''){readBold(par);inpt=par[0];}

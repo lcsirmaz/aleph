@@ -2,7 +2,7 @@ $ HEADER ************************************************** $
 'pragmat'module="data".
 $ handle data:
 $  expression, fill, list, file $
-'a'list entry,read expression.
+'a'data section.
 
 $ expressions are stored in the stack EXPRESSION,
 $  linked so we can walk them.
@@ -32,41 +32,82 @@ $ BODY **************************************************** $
   =type*ITEM[item]=
   [Iconstant;Ipointer constant],+;
   corrupted obj file+_title_+_line_.
+'f'check file type+>item:
+  =type*ITEM[item]=
+  [Icharfile;Idatafile],+;
+  corrupted obj file+_title_+_line_.
 
-'a'list entry-idx-item-etype-esize:
+'a'list entry-item-etype-esize:
    $ we are just after the 'list' keyword
    $ <item> <etype> <esize> .
    $   1: [const], 2: [=const=], 3: [tag], 4: [=tag=]
-   must+Titem+idx,get item+idx+item,check list type+item,
+   must+Titem+item,check list type+item,
+     (is item flag+item+timported,corrupted obj file+_title_+_line_;+),
      must+Tconst+etype,
      (=etype=[1;2],must+Tconst+esize;
-             [3;4],must+Titem+idx,get item+idx+esize;
+             [3;4],must+Titem+esize;
              corrupted obj file+_title_+_line_),
      put vupb+item+etype,put vlwb+item+esize,
-     (R+Dpoint;corrupted obj file+_title_+_line_).
+     must+Dpoint+#.
 
-'a'skip file entry:
+'a'skip file area-list:
+  R+Dsub,(nxt:R+Dbus;
+          must+Titem+list,check list type+list,must+Tconst+#,:nxt);
+  +.
+
+'a'skip file entry-item:
    $ skip file entry at the first scan $
    $ I8 [I9 670911447 I75 208619606 I77 -1497425117 I76 -1890251351 ]2 I1 I168 .
    $ <item> Dsub (<tag> <hash>)* Dbus 
    $     <direction 0..3> <stdstr> <ptr> Dpoint
-   R+Dpoint;next symbol,:skip file entry.
+   must+Titem+item,check file type+item,skip file area,
+     must+Tconst+#,must+Titem+#,must+Titem+#,must+Dpoint+#.
 
-'a'read expression-idx-item-ptr:
+'a'fill item-item:
+   R+Dopen,(nxt: R+Dclose;
+                 R+Tconst,:nxt;
+                 must+Titem+item,check constant type+item,:nxt);
+   R+Tconst;
+   must+Titem+item,check constant type+item.
+'a'fill repeater-item:
+  R+Dstar,(R+Tconst;must+Titem+item,check constant type+item);+.
+
+'a'fill initializer-item:
+  R+Dcolon,must+Titem+item,
+    (type*ITEM[item]=Ipointer constant;corrupted obj file+_title_+_line_),
+    :fill initializer;
+  +.
+
+'a'skip fill-item:
+   $ skip fill entries at the first scan
+   must+Titem+item,check list type+item,must+Tconst+#,$ lineno $
+     (nxt:R+Dpoint; fill item,fill repeater,fill initializer,:nxt).
+
+$ EXPRESSION ============================================ $
+
+'a'read expression-item-ptr:
    $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
-   must+Titem+idx,get item+idx+item,
+   must+Titem+item,
      (=type*ITEM[item]= [Iconstant;Ivariable],+;corrupted obj file+_title_+_line_),
      push EXPR+item,>>EXPRESSION->ptr,push EXPR+link expr,ptr->link expr,
      >>EXPRESSION->adm*ITEM[item],(nxt:=inpt=
      [Dpoint],next symbol,push EXPR+Dpoint;
      [Tconst],push EXPR+Tconst,push EXPR+inpt value,next symbol,:nxt;
-     [Titem], get item+inpt value+item,check constant type+item,
-        push EXPR+item,next symbol,:nxt;
-     [Dlwb;Dupb;Dcalibre],push EXPR+inpt,next symbol,must+Titem+idx,
-        get item+idx+item,push EXPR+item,check list type+item,:nxt;
+     [Titem], check constant type+inpt value,push EXPR+inpt value,next symbol,:nxt;
+     [Dlwb;Dupb;Dcalibre],push EXPR+inpt,next symbol,must+Titem+item,
+        push EXPR+item,check list type+item,:nxt;
      [Dplus;Dminus;Dstar;Ddiv;Dand;Dor;Dxor;Dcompl;
       Dopen;Dclose],push EXPR+inpt,next symbol,:nxt;
       corrupted obj file+_title_+_line_).
+
+$ DATA section ========================================== $
+'a'data section:
+   was error;
+   (nxt:R+Dfill,skip fill,:nxt;
+        R+Dexpression,read expression,:nxt;
+        R+Dlist,list entry,:nxt;
+        R+Dfile,skip file entry,:nxt;
+        +).
 
 $ loose evaluation ****************************************** $
 'table'MESSAGE=(
@@ -79,7 +120,7 @@ $ loose evaluation ****************************************** $
     EXPRESSION[eptr]->x,was+ITEM+x,incr+eptr.
 'p'Eop+>prio+op>+p>:
     EXPRESSION[eptr]->op,(=op=
-       [Dxor],        prio=0,1->p,incr+eptr;
+       [Dxor],        prio=0, 1->p,incr+eptr;
        [Dand],        prio<=1,2->p,incr+eptr;
        [Dor],         prio<=2,3->p,incr+eptr;
        [Dplus;Dminus],prio<=3,4->p,incr+eptr;
@@ -107,41 +148,55 @@ $ loose evaluation ****************************************** $
    loose base+v,
       (nxt:Eop+prio+op+p,loose expr+p+w,optor+op+w+v,:nxt;+).
 
-'a'loose eval+>item:
+'a'set final value+>v+>item1+>item2:
+   clear item flag+item1+teval,
+   v->repr*ITEM[item1],set item flag+item1+tvalue,
+   (item1=item2;v->repr*ITEM[item2],set item flag+item2+tvalue).
+
+'a'loose eval+>item-def-oldptr:
    is item flag+item+tvalue;
-   is item flag+item+teval,clear item flag+item+teval,
-      error+constant refers to itself+tag*ITEM[item]+item,
-      set item flag+item+tvalue,0->repr*ITEM[item];
-   set item flag+item+teval,adm*ITEM[item]->eptr,incr+eptr,
-      (-v:loose expr+0+v,set item flag+item+tvalue,v->repr*ITEM[item];+),
-      clear item flag+item+teval.
+   ((get item def+item+def;item->def),is item flag+def+teval),
+      error+constant refers to itself+tag*ITEM[def]+def,
+      set final value+0+def+item;
+   set item flag+def+teval,eptr->oldptr,adm*ITEM[def]->eptr,incr+eptr,
+      (was+EXPRESSION+eptr;corrupted obj file+_title_+_line_),
+      (-v:loose expr+0+v,set final value+v+def+item;
+          clear item flag+def+teval),
+      oldptr->eptr.
 'a'loose evaluation-ptr:
+   was error;
    link expr->ptr,(nxt:ptr=0;
      loose eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt).
 
 $ final evaluation ****************************************** $
 $  *** a pointer constant MUST HAVE its tvalue flag set ***
+'f'get expr limit+>what+>item+x>:
+  (get item def+item+item;+),
+  (what=Dlwb,get vlwb+item+x;get vupb+item+x).
+
 'a'final base+v>:
    E+Dopen,final expr+0+v,(E+Dclose;+);
    E+Tconst,EXPRESSION[eptr]->v,incr+eptr;
    E+Dcompl,final base+v,bool invert+v+v;
    E+Dminus,final base+v,subtr+0+v+v;
    E+Dcalibre,EXPRESSION[eptr]->v,get calibre+v+v,incr+eptr;
-   E+Dlwb,EXPRESSION[eptr]->v,get vlwb+v+v,incr+eptr;
-   E+Dupb,EXPRESSION[eptr]->v,get vupb+v+v,incr+eptr;
+   E+Dlwb,get expr limit+Dlwb+EXPRESSION[eptr]+v,incr+eptr;
+   E+Dupb,get expr limit+Dupb+EXPRESSION[eptr]+v,incr+eptr;
    Eitem+v,final eval+v,repr*ITEM[v]->v;
    corrupted obj file+_title_+_line_.
    
 'a'final expr+>prio+v>-op-p-w:
    final base+v,(nxt:Eop+prio+op+p,final expr+p+w,optor+op+w+v,:nxt;+).
-'a'final eval+>item-v:
+'a'final eval+>item-def-v-oldptr:
    is item flag+item+tvalue;
-   is item flag+item+teval,clear item flag+item+teval,
-      error+constant refers to itself+tag*ITEM[item]+item,
-      set item flag+item+tvalue,0->repr*ITEM[item];
-   set item flag+item+teval,adm*ITEM[item]->eptr,incr+eptr,
-      final expr+0+v,clear item flag+item+teval,
-      set item flag+item+tvalue,v->repr*ITEM[item].
+   ((get item def+item+def;item->def),is item flag+def+tvalue),
+      repr*ITEM[def]->repr*ITEM[item],set item flag+item+tvalue;
+   is item flag+def+teval,
+      error+constant refers to itself+tag*ITEM[def]+item,
+      set final value+0+def+item;
+   set item flag+def+teval,eptr->oldptr,adm*ITEM[def]->eptr,incr+eptr,
+      (was+EXPRESSION+eptr;corrupted obj file+_title_+_line_),
+      final expr+0+v,oldptr->eptr,set final value+v+def+item.
 'a'final evaluation-ptr:
    link expr->ptr,(nxt:ptr=0;
      final eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt).

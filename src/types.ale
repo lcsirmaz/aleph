@@ -33,7 +33,7 @@ $ BODY ******************************************************** $
   "constant"		:Iconstant,
   "constant"            :Irecconst, $ expression under evaluation
   "variable"		:Ivariable,
-  "static variable"	:Istatic var,
+  "static var"		:Istatic var,
   "table"		:Itable,
   "stack"		:Istack,
   "static stack"	:Istatic stack,

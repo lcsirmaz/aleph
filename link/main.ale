@@ -1,0 +1,13 @@
+'pragmat'title="link".
+'pragmat'require=("input","item","data","error").
+
+'a'pass i-ext:
+   was error;
+   next source+0+ext,head section+ext,item section,data section,:pass i;
+   check all items,loose evaluation.
+
+'root'+.
+
+
+'end'
+

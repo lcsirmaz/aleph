@@ -3,9 +3,8 @@ $ HEADER ************************************************ $
 'pragmat'module="item".
 $ read al items from the .ice file
 
-'f'get item+>idx+item>:
-   $ given I<idx> return the corresponding item
-   addmult+idx+<>ITEM+base item+item.
+'a'convert to item.
+   $ the item for I<idx>
 'f'get calibre+>item+x>,get ssel+>item+x>,
    get vupb+>item+x>,get vlwb+>item+x>.
    $ item is a list, get/set data
@@ -14,8 +13,10 @@ $ read al items from the .ice file
 'q'is item flag+>item+>flag.
 'a'set item flag+>item+>flag.
 'a'clear item flag+>item+>flag.
+'q'get item def+>item+def>.
+   $ if item is imported, return the defining item
 
-'a'head section.
+'a'head section+>flag.
 'a'skip head section.
    $ process/skip head section of the next input file
 'a'item section.
@@ -61,12 +62,19 @@ $ BODY *************************************************** $
 
 'pragmat'require=("lexical","error").
 
+$ ITEM stack --------------------------------------------- $
 'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
-$ type: Irule      adm => formals
-$       variable   adm => expression (to be filled)
-$       list       adm => vlwb,vupb,calibre,ssel
-'variable'base item=0.
-  $ module base in ITEM
+$ type:  Irule      adm => formals
+$        variable   adm => expression (to be filled)
+$        list       adm => vlwb,vupb,calibre,ssel
+$        module/type/library - module head
+$ tag:   pointer to a LEXT entry; data*tag is the definition
+$ lineno:definition in this module 
+$
+$ for a module head: lineno: maximal value for this module;
+$        tag  => module title
+$        adm  => definition list in AUX
+$        repr => link to the following module head
 
 'q'is item flag+>item+>flag-x:
   bool and+flag*ITEM[item]+flag+x,is+x.
@@ -74,7 +82,11 @@ $       list       adm => vlwb,vupb,calibre,ssel
   bool or+flag*ITEM[item]+flag+flag*ITEM[item].
 'a'clear item flag+>item+>flag-mask:
   bool invert+flag+mask,bool and+mask+flag*ITEM[item]+flag*ITEM[item].
-
+'q'get item def+>item+def>:
+  is item flag+item+timported,get tag data+tag*ITEM[item]+def.
+'a'convert to item:
+   addmult+inpt value+<>ITEM+base item+inpt value.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'constant'
   tglobal	= tpublic|timported|texternal,
   titem mask	= ~(tglobal|rtype|rvararg|routvararg|
@@ -84,15 +96,15 @@ $ AUX stack ---------------------------------------------- $
 'stack'[10](vlwb,vupb=count,width=calibre=item,link=data=ssel)AUX.
 $ adm*rule => <count,width,link>
 $  followed by <count> many formal types; formal lists have two
-$  additional entries: calibre and ssel (<width> is the total 
-$  width of the list)
-$  the same formal list is stored only once (linear search)
+$  additional entries: calibre and ssel; <width> is the total 
+$  width of the list
+$  each formal list is stored only once (linear search)
 $ adm*list => <vlwb,vupb,calibre,ssel>
 $  where vlwb,vupb will be used to store size estimate and filling
 $  size
 $ 
-
 'a'push AUX+>x: (* x->data *)AUX.
+
 
 $ compatibility ------------------------------------------ $
 'table'MESSAGE=(
@@ -134,7 +146,7 @@ $ module header ---------------------------------------- $
 'f'get calibre+>item+x>: calibre*AUX[adm*ITEM[item]]->x.
 'f'get ssel+>item+x>: ssel*AUX[adm*ITEM[item]]->x.
 'f'get vupb+>item+x>: vupb*AUX[adm*ITEM[item]]->x.
-'f'get vlwb+>item+x>: vlwb*AUX[adm*ITEM[item]]->c.
+'f'get vlwb+>item+x>: vlwb*AUX[adm*ITEM[item]]->x.
 'a'put vlwb+>item+>x: x->vlwb*AUX[adm*ITEM[item]].
 'a'put vupb+>item+>x: x->vupb*AUX[adm*ITEM[item]].
 
@@ -166,7 +178,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    >>AUX->bounds.
 
 'f'check item ID+>n:
-   addmult+n+<>ITEM+base item+n,(n=>>ITEM;corrupted obj file+_title_+_line_).
+   ID=>>ITEM;corrupted obj file+_title_+_line_.
 
 'a'read item-ID-flag-lineno:
    (* 0->flag->type->lineno->tag->adm->repr *)ITEM,
@@ -185,7 +197,8 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    must+Tstring+tag*ITEM, enter item+>>ITEM.
 
 'a'item section:
-   R+Dpoint; read item,:item section.
+   was error;
+   (nxt:R+Dpoint; read item,:nxt).
 
 'a'skip item section:
    R+Dpoint;next symbol,:skip item section.
@@ -216,7 +229,6 @@ $ library defines external rules, lists, files
        check library item+item;
     skip library item).
 
-
 'a'library section:
    R+Dpoint;read library item,:library section.
 
@@ -244,8 +256,8 @@ $ each module has an ITEM entry linked through the repr field
      (adm*ITEM=0,>>AUX->adm*ITEM;+),
      (R+Dpoint;:read definition list).
 
-'a'head section:
-  (* 0->flag->type->lineno->tag->adm->repr *)ITEM,
+'a'head section+>flag:
+  (* flag->flag,0->type->lineno->tag->adm->repr *)ITEM,
   (R+Dmodule,Dmodule->type*ITEM;
    R+Dtitle,Dtitle->type*ITEM;
    R+Dlibrary,Dlibrary->type*ITEM;
@@ -287,7 +299,7 @@ $ check items for definition *********************************** $
   <<ITEM->ptr,(nxt:ptr>>>ITEM;
   (type*ITEM[ptr]=Dtitle;type*ITEM[ptr]=Dmodule;type*ITEM[ptr]=Dlibrary),
      next+ITEM+ptr,:nxt;
-  is item flag+ptr+timported,get tag data+tag*ITEM[ptr]+def,
+  get item def+ptr+def,
      (is item flag+def+tpublic;
       error+not defined+tag*ITEM[ptr]+ptr),next+ITEM+ptr,:nxt;
   next+ITEM+ptr,:nxt).

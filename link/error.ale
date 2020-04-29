@@ -6,6 +6,7 @@ $ HEADER *********************************************** $
 'e'Ferror+*+>msg. $ fatal error $
 'a'error+*+>msg.
 'a'warning+*+>msg.
+'q'was error.
 'table'MESSAGE.
 
 $ BODY ************************************************* $
@@ -104,6 +105,8 @@ $ error handling ******************************************** $
 'variable'error no=0.
 'constant'maximal errors=51.
 'constant'message col=16.
+
+'q'was error: error no>0.
 
 'a'message head+>M-obj:
   nlcr,print char+M,print char+/ /,get obj file+obj,
