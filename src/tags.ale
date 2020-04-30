@@ -357,7 +357,8 @@ $ stdstrings are lined as <LEXT,LADM,next>, ending at std strings
   $ create a new Ipointer constant for the given string
   (str=Squote image,is+std empty pointer),std empty pointer->c;
   new tag entry+Pstar+c,put type+c+Ipointer constant,
-  put adm+c+Xstring table,use tag+Xstring table,set tag flag+Xstring table+tfill,
+  put adm+c+Xstring table,use tag+Xstring table,
+  set tag flag+Xstring table+tfill,set tag flag+Xstring table+timported,
   set tag flag+c+tdefined,set tag flag+c+tused,
   (* c->adm, str->repr,std strings->link *)LADM, >>LADM->std strings,
   (str=Squote image,c->std empty pointer;+).

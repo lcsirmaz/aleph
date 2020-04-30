@@ -4,7 +4,7 @@ $ HEAD **************************************************** $
 'constant'
    Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
    Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
-   Dlibrary,Dmodule,Dtitle,
+   Dmodule,Dtitle,
    Dand,Dbus,Dclose,Dcolon,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
    Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
    Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
@@ -13,7 +13,7 @@ $ HEAD **************************************************** $
    Ipointer constant,Ichar file,Idata file,Irule,
    Iformal stack,Iformal table,Iformalfile,Iformal in,
    Iformal out,Iformal inout,Iformal repeat,Iformal shift.
-'constant'Squote image.
+'constant'Squote image,StdString.
 
 'a'next symbol.        $ read next symbol
 'variable' inpt,       $ next symbol
@@ -39,7 +39,7 @@ $ each entry has a data field (zero), and an image (string)
 
 $ BODY **************************************************** $
 'pragmat'if=compile.
-'pragmat'require="error".
+'pragmat'require=("error","item").
 
 'stack'[2]BUFFER.
 'a'extend BUFFER+>x: (* x->BUFFER *)BUFFER.
@@ -114,7 +114,9 @@ $
 'variable'
   HASH size=HASH increment-1, $current HASH size $
   HASH entries=1.       $ string entries in LEXT table
-'stack'[20](next,def)LEXT=("",(0,0):Squote image).
+'stack'[20](next,def)LEXT=
+  (""            ,(0,0):Squote image,
+   "@StringTable",(0,0):StdString).
 'stack'[1]HASH.
 
 'f'get tag data+>tag+def>:   def*LEXT[tag]->def.
@@ -149,7 +151,7 @@ $
       internal error+_title_+_line_)).
 
 'a'read string+x>-n:
-  next char,scratch+BUFFER,0->n,
+  scratch+BUFFER,0->n,
   (nxt: next char,(=char=
    [/"/],next char, $ closing quote mark
      (char=/"/,extend BUFFER+char,incr+n,:nxt;
@@ -168,7 +170,6 @@ $ BOLD ************************************ $
  "extension"	:Dextension,
  "file"		:Dfile,
  "fill"		:Dfill,
- "library"	:Dlibrary,
  "list"		:Dlist,
  "lwb"		:Dlwb,
  "module"	:Dmodule,

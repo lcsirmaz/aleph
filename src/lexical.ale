@@ -242,7 +242,7 @@ $ ***************************************** $
 $ ******************************************************** $
 $ path is unpacked to BUFFER. It is a sequence of strings
 $  separated by :
-'a'try opening+>str+res>-errno:
+'a'try to open+>str+res>-errno:
   open file+SOURCE+/r/+LEXT+str, 0->res;
   get file error+SOURCE+errno,(errno=2,1->res;-1->res).
 
@@ -257,11 +257,11 @@ $  separated by :
     (last=///;extend BUFFER+///), $ add separating slash $
     unpack string+LEXT+str+BUFFER,
     subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,
-    try opening+>>LEXT+res,forget string+>>LEXT,
+    try to open+>>LEXT+res,forget string+>>LEXT,
     (res<=0,unstack to+BUFFER+n;
      add extension,
      subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,
-     try opening+>>LEXT+res,forget string+>>LEXT,unstack to+BUFFER+n)).
+     try to open+>>LEXT+res,forget string+>>LEXT,unstack to+BUFFER+n)).
 
 'a'try path+>str+>res>-path-ptr-end:
    get pragmat value+pgt path+path,(path=0;
@@ -271,11 +271,11 @@ $  separated by :
     scratch+BUFFER).
 
 'p'open source file+>type+>str-res-n:
-  $ try file name as it is, if not found, try adding extension ".ale"
-  try opening+str+res,
+  $ try file name as it is, if not found, try to add extension ".ale"
+  try to open+str+res,
   (res=1,scratch+BUFFER,unpack string+LEXT+str+BUFFER,
     add extension,list length+BUFFER+n,pack string+BUFFER+n+LEXT,
-    scratch+BUFFER,try opening+>>LEXT+res,forget string+>>LEXT,
+    scratch+BUFFER,try to open+>>LEXT+res,forget string+>>LEXT,
     ((res=1,type=2),try path+str+res)),
   res=0.
   

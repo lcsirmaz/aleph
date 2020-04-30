@@ -4,7 +4,13 @@
 'a'pass i-ext:
    was error;
    next source+0+ext,head section+ext,item section,data section,:pass i;
-   check all items,loose evaluation.
+   $ no more input file and no error so far 
+   check all items,loose evaluation,loose bounds.
+
+'a'pass ii-ext:
+   (advance base item+ext,next source+ext+#),
+      skip head section,skip item section,data section ii,:pass ii;
+   +.
 
 'root'+.
 

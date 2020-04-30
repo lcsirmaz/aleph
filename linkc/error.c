@@ -68,6 +68,8 @@ void printPointer(int *a){
     par[0]=STACKpar(STDARG);par[1]=a[0];print(par);}
   else if(par[0]=STACKpar(BOLD),par[1]=a[0],was(par)){
     par[0]=STACKpar(BOLD);par[1]=a[0];print(par);}
+  else if(par[0]=STACKpar(LEXT),par[1]=a[0],was(par)){
+    par[0]=STACKpar(LEXT);par[1]=a[0]-LEXT_CALIBRE;print(par); }
   else{internalError(__FILE__,__LINE__);}
 }
 static void printBase(int *a){/* >str */
@@ -92,7 +94,7 @@ static void printBase(int *a){/* >str */
 static void printItem(int *a){/* item */
   int par[4];int line,source,module;
   par[0]=a[0];findItemLineno(par);line=par[1];source=par[2];module=par[3];
-  if(line<=0){;}else{printForm(line-1);}
+  if(line<=0){;}else{printForm(line);}
   if(source==Squoteimage){;}else{printChar('/');par[0]=source;printBase(par);}
   printChar(' ');printChar('(');par[0]=module;printPointer(par);
   printChar(')');
@@ -100,7 +102,7 @@ static void printItem(int *a){/* item */
 static void printLine(int *a){/* line */
   int par[4];int line,source;
   par[0]=a[0];findLineno(par);line=par[1];source=par[2];
-  if(line<=0){;}else{printForm(line-1);}
+  if(line<=0){;}else{printForm(line);}
   if(source==Squoteimage){;}else{printChar('/');par[0]=source;printBase(par);}
 }
 #define SHIFT	cnt--;a++

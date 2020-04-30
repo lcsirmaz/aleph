@@ -82,7 +82,7 @@ static void readZero(int *a){/* x> */
    else{a[0]=0;}
 }
 /* strings */
-int Squoteimage;
+int Squoteimage,StdString;
 #define HASHincrement	512
 static int HASHsize=(HASHincrement-1),
            HASHentries=1;
@@ -91,13 +91,15 @@ static void init_LEXT(void){
   int par[4];
   add_new_string("",LEXT);par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
   expandstack(par);Squoteimage=LEXT->aupb;
+  add_new_string("@StringTable",LEXT);expandstack(par);
+  StdString=LEXT->aupb;
 }
 /* ------------- */
 void getTagData(int *a){/* >tag+def> */
   a[1]=LEXT->offset[a[0]-LEXT_def];
 }
 void getTagImage(int *a){ /* >tag+ptr> */
-  a[0]=a[0]-LEXT_CALIBRE;
+  a[1]=a[0]-LEXT_CALIBRE;
 }
 void putTagData(int *a){/* >tag +>def */
   LEXT->offset[a[0]-LEXT_def]=a[1];
@@ -129,7 +131,6 @@ static void rehash(void){
   ptr=HASH->aupb;nxt1:if(ptr<HASH->alwb){;}
   else{HASH->offset[ptr]=0;ptr-=HASH_CALIBRE;goto nxt1;}
   block=HASH->aupb-HASH->alwb+1;
-printf("rehash, block=%d, needed %d, entries=%d\n",block,HASHsize,HASHentries);
   nxt2:if(block>=HASHsize){;}
   else{par[0]=STACKpar(HASH);par[1]=1;par[2]=0;expandstack(par);
     block++;goto nxt2;}
@@ -141,7 +142,7 @@ printf("rehash, block=%d, needed %d, entries=%d\n",block,HASHsize,HASHentries);
 }
 static void readString(int *a){/* x> */
   int par[3];int n;
-  nextChar();par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt:
+  par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt:
   nextChar();if(Achar=='"'){nextChar();if(Achar=='"'){
      par[0]=Achar;extendBUFFER(par);n++;goto nxt;}
      else if(n==0){a[0]=Squoteimage;}
@@ -154,7 +155,7 @@ static void readString(int *a){/* x> */
 static int firstBOLD,lastBOLD,firstTYPE,lastTYPE;
 int Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
    Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
-   Dlibrary,Dmodule,Dtitle,
+   Dmodule,Dtitle,
    Dand,Dbus,Dclose,Dcolon,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
    Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
    Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
@@ -172,7 +173,6 @@ static void init_BOLD(void){
   addBOLD("extension",Dextension);
   addBOLD("file",Dfile);
   addBOLD("fill",Dfill);
-  addBOLD("library",Dlibrary);
   addBOLD("list",Dlist);
   addBOLD("lwb",Dlwb);
   addBOLD("module",Dmodule);
@@ -258,7 +258,7 @@ static void readType(int *a){ /* x> */
   par[0]=STACKpar(BOLD);par[1]=a[0];par[2]=STACKpar(LEXT);par[3]=LEXT->aupb,
   comparestring(par);if(par[4]==0){;}
   else if(a[0]==firstTYPE){
-printf("type: ");for(n=BUFFER->alwb;n<=BUFFER->aupb;n++){printf("%c",BUFFER->offset[n]);}printf("\n");
+//printf("type: ");for(n=BUFFER->alwb;n<=BUFFER->aupb;n++){printf("%c",BUFFER->offset[n]);}printf("\n");
       corruptedObjFile(__FILE__,__LINE__);}
   else{par[0]=STACKpar(BOLD);par[1]=a[0];previousstring(par);a[0]=par[1];goto nxt2;}
   par[0]=STACKpar(LEXT);unstackstring(par);
@@ -268,7 +268,7 @@ int inpt,inptValue;
 
 void nextSymbol(void){
   int par[3];
-printf("<%d,%d>\n",inpt,inptValue);
+//printf("<%d,%d>\n",inpt,inptValue);
   nxt:
   if(Achar==' '||Achar==newline){nextChar();goto nxt;}
   if(Achar=='$'){comment();goto nxt;}

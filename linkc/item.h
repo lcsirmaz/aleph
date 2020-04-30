@@ -1,13 +1,13 @@
 /* item.ale header */
 
-void convertToItem(void),getCalibre(int *a),
+void convertToItem(void),getCalibre(int *a),getListLink(int *a),
   getSsel(int *a),getVupb(int *a),getVlwb(int *a);
-void putVupb(int *a),putVlwb(int *a);
+void putVupb(int *a),putVlwb(int *a),putListLink(int *a);
 
 int isItemFlag(int *a),getItemDef(int *a);
 void setItemFlag(int *a),clearItemFlag(int *a);
 
-void headSection(int *a),skipHeadSection(void);
+void headSection(int *a),skipHeadSection(void),advanceBaseItem(int *a);
 void itemSection(void),skipItemSection(void);
 void checkAllItems(void);
 

@@ -2,8 +2,8 @@ $ HEADER ************************************************** $
 'pragmat'module="data".
 $ handle data:
 $  expression, fill, list, file $
-'a'data section.
-
+'a'data section,data section ii.
+'a'loose bounds.
 $ expressions are stored in the stack EXPRESSION,
 $  linked so we can walk them.
 $ expressions are evaluated twice. loose evaluation
@@ -37,6 +37,15 @@ $ BODY **************************************************** $
   [Icharfile;Idatafile],+;
   corrupted obj file+_title_+_line_.
 
+$ list section -------------------------------------------- $
+'variable'link lists=0.
+'constant'max stack size=1 000 000.
+
+'a'remember list+>item-link:
+   (get list link+item+link,link<0),
+       put list link+item+link lists,item->link lists;
+   +.
+
 'a'list entry-item-etype-esize:
    $ we are just after the 'list' keyword
    $ <item> <etype> <esize> .
@@ -45,23 +54,10 @@ $ BODY **************************************************** $
      (is item flag+item+timported,corrupted obj file+_title_+_line_;+),
      must+Tconst+etype,
      (=etype=[1;2],must+Tconst+esize;
-             [3;4],must+Titem+esize;
+             [3;4],must+Titem+esize,check constant type+esize;
              corrupted obj file+_title_+_line_),
      put vupb+item+etype,put vlwb+item+esize,
-     must+Dpoint+#.
-
-'a'skip file area-list:
-  R+Dsub,(nxt:R+Dbus;
-          must+Titem+list,check list type+list,must+Tconst+#,:nxt);
-  +.
-
-'a'skip file entry-item:
-   $ skip file entry at the first scan $
-   $ I8 [I9 670911447 I75 208619606 I77 -1497425117 I76 -1890251351 ]2 I1 I168 .
-   $ <item> Dsub (<tag> <hash>)* Dbus 
-   $     <direction 0..3> <stdstr> <ptr> Dpoint
-   must+Titem+item,check file type+item,skip file area,
-     must+Tconst+#,must+Titem+#,must+Titem+#,must+Dpoint+#.
+     remember list+item,must+Dpoint+#.
 
 'a'fill item-item:
    R+Dopen,(nxt: R+Dclose;
@@ -72,16 +68,73 @@ $ BODY **************************************************** $
 'a'fill repeater-item:
   R+Dstar,(R+Tconst;must+Titem+item,check constant type+item);+.
 
-'a'fill initializer-item:
+'a'fill initializer+>list-item:
   R+Dcolon,must+Titem+item,
-    (type*ITEM[item]=Ipointer constant;corrupted obj file+_title_+_line_),
-    :fill initializer;
+    ((type*ITEM[item]=Ipointer constant,repr*ITEM[item]=0);corrupted obj file+_title_+_line_),
+    list->repr*ITEM[item],:fill initializer;
   +.
 
-'a'skip fill-item:
-   $ skip fill entries at the first scan
-   must+Titem+item,check list type+item,must+Tconst+#,$ lineno $
-     (nxt:R+Dpoint; fill item,fill repeater,fill initializer,:nxt).
+'a'skip fill-list:
+   $ skip fill entries at the first scan; link the definitions
+   must+Titem+list,check list type+list,must+Tconst+#,$ lineno $
+     remember list+list,
+     (nxt:R+Dpoint; fill item,fill repeater,fill initializer+list,:nxt).
+
+'table'MESSAGE=(
+  "%p: relative size estimator %d is out of range (%i)":relative size estimator,
+  "%p: fix size estimator %d is out or range (%i)":fix size estimator,
+  "%p: size estimator %p has no value (%i)":unknown estimator
+).
+
+'a'relative size+>x+>item:
+   ((x<1;x>100),warning+relative size estimator+tag*ITEM[item]+x+item;+),
+   min+100+x,max+1+x,put vupb+item+x.
+'a'fix size+>x+>item:
+   ((x<1;x>max stack size),warning+fix size estimator+tag*ITEM[item]+x+item;+),
+   min+max stack size+x,max+1+x,subtr+0+x+x,put vupb+item+x.
+'a'get const value+>tag+>list+x>-def:
+   is item flag+tag+tvalue,repr*ITEM[tag]->x;
+   (get item def+tag+def,is item flag+def+tvalue),
+      set item flag+tag+tvalue,repr*ITEM[def]->repr*ITEM[tag]->x;
+   1->x,error+unknown estimator+tag*ITEM[list]+tag*ITEM[tag]+list.
+
+'a'loose bounds-item-etype-esize-x:
+   $ go through all lists, set vlwb to zero, vupb to:
+   $  0  no bound (for stacks and tables with size equal to fill)
+   $  1<= .. <=100 relative size
+   $  <0 absolute size (up to max stack size 1 000 000)
+   link lists->item,(nxt:item=0;
+   get vupb+item+etype,get vlwb+item+esize,put vlwb+item+0,
+     (=etype=
+      [1],relative size+esize+item;
+      [2],fix size+esize+item;
+      [3],get const value+esize+item+x,relative size+x+item;
+      [4],get const value+esize+item+x,fix size+x+item;
+      put vupb+item+0),
+   get list link+item+item,:nxt).
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $ 
+$ after loose constant evaluation; now go through fillings
+$   and figure out (relative) pointer constant values, and
+$   the fill size of each table/stack. Fill size is stored
+$   in the vlwb field.
+$ external stack/table has disjoint address space; all limits
+$   are dynamic; this handles 'external''table'STDARG.
+$ @StringTable is different; it is defined as an imported table
+$   
+$ file section -------------------------------------------- $
+
+'a'skip file area-list:
+  R+Dsub,(nxt:R+Dbus;
+          must+Titem+list,check list type+list,must+Tconst+#,:nxt);
+  +.
+
+'a'skip file entry-item:
+   $ skip file entry at the first scan 
+   $ I8 [I9 670911447 I75 208619606 I77 -1497425117 I76 -1890251351 ]2 I1 I168 .
+   $ <item> Dsub (<tag> <hash>)* Dbus 
+   $     <direction 0..3> <stdstr> <ptr> Dpoint
+   must+Titem+item,check file type+item,skip file area,
+     must+Tconst+#,must+Titem+#,must+Titem+#,must+Dpoint+#.
 
 $ EXPRESSION ============================================ $
 
@@ -101,14 +154,21 @@ $ EXPRESSION ============================================ $
       corrupted obj file+_title_+_line_).
 
 $ DATA section ========================================== $
-'a'data section:
+'a'data section:    $ first pass $
    was error;
    (nxt:R+Dfill,skip fill,:nxt;
         R+Dexpression,read expression,:nxt;
         R+Dlist,list entry,:nxt;
         R+Dfile,skip file entry,:nxt;
         +).
-
+'a'skip entry:
+   R+Dpoint;next symbol,:skip entry.
+'a'data section ii: $ second pass $
+   (nxt:R+Dexpression,skip entry,:nxt;
+        R+Dlist,skip entry,:nxt;
+        R+Dfile,skip entry,:nxt;
+        R+Dfill,skip entry,:nxt; $ !!!!!!!!!! $
+        +).
 $ loose evaluation ****************************************** $
 'table'MESSAGE=(
   "%p: constant definition refers to itself (%i)": constant refers to itself

@@ -48,6 +48,7 @@ static void openWithExtension(int *a){/* res> */
 }
 static void openArgument(int *a){/* >how */
   int par[2];int res;
+//printf("opening ... ");par[0]=argPtr;printPointer(par);printf("\n");
   if(a[0]==1){openAsItIs(par);res=par[0];}
   else if(a[0]==2){openWithExtension(par);res=par[0];}
   else{openAsItIs(par);res=par[0];if(res!=0){openWithExtension(par);res=par[0];}}

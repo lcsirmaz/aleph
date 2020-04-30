@@ -76,14 +76,14 @@ $ formatted printing $
 'a'print item+>item-line-source-module:
    $ print item as "0034/aleph (aleph)"
    find item lineno+item+line+source+module,
-   (line<=0;decr+line,print form+line),
+   (line<=0;print form+line),
    (source=Squote image;
     print char+///,print base+source),
    print char+/ /,print char+/(/,print pointer+module,print char+/)/.
 'a'print line+>l-line-source:
    $ error in this module; print "0034/static"
    find lineno+l+line+source,
-   (line<=0;decr+line,print form+line),
+   (line<=0;print form+line),
    (source=Squote image;print char+///,print base+source).
 
 'a'format print+*+>fmt-optr-ptr:

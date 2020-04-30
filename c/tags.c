@@ -226,8 +226,8 @@ void newStdstring(int *a){ /* >str + c> */
   par[0]=Pstar;newTagEntry(par);a[1]=par[1];
   par[0]=a[1];par[1]=IpointerConstant;putType(par);
   par[0]=a[1];par[1]=Xstringtable;putAdm(par);par[0]=Xstringtable;useTag(par);
-  par[0]=Xstringtable;par[1]=tfill;setTagFlag(par);par[0]=a[1];par[1]=tdefined;
-  setTagFlag(par);par[1]=tused;setTagFlag(par);
+  par[0]=Xstringtable;par[1]=tfill;setTagFlag(par);par[1]=timported;setTagFlag(par);
+  par[0]=a[1];par[1]=tdefined;setTagFlag(par);par[1]=tused;setTagFlag(par);
   par[0]=STACKpar(LADM);par[1]=3;par[4-LADM_adm]=a[1];par[4-LADM_repr]=a[0];
   par[4-LADM_link]=stdstrings;expandstack(par);stdstrings=LADM->aupb;
   if(a[0]==Squoteimage){stdEmptyPointer=a[1];}

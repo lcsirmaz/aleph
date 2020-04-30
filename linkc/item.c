@@ -6,10 +6,12 @@
 
 /* -------------------------------------------*/
 #define tglobal	(tpublic|timported|texternal)
-#define titemMask ~(tglobal|rtype|rvararg|routvararg|rtrace|rcount|rbounds)
+#define touter  (timported|texternal)
+#define titemMask (tglobal|rtype|rvararg|routvararg|rtrace|rcount|rbounds)
 
 static int incompatible_global_types,incompatible_external,
-  doubly_defined,not_defined,same_title;
+  doubly_defined,not_defined,same_title,two_main_modules,
+  no_main_module;
 #define addMSG(x,y)	add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void init_MSG(void){
   addMSG("%p: incompatible types at %i and %i",incompatible_global_types);
@@ -17,10 +19,18 @@ static void init_MSG(void){
   addMSG("%p: doubly defined at %i and %i",doubly_defined);
   addMSG("%p: no definition, requested at %i",not_defined);
   addMSG("module with the same title %p",same_title);
+  addMSG("two main modules: %p and %p",two_main_modules);
+  addMSG("no main module",no_main_module);
 }
 #undef addMSG
 /* ------------------------------------------- */
-static int baseItem=0,maxLineno=0;
+static int baseItem=0,maxLineno=0,firstItem=0;
+
+static void expandITEM(void){
+  int par[8];
+  par[0]=STACKpar(ITEM);par[1]=6;par[2]=par[3]=par[4]=par[5]=par[6]=par[7]=0;
+  expandstack(par);
+}
 
 int isItemFlag(int *a){/* >item + >flag */
   if((ITEM->offset[a[0]-ITEM_flag]&a[1])!=0){return 1;}
@@ -33,7 +43,7 @@ void clearItemFlag(int *a){/* >item + >flag */
   ITEM->offset[a[0]-ITEM_flag] &= ~a[1];
 }
 int getItemDef(int *a){/* >item + def> */
-  int par[2];par[0]=a[0];par[1]=timported;if(isItemFlag(par)){
+  int par[2];par[0]=a[0];par[1]=touter;if(isItemFlag(par)){
     par[0]=ITEM->offset[a[0]-ITEM_tag];getTagData(par);a[1]=par[1];
     return 1;}
   return 0;
@@ -47,16 +57,23 @@ static void pushAUX(int v){
 }
 static int stackSizeMismatch(int *a){/* >item1 + >item2 */
   int par[2];int x1;
+//printf("stackSize %d -(",a[0]);par[0]=a[0];getSsel(par);printf("%d,",par[1]);getCalibre(par);printf("%d); %d -(",par[1],a[1]);par[0]=a[1];getSsel(par);printf("%d,",par[1]);getCalibre(par);printf("%d)\n",par[1]);
   par[0]=a[0];getSsel(par);x1=par[1];par[0]=a[1];getSsel(par);
   if(x1!=par[1]){return 1;}
   par[0]=a[0];getCalibre(par);x1=par[1];par[0]=a[1];getCalibre(par);
   if(x1!=par[1]){return 1;}
   return 0;
 }
+static int unequalTypes(int type1,int type2){
+  if(type1==type2){return 0;}
+  if(type1==Iconstant&&type2==IpointerConstant){return 0;}
+  if(type1==IpointerConstant&&type2==Iconstant){return 0;}
+  return 1;
+}
 static int incompatibleTypes(int *a){/* >item1 + >item2 */
   int type;
   type=ITEM->offset[a[0]-ITEM_type];
-  if(type!=ITEM->offset[a[1]-ITEM_type]){return 1;}
+  if(unequalTypes(type,ITEM->offset[a[1]-ITEM_type])){return 1;}
   if(type==Irule && ITEM->offset[a[0]-ITEM_adm]!=ITEM->offset[a[1]-ITEM_adm]){return 1;}
   if(type==Istack||type==Itable||type==IstaticStack){
     return stackSizeMismatch(a);}
@@ -102,11 +119,17 @@ void getVupb(int *a){/* >item + x> */
 void getVlwb(int *a){/* >item + x> */
   a[1]=AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_vlwb];
 }
+void getListLink(int *a){/* >item + x> */
+  a[1]=AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_link];
+}
 void putVupb(int *a){/* >item + >x */
   AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_vupb]=a[1];
 }
 void putVlwb(int *a){/* >item + >x */
   AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_vlwb]=a[1];
+}
+void putListLink(int *a){/* >item + >x */
+  AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_link]=a[1];
 }
 /* ------------------------------------------- */
 static int compareFormals(int *a){/* >p1+>p2 */
@@ -140,11 +163,11 @@ static void storeFormalAffixes(int *a){ /* formals> */
   par[0]=old;par[1]=a[0];searchFormals(par);a[0]=par[1];
 }
 static void storeListBounds(int *a){/* bounds> */
-  int par[6];int cal,ssel;
+  int par[7];int cal,ssel;
   par[0]=Tconst;must(par);cal=par[1];must(par);ssel=par[1];
-  par[0]=STACKpar(AUX);par[1]=4;par[5-AUX_vlwb]=par[5-AUX_vupb]=0;
-  par[5-AUX_calibre]=cal;par[5-AUX_ssel]=ssel;expandstack(par);
-  a[0]=AUX->aupb;
+  par[0]=STACKpar(AUX);par[1]=5;par[6-AUX_vlwb]=par[6-AUX_vupb]=0;
+  par[6-AUX_calibre]=cal;par[6-AUX_ssel]=ssel;par[6-AUX_link]=-1;
+  expandstack(par);a[0]=AUX->aupb;
 }
 static void checkItemID(int *a){ /* >n */
   if(a[0]==ITEM->aupb){;}
@@ -152,9 +175,8 @@ static void checkItemID(int *a){ /* >n */
   corruptedObjFile(__FILE__,__LINE__);}
 }
 static void readItem(void){
-  int par[8];int flag,lineno,type;
-  par[0]=STACKpar(ITEM);par[1]=6;par[2]=par[3]=par[4]=par[5]=par[6]=par[7]=0;
-  expandstack(par);par[0]=Ttype;must(par);type=par[1];
+  int par[3];int flag,lineno,type;
+  expandITEM();par[0]=Ttype;must(par);type=par[1];
   ITEM->offset[ITEM->aupb-ITEM_type]=type;
   par[0]=Titem;must(par);par[0]=par[1];checkItemID(par);
   par[0]=Tconst;must(par);flag=par[1];ITEM->offset[ITEM->aupb-ITEM_flag]=(flag&titemMask);
@@ -162,7 +184,6 @@ static void readItem(void){
   if(lineno<=0){;}
   else if(lineno>maxLineno){corruptedObjFile(__FILE__,__LINE__);}
   else{ITEM->offset[ITEM->aupb-ITEM_lineno]=lineno;}
-printf("type=%d,table=%d\n",type,Itable);  
   if(type==Irule){storeFormalAffixes(par);ITEM->offset[ITEM->aupb-ITEM_adm]=par[0];}
   else if(type==Istack||type==IstaticStack||type==Itable){
     storeListBounds(par);ITEM->offset[ITEM->aupb-ITEM_adm]=par[0];}
@@ -184,9 +205,24 @@ void skipItemSection(void){
   else{nextSymbol();;goto nxt;}
 }
 /* =========================================== */
+static void addStdstring(void){
+  int par[8];
+  par[0]=STACKpar(AUX);par[1]=5;par[6-AUX_vlwb]=par[6-AUX_vupb]=0;
+  par[6-AUX_calibre]=par[6-AUX_ssel]=1;par[6-AUX_link]=-1;expandstack(par);
+  par[0]=STACKpar(ITEM);par[1]=6;par[7-ITEM_flag]=tpublic;
+  par[7-ITEM_type]=Itable;par[7-ITEM_lineno]=0;par[7-ITEM_tag]=StdString;
+  par[7-ITEM_adm]=AUX->aupb;par[7-ITEM_repr]=0;expandstack(par);
+  par[0]=StdString;par[1]=ITEM->aupb;putTagData(par);
+}
+
+/* =========================================== */
 static void checkModuleTitle(void){
   int par[3]; int ptr;
-  ptr=baseItem;nxt:if(ptr==0){;}
+  ptr=firstItem;nxt:if(ptr==0){;}
+  else if(ITEM->offset[ITEM->aupb-ITEM_type]==Dtitle &&
+          ITEM->offset[ptr-ITEM_type]==Dtitle){
+    par[0]=two_main_modules;par[1]=ITEM->offset[ITEM->aupb-ITEM_tag];
+    par[2]=ITEM->offset[ptr-ITEM_tag];error(3,par);}
   else if(ITEM->offset[ITEM->aupb-ITEM_tag]==ITEM->offset[ptr-ITEM_tag]){
     par[0]=same_title;par[1]=ITEM->offset[ITEM->aupb-ITEM_tag];
     warning(2,par);}
@@ -203,35 +239,34 @@ static void readDefinitionList(void){
   par[0]=Dpoint;if(R(par)){;}else{goto nxt;}
 }
 void headSection(int *a){
-  int par[8];
-  par[0]=STACKpar(ITEM);par[1]=6;par[2]=par[3]=par[4]=par[5]=par[6]=par[7]=0;
-  expandstack(par);ITEM->offset[ITEM->aupb-ITEM_flag]=a[0];
+  int par[2];
+  expandITEM();ITEM->offset[ITEM->aupb-ITEM_flag]=a[0];
   par[0]=Dmodule;if(R(par)){ITEM->offset[ITEM->aupb-ITEM_type]=Dmodule;}
   else if((par[0]=Dtitle,R(par))){ITEM->offset[ITEM->aupb-ITEM_type]=Dtitle;}
-  else if((par[0]=Dlibrary,R(par))){ITEM->offset[ITEM->aupb-ITEM_type]=Dlibrary;}
   else{corruptedObjFile(__FILE__,__LINE__);}
   par[0]=Tstring;must(par);ITEM->offset[ITEM->aupb-ITEM_tag]=par[1];
-  checkModuleTitle();maxLineno=0;
-  if(ITEM->offset[ITEM->aupb-ITEM_type]==Dlibrary){par[0]=Dpoint;must(par);}
-  else{readDefinitionList();}
+  checkModuleTitle();maxLineno=0;readDefinitionList();
   ITEM->offset[ITEM->aupb-ITEM_lineno]=maxLineno;
-  if(baseItem==0){;}else{ITEM->offset[baseItem-ITEM_repr]=ITEM->aupb;}
+  if(baseItem==0){firstItem=ITEM->aupb;}else{ITEM->offset[baseItem-ITEM_repr]=ITEM->aupb;}
   baseItem=ITEM->aupb;
+}
+void advanceBaseItem(int *a){/* flag> */
+  if(baseItem==0){;}else{baseItem=ITEM->offset[baseItem-ITEM_repr];}
+  if(baseItem==0){baseItem=firstItem;}
+  maxLineno=ITEM->offset[baseItem-ITEM_lineno];
+  a[0]=ITEM->offset[baseItem-ITEM_flag];
 }
 void skipHeadSection(void){
   int par[3];
   nxt:par[0]=Dpoint;if(R(par)){;}else{nextSymbol();goto nxt;}
-  if(baseItem==0){baseItem=ITEM->alwb;}
-  else{baseItem=ITEM->offset[baseItem-ITEM_repr];}
-  maxLineno=ITEM->offset[baseItem-ITEM_lineno];
 }
 /* ------------------------------------------- */
 /* find positions */
 static void searchForLine(int*a){/* >ptr+>old+line>+str> */
                                  /*  0     1    2    3   */
-  if(a[1]<=0||a[1]>ITEM->offset[a[0]-ITEM_lineno]){
+  if(a[1]<=1||a[1]>ITEM->offset[a[0]-ITEM_lineno]){
     a[2]=0;a[3]=Squoteimage;return;}
-  a[0]=ITEM->offset[a[0]-ITEM_adm];a[2]=a[1];nxt:
+  a[0]=ITEM->offset[a[0]-ITEM_adm];a[2]=a[1]-1;a[1]++;nxt:
   if(a[1]>AUX->offset[a[0]-AUX_width]){
     a[2]=a[1]-AUX->offset[a[0]-AUX_width];a[0]+=2;goto nxt;}
   a[3]=AUX->offset[a[0]-AUX_data];
@@ -244,27 +279,34 @@ void findLineno(int *a){/* >old + line> + str> */
 }
 void findItemLineno(int *a){/* >item + line> + str> + module> */
   int par[4];int ptr,nptr;
-  ptr=ITEM->alwb;nxt:
+  ptr=firstItem;nxt:
   nptr=ITEM->offset[ptr-ITEM_repr];if(nptr && nptr<a[0]){ptr=nptr;goto nxt;}
-  a[3]=ITEM->offset[ptr-ITEM_tag];par[0]=ptr;par[0]=ITEM->offset[a[0]-ITEM_lineno];
+  a[3]=ITEM->offset[ptr-ITEM_tag];par[0]=ptr;par[1]=ITEM->offset[a[0]-ITEM_lineno];
   searchForLine(par);a[1]=par[2];a[2]=par[3];
 }
 /* ------------------------------------------- */
 void checkAllItems(void){
-  int par[3];int ptr,def,t;
-  ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){return;}
+  int par[3];int ptr,def,t,mainm;
+//printf("checking 2 starts from=%d to %d...\n",ITEM->alwb,ITEM->aupb);
+  ptr=ITEM->alwb;mainm=0;nxt:if(ptr>ITEM->aupb){
+    if(mainm==0){par[0]=no_main_module;error(1,par);}return;}
+//printf(" ");par[0]=ITEM->offset[ptr-ITEM_tag];printPointer(par);printf(" %x\n",ITEM->offset[ptr-ITEM_flag]);
   t=ITEM->offset[ptr-ITEM_type];
-  if(t==Dtitle||t==Dmodule||t==Dlibrary){ptr+=ITEM_CALIBRE;goto nxt;}
+  if(t==Dtitle){mainm=1;ptr+=ITEM_CALIBRE;goto nxt;}
+  else if(t==Dmodule){ptr+=ITEM_CALIBRE;goto nxt;}
   par[0]=ptr;if(getItemDef(par)){def=par[1];
+//printf("  def=%d,item=%d\n",def,ptr);
     par[0]=def;par[1]=tpublic;if(isItemFlag(par)){;}
+    else if(par[1]=texternal,isItemFlag(par)){;}
     else{par[0]=not_defined;par[1]=ITEM->offset[ptr-ITEM_tag];par[2]=ptr;
-        error(3,par);}
-    ptr+=ITEM_CALIBRE;goto nxt;}
+        error(3,par);}}
+  ptr+=ITEM_CALIBRE;goto nxt;
 }
 /* ------------------------------------------- */
 
 void initialize_item(void){
-  init_MSG();baseItem=0;
+  init_MSG();baseItem=firstItem=0;
+  addStdstring();
 }
 
 /* EOF */

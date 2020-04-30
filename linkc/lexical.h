@@ -5,7 +5,7 @@
 extern int
    Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
    Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
-   Dlibrary,Dmodule,Dtitle,
+   Dmodule,Dtitle,
    Dand,Dbus,Dclose,Dcolon,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
    Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
    Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
@@ -13,7 +13,7 @@ extern int
    IpointerConstant,Icharfile,Idatafile,Irule,
    IformalStack,IformalTable,IformalFile,IformalIn,
    IformalOut,IformalInout,IformalRepeat,IformalShift;
-extern int Squoteimage;
+extern int Squoteimage,StdString;
 
 extern int inpt,inptValue;
 
