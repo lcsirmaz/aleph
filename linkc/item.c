@@ -205,6 +205,35 @@ void skipItemSection(void){
   else{nextSymbol();;goto nxt;}
 }
 /* =========================================== */
+static void checkType(int item,int type){
+  int t=ITEM->offset[item-ITEM_type];
+  if(t==Icharfile||t==Idatafile){if(type==Dfile){return;}}
+  else if(t==Itable||t==Istack||t==IstaticStack){if(type==Dlist){return;}}
+  corruptedObjFile(__FILE__,__LINE__);
+}
+static void fileArea(int *a){/* >ptr */
+  int par[5];int list,hash;
+  par[0]=Dsub;if(R(par)){nxt:par[0]=Dbus;if(R(par)){return;}
+     par[0]=Titem;must(par);list=par[1];checkType(list,Dlist);
+     par[0]=Tconst;must(par);hash=par[1];par[0]=STACKpar(AUX);
+     par[1]=3;par[4-AUX_count]=hash;par[4-AUX_item]=list;par[4-AUX_link]=0;
+     expandstack(par);AUX->offset[a[0]-AUX_link]=AUX->aupb;a[0]=AUX->aupb;
+     goto nxt;}
+}
+void fileEntry(void){
+  int par[5];int item,ptr,x;
+  par[0]=Titem;must(par);item=par[1];checkType(item,Dfile);
+  par[0]=STACKpar(AUX);par[1]=3;par[4-AUX_count]=par[4-AUX_item]=par[4-AUX_link]=0;
+  expandstack(par);ptr=ITEM->offset[item-ITEM_adm]=AUX->aupb;
+  par[0]=ptr;fileArea(par);par[0]=Tconst;must(par);x=par[1];
+  if(x==1||x==3){par[0]=item;par[1]=tinfile;setItemFlag(par);}
+  if(x==2||x==3){par[0]=item;par[1]=toutfile;setItemFlag(par);}
+  par[0]=Titem;must(par);AUX->offset[ptr-AUX_item]=par[1];
+  par[0]=Titem;must(par);AUX->offset[ptr-AUX_count]=par[1];
+  par[0]=Dpoint;must(par);
+}
+
+/* =========================================== */
 static void addStdstring(void){
   int par[8];
   par[0]=STACKpar(AUX);par[1]=5;par[6-AUX_vlwb]=par[6-AUX_vupb]=0;
@@ -230,7 +259,7 @@ static void checkModuleTitle(void){
 }
 static void readDefinitionList(void){
   int par[4];int n,str;nxt:
-  par[0]=Tconst;must(par);n=par[1];if(n>maxLineno){maxLineno=n;}
+  par[0]=Tconst;must(par);n=par[1];if(n>=maxLineno){maxLineno=n;}
   else{corruptedObjFile(__FILE__,__LINE__);}
   par[0]=Tstring;must(par);str=par[1];
   par[0]=STACKpar(AUX);par[1]=2;par[3-AUX_width]=n;par[3-AUX_data]=str;

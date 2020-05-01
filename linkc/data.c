@@ -6,7 +6,8 @@
 #include "lexical.h"
 
 static int constant_refers_to_itself,relative_size_estimator,
-fix_size_estimator,unknown_estimator;
+fix_size_estimator,unknown_estimator,repeat_constant_out_of_range,
+repeat_constant_not_defined,insufficient_virtual_space;
 
 #define addMSG(x,y)	add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void init_MSG(void){
@@ -14,6 +15,10 @@ static void init_MSG(void){
   addMSG("%p: relative size estimator %d is out of range (%i)",relative_size_estimator);
   addMSG("%p: fix size estimator %d is out or range (%i)",fix_size_estimator);
   addMSG("%p: size estimator %p has no value (%i)",unknown_estimator);
+  addMSG("filling %p at %l: repeat %p has value %d out of range (1 .. 10000)",
+     repeat_constant_out_of_range);
+  addMSG("filling %p at %l: repeat constant %p is not defined",repeat_constant_not_defined);
+  addMSG("insufficient virtual space",insufficient_virtual_space);
 }
 #undef addMSG
 #define maxStackSize	1000000
@@ -32,16 +37,11 @@ static void checkConstantType(int item){
   if(t==Iconstant||t==IpointerConstant){;}
   else{corruptedObjFile(__FILE__,__LINE__);}
 }
-static void checkFileType(int item){
-  int t=ITEM->offset[item-ITEM_type];
-  if(t==Icharfile||t==Idatafile){;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
-}
 /* lists */
 static int linkLists=0;
 static void rememberList(int item){
   int par[2];
-  par[0]=item;getListLink(par);if(par[0]>=0){return;}
+  par[0]=item;getListLink(par);if(par[1]>=0){return;}
   par[0]=item;par[1]=linkLists;putListLink(par);linkLists=item;
 }
 
@@ -56,18 +56,7 @@ static void listEntry(void){ /* just after the 'list' keyword */
   par[0]=item;par[1]=etype;putVupb(par);par[0]=item;par[1]=esize;putVlwb(par);
   rememberList(item);par[0]=Dpoint;must(par);
 }
-static void skipFileArea(void){
-  int par[3];int list;
-  par[0]=Dsub;if(R(par)){nxt:par[0]=Dbus;if(R(par)){return;}
-     par[0]=Titem;must(par);list=par[1];checkListType(list);
-     par[0]=Tconst;must(par);goto nxt;}
-}
-static void skipFileEntry(void){
-  int par[2];int item;
-  par[0]=Titem;must(par);item=par[1];checkFileType(item);
-  skipFileArea();par[0]=Tconst;must(par);par[0]=Titem;must(par);must(par);
-  par[0]=Dpoint;must(par);
-}
+/* ------------------------------------------- */
 static void fillItem(void){
   int par[2];
   par[0]=Dopen;if(R(par)){nxt: par[0]=Dclose;if(R(par)){;}
@@ -81,7 +70,7 @@ static void fillRepeater(void){
   par[0]=Dstar;if(R(par)){par[0]=Tconst;if(R(par)){;}
     else{par[0]=Titem;must(par);checkConstantType(par[1]);}}
 }
-static void fillInitializer(int list){/* list */
+static void fillInitializer(int list){/* >list */
   int par[2];
   nxt:par[0]=Dcolon;if(R(par)){par[0]=Titem;must(par);
     if(ITEM->offset[par[1]-ITEM_type]==IpointerConstant
@@ -123,23 +112,151 @@ static void getConstValue(int *a){/* >tag + >list + x> */
 void looseBounds(void){
   int par[3];int item,etype,esize;
   item=linkLists;nxt: if(item==0){return;}
-  par[0]=item;getVupb(par);etype=par[1];getVlwb(par);esize=par[1];
-  par[1]=0;putVlwb(par);if(etype==1){par[0]=esize;par[1]=item;relativeSize(par);}
-  else if(etype==2){par[0]=esize;par[1]=item;fixSize(par);}
-  else if(etype==3){par[0]=esize;par[1]=item;getConstValue(par);
-    par[0]=par[2];par[1]=item;relativeSize(par);}
-  else if(etype==4){par[0]=esize;par[1]=item;getConstValue(par);
-    par[0]=par[2];par[1]=item;fixSize(par);}
-  else{par[0]=item;par[1]=0;putVupb(par);}
+  par[0]=item;if(getItemDef(par)){par[1]=0;putVlwb(par);putVupb(par);}
+  else{par[0]=item;getVupb(par);etype=par[1];getVlwb(par);esize=par[1];
+    par[1]=0;putVlwb(par);if(etype==1){par[0]=esize;par[1]=item;relativeSize(par);}
+    else if(etype==2){par[0]=esize;par[1]=item;fixSize(par);}
+    else if(etype==3){par[0]=esize;par[1]=item;getConstValue(par);
+      par[0]=par[2];par[1]=item;relativeSize(par);}
+    else if(etype==4){par[0]=esize;par[1]=item;getConstValue(par);
+      par[0]=par[2];par[1]=item;fixSize(par);}
+    else{par[0]=item;par[1]=0;putVupb(par);}}
   par[0]=item;getListLink(par);item=par[1];goto nxt;
 }
+static void looseFillItem(int *a){/* size> */
+  int par[2];
+  par[0]=Dopen;if(R(par)){a[0]=0;nxt:par[0]=Dclose;if(R(par)){;}
+   else if(par[0]=Tconst,R(par)){a[0]++;goto nxt;}
+   else{par[0]=Titem;must(par);a[0]++;goto nxt;}}
+  else if(par[0]=Tconst,R(par)){a[0]=1;}
+  else{par[0]=Titem;must(par);a[0]=1;}
+}
+static void repeaterValue(int *a){/*>list+>lineno+item>+cnt>*/
+  int par[5];                     /*  0       1     2    3  */
+  par[0]=a[2];par[1]=tvalue;if(isItemFlag(par)){
+    a[3]=ITEM->offset[a[2]-ITEM_repr];if(1<=a[3]&&a[3]<=10000){;}
+    else{par[1]=ITEM->offset[a[0]-ITEM_tag];par[2]=a[1];
+      par[3]=ITEM->offset[a[2]-ITEM_tag];par[4]=a[3];
+      par[0]=repeat_constant_out_of_range;warning(5,par);
+      a[3]=1;}}
+  else{a[3]=0;par[0]=repeat_constant_not_defined;par[1]=
+    ITEM->offset[a[0]-ITEM_tag];par[2]=a[1];par[3]=
+    ITEM->offset[a[2]-ITEM_tag];error(4,par);}
+}
+static void looseRepeater(int *a){/* >list+>lineno+>size */
+  int par[5];int item,cnt;
+  par[0]=Dstar;if(R(par)){par[0]=Tconst;if(RR(par)){cnt=par[1];}
+      else{par[0]=Titem;must(par);item=par[1];par[0]=item;
+        if(getItemDef(par)){item=par[1];} par[0]=a[0];
+        par[1]=a[1];par[2]=item;repeaterValue(par);cnt=par[3];}
+    a[2]*=cnt;}
+  par[0]=a[0];getVlwb(par);par[1]+=a[2];putVlwb(par);
+}
+static void looseInitializer(int *a){ /* >list */
+  int par[2];int item;
+  nxt:par[0]=Dcolon;if(R(par)){par[0]=Titem;must(par);item=par[1];
+    par[0]=item;if(getItemDef(par)){printf("looseInitializer: after colon\n");exit(13);}
+    par[0]=a[0];getVlwb(par);ITEM->offset[item-ITEM_repr]=par[1];
+    ITEM->offset[item-ITEM_adm]=a[0];
+    goto nxt;}
+}
+static void looseFill(void){
+  int par[4];int list,lineno,size;
+  par[0]=Titem;must(par);list=par[1];
+  par[0]=list;if(getItemDef(par)){list=par[1];rememberList(list);}
+  par[0]=Tconst;must(par);lineno=par[1];
+  nxt:par[0]=Dpoint;if(R(par)){;}
+  else{looseFillItem(par);size=par[0];
+    par[0]=list;par[1]=lineno;par[2]=size;looseRepeater(par);
+    par[0]=list;looseInitializer(par);goto nxt;}
+}
+#define minVirtualAddress	0x01000000
+#define maxVirtualAddress	0x77ffffff
+static void collectListSizeClaims(int *a){/* abs> + rel> */
+  int par[2];int ptr,x,y;
+  a[0]=a[1]=0;ptr=linkLists;nxt:if(ptr==0){return;}
+  par[0]=ptr;if(getItemDef(par)){getListLink(par);ptr=par[1];goto nxt;}
+  par[0]=ptr;getCalibre(par);x=par[1];a[0]+=x;getVlwb(par);x=par[1];
+  getVupb(par);y=par[1];if(y<=0){y=-y;if(x<y){x=y;}a[0]+=x;}
+  else{a[1]+=y;a[0]+=x;}par[0]=ptr;getListLink(par);ptr=par[1];goto nxt;
+}
+static void setListBounds(int *a){/* >by */
+  int par[2];int addr,ptr,cal,x,y;
+  addr=minVirtualAddress;ptr=linkLists;nxt:if(ptr==0){return;}
+  par[0]=ptr;if(getItemDef(par)){getListLink(par);ptr=par[1];goto nxt;}
+  par[0]=ptr;getVlwb(par);x=par[1];getVupb(par);y=par[1];if(y<=0){y=-y;}
+  else{y*=a[0];}if(x<y){x=y;} par[0]=ptr;getCalibre(par);cal=par[1];
+  y=cal+addr;par[0]=ptr;par[1]=y;putVlwb(par);addr+=x;par[1]=addr;
+  putVupb(par);addr+=cal;par[0]=ptr;getListLink(par);ptr=par[1];goto nxt;
+}
+void distributeVirtualAddress(void){
+  int par[3];int abs,rel,by,y;
+  collectListSizeClaims(par);abs=par[0];rel=par[1];if(rel>0){;}else{rel=1;}
+  by=maxVirtualAddress-minVirtualAddress;y=0;if(abs<0){y=1;}
+  else if(by<abs){y=1;}else{by=by-abs;by=by/rel;if(by<=0){y=1;}}
+  if(y){par[0]=insufficient_virtual_space;error(1,par);}
+  else{par[0]=by;setListBounds(par);}
+}
+/* ---------------------------------------------------------- */
+static void setPointerValue(int ptr){
+  int par[3];int list,cal,lwb;
+  list=ITEM->offset[ptr-ITEM_adm];par[0]=list;getCalibre(par);
+  cal=par[1];getVlwb(par);lwb=par[1];lwb-=cal;
+  ITEM->offset[ptr-ITEM_repr]+=lwb;
+  par[0]=ptr;par[1]=tvalue;setItemFlag(par);
+}
+void finalizePointerConstants(void){
+  int par[2];int ptr;
+printf("finalize ...\n");
+  ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){return;}
+  if(ITEM->offset[ptr-ITEM_type]==IpointerConstant){
+     par[0]=ptr;if(getItemDef(par)){corruptedObjFile(__FILE__,__LINE__);}
+     setPointerValue(ptr);}
+  ptr+=ITEM_CALIBRE;goto nxt;
+}
+/* ---------------------------------------------------------- */
+/* DEBUG */
+void printAll(void){
+  int par[3];int ptr,type;
+  ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){return;}
+  par[0]=ptr;if(getItemDef(par)&&par[1]!=ptr){ptr+=ITEM_CALIBRE;goto nxt;}
+  type=ITEM->offset[ptr-ITEM_type];
+  if(type==Irule||type==Iconstant||type==IpointerConstant){ptr+=ITEM_CALIBRE;goto nxt;}
+  par[0]=ptr;par[1]=texternal;if(isItemFlag(par)){printf("**EX** ");}
+  par[0]=type;printPointer(par); printf(" ");
+  par[0]=ITEM->offset[ptr-ITEM_tag];printPointer(par);printf(": ");
+  if(type==Iconstant||type==IpointerConstant||type==Ivariable){
+     int v=0;par[0]=ptr;par[1]=tvalue;if(isItemFlag(par)){v=1;}
+     printf(" v=%d %c",ITEM->offset[ptr-ITEM_repr],v==1?' ':'*');
+         }
+  if(type==Itable||type==Istack||type==IstaticStack){int lwb,upb;
+     par[0]=ptr;getVlwb(par);lwb=par[1];getVupb(par);upb=par[1];
+     printf(" [%d .. %d]",lwb,upb);}
+  printf("\n");
+  ptr+=ITEM_CALIBRE;goto nxt;
+}
+void printBounds(void){
+  int par[3];int item,vlwb,vupb;int notdef;
+  //printf("linkLists=%d\n",linkLists);
+  printAll();return;
+  item=linkLists;nxt:if(item==0){return;}
+  notdef=0;par[0]=item;if(getItemDef(par)){notdef=1;}
+  else{
+    par[0]=ITEM->offset[item-ITEM_tag];printPointer(par);printf(": %c ",notdef?'*':' ');
+    par[0]=item;getCalibre(par);vupb=par[1];getSsel(par);vlwb=par[1];
+    printf("cal=%d, ssel=%d ",vupb,vlwb);
+    par[0]=item;getVupb(par);vupb=par[1];getVlwb(par);vlwb=par[1];
+    printf("lwb=%d, upb=%d\n",vlwb,vupb);}
+  par[0]=item;getListLink(par);item=par[1];goto nxt;
+}
+
 /* ---------------------------------------------------------- */
 static int linkExpr=0; /* link all expressions in EXPRESSION */
 
 static void readExpression(void){
   int par[3];int item,ptr,t;
   par[0]=Titem;must(par);item=par[1];t=ITEM->offset[item-ITEM_type];
-  if(t==Iconstant||t==Ivariable){;}
+  if(t==Iconstant||t==Ivariable||t==IstaticVar){;}
   else{corruptedObjFile(__FILE__,__LINE__);}
   pushEXPR(item),ptr=EXPRESSION->aupb;pushEXPR(linkExpr);linkExpr=ptr;
   ITEM->offset[item-ITEM_adm]=EXPRESSION->aupb;nxt:
@@ -166,14 +283,14 @@ void dataSection(void){
   nxt:par[0]=Dfill;if(R(par)){skipFill();goto nxt;}
   par[0]=Dexpression;if(R(par)){readExpression();goto nxt;}
   par[0]=Dlist;if(R(par)){listEntry();goto nxt;}
-  par[0]=Dfile;if(R(par)){skipFileEntry();goto nxt;}
+  par[0]=Dfile;if(R(par)){fileEntry();goto nxt;}
 }
 void dataSectionII(void){
   int par[2];
   nxt:par[0]=Dexpression;if(R(par)){skipEntry();goto nxt;}
   par[0]=Dlist;if(R(par)){skipEntry();goto nxt;}
   par[0]=Dfile;if(R(par)){skipEntry();goto nxt;}
-  par[0]=Dfill;if(R(par)){skipEntry();goto nxt;}
+  par[0]=Dfill;if(R(par)){looseFill();goto nxt;}
 }
 /* =========================================================== */
 static int eptr=0;

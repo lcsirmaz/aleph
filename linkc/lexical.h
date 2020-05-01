@@ -20,10 +20,12 @@ extern int inpt,inptValue;
 void nextSymbol(void);
 #define UNUSED	__attribute__((unused));
 static int R() UNUSED
+static int RR() UNUSED
 static void must() UNUSED
 #undef UNUSED
 
 static int R(int *a){if(inpt==a[0]){nextSymbol(); return 1;}return 0;}
+static int RR(int *a){if(inpt==a[0]){a[1]=inptValue;nextSymbol();return 1;}return 0;}
 static void must(int *a){if(inpt==a[0]){a[1]=inptValue;nextSymbol();}
   else{printf("** must() failed, a[0]=%d ",a[0]);printPointer(a); printf(" got=%d ",inpt);a[0]=inpt;printPointer(a);printf("\n");exit(8);}}
 

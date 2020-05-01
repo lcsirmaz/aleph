@@ -14,13 +14,18 @@ static void passi(void){
   else if(nextSource(par)){ext=par[1];par[0]=ext;
      headSection(par);itemSection();dataSection();goto nxt;}
 // printf("read all, checking ...\n");
-  checkAllItems();looseEvaluation();looseBounds();
+  else{ checkAllItems();looseEvaluation();looseBounds(); }
 }
 
 static void passii(void){
   int par[2];
   nxt:advanceBaseItem(par);/* ext=par[0]; */
   if(nextSource(par)){skipHeadSection();skipItemSection();dataSectionII();goto nxt;}
+  if(wasError()){;}
+  else{distributeVirtualAddress();finalizePointerConstants();
+       finalEvaluation();
+  /* DEBUG */printBounds();
+  }
 }
 
 int main(int argc,char *argv[]){

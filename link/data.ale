@@ -3,7 +3,8 @@ $ HEADER ************************************************** $
 $ handle data:
 $  expression, fill, list, file $
 'a'data section,data section ii.
-'a'loose bounds.
+'a'loose bounds,distribute virtual address,
+   finalize pointer constants.
 $ expressions are stored in the stack EXPRESSION,
 $  linked so we can walk them.
 $ expressions are evaluated twice. loose evaluation
@@ -32,12 +33,8 @@ $ BODY **************************************************** $
   =type*ITEM[item]=
   [Iconstant;Ipointer constant],+;
   corrupted obj file+_title_+_line_.
-'f'check file type+>item:
-  =type*ITEM[item]=
-  [Icharfile;Idatafile],+;
-  corrupted obj file+_title_+_line_.
 
-$ list section -------------------------------------------- $
+$ list section ============================================ $
 'variable'link lists=0.
 'constant'max stack size=1 000 000.
 
@@ -70,8 +67,8 @@ $ list section -------------------------------------------- $
 
 'a'fill initializer+>list-item:
   R+Dcolon,must+Titem+item,
-    ((type*ITEM[item]=Ipointer constant,repr*ITEM[item]=0);corrupted obj file+_title_+_line_),
-    list->repr*ITEM[item],:fill initializer;
+    ((type*ITEM[item]=Ipointer constant,adm*ITEM[item]=0);corrupted obj file+_title_+_line_),
+    list->adm*ITEM[item],:fill initializer;
   +.
 
 'a'skip fill-list:
@@ -83,7 +80,12 @@ $ list section -------------------------------------------- $
 'table'MESSAGE=(
   "%p: relative size estimator %d is out of range (%i)":relative size estimator,
   "%p: fix size estimator %d is out or range (%i)":fix size estimator,
-  "%p: size estimator %p has no value (%i)":unknown estimator
+  "%p: size estimator %p has no value (%i)":unknown estimator,
+  "filling %p at %l: repeat %p has value %d out of range (1 .. 10000)"
+          :repeat constant out of range,
+  "filling %p at %l: repeat constant %p is not defined"
+          :repeat constant not defined,
+  "insufficient virtual space" :insufficient virtual space
 ).
 
 'a'relative size+>x+>item:
@@ -104,44 +106,112 @@ $ list section -------------------------------------------- $
    $  1<= .. <=100 relative size
    $  <0 absolute size (up to max stack size 1 000 000)
    link lists->item,(nxt:item=0;
-   get vupb+item+etype,get vlwb+item+esize,put vlwb+item+0,
+   (get item def+item+#,put vlwb+item+0,put vupb+item+0;
+          $ external and imported lists $
+    get vupb+item+etype,get vlwb+item+esize,put vlwb+item+0,
+     $ if this is not a definition, then etype=0
      (=etype=
       [1],relative size+esize+item;
       [2],fix size+esize+item;
       [3],get const value+esize+item+x,relative size+x+item;
       [4],get const value+esize+item+x,fix size+x+item;
-      put vupb+item+0),
+      put vupb+item+0)),
    get list link+item+item,:nxt).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $ 
-$ after loose constant evaluation; now go through fillings
-$   and figure out (relative) pointer constant values, and
-$   the fill size of each table/stack. Fill size is stored
-$   in the vlwb field.
+$ after loose constant evaluation go through fillings and
+$   figure out (relative) pointer constant values, and the
+$   fill size of each table/stack. Fill size is stored in
+$   the vlwb field.
 $ external stack/table has disjoint address space; all limits
-$   are dynamic; this handles 'external''table'STDARG.
-$ @StringTable is different; it is defined as an imported table
-$   
-$ file section -------------------------------------------- $
+$   are dynamic; this handles the external table STDARG
+$ @StringTable is different; it is defined as "imported" and
+$   is handled here
+'a'loose fill item+size>:
+   R+Dopen,0->size,(nxt: R+Dclose;
+                         R+Tconst,incr+size,:nxt;
+                         must+Titem+#,incr+size,:nxt);
+   R+Tconst,1->size;
+   must+Titem+#,1->size.
+$ repeat constant must have value betweem 1 and 10000 (hardcoded in lists.ale)$
+'a'repeater value+>list+>lineno+>item+cnt>: $ item is either constant or pointer constant $
+    is item flag+item+tvalue,repr*ITEM[item]->cnt,
+      ((1<=cnt,cnt<=10000),+;
+       warning+repeat constant out of range+tag*ITEM[list]+lineno+tag*ITEM[item]+cnt,
+         1->cnt);
+    1->cnt,error+repeat constant not defined+tag*ITEM[list]+lineno+tag*ITEM[item].
+'a'loose repeater+>list+>lineno+>size-item-cnt:
+   (R+Dstar,(RR+Tconst+cnt;
+             must+Titem+item,(get item def+item+item;+),
+               repeater value+list+lineno+item+cnt),
+      mult+size+cnt+size;+),
+   get vlwb+list+cnt,add+size+cnt+cnt,put vlwb+list+cnt.
+'a'loose initializer+>list-item-offset:
+   R+Dcolon,must+Titem+item,
+      (get item def+item+#,corrupted obj file+_title_+_line_;+),
+      get vlwb+list+offset,offset->repr*ITEM[item],
+                           list->adm*ITEM[item],
+      $ the tvalue flag is not set yet (this is relative address)
+      :loose initializer;
+   +.
+'a'loose fill-list-lineno-size:
+  must+Titem+list,(get item def+list+list,remember list+list;+),must+Tconst+lineno,
+   (nxt:R+Dpoint;
+        loose fill item+size,
+        loose repeater+list+lineno+size,
+        loose initializer+list,:nxt).
+        
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $ 
+$ virtual address space distribution
+'constant'min virtual address=0x01000000,max virtual address=0x77ffffff.
+  $ this is for 32 bits, address above 0x78000000 is for externals $ 
+'f'collect list size claims+abs>+rel>-ptr-x-y:
+  0->abs->rel,link lists->ptr,
+   (nxt:ptr=0;
+        get item def+ptr+#,get list link+ptr+ptr,:nxt;
+        get calibre+ptr+x,add+x+abs+abs,get vlwb+ptr+x,
+          get vupb+ptr+y, $ x=fill size, y=requested size $
+          (y<=0,subtr+0+y+y,max+y+x,add+x+abs+abs;
+           add+y+rel+rel,add+x+abs+abs),
+          get list link+ptr+ptr,:nxt).
+'a'set list bounds+>by-addr-ptr-cal-x-y:
+   $ compute vlwb and vupb for all lists
+   min virtual address->addr,link lists->ptr,
+   (nxt:ptr=0;
+     get item def+ptr+#,get list link+ptr+ptr,:nxt; $ not a definition
+     get vlwb+ptr+x,get vupb+ptr+y,(y<=0,subtr+0+y+y;mult+y+by+y),max+y+x, 
+       $ total size is in x$
+       get calibre+ptr+cal,add+cal+addr+y,put vlwb+ptr+y,
+       $ starting address is addr+1, last one is addr+x $
+       add+x+addr+addr,put vupb+ptr+addr,add+addr+cal+addr,
+       get list link+ptr+ptr,:nxt).
 
-'a'skip file area-list:
-  R+Dsub,(nxt:R+Dbus;
-          must+Titem+list,check list type+list,must+Tconst+#,:nxt);
-  +.
+'a'distribute virtual address-abs-rel-by:
+   collect list size claims+abs+rel,(rel>0;1->rel),
+   subtr+max virtual address+min virtual address+by,
+   ((abs<0;by<abs;subtr+by+abs+by,div+by+rel+by,by<=0),
+         error+insufficient virtual space;
+    set list bounds+by).
 
-'a'skip file entry-item:
-   $ skip file entry at the first scan 
-   $ I8 [I9 670911447 I75 208619606 I77 -1497425117 I76 -1890251351 ]2 I1 I168 .
-   $ <item> Dsub (<tag> <hash>)* Dbus 
-   $     <direction 0..3> <stdstr> <ptr> Dpoint
-   must+Titem+item,check file type+item,skip file area,
-     must+Tconst+#,must+Titem+#,must+Titem+#,must+Dpoint+#.
-
-$ EXPRESSION ============================================ $
+$ finalize pointer constants  - - - - - - - - - - - - - - - $
+$ repr: offset from the beginning (first list element has offset 1)
+$ adm:  link to list definition
+'a'set pointer value+>ptr-list-cal-lwb:
+  adm*ITEM[ptr]->list,get calibre+list+cal,get vlwb+list+lwb,
+  subtr+lwb+cal+lwb,add+lwb+repr*ITEM[ptr]+repr*ITEM[ptr],
+  set item flag+ptr+tvalue.
+'a'finalize pointer constants-ptr:
+  <<ITEM->ptr,(nxt:ptr>>>ITEM;
+  (type*ITEM[ptr]=Ipointer constant,
+    (get item def+ptr+#,corrupted obj file+_title_+_line_;+),
+    set pointer value+ptr;
+   +),
+  next+ITEM+ptr,:nxt).
+$ EXPRESSION ============================================== $
 
 'a'read expression-item-ptr:
    $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
    must+Titem+item,
-     (=type*ITEM[item]= [Iconstant;Ivariable],+;corrupted obj file+_title_+_line_),
+     (=type*ITEM[item]= [Iconstant;Ivariable;Istatic var],+;corrupted obj file+_title_+_line_),
      push EXPR+item,>>EXPRESSION->ptr,push EXPR+link expr,ptr->link expr,
      >>EXPRESSION->adm*ITEM[item],(nxt:=inpt=
      [Dpoint],next symbol,push EXPR+Dpoint;
@@ -159,7 +229,7 @@ $ DATA section ========================================== $
    (nxt:R+Dfill,skip fill,:nxt;
         R+Dexpression,read expression,:nxt;
         R+Dlist,list entry,:nxt;
-        R+Dfile,skip file entry,:nxt;
+        R+Dfile,file entry,:nxt;
         +).
 'a'skip entry:
    R+Dpoint;next symbol,:skip entry.
@@ -167,7 +237,7 @@ $ DATA section ========================================== $
    (nxt:R+Dexpression,skip entry,:nxt;
         R+Dlist,skip entry,:nxt;
         R+Dfile,skip entry,:nxt;
-        R+Dfill,skip entry,:nxt; $ !!!!!!!!!! $
+        R+Dfill,loose fill,:nxt;
         +).
 $ loose evaluation ****************************************** $
 'table'MESSAGE=(

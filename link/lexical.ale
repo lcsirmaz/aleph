@@ -19,6 +19,7 @@ $ HEAD **************************************************** $
 'variable' inpt,       $ next symbol
            inpt value. $ auxiliary value
 'p'R+>x:x=inpt,next symbol.
+'p'RR+>x+y>:x=inpt,inpt value->y,next symbol.
 'a'must+>x+y>:x=inpt,inpt value->y,next symbol;
               corrupted obj file+_title_+_line_.
 

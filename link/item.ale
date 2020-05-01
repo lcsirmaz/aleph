@@ -1,5 +1,5 @@
 $ item
-$ HEADER ************************************************ $
+$ HEADER ************************************************* $
 'pragmat'module="item".
 $ read al items from the .ice file
 
@@ -23,6 +23,8 @@ $ read al items from the .ice file
 'a'item section.
 'a'skip item section.
    $ process/skip item section of a module/main
+'a'file entry.
+   $ handles a file entry; storing all details 
 'a'check all items.
    $ check that imported tags have a definition
 
@@ -39,6 +41,9 @@ $ item flags $
 $ constant, pointer constant
   tvalue	= 0x0020, $ repr contains the final value
   teval		= 0x0040, $ constant expression is under evaluation
+$ file
+  tinfile	= 0x0020, $ direction in file declaration
+  toutfile	= 0x0040,
 $ rule flags
   rside effect	= 0x0100, $ 'a','p'
   rcan fail	= 0x0200, $ 'q','p'
@@ -69,6 +74,7 @@ $ type:  Irule      adm => formals
 $        variable   adm => expression (to be evaluated)
 $        list       adm => vlwb,vupb,calibre,ssel (+link)
 $        pointer    adm => list
+$        file       adm => (off,table,link) for string
 $ tag:   LEXT entry; data*tag is the global definition
 $ lineno:definition line in this module 
 $
@@ -94,7 +100,7 @@ $
   is item flag+item+touter,get tag data+tag*ITEM[item]+def.
 'a'convert to item:
    addmult+inpt value+<>ITEM+base item+inpt value.
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
 'constant'
   tglobal	= tpublic|timported|texternal,
   touter	= timported|texternal,
@@ -111,7 +117,7 @@ $  each formal list is stored only once (linear search)
 $ adm*list => <vlwb,vupb,calibre,ssel,link>
 $  where vlwb,vupb will be used to store size estimate and filling
 $  size
-$ 
+$ adm*file => <count,item,link>
 'a'push AUX+>x: (* x->data *)AUX.
 
 
@@ -122,7 +128,7 @@ $ compatibility ------------------------------------------ $
   "%p: doubly defined at %i and %i"     :doubly defined,
   "%p: no definition, requested at %i"  :not defined
 ).
-$ - - - - - - - - - - - - - - - - - - - - - - - - - -  $
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
 'q'stack size mismatch+>item1+>item2-x1-x2:
   (get ssel+item1+x1,get ssel+item2+x2,x1!=x2);
   (get calibre+item1+x1,get calibre+item2+x2,x1!=x2).
@@ -155,7 +161,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - -  $
   (def=0,put tag data+tag+item;
    check compatibility+tag+def+item).
 
-$ item interface ---------------------------------------- $
+$ item interface ----------------------------------------- $
 'variable'link formals=0. $ link all formals $
 
 'f'get calibre+>item+x>: calibre*AUX[adm*ITEM[item]]->x.
@@ -167,7 +173,7 @@ $ item interface ---------------------------------------- $
 'a'put vupb+>item+>x: x->vupb*AUX[adm*ITEM[item]].
 'a'put list link+>item+>x:x->link*AUX[adm*ITEM[item]].
 
-$ item section ******************************************* $
+$ item section ******************************************** $
 'q'compare formals+>p1+>p2-w:
    count*AUX[p1]=count*AUX[p2],
    width*AUX[p1]->w,width*AUX[p2]=w,(nxt:w=0;
@@ -220,7 +226,33 @@ $ item section ******************************************* $
 'a'skip item section:
    R+Dpoint;next symbol,:skip item section.
 
-$ string table ******************************************* $
+$ file entry ********************************************** $
+'f'check type+>item+>type:
+  (=type*ITEM[item]=
+   [Icharfile;Idatafile],type!=Dfile;
+   [Itable;Istack;Istatic stack],type!=Dlist;
+   +),corrupted obj file+_title_+_line_;
+  +.
+'a'file area+>ptr-list-hash:
+  R+Dsub,(nxt:R+Dbus;
+          must+Titem+list,check type+list+Dlist,must+Tconst+hash,
+          (* hash->count,list->item,0->link *)AUX, 
+          >>AUX->link*AUX[ptr],>>AUX->ptr,:nxt);
+  +.
+'a'file entry-item-ptr-x:
+   $ I8 [I9 670911447 I75 208619606 I77 -1497425117 I76 -1890251351 ]2 I1 I168 .
+   $ <item> Dsub (<tag> <hash>)* Dbus 
+   $     <direction 0..3> <stdstr> <ptr> Dpoint
+   must+Titem+item,check type+item+Dfile,
+     (* 0->count->item->link *)AUX,>>AUX->ptr->adm*ITEM[item],
+     file area+ptr,must+Tconst+x, $ direction $
+     ((x=1;x=3),set item flag+item+tinfile;+),
+     ((x=2;x=3),set item flag+item+toutfile;+),
+     must+Titem+x,x->item*AUX[ptr],  $ item, @StringTable $
+     must+Titem+x,x->count*AUX[ptr], $ pointer constant $
+     must+Dpoint+#.
+
+$ string table ******************************************** $
 $ @StringTable is defined here
 
 'a'add stdstring:
@@ -229,7 +261,7 @@ $ @StringTable is defined here
             >>AUX->adm,0->repr *)ITEM,
   put tag data+StdString+>>ITEM.
 
-$ head section ******************************************* $
+$ head section ******************************************** $
 $ each module has an ITEM entry linked through the repr field
 'variable'
    max lineno=0,   $ maximal lineno in this module
@@ -251,7 +283,7 @@ $ each module has an ITEM entry linked through the repr field
 
 'a'read definition list-n-str:
    must+Tconst+n,
-     (n>max lineno,n->max lineno;
+     (n>=max lineno,n->max lineno;
       corrupted obj file+_title_+_line_),
      must+Tstring+str,
      (* n->width,str->data *)AUX,
@@ -278,7 +310,7 @@ $ each module has an ITEM entry linked through the repr field
 'a'skip head section:
   R+Dpoint;next symbol,:skip head section.
 
-$ find position *********************************************** $
+$ find position ******************************************* $
 'f'search for line+>ptr+>old+line>+str>:
    (old<=1;old>lineno*ITEM[ptr]),0->line,Squote image->str;
    adm*ITEM[ptr]->ptr,old->line,decr+line,incr+old,
@@ -294,8 +326,7 @@ $ find position *********************************************** $
    (nxt:repr*ITEM[ptr]->nptr,((is+nptr,nptr<item),nptr->ptr,:nxt;+)),
    tag*ITEM[ptr]->module,search for line+ptr+lineno*ITEM[item]+line+str.
 
-$ check items for definition *********************************** $
-
+$ check if all items are defined ************************** $
 'a'check all items-ptr-def-main:
   <<ITEM->ptr,0->main,(nxt:ptr>>>ITEM;
   (type*ITEM[ptr]=Dtitle,1->main;type*ITEM[ptr]=Dmodule),
@@ -306,7 +337,7 @@ $ check items for definition *********************************** $
       error+not defined+tag*ITEM[ptr]+ptr),next+ITEM+ptr,:nxt;
   next+ITEM+ptr,:nxt),
   (main=1;error+no main module).
-  
+
 'root'add stdstring.
 'pragmat'endif=compile.
 'end'

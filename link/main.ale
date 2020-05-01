@@ -10,7 +10,8 @@
 'a'pass ii-ext:
    (advance base item+ext,next source+ext+#),
       skip head section,skip item section,data section ii,:pass ii;
-   +.
+   was error;
+   distribute virtual address,finalize pointer constants,final evaluation.
 
 'root'+.
 

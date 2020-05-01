@@ -9,6 +9,7 @@ void setItemFlag(int *a),clearItemFlag(int *a);
 
 void headSection(int *a),skipHeadSection(void),advanceBaseItem(int *a);
 void itemSection(void),skipItemSection(void);
+void fileEntry(void);
 void checkAllItems(void);
 
 void findItemLineno(int *a),findLineno(int*a);
@@ -18,6 +19,8 @@ void findItemLineno(int *a),findLineno(int*a);
 #define texternal	0x0010
 #define tvalue		0x0020
 #define teval		0x0040
+#define tinfile		0x0020
+#define toutfile	0x0040
 #define rsideeffect	0x0100
 #define rcanfail	0x0200
 #define rnoreturn	0x0400
