@@ -1,0 +1,247 @@
+$ HEADER ************************************************** $
+'pragmat'module="target".
+$ generating code $
+'a'open target,close target,delete target.
+   $ manipulate target files $
+'a'assign repr numbers.
+   $ assign representation number to all items
+
+$ BODY **************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("item","data","lexical","error").
+
+$ assign repr number ====================================== $
+$ repr is the next free number not assigned yet 
+'variable'next repr no=1000. $ values $
+
+'a'clear repr+>ptr-def:
+  $ this is a variable; repr*ITEM[ptr] is its initial value
+  ((get item def+ptr+def;ptr->def),is item flag+def+tvalue),
+    clear item flag+def+tvalue,clear item flag+ptr+tvalue,
+    repr*ITEM[def]->adm*ITEM[def],0->repr*ITEM[def]->repr*ITEM[ptr];
+  +.
+
+'a'assign+>ptr-def-r:
+  $ if repr*ITEM[ptr]=0 then assign a new value 
+  (get item def+ptr+def;ptr->def),repr*ITEM[def]->r,
+  (r>0;incr+next repr no,next repr no->r->repr*ITEM[def]),
+  (ptr=def;r->repr*ITEM[ptr]).
+
+'a'assign repr numbers-ptr:
+  $ assign representation numbers. variables have their
+  $  initial values
+  <<ITEM->ptr,(nxt:ptr>>>ITEM;
+   (=type*ITEM[ptr]=
+    [Ivariable;Istatic var],clear repr+ptr,assign+ptr;
+    [Irule;Itable;Istack;Istatic stack;Ichar file;Idata file],
+                            assign+ptr;
+   +),
+  next+ITEM+ptr,:nxt).
+
+$ manipulate target file ================================== $
+'charfile'TARGET="aleph.c">.
+'table'MESSAGE=(
+ "aleph.c"  :target file name,
+ "cannot create target file %p" :cannot open target
+).
+
+'a'open target:
+  open file+TARGET+/w/+MESSAGE+target file name;
+  Ferror+cannot open target+target file name.
+'a'close target:
+  close file+TARGET.
+'a'delete target:
+  close target,unlink file+MESSAGE+target file name.  
+
+$ print to TARGET file ==================================== $
+'a'print char+>ch: put char+TARGET+ch.
+
+'a'print repr+>item: $ print the representation $
+   was+ITEM+item,
+     (get item def+item+item;+),
+     (=type*ITEM[item]=
+      [Iconstant;Ipointer constant],+;print char+/S/),
+     print int+repr*ITEM[item];
+   print ptr+item.
+'a'print int+>n:
+   $ print n in decimal; min int does not end with 9
+   n=min int, print char+/-/,subtr+-1+n+n,print int1+n+/1/;
+   n<0, print char+/-/,get abs+n+n,print int1+n+/0/;
+   print int1+n+/0/.
+'a'print int1+>n+>c-q-r:
+   divrem+n+10+q+r,(q=0; print int1+q+/0/),
+        add+r+c+r, print char+r.
+'a'print str+T[]+>ptr:
+  put string+TARGET+T+ptr.
+'a'print ptr+>p:
+  was+ITEM+p,tag*ITEM[p]->p,:print ptr;
+  was+LEXT+p,get tag image+p+p,print str+LEXT+p;
+  was+MESSAGE+p,print str+MESSAGE+p;
+  +.
+
+'a'T+t[]+*+>fmt-ptr-optr:
+$ formal characters:
+$   r: item, get repr (S<value)
+$   n: newline
+$   p: pointer (LEXT)
+$   d: integer
+  >>BUFFER->optr,unpack string+t+fmt+BUFFER,add+optr+1+ptr,
+  (nxt:>>BUFFER<ptr;
+    BUFFER[ptr]!=/%/,print char+BUFFER[ptr],incr+ptr,:nxt;
+    incr+ptr,(>>BUFFER>ptr,print char+/%/;
+      (=BUFFER[ptr]=
+       [/r/],(shift affix block+*,print repr+fmt;print char+/?/),incr+ptr,:nxt;
+       [/n/],print char+newline,incr+ptr,:nxt;
+       [/d/],(shift affix block+*,print int+fmt;print char+/?/),incr+ptr,:nxt;
+       [/p/],(shift affix block+*,print ptr+fmt;print char+/?/),incr+ptr,:nxt;
+       print char+BUFFER[ptr],incr+ptr,:nxt))),
+  (shift affix block+*,print str+"[...]";+),
+  unstack to+BUFFER+optr.
+
+$ data section ******************************************** $
+$ variable:   int S1099=<initial value>; /* <tag> */
+$ list,file:
+$             #define S1101 (S1100+sizeof_LIST); /* <tag> */
+$ followed by #define _DATASIZE (S1101+sizeof_DFILE)
+$ data initialiation:
+$              void data_initialization(void){
+$                setup_table(<id>,<vlwb>,<vupb>,<cal>,<fill>);
+$                setup_dfile(<id>,0..3,<table>,<off>,<area size>);
+$                setup_dfile_aera(<id>,<list>,<hash>);
+$                setup_chfile(<id>,n,<table>,<off>);
+$                setup_external_list(<id>,char *name);
+$                setup_external_chfile(<id>,char *name);
+$                fill_lists(FILL_TABLE);
+$              }
+$ fill: int FILL_TABLE[]={
+$   <cnt        0 at the end, otherwise number of entries;
+$   <ID>        list id;
+$     <n>       n=0: the end;
+$               n<0: repeat the last block -n times
+$               start a new block of n items
+$ the FILL_TABLE can be external to be read by the fill_lists() routine.
+$
+$ rule declaration:
+$  int/void <ID>(parameters);
+$   parameters: 
+$      (int F1,int F3,int F5,int *out); "out" is for out and inout args
+$      (int F1,int *out,int cnt,int *var);  if has a vararg block
+
+$ rule declaration head *********************************** $
+$ external rules ???
+'a'rule typer+>item:
+  is item flag+item+rcan fail,T+"int %r("+item;T+"void %r("+item.
+'a'arg sep+>sep>:
+  sep=0,1->sep;print char+/,/.
+'a'out args+>out+>sep>:
+  out=0;arg sep+sep,T+"int a[%d]"+out.
+'a'rule args+>item-n-cnt-type-out-sep:
+  get number of formals+item+n,0->cnt->out->sep,
+  (nxt: cnt<n,get formal+item+cnt+type,incr+cnt,
+     ((type=Iformal out;type=Iformal inout),incr+out,:nxt;
+      type=Iformal repeat,out args+out+sep,arg sep+sep,
+               T+"int F%d,int v[])"+cnt;
+      arg sep+sep,T+"int F%d"+cnt,:nxt);
+   out args+out+sep,print char+/)/).
+$ --------------------------------------------------------- $
+
+'table'MESSAGE=(
+  "sizeof_LIST"   :sizeof list,
+  "sizeof_CHFILE" :sizeof chfile,
+  "sizeof_DFILE"  :sizeof dfile,
+  "BLOCK_TOTAL"   :block total
+).
+
+'a'var declaration+>item:
+  $ external variables are declared as well
+  T+"int %r=%d; /* %p */%n"+item+adm*ITEM[item]+tag*ITEM[item].
+'a'block declaration+>item+>prev+>sf:
+  $ list, file declaration; this defines the offset only
+  T+"#define %r ("+item,
+  (prev=0,T+"0";T+"%r+%p"+prev+sf),
+  T+") /* %p */%n"+tag*ITEM[item].
+
+'a'rule declaration+>item: $ forward declaration $
+  is item flag+item+texternal;
+  rule typer+item,rule args+item,T+"; /* %p */%n"+tag*ITEM[item].
+
+'a'data declaration-ptr-def-prev-sf:
+  0->prev->sf,<<ITEM->ptr,(nxt:ptr>>>ITEM;
+  (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
+  (=type*ITEM[ptr]=
+   [Ivariable;Istatic var],var declaration+ptr;
+   [Istack;Itable;Istatic stack],
+       block declaration+ptr+prev+sf,ptr->prev,sizeof list->sf;
+   [Icharfile],
+       block declaration+ptr+prev+sf,ptr->prev,sizeof chfile->sf;
+   [Idatafile],
+       block declaration+ptr+prev+sf,ptr->prev,sizeof dfile->sf;
+   [Irule], rule declaration+ptr;
+   +),
+   next+ITEM+ptr,:nxt),
+  (prev=0,T+"#define %p 0%n"+block total;
+          T+"#define %p (%p+%p)%n"+block total+prev+sf).
+
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+
+'a'list initialization+>kind+>item-cal-lb-up-fill:
+   is item flag+item+texternal,get calibre+item+cal,
+     T+" init_external_list(%d,%r,%d,""%p"");%n"+
+           kind+item+cal+tag*ITEM[item];
+   get calibre+item+cal,get vupb+item+up,get vlwb+item+lb,
+     get fill+item+fill,
+     T+" init_list(%d,%r,%d,%d,%d,%d);%n"+kind+item+cal+lb+up+fill.
+
+'a'charfile initialization+>item-dir-id-ptr:
+   is item flag+item+texternal,
+     T+" init_external_charfile(%r,""%p"");%n"+item+tag*ITEM[item];
+   (is item flag+item+toutfile,2->dir;0->dir),
+     (is item flag+item+tinfile,incr+dir;+),
+     get file data+item+id+ptr+#,
+     T+" init_charfile(%r,%d,%r,%r);%n"+item+dir+id+ptr.
+'f'count file area+>p+cnt>:
+   0->cnt,(nxt:p=0;incr+cnt,get file link+p+#+#,:nxt).
+'a'datafile initialization+>item-dir-id-ptr-link-cnt:
+   is item flag+item+texternal,
+     T+" init_external_dfile(%r,""%p"");%n"+item+tag*ITEM[item];
+   (is item flag+item+toutfile,2->dir;0->dir),
+     (is item flag+item+tinfile,incr+dir;+),
+     get file data+item+id+ptr+link,count file area+link+cnt,
+     T+" init_dfile(%r,%d,%r,%r,%d);%n"+item+dir+id+ptr+cnt,
+     (nxt:link=0;
+        get file link+link+cnt+id,
+        T+"   add_filearea(%r,%r,%d);%n"+item+id+cnt,:nxt).
+
+'a'data initialization-ptr-def:
+   $   lists must preceed files, so go over the items twice
+   $   init_list(0/1,<id>,calibre,lb,ub,fill size);
+   $   init_external_list(0/1,<id>,calibre,"NAME");
+   $   init_chfile(<id>,direction,<stringtable>,<stringptr>);
+   $   init_external_chfile(<id>,"NAME");
+   $   init_dfile(<id>,direction,<stringtable>,<stringptr>,number of areas);
+   $      add filearea(<id>,<table>,<hash>);
+   T+"void data_initialization(void){%n",
+   <<ITEM->ptr,(nxt:ptr>>>ITEM;
+    (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
+     (=type*ITEM[ptr]=
+       [Itable],list initialization+0+ptr;
+       [Istack;Istatic stack],list initialization+1+ptr;
+       +),
+    next+ITEM+ptr,:nxt),
+    <<ITEM->ptr,(nxt:ptr>>>ITEM;
+    (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
+     (=type*ITEM[ptr]=
+       [Icharfile],charfile initialization+ptr;
+       [Idatafile],datafile initialization+ptr;
+       +),
+      next+ITEM+ptr,:nxt),
+   T+"}%n".
+
+'a'fill initialization: +.
+   $
+
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+

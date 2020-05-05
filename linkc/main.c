@@ -6,6 +6,7 @@
 #include "item.h"
 #include "input.h"
 #include "error.h"
+#include "target.h"
 
 
 static void passi(void){
@@ -22,9 +23,9 @@ static void passii(void){
   nxt:advanceBaseItem(par);/* ext=par[0]; */
   if(nextSource(par)){skipHeadSection();skipItemSection();dataSectionII();goto nxt;}
   if(wasError()){;}
-  else{distributeVirtualAddress();finalizePointerConstants();
-       finalEvaluation();
-  /* DEBUG */printBounds();
+  else{distributeVirtualAddress();finalizePointerConstants();finalEvaluation();
+       assignReprNumbers();openTarget();dataDeclaration();
+  /* DEBUG printBounds(); */
   }
 }
 
@@ -35,6 +36,7 @@ int main(int argc,char *argv[]){
   initialize_error();
   initialize_input();
   initialize_lexical();
+  initialize_target();
   initialize_item(); /* should come after lexical() to define StdString */
   /* ---------------------- */
   passi();

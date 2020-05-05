@@ -119,6 +119,9 @@ void getVupb(int *a){/* >item + x> */
 void getVlwb(int *a){/* >item + x> */
   a[1]=AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_vlwb];
 }
+void getFill(int *a){ /* >item+ x> */
+  a[1]=AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_fill];
+}
 void getListLink(int *a){/* >item + x> */
   a[1]=AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_link];
 }
@@ -128,8 +131,46 @@ void putVupb(int *a){/* >item + >x */
 void putVlwb(int *a){/* >item + >x */
   AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_vlwb]=a[1];
 }
+void putFill(int *a){/* >item + >x */
+  AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_fill]=a[1];
+}
 void putListLink(int *a){/* >item + >x */
   AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_link]=a[1];
+}
+void getNumberOfFormals(int *a){/* >item + n> */
+  a[1]=AUX->offset[ITEM->offset[a[0]-ITEM_adm]-AUX_count];
+}
+void getFormal(int *a){/* >item + >i + type> */
+  int p;
+  p=ITEM->offset[a[0]-ITEM_adm];
+  if(a[1]>=AUX->offset[p-AUX_count]){a[2]=0;return;}
+  p++;a[2]=AUX->offset[p];nxt:if(a[1]<=0){return;}
+  if(a[2]==IformalTable||a[2]==IformalStack){p+=2;}
+  a[1]--;p++;a[2]=AUX->offset[p];goto nxt;
+}
+void getFormalCalibre(int *a){/* >item + >i + cal> */
+  int p,type;
+  p=ITEM->offset[a[0]-ITEM_adm];p++;type=AUX->offset[p];nxt:
+  if(a[1]<=0){p++;a[2]=AUX->offset[p];if(a[2]<0){a[2]=-a[2];};return;}
+  if(type==IformalTable||type==IformalStack){p+=2;}
+  a[1]--;p++;type=AUX->offset[p];goto nxt;
+}
+void getFormalSsel(int *a){/* >item+>i>+ssel> */
+  int p,type;
+  p=ITEM->offset[a[0]-ITEM_adm];p++;type=AUX->offset[p];nxt:
+  if(a[1]<=0){p+=2;a[2]=AUX->offset[p];return;}
+  if(type==IformalTable||type==IformalStack){p+=2;}
+  a[1]--;p++;type=AUX->offset[p];goto nxt;
+}
+void getFileData(int *a){/* >item+id>+ptr>+link> */
+  int p;
+  p=ITEM->offset[a[0]-ITEM_adm];a[1]=AUX->offset[p-AUX_item];
+  a[2]=AUX->offset[p-AUX_count];a[3]=AUX->offset[p-AUX_link];
+}
+void getFileLink(int *a){/* >link> + hash> + id> */
+  if(a[0]==0){a[1]=a[2]=0;}
+  else{a[1]=AUX->offset[a[0]-AUX_count];a[2]=AUX->offset[a[0]-AUX_item];
+    a[0]=AUX->offset[a[0]-AUX_link];}
 }
 /* ------------------------------------------- */
 static int compareFormals(int *a){/* >p1+>p2 */
@@ -163,10 +204,11 @@ static void storeFormalAffixes(int *a){ /* formals> */
   par[0]=old;par[1]=a[0];searchFormals(par);a[0]=par[1];
 }
 static void storeListBounds(int *a){/* bounds> */
-  int par[7];int cal,ssel;
+  int par[8];int cal,ssel;
   par[0]=Tconst;must(par);cal=par[1];must(par);ssel=par[1];
-  par[0]=STACKpar(AUX);par[1]=5;par[6-AUX_vlwb]=par[6-AUX_vupb]=0;
-  par[6-AUX_calibre]=cal;par[6-AUX_ssel]=ssel;par[6-AUX_link]=-1;
+  par[0]=STACKpar(AUX);par[1]=6;par[7-AUX_vlwb]=par[7-AUX_vupb]=
+  par[7-AUX_fill]=0;
+  par[7-AUX_calibre]=cal;par[7-AUX_ssel]=ssel;par[7-AUX_link]=-1;
   expandstack(par);a[0]=AUX->aupb;
 }
 static void checkItemID(int *a){ /* >n */
@@ -236,8 +278,9 @@ void fileEntry(void){
 /* =========================================== */
 static void addStdstring(void){
   int par[8];
-  par[0]=STACKpar(AUX);par[1]=5;par[6-AUX_vlwb]=par[6-AUX_vupb]=0;
-  par[6-AUX_calibre]=par[6-AUX_ssel]=1;par[6-AUX_link]=-1;expandstack(par);
+  par[0]=STACKpar(AUX);par[1]=6;par[7-AUX_vlwb]=par[7-AUX_vupb]=
+  par[7-AUX_fill]=0;
+  par[7-AUX_calibre]=par[7-AUX_ssel]=1;par[7-AUX_link]=-1;expandstack(par);
   par[0]=STACKpar(ITEM);par[1]=6;par[7-ITEM_flag]=tpublic;
   par[7-ITEM_type]=Itable;par[7-ITEM_lineno]=0;par[7-ITEM_tag]=StdString;
   par[7-ITEM_adm]=AUX->aupb;par[7-ITEM_repr]=0;expandstack(par);

@@ -7,13 +7,13 @@ $  expression, fill, list, file $
    finalize pointer constants.
 $ expressions are stored in the stack EXPRESSION,
 $  linked so we can walk them.
-$ expressions are evaluated twice. loose evaluation
+$ expressions are evaluated twice. Loose evaluation
 $  determines values which do not depend on pointers
-$  and limits. The second evaluation determines all
-$  final values for expressions; after that the stack
-$  can be freed.
-'a'loose evaluation.
-'a'final evaluation.
+$  and limits. Final evaluation determines all final
+$  values for expressions; after that EXPRESSION can
+$  be freed.
+'a'loose evaluation,final evaluation.
+'a'release EXPRESSION.
 
 $ BODY **************************************************** $
 'pragmat'if=compile.
@@ -22,6 +22,8 @@ $ BODY **************************************************** $
 'stack'[7]EXPRESSION.
 'a'push EXPR+>x:
   (* x->EXPRESSION *)EXPRESSION.
+'a'release EXPRESSION:
+  release+EXPRESSION.
 
 'variable'link expr=0. $link all expressions
 
@@ -94,10 +96,12 @@ $ list section ============================================ $
 'a'fix size+>x+>item:
    ((x<1;x>max stack size),warning+fix size estimator+tag*ITEM[item]+x+item;+),
    min+max stack size+x,max+1+x,subtr+0+x+x,put vupb+item+x.
-'a'get const value+>tag+>list+x>-def:
+'p'get const value+>tag+x>-def:
    is item flag+tag+tvalue,repr*ITEM[tag]->x;
    (get item def+tag+def,is item flag+def+tvalue),
-      set item flag+tag+tvalue,repr*ITEM[def]->repr*ITEM[tag]->x;
+      set item flag+tag+tvalue,repr*ITEM[def]->repr*ITEM[tag]->x.
+'a'get estimator+>tag+>list+x>:
+   get const value+tag+x;
    1->x,error+unknown estimator+tag*ITEM[list]+tag*ITEM[tag]+list.
 
 'a'loose bounds-item-etype-esize-x:
@@ -113,19 +117,21 @@ $ list section ============================================ $
      (=etype=
       [1],relative size+esize+item;
       [2],fix size+esize+item;
-      [3],get const value+esize+item+x,relative size+x+item;
-      [4],get const value+esize+item+x,fix size+x+item;
+      [3],get estimator+esize+item+x,relative size+x+item;
+      [4],get estimator+esize+item+x,fix size+x+item;
       put vupb+item+0)),
    get list link+item+item,:nxt).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $ 
 $ after loose constant evaluation go through fillings and
 $   figure out (relative) pointer constant values, and the
 $   fill size of each table/stack. Fill size is stored in
-$   the vlwb field.
+$   the "fill" field.
 $ external stack/table has disjoint address space; all limits
 $   are dynamic; this handles the external table STDARG
 $ @StringTable is different; it is defined as "imported" and
 $   is handled here
+'variable'filltable size=0.
+   $ fill table contains all fills; repeated blocks only once.
 'a'loose fill item+size>:
    R+Dopen,0->size,(nxt: R+Dclose;
                          R+Tconst,incr+size,:nxt;
@@ -134,21 +140,23 @@ $   is handled here
    must+Titem+#,1->size.
 $ repeat constant must have value betweem 1 and 10000 (hardcoded in lists.ale)$
 'a'repeater value+>list+>lineno+>item+cnt>: $ item is either constant or pointer constant $
-    is item flag+item+tvalue,repr*ITEM[item]->cnt,
-      ((1<=cnt,cnt<=10000),+;
+   get const value+item+cnt,
+      ((1<=cnt,cnt<=10000);
        warning+repeat constant out of range+tag*ITEM[list]+lineno+tag*ITEM[item]+cnt,
          1->cnt);
-    1->cnt,error+repeat constant not defined+tag*ITEM[list]+lineno+tag*ITEM[item].
+   1->cnt,error+repeat constant not defined+tag*ITEM[list]+lineno+tag*ITEM[item].
 'a'loose repeater+>list+>lineno+>size-item-cnt:
    (R+Dstar,(RR+Tconst+cnt;
              must+Titem+item,(get item def+item+item;+),
                repeater value+list+lineno+item+cnt),
-      mult+size+cnt+size;+),
-   get vlwb+list+cnt,add+size+cnt+cnt,put vlwb+list+cnt.
+      (cnt=1;add+2+filltable size+filltable size),
+      mult+size+cnt+size;
+    +),
+   get fill+list+cnt,add+size+cnt+cnt,put fill+list+cnt.
 'a'loose initializer+>list-item-offset:
    R+Dcolon,must+Titem+item,
       (get item def+item+#,corrupted obj file+_title_+_line_;+),
-      get vlwb+list+offset,offset->repr*ITEM[item],
+      get fill+list+offset,offset->repr*ITEM[item],
                            list->adm*ITEM[item],
       $ the tvalue flag is not set yet (this is relative address)
       :loose initializer;
@@ -156,7 +164,7 @@ $ repeat constant must have value betweem 1 and 10000 (hardcoded in lists.ale)$
 'a'loose fill-list-lineno-size:
   must+Titem+list,(get item def+list+list,remember list+list;+),must+Tconst+lineno,
    (nxt:R+Dpoint;
-        loose fill item+size,
+        loose fill item+size,add+size+filltable size+filltable size,
         loose repeater+list+lineno+size,
         loose initializer+list,:nxt).
         
@@ -168,7 +176,7 @@ $ virtual address space distribution
   0->abs->rel,link lists->ptr,
    (nxt:ptr=0;
         get item def+ptr+#,get list link+ptr+ptr,:nxt;
-        get calibre+ptr+x,add+x+abs+abs,get vlwb+ptr+x,
+        get calibre+ptr+x,add+x+abs+abs,get fill+ptr+x,
           get vupb+ptr+y, $ x=fill size, y=requested size $
           (y<=0,subtr+0+y+y,max+y+x,add+x+abs+abs;
            add+y+rel+rel,add+x+abs+abs),
@@ -178,7 +186,7 @@ $ virtual address space distribution
    min virtual address->addr,link lists->ptr,
    (nxt:ptr=0;
      get item def+ptr+#,get list link+ptr+ptr,:nxt; $ not a definition
-     get vlwb+ptr+x,get vupb+ptr+y,(y<=0,subtr+0+y+y;mult+y+by+y),max+y+x, 
+     get fill+ptr+x,get vupb+ptr+y,(y<=0,subtr+0+y+y;mult+y+by+y),max+y+x, 
        $ total size is in x$
        get calibre+ptr+cal,add+cal+addr+y,put vlwb+ptr+y,
        $ starting address is addr+1, last one is addr+x $

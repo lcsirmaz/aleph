@@ -5,10 +5,15 @@ $ read al items from the .ice file
 
 'a'convert to item.
    $ the item for I<idx>
-'f'get calibre+>item+x>,get ssel+>item+x>,
+'f'get calibre+>item+x>,get ssel+>item+x>,get fill+>item+x>,
    get vupb+>item+x>,get vlwb+>item+x>,get list link+>item+x>.
+'a'put vupb+>item+>x,put vlwb+>item+>x,put fill+>item+>x,
+   put list link+>item+>x.
    $ item is a list, get/set data
-'a'put vupb+>item+>x,put vlwb+>item+>x,put list link+>item+>x.
+'f'get number of formals+>item+n>,get formal+>item+>i+type>,
+   get formal calibre+>item+>i+cal>,get formal ssel+>item+>i+ssel>.
+   $ item is a rule, get number and type of formal affixes
+'f'get file data+>item+id>+ptr>+link>,get file link+>link>+hash>+id>.
 
 'q'is item flag+>item+>flag.
 'a'set item flag+>item+>flag.
@@ -72,7 +77,7 @@ $ ITEM stack --------------------------------------------- $
 'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
 $ type:  Irule      adm => formals
 $        variable   adm => expression (to be evaluated)
-$        list       adm => vlwb,vupb,calibre,ssel (+link)
+$        list       adm => vlwb,vupb,fill,calibre,ssel (+link)
 $        pointer    adm => list
 $        file       adm => (off,table,link) for string
 $ tag:   LEXT entry; data*tag is the global definition
@@ -108,18 +113,17 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
                         rtrace|rcount|rbounds.
   
 $ AUX stack ---------------------------------------------- $
-'stack'[10](vlwb,vupb,calibre=count,width=ssel=item,link=data)AUX.
+'stack'[10](vlwb,vupb,fill,calibre=count,width=ssel=item,link=data=AUX)AUX.
 $ adm*rule => <count,width,link>
 $  followed by <count> many formal types; formal lists have two
 $  additional entries: calibre and ssel; <width> is the total 
 $  width of the list
 $  each formal list is stored only once (linear search)
-$ adm*list => <vlwb,vupb,calibre,ssel,link>
-$  where vlwb,vupb will be used to store size estimate and filling
+$ adm*list => <vlwb,vupb,fill,calibre,ssel,link>
+$  where vlwb,vupb also stores size estimate,
 $  size
 $ adm*file => <count,item,link>
 'a'push AUX+>x: (* x->data *)AUX.
-
 
 $ compatibility ------------------------------------------ $
 'table'MESSAGE=(
@@ -168,16 +172,43 @@ $ item interface ----------------------------------------- $
 'f'get ssel+>item+x>: ssel*AUX[adm*ITEM[item]]->x.
 'f'get vupb+>item+x>: vupb*AUX[adm*ITEM[item]]->x.
 'f'get vlwb+>item+x>: vlwb*AUX[adm*ITEM[item]]->x.
+'f'get fill+>item+x>: fill*AUX[adm*ITEM[item]]->x.
 'f'get list link+>item+x>:link*AUX[adm*ITEM[item]]->x.
 'a'put vlwb+>item+>x: x->vlwb*AUX[adm*ITEM[item]].
 'a'put vupb+>item+>x: x->vupb*AUX[adm*ITEM[item]].
+'a'put fill+>item+>x: x->fill*AUX[adm*ITEM[item]].
 'a'put list link+>item+>x:x->link*AUX[adm*ITEM[item]].
+
+'f'get number of formals+>item+n>: count*AUX[adm*ITEM[item]]->n.
+'f'get formal+>item+>i+type>-p:
+   (adm*ITEM[item]->p,i>=count*AUX[p]),0->type;
+   incr+p,AUX[p]->type,(nxt:
+     i<=0;
+     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
+         decr+i,incr+p,AUX[p]->type,:nxt).
+'f'get formal calibre+>item+>i+cal>-p-type:
+   adm*ITEM[item]->p,incr+p,AUX[p]->type,(nxt:
+     i<=0,incr+p,AUX[p]->cal,(cal>0;subtr+0+cal+cal);
+     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
+       decr+i,incr+p,AUX[p]->type,:nxt).
+'f'get formal ssel+>item+>i+ssel>-p-type:
+  adm*ITEM[item]->p,incr+p,AUX[p]->type,(nxt:
+     i<=0,add+2+p+p,AUX[p]->ssel;
+     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
+       decr+i,incr+p,AUX[p]->type,:nxt).
+
+'f'get file data+>item+id>+ptr>+link>-p:
+  adm*ITEM[item]->p,item*AUX[p]->id,count*AUX[p]->ptr,link*AUX[p]->link.
+
+'f'get file link+>link>+hash>+id>:
+  link=0,0->id->ptr;
+  count*AUX[link]->hash,item*AUX[link]->id,link*AUX[link]->link.
 
 $ item section ******************************************** $
 'q'compare formals+>p1+>p2-w:
    count*AUX[p1]=count*AUX[p2],
    width*AUX[p1]->w,width*AUX[p2]=w,(nxt:w=0;
-     incr+p1,incr+p2,data*AUX[p1]=data*AUX[p2],decr+w,:nxt).
+     incr+p1,incr+p2,AUX[p1]=AUX[p2],decr+w,:nxt).
 
 'a'search formals+>old+>ptr>-link:
    link formals->link,
@@ -197,7 +228,7 @@ $ item section ******************************************** $
 
 'a'store list bounds+bounds>-cal-ssel:
    must+Tconst+cal,must+Tconst+ssel,
-   (* 0->vlwb->vupb,cal->calibre,ssel->ssel,-1->link *)AUX,
+   (* 0->vlwb->vupb->fill,cal->calibre,ssel->ssel,-1->link *)AUX,
    >>AUX->bounds.
 
 'f'check item ID+>ID:
@@ -256,7 +287,7 @@ $ string table ******************************************** $
 $ @StringTable is defined here
 
 'a'add stdstring:
-  (* 0->vlwb->vupb,1->calibre->ssel,-1->link *)AUX,
+  (* 0->vlwb->vupb->fill,1->calibre->ssel,-1->link *)AUX,
   (* tpublic->flag,Itable->type,0->lineno,StdString->tag,
             >>AUX->adm,0->repr *)ITEM,
   put tag data+StdString+>>ITEM.

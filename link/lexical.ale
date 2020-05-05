@@ -55,7 +55,7 @@ $ <type>
 $  I54 (item), F54 (formal), L54 (local), N54 (node)
 $ other characters: ()[] .*;:> +-/~|^
 
-'charfile'SOURCE="objfile">.   $ obj file $
+'charfile'SOURCE=>"objfile".   $ obj file $
 'a'try to open source+res>-errno:
    open file+SOURCE+/r/+LEXT+>>LEXT,0->res,next char,next symbol;
    get file error+SOURCE+errno,(errno=2,1->res;-1->res).
@@ -110,6 +110,10 @@ $ strings identify tags, sources and titles.
 $ each tag has at most one unique global definition,
 $   but can have several local definitions.
 $
+$ items in LEXt are hashed, strings with the same
+$   has value are linked throught the "next" field.
+$   the "def" field points to the global definition
+$   of this tag (global definitons are unique).
 'constant'
   HASH increment = 512. $ HASH size grows by that much
 'variable'
@@ -117,7 +121,8 @@ $
   HASH entries=1.       $ string entries in LEXT table
 'stack'[20](next,def)LEXT=
   (""            ,(0,0):Squote image,
-   "@StringTable",(0,0):StdString).
+   "@StringTable",(0,0):StdString,
+   "@root",       (0,0):Xroot).
 'stack'[1]HASH.
 
 'f'get tag data+>tag+def>:   def*LEXT[tag]->def.

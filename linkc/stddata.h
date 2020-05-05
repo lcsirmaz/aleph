@@ -86,8 +86,9 @@
 #define NODE_CALIBRE	6
 #define STDARG_CALIBRE	1
 
-#define AUX_vlwb	4
-#define AUX_vupb	3
+#define AUX_vlwb	5
+#define AUX_vupb	4
+#define AUX_fill	3
 #define AUX_count	2
 #define AUX_calibre	2
 #define AUX_width	1
@@ -95,7 +96,7 @@
 #define AUX_ssel	1
 #define AUX_link	0
 #define AUX_data	0
-#define AUX_CALIBRE	5
+#define AUX_CALIBRE	6
 
 /*--------------------------------------------------------*/
 /* add lwb,upb,calibre for all stacks */
