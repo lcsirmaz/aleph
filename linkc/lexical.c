@@ -82,7 +82,7 @@ static void readZero(int *a){/* x> */
    else{a[0]=0;}
 }
 /* strings */
-int Squoteimage,StdString;
+int Squoteimage,StdString,Sroot;
 #define HASHincrement	512
 static int HASHsize=(HASHincrement-1),
            HASHentries=1;
@@ -91,8 +91,8 @@ static void init_LEXT(void){
   int par[4];
   add_new_string("",LEXT);par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
   expandstack(par);Squoteimage=LEXT->aupb;
-  add_new_string("@StringTable",LEXT);expandstack(par);
-  StdString=LEXT->aupb;
+  add_new_string("@StringTable",LEXT);expandstack(par);StdString=LEXT->aupb;
+  add_new_string("@root",LEXT);expandstack(par);Sroot=LEXT->aupb;
 }
 /* ------------- */
 void getTagData(int *a){/* >tag+def> */
@@ -141,13 +141,14 @@ static void rehash(void){
    else{printf("rehash: block!=ptr, aborting\n");exit(10);}}
 }
 static void readString(int *a){/* x> */
-  int par[3];int n;
-  par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt:
+  int par[3];int n,obuff;
+  obuff=BUFFER->aupb;n=0;nxt:
   nextChar();if(Achar=='"'){nextChar();if(Achar=='"'){
      par[0]=Achar;extendBUFFER(par);n++;goto nxt;}
      else if(n==0){a[0]=Squoteimage;}
      else{par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
-       packstring(par);addLEXTentry(par);a[0]=par[0];}}
+       packstring(par);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
+       addLEXTentry(par);a[0]=par[0];}}
   else if(Achar==newline||Achar==endChar){corruptedObjFile(__FILE__,__LINE__);}
   else{par[0]=Achar;extendBUFFER(par);n++;goto nxt;}
 }
@@ -232,13 +233,14 @@ static void init_BOLD(void){
 }
 
 static void readBold(int *a){ /* x> */
-  int par[5];int n;
-  nextChar();par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt:
+  int par[5];int n,obuff;
+  nextChar();obuff=BUFFER->aupb;n=0;nxt:
   if(boldLetter(par)){extendBUFFER(par);n++;goto nxt;}
   else if(Achar=='\''){nextChar();}
   else{corruptedObjFile(__FILE__,__LINE__);}
   par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
-  packstring(par);a[0]=lastBOLD;nxt2:
+  packstring(par);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
+  a[0]=lastBOLD;nxt2:
   par[0]=STACKpar(BOLD);par[1]=a[0];par[2]=STACKpar(LEXT);par[3]=LEXT->aupb;
   comparestring(par);if(par[4]==0){;}
   else if(a[0]==firstBOLD){corruptedObjFile(__FILE__,__LINE__);}
@@ -247,14 +249,15 @@ static void readBold(int *a){ /* x> */
 }
 /* types */
 static void readType(int *a){ /* x> */
-  int par[5];int n;
-  nextChar();par[0]=STACKpar(BUFFER);scratch(par);n=0;nxt:
+  int par[5];int n,obuff;
+  nextChar();obuff=BUFFER->aupb;n=0;nxt:
   if(boldLetter(par)){extendBUFFER(par);n++;goto nxt;}
   else if(Achar==' '){par[0]=' ';extendBUFFER(par);n++;nextChar();goto nxt;}
   else if(Achar=='>'){nextChar();}
   else{corruptedObjFile(__FILE__,__LINE__);}
   par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
-  packstring(par);a[0]=lastTYPE;nxt2:
+  packstring(par);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
+  a[0]=lastTYPE;nxt2:
   par[0]=STACKpar(BOLD);par[1]=a[0];par[2]=STACKpar(LEXT);par[3]=LEXT->aupb,
   comparestring(par);if(par[4]==0){;}
   else if(a[0]==firstTYPE){

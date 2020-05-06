@@ -26,6 +26,9 @@ static void init_MSG(void){
 static void pushEXPR(int v){
   int par[4];par[0]=STACKpar(EXPRESSION);par[1]=1;par[2]=v;expandstack(par);
 }
+void releaseEXPRESSION(void){
+  int par[1];par[0]=STACKpar(EXPRESSION);release(par);
+}
 
 static void checkListType(int item){
   int t=ITEM->offset[item-ITEM_type];
@@ -438,9 +441,36 @@ static void finalEval(int item){
   par[2]=item;setFinalValue(par);
 }
 void finalEvaluation(void){
-  int ptr;
+  int ptr;int par[1];
   ptr=linkExpr;nxt:if(ptr==0){;}
   else{finalEval(EXPRESSION->offset[ptr]);ptr++;ptr=EXPRESSION->offset[ptr];goto nxt;}
+  linkExpr=0;par[0]=STACKpar(EXPRESSION);release(par);
+}
+/* ================================================= */
+static int nextReprNo=1000;
+static void clearReprField(int *a){/* >ptr */
+  int par[3];int def;
+  par[0]=a[0];if(getItemDef(par)){def=par[1];}else{def=a[0];}
+  par[0]=def;par[1]=tvalue;if(isItemFlag(par)){clearItemFlag(par);
+    par[0]=a[0];par[1]=tvalue;clearItemFlag(par);
+    ITEM->offset[def-ITEM_adm]=ITEM->offset[def-ITEM_repr];
+    ITEM->offset[def-ITEM_repr]=ITEM->offset[a[0]-ITEM_repr]=0;}
+}
+static void assign(int *a){/* >ptr */
+  int par[3];int def,r;
+  par[0]=a[0];if(getItemDef(par)){def=par[1];}else{def=a[0];}
+  r=ITEM->offset[def-ITEM_repr];if(r>0){;}else{nextReprNo++;
+  r=ITEM->offset[def-ITEM_repr]=nextReprNo;}
+  if(a[0]==def){;}else{ITEM->offset[a[0]-ITEM_repr]=r;}
+}
+void assignReprNumbers(void){
+  int par[1]; int ptr,t;
+  ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){return;}
+  t=ITEM->offset[ptr-ITEM_type];
+  if(t==Ivariable||t==IstaticVar){par[0]=ptr;clearReprField(par);assign(par);}
+  else if(t==Irule||t==Itable||t==Istack||t==IstaticStack||
+    t==Icharfile||t==Idatafile){par[0]=ptr;assign(par);}
+  ptr+=ITEM_CALIBRE;goto nxt;
 }
 /* ----------------------------------------------------------- */
 void initialize_data(void){

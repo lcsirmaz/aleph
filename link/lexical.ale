@@ -13,7 +13,7 @@ $ HEAD **************************************************** $
    Ipointer constant,Ichar file,Idata file,Irule,
    Iformal stack,Iformal table,Iformalfile,Iformal in,
    Iformal out,Iformal inout,Iformal repeat,Iformal shift.
-'constant'Squote image,StdString.
+'constant'Squote image,StdString,Sroot.
 
 'a'next symbol.        $ read next symbol
 'variable' inpt,       $ next symbol
@@ -122,7 +122,7 @@ $   of this tag (global definitons are unique).
 'stack'[20](next,def)LEXT=
   (""            ,(0,0):Squote image,
    "@StringTable",(0,0):StdString,
-   "@root",       (0,0):Xroot).
+   "@root",       (0,0):Sroot).
 'stack'[1]HASH.
 
 'f'get tag data+>tag+def>:   def*LEXT[tag]->def.
@@ -156,13 +156,13 @@ $   of this tag (global definitons are unique).
      (block=ptr,previous+LEXT+ptr,previous string+LEXT+ptr,:nxt;
       internal error+_title_+_line_)).
 
-'a'read string+x>-n:
-  scratch+BUFFER,0->n,
+'a'read string+x>-n-obuff:
+  >>BUFFER->obuff,0->n,
   (nxt: next char,(=char=
    [/"/],next char, $ closing quote mark
      (char=/"/,extend BUFFER+char,incr+n,:nxt;
       n=0,Squote image->x;
-      pack string+BUFFER+n+LEXT,add LEXT entry+x);
+      pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,add LEXT entry+x);
    [newline;end char],corrupted obj file+_title_+_line_;
    extend BUFFER+char,incr+n,:nxt)).
 
@@ -235,13 +235,13 @@ $ internal $
  "***"		:Dend
 ).
 
-'a'read bold+x>-n:
+'a'read bold+x>-n-obuff:
   $ read a bold symbol 'abc'
-  next char,scratch+BUFFER,0->n,
+  next char,>>BUFFER->obuff,0->n,
   (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
         char=/'/,next char;
         corrupted obj file+_title_+_line_),
-   pack string+BUFFER+n+LEXT,last BOLD->x,
+   pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,last BOLD->x,
    (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
         (n=0;
          x=first BOLD,corrupted obj file+_title_+_line_;
@@ -249,13 +249,13 @@ $ internal $
    unstack string+LEXT.
 $ TYPES *********************************** $
 $ <type>
-'a'read type+x>-n:
-  next char,scratch+BUFFER,0->n,
+'a'read type+x>-n-obuff:
+  next char,>>BUFFER->obuff,0->n,
   (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
          char=/ /,extend BUFFER+/ /,incr+n,next char,:nxt;
          char=/>/,next char;
          corrupted obj file+_title_+_line_),
-  pack string+BUFFER+n+LEXT,last TYPE->x,
+  pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,last TYPE->x,
   (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
        (n=0;
         x=first TYPE,corrupted obj file+_title_+_line_;

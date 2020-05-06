@@ -4,7 +4,6 @@
 #include "error.h"
 #include "item.h"
 #include "lexical.h"
-//#include "data.h"
 
 static int target_file_name,cannot_open_target;
 static int sizeof_list,sizeof_chfile,sizeof_dfile,block_total;
@@ -18,32 +17,16 @@ static void init_MSG(void){
   addMSG("sizeof_DFILE",sizeof_dfile);
   addMSG("BLOCK_TOTAL",block_total);
 }
-/* ================================================= */
-static int nextReprNo=1000;
-static void clearRepr(int *a){/* >ptr */
-  int par[3];int def;
-  par[0]=a[0];if(getItemDef(par)){def=par[1];}else{def=a[0];}
-  par[0]=def;par[1]=tvalue;if(isItemFlag(par)){clearItemFlag(par);
-    par[0]=a[0];par[1]=tvalue;clearItemFlag(par);
-    ITEM->offset[def-ITEM_adm]=ITEM->offset[def-ITEM_repr];
-    ITEM->offset[def-ITEM_repr]=ITEM->offset[a[0]-ITEM_repr]=0;}
+
+static int extWaitfor;
+
+#define addLEXT(x,y)	add_new_string(x,LEXT);expandstack(par);y=LEXT->aupb
+static void init_LEXT(void){
+  int par[4];
+  par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
+  addLEXT("@waitfor",extWaitfor);
 }
-static void assign(int *a){/* >ptr */
-  int par[3];int def,r;
-  par[0]=a[0];if(getItemDef(par)){def=par[1];}else{def=a[0];}
-  r=ITEM->offset[def-ITEM_repr];if(r>0){;}else{nextReprNo++;
-  r=ITEM->offset[def-ITEM_repr]=nextReprNo;}
-  if(a[0]==def){;}else{ITEM->offset[a[0]-ITEM_repr]=r;}
-}
-void assignReprNumbers(void){
-  int par[1]; int ptr,t;
-  ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){return;}
-  t=ITEM->offset[ptr-ITEM_type];
-  if(t==Ivariable||t==IstaticVar){par[0]=ptr;clearRepr(par);assign(par);}
-  else if(t==Irule||t==Itable||t==Istack||t==IstaticStack||
-    t==Icharfile||t==Idatafile){par[0]=ptr;assign(par);}
-  ptr+=ITEM_CALIBRE;goto nxt;
-}
+
 /* ------------------------------------------------ */
 void openTarget(void){
   int par[4];
@@ -111,6 +94,57 @@ static void T(char *fmt,int n,int *a){/* printf */
     else{printChar(*fmt);fmt++;goto nxt;}}
   if(n>0){printChar('[');printChar('.');printChar('.');printChar('.');printChar(']');}
 }
+/* ------------------------------------------------ */
+void targetPrelude(void){
+  int par[4];int ptr,t;
+  T("/* ALEPH TARGET FILE%n * modules: ",0,par);
+  ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){;}
+  else{t=ITEM->offset[ptr-ITEM_type];
+    if(t==Dtitle){par[0]=ITEM->offset[ptr-ITEM_tag];T(" *%p,",1,par);}
+    else if(t==Dmodule){par[0]=ITEM->offset[ptr-ITEM_tag];
+       T(" %p",1,par);}
+    ptr+=ITEM_CALIBRE;goto nxt;}
+  T("%n */%n#include \"A_lice.h\"%n%n",0,par);
+}
+static void isWaitfor(int *a){/* >ptr + >w> */
+  int par[2];
+  if(a[1]){return;}
+  par[0]=a[0];if(getItemDef(par)){a[0]=par[1];
+    par[0]=a[0];par[1]=texternal;if(isItemFlag(par)){
+      if(ITEM->offset[a[0]-ITEM_tag]==extWaitfor){a[1]=1;}}}
+}
+void targetMain(void){
+  int par[4];int ptr,head,t,w;
+  ptr=ITEM->alwb;head=0;w=0;nxt:if(ptr>ITEM->aupb){;}
+  else{t=ITEM->offset[ptr-ITEM_type];
+   if(t==Dmodule){head=ITEM->offset[ptr-ITEM_tag];}
+   else if(t==Dtitle){head=0;}
+   else if(t==Irule){par[0]=ptr;par[1]=w;isWaitfor(par);w=par[1];
+     if(head==0){;}
+     else if(Sroot!=ITEM->offset[ptr-ITEM_tag]){;}
+     else{par[0]=ptr;par[1]=head;T("a_MROOT(%r,\"%p\")%n",2,par);}}
+   ptr+=ITEM_CALIBRE;goto nxt;}
+  T("/* ********* */%n",0,par);
+  if(w){T("a_waitfor(int ID,int ptr){%n /* ... */%n}%n",0,par); }
+  T("void a_ROOT(void){%n",0,par);
+  ptr=ITEM->alwb;head=0;nxt2:if(ptr>ITEM->aupb){;}
+  else{t=ITEM->offset[ptr-ITEM_type];
+    if(t==Dmodule){head=ITEM->offset[ptr-ITEM_tag];}
+    else if(t==Dtitle){head=0;}
+    else if(t==Irule){if(head==0){;}
+      else if(Sroot!=ITEM->offset[ptr-ITEM_tag]){;}
+      else{par[0]=ptr;par[1]=head;T(" R%r(0,0); /* %p */%n",2,par);}}
+    ptr+=ITEM_CALIBRE;goto nxt2;}
+  ptr=ITEM->alwb;head=0;nxt3:if(ptr>ITEM->aupb){;}
+  else{t=ITEM->offset[ptr-ITEM_type];
+    if(t==Dmodule){head=0;}
+    else if(t==Dtitle){head=ITEM->offset[ptr-ITEM_tag];}
+    else if(t==Irule){if(head==0){;}
+      else if(Sroot!=ITEM->offset[ptr-ITEM_tag]){;}
+      else{par[0]=ptr;par[1]=head;T(" %r(); /* %p */%n",2,par);}}
+   ptr+=ITEM_CALIBRE;goto nxt3;}
+  T("}%n",0,par);
+}
 /* ************************************************ */
 static void ruleTyper(int item){
   int par[2];
@@ -124,7 +158,7 @@ static void argSep(int *a){ /* >sep> */
 static void outArgs(int *a){/* >out + >sep> */
   int par[1];
   if(a[0]==0){;}
-  else{par[0]=a[1];argSep(par);a[1]=par[0];par[0]=a[0];T("int a[%d]",1,par);}
+  else{par[0]=a[1];argSep(par);a[1]=par[0];par[0]=a[0];T("int A[%d]",1,par);}
 }
 static void ruleArgs(int item){
   int par[3];int n,cnt,type,out,sep;
@@ -132,7 +166,7 @@ static void ruleArgs(int item){
   if(cnt<n){par[0]=item;par[1]=cnt;getFormal(par);type=par[2];cnt++;
     if(type==IformalOut||type==IformalInout){out++;goto nxt;}
     else if(type==IformalRepeat){par[0]=out;par[1]=sep;outArgs(par);sep=par[1];
-       par[0]=sep;argSep(par);sep=par[0];par[0]=cnt;T("int F%d,int v[])",1,par);}
+       par[0]=sep;argSep(par);sep=par[0];T("int C,int V[])",0,par);}
     else{par[0]=sep;argSep(par);sep=par[0];par[0]=cnt;T("int F%d",1,par);goto nxt;}}
   else{par[0]=out;par[1]=sep;outArgs(par);sep=par[1];printChar(')');}
 }
@@ -155,7 +189,6 @@ static void ruleDeclaration(int item){
     T("; /* %p */%n",1,par);}
 }
 
-void dataInitialization();
 void dataDeclaration(void){
   int par[3];int ptr,prev,sf,t;
   prev=sf=0;ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){;}
@@ -170,30 +203,93 @@ void dataDeclaration(void){
    ptr+=ITEM_CALIBRE;goto nxt;}
   if(prev==0){par[0]=block_total;T("#define %p 0%n",1,par);}
   else{par[0]=block_total;par[1]=prev;par[2]=sf;T("#define %p (%r+%p)%n",3,par);}
-  dataInitialization();
+  par[0]=block_total;T("int a_DATABLOCK[%p];%n"
+    "int FILL[]={%n",1,par);
+}
+/* ------------------------------------------------ */
+static void pushBUFFER(int x){
+  int par[3];par[0]=STACKpar(BUFFER);par[1]=1;par[2]=x;expandstack(par);
+}
+static void constItem(int *a){/* v> */
+  int par[3];int t;
+  par[0]=Tconst;if(RR(par)){a[0]=par[1];return;}
+  par[0]=Titem;must(par);a[0]=par[1];
+  par[0]=a[0];if(getItemDef(par)){a[0]=par[1];}
+  t=ITEM->offset[a[0]-ITEM_type];
+  if(t==Iconstant||t==IpointerConstant){a[0]=ITEM->offset[a[0]-ITEM_repr];}
+  else{printf("constantItem, wrong type=%d\n",t);exit(23);}
+}
+static void fillItem(int *a){/* size> */
+  int par[3];par[0]=Dopen;if(R(par)){a[0]=0;nxt:
+    par[0]=Dclose;if(R(par)){;}
+    else{a[0]++;constItem(par);pushBUFFER(par[0]);goto nxt;}}
+  else{a[0]=1;constItem(par);pushBUFFER(par[0]);}
+}
+static int fillRepeater(int *a){/* rep> */
+  int par[2];par[0]=Dstar;if(R(par)){constItem(a);return 1;}
+  return 0;
+}
+static void flushBuffer(int size,int last,int ptr){
+  int par[3];
+  ptr++;if(size==0){;}else{par[0]=size;T("%d,",1,par);}nxt1:
+  if(size==0){;}else{par[0]=BUFFER->offset[ptr];T("%d,",1,par);
+    ptr++;size--;goto nxt1;}
+  if(last==0){;}else{par[0]=last;T("%d,",1,par);}nxt2:
+  if(last==0){;}else{par[0]=BUFFER->offset[ptr];T("%d,",1,par);
+   ptr++;last--;goto nxt2;}
+}
+static void skipFillInitializer(void){
+  int par[3];
+  nxt:par[0]=Dcolon;if(R(par)){par[0]=Titem;must(par);goto nxt;}
+}
+static void fillEntries(void){
+  int par[3];int list,obuff,size,last,rep;
+  par[0]=Titem;must(par);list=par[1];par[0]=Tconst;must(par);
+  par[0]=list;par[1]=ITEM->offset[list-ITEM_tag];T("%r, /* %p */%n",2,par);
+  obuff=BUFFER->aupb;size=0;nxt:
+  par[0]=Dpoint;if(R(par)){;}
+  else{fillItem(par);last=par[0];if(fillRepeater(par)){
+    rep=par[1];flushBuffer(size,last,obuff);par[0]=rep;
+    T("-%d,%n",1,par);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
+    size=0;}
+    else{size+=last;}
+    skipFillInitializer();goto nxt;}
+  flushBuffer(size,0,obuff);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
+  T("0,%n",0,par);
+}
+static void skipEntry(void){
+  int par[3];
+  nxt:par[0]=Dpoint;if(R(par)){;}else{nextSymbol();goto nxt;}
+}
+void dataSectionIII(void){
+  int par[3];
+  nxt:par[0]=Dexpression;if(R(par)){skipEntry();goto nxt;}
+  par[0]=Dlist;if(R(par)){skipEntry();goto nxt;}
+  par[0]=Dfile;if(R(par)){skipEntry();goto nxt;}
+  par[0]=Dfill;if(R(par)){fillEntries();goto nxt;}
 }
 /* ------------------------------------------------ */
 static void listInitialization(int kind,int item){
   int par[6];int cal,lb,up,fill;
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[0]=item;
-    getCalibre(par);cal=par[0];par[0]=kind;par[1]=item;par[2]=cal;
+    getCalibre(par);cal=par[1];par[0]=kind;par[1]=item;par[2]=cal;
     par[3]=ITEM->offset[item-ITEM_tag];
-    T(" init_external_list(%d,%r,%d,\"%p\");%n",4,par);}
+    T(" setup_external_list(%d,%r,%d,\"%p\");%n",4,par);}
   else{ par[0]=item;getCalibre(par);cal=par[1];getVupb(par);up=par[1];
     getVlwb(par);lb=par[1];getFill(par);fill=par[1];par[0]=kind,
     par[1]=item;par[2]=cal;par[3]=lb;par[4]=up;par[5]=fill;
-    T(" init_list(%d,%r,%d,%d,%d,%d);%n",6,par);}
+    T(" setup_list(%d,%r,%d,%d,%d,%d);%n",6,par);}
 }
 static void charfileInitialization(int item){
   int par[4];int dir,id,ptr;
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[0]=item;
     par[1]=ITEM->offset[item-ITEM_tag];
-    T(" init_external_charfile(%r,\"%p\");%n",2,par);}
+    T(" setup_external_charfile(%r,\"%p\");%n",2,par);}
   else{par[0]=item;par[1]=toutfile;if(isItemFlag(par)){dir=2;}else{dir=0;}
     par[1]=tinfile;if(isItemFlag(par)){dir++;}
     par[0]=item;getFileData(par);id=par[1];ptr=par[2];
     par[0]=item;par[1]=dir;par[2]=id;par[3]=ptr;
-    T(" init_charfile(%r,%d,%r,%r);%n",4,par);}
+    T(" setup_charfile(%r,%d,%r,%r);%n",4,par);}
 }
 static void countFileArea(int *a){/* >p + cnt> */
   int par[3];
@@ -204,13 +300,13 @@ static void datafileInitialization(int item){
   int par[5];int dir,id,ptr,link,cnt;
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[0]=item;
     par[1]=ITEM->offset[item-ITEM_tag];
-    T(" init_external_dfile(%r,\"%p\");%n",2,par);}
+    T(" setup_external_dfile(%r,\"%p\");%n",2,par);}
   else{par[0]=item;par[1]=toutfile;if(isItemFlag(par)){dir=2;}else{dir=0;}
     par[1]=tinfile;if(isItemFlag(par)){dir++;}
     par[0]=item;getFileData(par);id=par[1];ptr=par[2];link=par[3];
     par[0]=link;countFileArea(par);cnt=par[1];
     par[0]=item;par[1]=dir;par[2]=id;par[3]=ptr;par[4]=cnt;
-    T(" init_dfile(%r,%d,%r,%r,%d);%n",5,par);
+    T(" setup_dfile(%r,%d,%r,%r,%d);%n",5,par);
     nxt:if(link==0){;}
     else{par[0]=link;getFileLink(par);link=par[0];cnt=par[1];
      id=par[2];par[0]=item;par[1]=id;par[2]=cnt;
@@ -219,7 +315,7 @@ static void datafileInitialization(int item){
 
 void dataInitialization(void){
   int par[4];int ptr,t;
-  T("void data_initialization(void){%n",0,par);
+  T("-1};%nvoid data_setup(void){%n",0,par);
   ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){;}
   else{par[0]=ptr;if(getItemDef(par)&& ptr!=par[1]){ptr+=ITEM_CALIBRE;goto nxt;}
     t=ITEM->offset[ptr-ITEM_type];
@@ -232,12 +328,13 @@ void dataInitialization(void){
     if(t==Icharfile){charfileInitialization(ptr);}
     else if(t==Idatafile){datafileInitialization(ptr);}
     ptr+=ITEM_CALIBRE;goto nxt2;}
-  T("}%n",0,par);
+  T(" list_fill(FILL);%n}%n",0,par);
 }
 /* ------------------------------------------------ */
 
 void initialize_target(void){
   init_MSG();
+  init_LEXT();
 }
 
 /* EOF */

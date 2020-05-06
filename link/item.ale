@@ -201,7 +201,7 @@ $ item interface ----------------------------------------- $
   adm*ITEM[item]->p,item*AUX[p]->id,count*AUX[p]->ptr,link*AUX[p]->link.
 
 'f'get file link+>link>+hash>+id>:
-  link=0,0->id->ptr;
+  link=0,0->id->hash;
   count*AUX[link]->hash,item*AUX[link]->id,link*AUX[link]->link.
 
 $ item section ******************************************** $
@@ -333,10 +333,11 @@ $ each module has an ITEM entry linked through the repr field
   >>ITEM->base item.
   
 'a'advance base item+flag>:
-  (base item=0;repr*ITEM[base item]->base item),
-  (base item=0,first item->base item;+),
-  lineno*ITEM[base item]->max lineno,
-  flag*ITEM[base item]->flag.
+$  (base item=0;repr*ITEM[base item]->base item),
+  (base item=0,first item->base item;repr*ITEM[base item]->base item),
+  (base item=0,0->flag;
+    lineno*ITEM[base item]->max lineno,
+    flag*ITEM[base item]->flag).
 
 'a'skip head section:
   R+Dpoint;next symbol,:skip head section.
@@ -368,6 +369,8 @@ $ check if all items are defined ************************** $
       error+not defined+tag*ITEM[ptr]+ptr),next+ITEM+ptr,:nxt;
   next+ITEM+ptr,:nxt),
   (main=1;error+no main module).
+
+$ ROOT **************************************************** $
 
 'root'add stdstring.
 'pragmat'endif=compile.

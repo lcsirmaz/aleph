@@ -323,10 +323,10 @@ void headSection(int *a){
   baseItem=ITEM->aupb;
 }
 void advanceBaseItem(int *a){/* flag> */
-  if(baseItem==0){;}else{baseItem=ITEM->offset[baseItem-ITEM_repr];}
-  if(baseItem==0){baseItem=firstItem;}
-  maxLineno=ITEM->offset[baseItem-ITEM_lineno];
-  a[0]=ITEM->offset[baseItem-ITEM_flag];
+  if(baseItem==0){baseItem=firstItem;}else{baseItem=ITEM->offset[baseItem-ITEM_repr];}
+  if(baseItem==0){a[0]=0;}
+  else{ maxLineno=ITEM->offset[baseItem-ITEM_lineno];
+    a[0]=ITEM->offset[baseItem-ITEM_flag];}
 }
 void skipHeadSection(void){
   int par[3];

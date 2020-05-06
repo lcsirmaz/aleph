@@ -13,7 +13,7 @@ extern int
    IpointerConstant,Icharfile,Idatafile,Irule,
    IformalStack,IformalTable,IformalFile,IformalIn,
    IformalOut,IformalInout,IformalRepeat,IformalShift;
-extern int Squoteimage,StdString;
+extern int Squoteimage,StdString,Sroot;
 
 extern int inpt,inptValue;
 

@@ -1,17 +1,30 @@
 'pragmat'title="link".
-'pragmat'require=("input","item","data","error").
+'pragmat'require=("input","item","data","error","target").
 
 'a'pass i-ext:
+   $ collect information: items, list bounds, file areas
    was error;
    next source+0+ext,head section+ext,item section,data section,:pass i;
-   $ no more input file and no error so far 
+   $ no more input file and no error so far
+   advance base item+#,
    check all items,loose evaluation,loose bounds.
 
-'a'pass ii-ext:
-   (advance base item+ext,next source+ext+#),
+'a'pass ii:
+   $ determine fill size and relative pointer values
+   $  as now we have the repeaters' values
+   (-ext:advance base item+ext,next source+ext+#),
       skip head section,skip item section,data section ii,:pass ii;
    was error;
-   distribute virtual address,finalize pointer constants,final evaluation.
+   distribute virtual address,finalize pointer constants,final evaluation,
+   assign repr numbers.
+
+'a'pass iii:
+   $ open the target; generate data and fill section
+   open target,data declaration,
+   (nxt:(-ext: advance base item+ext,next source+ext+#),
+        skip head section,skip item section,data section iii,:nxt;
+    +),
+   data initialization,target main.
 
 'root'+.
 

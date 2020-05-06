@@ -41,9 +41,10 @@ $ programs
     ).
 
 $ standard argument,stdin,stdout
-?STDARG 'x''table'STDARG="@stdarg".
-?STDIN  'charfile'STDIN =>"stdin".
-?STDOUT 'charfile'STDOUT="stdout">.
+?STDARG   'x''table'STDARG="@stdarg".
+?STDIN    'x''charfile'STDIN="@stdin".
+?STDOUT   'x''charfile'STDOUT="@stdout".
+?wait for 'x''q'wait for+T[]+>idx="@waitfor".
 $ arithmetic functions
 ?add    'x''f'add+>x+>y+z>	 ="add".          $ x+y -> z
 ?subtr  'x''f'subtr+>x+>y+z>	 ="subtr".        $ x-y -> z

@@ -4,16 +4,15 @@ $ handle data:
 $  expression, fill, list, file $
 'a'data section,data section ii.
 'a'loose bounds,distribute virtual address,
-   finalize pointer constants.
+   finalize pointer constants,assign repr numbers.
 $ expressions are stored in the stack EXPRESSION,
 $  linked so we can walk them.
 $ expressions are evaluated twice. Loose evaluation
 $  determines values which do not depend on pointers
 $  and limits. Final evaluation determines all final
 $  values for expressions; after that EXPRESSION can
-$  be freed.
+$  be released.
 'a'loose evaluation,final evaluation.
-'a'release EXPRESSION.
 
 $ BODY **************************************************** $
 'pragmat'if=compile.
@@ -22,10 +21,6 @@ $ BODY **************************************************** $
 'stack'[7]EXPRESSION.
 'a'push EXPR+>x:
   (* x->EXPRESSION *)EXPRESSION.
-'a'release EXPRESSION:
-  release+EXPRESSION.
-
-'variable'link expr=0. $link all expressions
 
 'f'check list type+>item:
   =type*ITEM[item]=
@@ -121,7 +116,7 @@ $ list section ============================================ $
       [4],get estimator+esize+item+x,fix size+x+item;
       put vupb+item+0)),
    get list link+item+item,:nxt).
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $ 
+$ filling ================================================= $ 
 $ after loose constant evaluation go through fillings and
 $   figure out (relative) pointer constant values, and the
 $   fill size of each table/stack. Fill size is stored in
@@ -168,10 +163,11 @@ $ repeat constant must have value betweem 1 and 10000 (hardcoded in lists.ale)$
         loose repeater+list+lineno+size,
         loose initializer+list,:nxt).
         
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $ 
-$ virtual address space distribution
+$ virtual address space ************************************* $ 
+$ these values are for 32 bits word size.
+$  Addresses above 'max virtual address' are reserved for external lists
 'constant'min virtual address=0x01000000,max virtual address=0x77ffffff.
-  $ this is for 32 bits, address above 0x78000000 is for externals $ 
+
 'f'collect list size claims+abs>+rel>-ptr-x-y:
   0->abs->rel,link lists->ptr,
    (nxt:ptr=0;
@@ -200,7 +196,7 @@ $ virtual address space distribution
          error+insufficient virtual space;
     set list bounds+by).
 
-$ finalize pointer constants  - - - - - - - - - - - - - - - $
+$ finalize pointer constants ============================== $
 $ repr: offset from the beginning (first list element has offset 1)
 $ adm:  link to list definition
 'a'set pointer value+>ptr-list-cal-lwb:
@@ -214,7 +210,9 @@ $ adm:  link to list definition
     set pointer value+ptr;
    +),
   next+ITEM+ptr,:nxt).
-$ EXPRESSION ============================================== $
+$ EXPRESSIONS ********************************************* $
+   $ read expressions to the EXPRESSION stack
+'variable'link expr=0. $link all expressions
 
 'a'read expression-item-ptr:
    $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
@@ -231,8 +229,9 @@ $ EXPRESSION ============================================== $
       Dopen;Dclose],push EXPR+inpt,next symbol,:nxt;
       corrupted obj file+_title_+_line_).
 
-$ DATA section ========================================== $
-'a'data section:    $ first pass $
+$ DATA section ********************************************* $
+'a'data section:
+   $ first pass, store expressions, collect list and file data $
    was error;
    (nxt:R+Dfill,skip fill,:nxt;
         R+Dexpression,read expression,:nxt;
@@ -241,13 +240,17 @@ $ DATA section ========================================== $
         +).
 'a'skip entry:
    R+Dpoint;next symbol,:skip entry.
-'a'data section ii: $ second pass $
+'a'data section ii:
+   $ second pass; repeat constant values are known $
    (nxt:R+Dexpression,skip entry,:nxt;
         R+Dlist,skip entry,:nxt;
         R+Dfile,skip entry,:nxt;
         R+Dfill,loose fill,:nxt;
         +).
-$ loose evaluation ****************************************** $
+$ LOOSE EXPRESSION EVALUATION ******************************* $
+$ evalute expressions which do not depent on limits or 
+$  pointer constants. All extimates and repeater must have
+$  a value after this
 'table'MESSAGE=(
   "%p: constant definition refers to itself (%i)": constant refers to itself
 ).
@@ -306,8 +309,9 @@ $ loose evaluation ****************************************** $
    link expr->ptr,(nxt:ptr=0;
      loose eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt).
 
-$ final evaluation ****************************************** $
-$  *** a pointer constant MUST HAVE its tvalue flag set ***
+$ FINAL EXPRESSION EVALUATION ******************************* $
+$ evalute remaining expressions. It assumes that pointer
+$  constants have the tvalue flag 
 'f'get expr limit+>what+>item+x>:
   (get item def+item+item;+),
   (what=Dlwb,get vlwb+item+x;get vupb+item+x).
@@ -337,9 +341,40 @@ $  *** a pointer constant MUST HAVE its tvalue flag set ***
       final expr+0+v,oldptr->eptr,set final value+v+def+item.
 'a'final evaluation-ptr:
    link expr->ptr,(nxt:ptr=0;
-     final eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt).
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+     final eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt),
+   0->link expr,release+EXPRESSION.     
 
+$ ASSIGN REPR NUMBERS *************************************** $
+$ add repr numbers of items. external variable and rule
+$  items do not use the representation
+'variable'next repr no=1000. $ last number assigned $
+
+'a'clear repr field+>ptr-def:
+  $ ptr is a variable; repr*ITEM[ptr] contains the initial value
+  $ move it to the adm field (not used anymore)
+  ((get item def+ptr+def;ptr->def),is item flag+def+tvalue),
+    clear item flag+def+tvalue,clear item flag+ptr+tvalue,
+    repr*ITEM[def]->adm*ITEM[def],0->repr*ITEM[def]->repr*ITEM[ptr];
+  +.
+
+'a'assign+>ptr-def-r:
+  $ assign a new value only if repr*ITEM[ptr]=0
+  (get item def+ptr+def;ptr->def),repr*ITEM[def]->r,
+  (r>0;incr+next repr no,next repr no->r->repr*ITEM[def]),
+  (ptr=def;r->repr*ITEM[ptr]).
+
+'a'assign repr numbers-ptr:
+  $ assign representation numbers. variables have their
+  $  initial values
+  <<ITEM->ptr,(nxt:ptr>>>ITEM;
+   (=type*ITEM[ptr]=
+    [Ivariable;Istatic var],clear repr field+ptr,assign+ptr;
+    [Irule;Itable;Istack;Istatic stack;Ichar file;Idata file],
+                            assign+ptr;
+   +),
+  next+ITEM+ptr,:nxt).
+
+$ ROOT ****************************************************** $
 'root'+.
 'pragmat'endif=compile.
 'end'
