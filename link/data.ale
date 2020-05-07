@@ -166,7 +166,7 @@ $ repeat constant must have value betweem 1 and 10000 (hardcoded in lists.ale)$
 $ virtual address space ************************************* $ 
 $ these values are for 32 bits word size.
 $  Addresses above 'max virtual address' are reserved for external lists
-'constant'min virtual address=0x01000000,max virtual address=0x77ffffff.
+'constant'min virtual address=0x01000000,max virtual address=0x7f000000.
 
 'f'collect list size claims+abs>+rel>-ptr-x-y:
   0->abs->rel,link lists->ptr,

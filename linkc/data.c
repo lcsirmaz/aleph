@@ -183,7 +183,7 @@ static void looseFill(void){
     par[0]=list;looseInitializer(par);goto nxt;}
 }
 #define minVirtualAddress	0x01000000
-#define maxVirtualAddress	0x77ffffff
+#define maxVirtualAddress	0x7f000000
 static void collectListSizeClaims(int *a){/* abs> + rel> */
   int par[2];int ptr,x,y;
   a[0]=a[1]=0;ptr=linkLists;nxt:if(ptr==0){return;}

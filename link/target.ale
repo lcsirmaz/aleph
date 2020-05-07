@@ -36,7 +36,7 @@ $ print to TARGET file ==================================== $
    was+ITEM+item,
      (get item def+item+item;+),
      (=type*ITEM[item]=
-      [Iconstant;Ipointer constant],+;print char+/S/),
+      [Iconstant;Ipointer constant],+;print char+/a/,print char+/_/),
      print int+repr*ITEM[item];
    print ptr+item.
 'a'print int+>n:
@@ -88,7 +88,16 @@ $  print the head of the generated c file
   is+w;
   (get item def+ptr+ptr,is item flag+ptr+texternal,
     tag*ITEM[ptr]=ext waitfor),1->w;+.
-
+'a'proc waitfor-ptr-head:
+  T+"int a_waitfor(int F1,int F2){%n",
+  <<ITEM->ptr,0->head,(nxt:ptr>>>ITEM;
+  (=type*ITEM[ptr]=
+   [Dmodule],tag*ITEM[ptr]->head;
+   [Dtitle],0->head;
+   [Irule],(head=0;Sroot!=tag*ITEM[ptr];
+     T+" if(a_R%r(F1,F2)){return 1;}%n"+ptr);
+   +),next+ITEM+ptr,:nxt),
+   T+" return 0;%n}%n".
 'a'target main-ptr-head-w:
   $ each module has a @root which should be called
   $ to initialize them. For modules create the 
@@ -102,12 +111,14 @@ $  print the head of the generated c file
        T+"a_MROOT(%r,""%p"")%n"+ptr+head);
     +),next+ITEM+ptr,:nxt),
   $ only if the waitfor external is used 
-  T+"void a_ROOT(void){%n",<<ITEM->ptr,0->head,(nxt:ptr>>>ITEM;
+  (w=0;proc waitfor),
+  T+"void a_ROOT(void){%n a_data_setup();%n",
+       <<ITEM->ptr,0->head,(nxt:ptr>>>ITEM;
    (=type*ITEM[ptr]=
     [Dmodule],tag*ITEM[ptr]->head;
     [Dtitle],0->head;
     [Irule],(head=0;Sroot!=tag*ITEM[ptr];
-      T+" R%r(0,0); /* %p */%n"+ptr+head);
+      T+" a_R%r(0,0); /* %p */%n"+ptr+head);
     +),next+ITEM+ptr,:nxt),
   <<ITEM->ptr,0->head,(nxt:ptr>>>ITEM;
     (=type*ITEM[ptr]=
@@ -124,7 +135,7 @@ $      (int F1,int F3,int F5,int A[3]); "A" is for out and inout args
 $      (int F1,int A[3],int C,int V[]); if it has a vararg block
 
 'a'rule typer+>item:
-  is item flag+item+rcan fail,T+"int %r("+item;T+"void %r("+item.
+  is item flag+item+rcan fail,T+"static int %r("+item;T+"static void %r("+item.
 'a'arg sep+>sep>:
   sep=0,1->sep;print char+/,/.
 'a'out args+>out+>sep>:
@@ -136,7 +147,7 @@ $      (int F1,int A[3],int C,int V[]); if it has a vararg block
       type=Iformal repeat,out args+out+sep,arg sep+sep,
                T+"int C,int V[])";
       arg sep+sep,T+"int F%d"+cnt,:nxt);
-   out args+out+sep,print char+/)/).
+   (n=0,T+"void";out args+out+sep),print char+/)/).
 'a'rule declaration+>item: $ forward declaration $
   is item flag+item+texternal;
   rule typer+item,rule args+item,T+"; /* %p */%n"+tag*ITEM[item].
@@ -145,8 +156,8 @@ $ variable,list,file definition *************************** $
 $  variable:   int S1099=<initial value>; /* <tag> */
 $  list,file:  #define S1101 (S1100+sizeof_LIST); /* <tag> */
 $  followed by #define BLOCK_TOTAL (S1101+sizeof_DFILE)
-$              int DATA_BLOCK[BLOCK_TOTAL];
-$              int FILL[]={
+$              int a_DATA_BLOCK[BLOCK_TOTAL];
+$              int a_FILL[]={
 
 'table'MESSAGE=(
   "sizeof_LIST"   :sizeof list,
@@ -157,7 +168,7 @@ $              int FILL[]={
 
 'a'var declaration+>item:
   $ external variables are declared as well
-  T+"int %r=%d; /* %p */%n"+item+adm*ITEM[item]+tag*ITEM[item].
+  T+"static int %r=%d; /* %p */%n"+item+adm*ITEM[item]+tag*ITEM[item].
 'a'block declaration+>item+>prev+>sf:
   $ list, file declaration; this defines the offset only
   T+"#define %r ("+item,
@@ -180,8 +191,8 @@ $              int FILL[]={
    next+ITEM+ptr,:nxt),
   (prev=0,T+"#define %p 0%n"+block total;
           T+"#define %p (%r+%p)%n"+block total+prev+sf),
-  T+"int DATA_BLOCK[%p];%n"
-    "int FILL[]={%n"+block total.
+  T+"int a_DATA_BLOCK[%p];%n"
+    "static int a_FILL[]={%n"+block total.
 
 $ FILL table ********************************************** $
 $  array of initial values
@@ -234,11 +245,9 @@ $     n<0: repeat the previous block -n times
    
 $ DATA SETUP ********************************************** $
 $  setup struct for lists first, and then files.
-$  void data_setup(void){...}
+$  void a_data_setup(void){...}
 $   setup_list(0/1,<id>,calibre,lb,ub,fill size);
-$   setup_external_list(0/1,<id>,calibre,"NAME");
 $   setup_chfile(<id>,direction,<stringtable>,<stringptr>);
-$   setup_external_chfile/dfile(<id>,"NAME");
 $   setup_dfile(<id>,direction,<stringtable>,<stringptr>,number of areas);
 $      add_filearea(<id>,<table>,<hash>);
 
@@ -271,7 +280,7 @@ $      add_filearea(<id>,<table>,<hash>);
         T+"   add_filearea(%r,%r,%d);%n"+item+id+cnt,:nxt).
 
 'a'data initialization-ptr-def:
-   T+"-1};%n" "void data_setup(void){%n",
+   T+"-1};%n" "static void a_data_setup(void){%n",
    <<ITEM->ptr,(nxt:ptr>>>ITEM;
     (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
      (=type*ITEM[ptr]=
@@ -286,13 +295,7 @@ $      add_filearea(<id>,<table>,<hash>);
        [Idatafile],datafile initialization+ptr;
        +),
       next+ITEM+ptr,:nxt),
-   T+" list_fill(FILL);%n}%n".
-
-$ MODULE INITIALIZATION *********************************** $
-$ call the root procedure of each module before the
-$  root of the main file. Take care of 'wait for'
-
-
+   T+" a_list_fill(a_FILL);%n}%n".
 
 $ ROOT **************************************************** $
 'root'wait for+"lexical";+.

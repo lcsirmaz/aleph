@@ -53,7 +53,7 @@ static void printRepr(int item){
   par[0]=STACKpar(ITEM);par[1]=item;if(was(par)){
     par[0]=item;if(getItemDef(par)){item=par[1];}
     t=ITEM->offset[item-ITEM_type];
-    if(t==Iconstant||t==IpointerConstant){;}else{printChar('S');}
+    if(t==Iconstant||t==IpointerConstant){;}else{printChar('a');printChar('_');}
     printInt(ITEM->offset[item-ITEM_repr]);}
   else{printPtr(item);}
 }
@@ -113,6 +113,19 @@ static void isWaitfor(int *a){/* >ptr + >w> */
     par[0]=a[0];par[1]=texternal;if(isItemFlag(par)){
       if(ITEM->offset[a[0]-ITEM_tag]==extWaitfor){a[1]=1;}}}
 }
+void procWaitfor(void){
+  int par[2];int ptr,head,t;
+  par[0]=0;T("int a_waitfor(int F1,int F2){%n",0,par);
+  ptr=ITEM->alwb;head=0;nxt:if(ptr>ITEM->aupb){;}
+  else{t=ITEM->offset[ptr-ITEM_type];
+   if(t==Dmodule){head=ITEM->offset[ptr-ITEM_tag];}
+   else if(t==Dtitle){head=0;}
+   else if(t==Irule){if(head==0){;}
+     else if(Sroot!=ITEM->offset[ptr-ITEM_tag]){;}
+     else{par[0]=ptr;T(" if(a_R%r(F1,F2)){return 1;}%n",1,par);}}
+   ptr+=ITEM_CALIBRE;goto nxt;}
+  T(" return 0;%n}%n",0,par);
+}
 void targetMain(void){
   int par[4];int ptr,head,t,w;
   ptr=ITEM->alwb;head=0;w=0;nxt:if(ptr>ITEM->aupb){;}
@@ -124,16 +137,16 @@ void targetMain(void){
      else if(Sroot!=ITEM->offset[ptr-ITEM_tag]){;}
      else{par[0]=ptr;par[1]=head;T("a_MROOT(%r,\"%p\")%n",2,par);}}
    ptr+=ITEM_CALIBRE;goto nxt;}
-  T("/* ********* */%n",0,par);
-  if(w){T("a_waitfor(int ID,int ptr){%n /* ... */%n}%n",0,par); }
-  T("void a_ROOT(void){%n",0,par);
+//  T("/* ********* */%n",0,par);
+  if(w){procWaitfor(); }
+  T("void a_ROOT(void){%n a_data_setup();%n",0,par);
   ptr=ITEM->alwb;head=0;nxt2:if(ptr>ITEM->aupb){;}
   else{t=ITEM->offset[ptr-ITEM_type];
     if(t==Dmodule){head=ITEM->offset[ptr-ITEM_tag];}
     else if(t==Dtitle){head=0;}
     else if(t==Irule){if(head==0){;}
       else if(Sroot!=ITEM->offset[ptr-ITEM_tag]){;}
-      else{par[0]=ptr;par[1]=head;T(" R%r(0,0); /* %p */%n",2,par);}}
+      else{par[0]=ptr;par[1]=head;T(" a_R%r(0,0); /* %p */%n",2,par);}}
     ptr+=ITEM_CALIBRE;goto nxt2;}
   ptr=ITEM->alwb;head=0;nxt3:if(ptr>ITEM->aupb){;}
   else{t=ITEM->offset[ptr-ITEM_type];
@@ -149,8 +162,8 @@ void targetMain(void){
 static void ruleTyper(int item){
   int par[2];
   par[0]=item;par[1]=rcanfail;
-  if(isItemFlag(par)){par[0]=item;T("int %r(",1,par);}
-  else{par[0]=item;T("void %r(",1,par);}
+  if(isItemFlag(par)){par[0]=item;T("static int %r(",1,par);}
+  else{par[0]=item;T("static void %r(",1,par);}
 }
 static void argSep(int *a){ /* >sep> */
   if(a[0]==0){a[0]=1;}else{printChar(',');}
@@ -168,13 +181,14 @@ static void ruleArgs(int item){
     else if(type==IformalRepeat){par[0]=out;par[1]=sep;outArgs(par);sep=par[1];
        par[0]=sep;argSep(par);sep=par[0];T("int C,int V[])",0,par);}
     else{par[0]=sep;argSep(par);sep=par[0];par[0]=cnt;T("int F%d",1,par);goto nxt;}}
-  else{par[0]=out;par[1]=sep;outArgs(par);sep=par[1];printChar(')');}
+  else{if(n==0){T("void",0,par);}else{par[0]=out;par[1]=sep;outArgs(par);sep=par[1];}
+    printChar(')');}
 }
 /* ------------------------------------------------ */
 static void varDeclaration(int item){
   int par[3];
   par[0]=item;par[1]=ITEM->offset[item-ITEM_adm];par[2]=ITEM->offset[item-ITEM_tag];
-  T("int %r=%d; /* %p */%n",3,par);
+  T("static int %r=%d; /* %p */%n",3,par);
 }
 static void blockDeclaration(int item,int prev,int sf){
   int par[3];
@@ -204,7 +218,7 @@ void dataDeclaration(void){
   if(prev==0){par[0]=block_total;T("#define %p 0%n",1,par);}
   else{par[0]=block_total;par[1]=prev;par[2]=sf;T("#define %p (%r+%p)%n",3,par);}
   par[0]=block_total;T("int a_DATABLOCK[%p];%n"
-    "int FILL[]={%n",1,par);
+    "static int a_FILL[]={%n",1,par);
 }
 /* ------------------------------------------------ */
 static void pushBUFFER(int x){
@@ -217,7 +231,7 @@ static void constItem(int *a){/* v> */
   par[0]=a[0];if(getItemDef(par)){a[0]=par[1];}
   t=ITEM->offset[a[0]-ITEM_type];
   if(t==Iconstant||t==IpointerConstant){a[0]=ITEM->offset[a[0]-ITEM_repr];}
-  else{printf("constantItem, wrong type=%d\n",t);exit(23);}
+  else{printf("constItem, wrong type=%d\n",t);exit(23);}
 }
 static void fillItem(int *a){/* size> */
   int par[3];par[0]=Dopen;if(R(par)){a[0]=0;nxt:
@@ -315,7 +329,7 @@ static void datafileInitialization(int item){
 
 void dataInitialization(void){
   int par[4];int ptr,t;
-  T("-1};%nvoid data_setup(void){%n",0,par);
+  T("-1};%nstatic void a_data_setup(void){%n",0,par);
   ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){;}
   else{par[0]=ptr;if(getItemDef(par)&& ptr!=par[1]){ptr+=ITEM_CALIBRE;goto nxt;}
     t=ITEM->offset[ptr-ITEM_type];
@@ -328,7 +342,7 @@ void dataInitialization(void){
     if(t==Icharfile){charfileInitialization(ptr);}
     else if(t==Idatafile){datafileInitialization(ptr);}
     ptr+=ITEM_CALIBRE;goto nxt2;}
-  T(" list_fill(FILL);%n}%n",0,par);
+  T(" a_list_fill(a_FILL);%n}%n",0,par);
 }
 /* ------------------------------------------------ */
 

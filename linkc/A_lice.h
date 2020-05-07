@@ -21,18 +21,20 @@ typedef struct {
 #include <stdio.h>
 typedef struct {
   unsigned openflag;	// how was it opened
-  int fileError;
-  FILE *f;
+  int fileError;	// last file error
+  int st1,st2;		// string pointers
+  FILE *f;		// stream handle
   int aheadchar;	// look ahead char
 } a_CHARFILE;
 
 typedef struct {
-  int lwb,upb,hash;	// lower, upper bound, hash
+  int lwb,upb,data;	// lower, upper bound, data
 } a_AREA;
 #define a_MAXIMAL_AREA	32
 typedef struct {
   unsigned openflag;	// how was it opened
   int fileError;	// last file error
+  int st1,st2;		// string pointers
   int fhandle;		// zero if not opened
   int fpos;		// filepos
   unsigned iflag;	// pointer/numerical flag
@@ -53,33 +55,33 @@ extern int a_DATABLOCK[];
 #define to_CHFILE(x)	((a_CHARFILE*)(a_DATABLOCK+(x)))
 
 /* routines handling initialization */
-extern int ext_list_virtual_start;
 int a_extstrcmp(int table,int off,const char *str);
   /* compare the ALEPH string with the one given as the last argument */
 void a_fatal(const char *m1,const char* m2);
-  /* fatal error; print both strings before aborting */
+  /* fatal error; print both strings to stderr and abort */
 void setup_list(int kind,int ID,int cal,int lb,int up,int fill);
-void setup_external_list(int kind,int ID,int cal,const char *name);
 void setup_charfile(int ID,int dir,int sID,int soff);
-void setup_external_charfile(int ID,const char *name);
 void setup_dfile(int ID,int dir,int sID,int soff,int narea);
-void setup_external_dfile(int ID,const char*name);
 void add_filearea(int ID,int aID,int hash);
 
-void list_fill(int *fill);
+void a_list_fill(int *fill);
 
 /* the waitfor() routine calls all roots to check if it finished
  * initialization. x is the ID, y is a string to be checked.
- * return 0 if OK, 1 if this was not for it.
+ * return 1 if OK and 0 if this was not for this module.
  */
 #define a_MROOT(x,y)					\
-int R##x(int table,int off){				\
+int a_R##x(int table,int off){				\
  static int working=0;					\
- if(off!=0 && a_extstrcmp(table,off,y)!=0){ return 1;}	\
+ if(off!=0 && a_extstrcmp(table,off,y)!=0){ return 0;}	\
  if(working==0){working=2; x(); working=1;}		\
  else if(working!=1){a_fatal("recursive call",y);}	\
- return 0;						\
+ return 1;						\
 }
+/* global variables: command-line arguments;
+  virtual address for external lists */
+extern int a_argc; extern char *a_argv[];
+extern int a_extlist_virtual;
 
 #endif
 /* EOF */

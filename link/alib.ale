@@ -44,12 +44,12 @@ $ standard argument,stdin,stdout
 ?STDARG   'x''table'STDARG="@stdarg".
 ?STDIN    'x''charfile'STDIN="@stdin".
 ?STDOUT   'x''charfile'STDOUT="@stdout".
-?wait for 'x''q'wait for+T[]+>idx="@waitfor".
+?wait for 'x''q'wait for+T[]+>p="@waitfor".
 $ arithmetic functions
 ?add    'x''f'add+>x+>y+z>	 ="add".          $ x+y -> z
 ?subtr  'x''f'subtr+>x+>y+z>	 ="subtr".        $ x-y -> z
 ?mult   'x''f'mult+>x+>y+z>	 ="mult".         $ x*y -> z
-?addmult'x''f'addmult+>x+>y+>z+u> ="addmult".      $ x*y+z -> y
+?addmult'x''f'addmult+>x+>y+>z+u>="addmult".      $ x*y+z -> y
 ?div    'x''f'div+>x+>y+z>	 ="div".          $ x/y -> z
 ?divrem 'x''f'divrem+>x+>y+z>+u> ="divrem".       $ x/y -> z, x%y -> u
 ?incr   'x''f'incr+>x>		 ="incr".         $ x++

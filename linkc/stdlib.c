@@ -273,7 +273,7 @@ void Aputchar(int *a){
   if(getfl_data(ch)){ch->fileError=ENOCHARFILE; return;}
   if(!ch->f){ ch->fileError=ENOTOPENED; return;}
   if(!getfl_rw(ch)){ ch->fileError=EWRONGTYPE; return; }
-  if(a[1]<0 || a[0]>maxchar){ch->fileError=EWRONGVALUE; return; }
+  if(a[1]<0 || a[1]>maxchar){ch->fileError=EWRONGVALUE; return; }
   ch->fileError=0; // assume no error
   if(a[1]<0x80){ if(putc(a[1],ch->f)<0)ch->fileError=errno; return; }
   if(a[1]<0x800){ if(putc(0xC0|(a[1]>>6),ch->f) <0 ||
