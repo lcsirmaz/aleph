@@ -82,7 +82,7 @@ static void readZero(int *a){/* x> */
    else{a[0]=0;}
 }
 /* strings */
-int Squoteimage,StdString,Sroot;
+int Squoteimage;
 #define HASHincrement	512
 static int HASHsize=(HASHincrement-1),
            HASHentries=1;
@@ -91,8 +91,6 @@ static void init_LEXT(void){
   int par[4];
   add_new_string("",LEXT);par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
   expandstack(par);Squoteimage=LEXT->aupb;
-  add_new_string("@StringTable",LEXT);expandstack(par);StdString=LEXT->aupb;
-  add_new_string("@root",LEXT);expandstack(par);Sroot=LEXT->aupb;
 }
 /* ------------- */
 void getTagData(int *a){/* >tag+def> */
@@ -308,8 +306,9 @@ void nextSymbol(void){
 
 void initialize_lexical(void){
   init_LEXT();init_BOLD();
-  rehash();
+//  rehash();
 }
+void rehash_lexical(void){rehash();}
 
 
 /* EOF */

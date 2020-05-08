@@ -3,9 +3,18 @@ $ HEADER ************************************************** $
 $ generating code $
 'a'open target,close target,delete target.
    $ manipulate target files $
-'a'target prelude,target main.
-'a'data declaration,data section iii,data initialization.
-
+'a'target prelude.
+   $ header -- show modules and the main file marked by * $
+'a'data declaration.
+   $ data declaration and rule prototypes. Define stack, table,
+   $  file offsets.
+'a'data initialization.
+   $ stack, table, and file structure initialization routines
+'a'fill table head,fill table tail,data section iii.
+   $ stack and table filling 
+'a'target main.
+   $ generate 'wait for' external; call module roots, and
+   $  the main root
 $ BODY **************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("item","data","lexical","error").
@@ -19,8 +28,8 @@ $ manipulate target file ********************************** $
 
 $ seme externals 
 'stack'(next,def)LEXT=(
-   "@waitfor",(0,0):ext waitfor
-).
+   "@root"    ,(0,0):Sroot,
+   "a_waitfor",(0,0):ext waitfor ).
 
 'a'open target:
   open file+TARGET+/w/+MESSAGE+target file name;
@@ -75,7 +84,7 @@ $   d: integer
   unstack to+BUFFER+optr.
 
 $ prelude ************************************************* $
-$  print the head of the generated c file
+$  head of the generated c file, show module names
 'a'target prelude-ptr:
   T+"/* ALEPH TARGET FILE%n% * modules:",
   <<ITEM->ptr,(nxt:ptr>>>ITEM;
@@ -84,11 +93,24 @@ $  print the head of the generated c file
     [Dmodule],T+" %p"+tag*ITEM[ptr];
     +),next+ITEM+ptr,:nxt),
   T+"%n */%n#include ""A_lice.h""%n%n".
+$ main root *********************************************** $
+$  generate the 'wait for' external rule.
+$     for each module, a_MROOT() generates a procedure which
+$     a) checks if it was waiting for;
+$     b) if yes, has been executed;
+$     c) if not, executes the module's root
+$     d) if just executing, aborts the programs
+$    rule 'wait for' just calls all these procedures until
+$     some returns true (or aborts).
+$  a_ROOT() calls initialization, all module roots, and
+$    the main root.
 'f'is waitfor+>ptr+>w>:
+  $ check if the 'wait for' external has been called
   is+w;
   (get item def+ptr+ptr,is item flag+ptr+texternal,
     tag*ITEM[ptr]=ext waitfor),1->w;+.
 'a'proc waitfor-ptr-head:
+  $ create the external 'wait for' rule
   T+"int a_waitfor(int F1,int F2){%n",
   <<ITEM->ptr,0->head,(nxt:ptr>>>ITEM;
   (=type*ITEM[ptr]=
@@ -99,10 +121,8 @@ $  print the head of the generated c file
    +),next+ITEM+ptr,:nxt),
    T+" return 0;%n}%n".
 'a'target main-ptr-head-w:
-  $ each module has a @root which should be called
-  $ to initialize them. For modules create the 
-  $ "module root"; the waitfor() external, and the
-  $ main root
+  $ for each module create a rule which executes
+  $  the module root if it was called for
   <<ITEM->ptr,0->head,0->w,(nxt:ptr>>>ITEM;
    (=type*ITEM[ptr]=
     [Dmodule],tag*ITEM[ptr]->head;
@@ -110,8 +130,10 @@ $  print the head of the generated c file
     [Irule],is waitfor+ptr+w,(head=0;Sroot!=tag*ITEM[ptr];
        T+"a_MROOT(%r,""%p"")%n"+ptr+head);
     +),next+ITEM+ptr,:nxt),
-  $ only if the waitfor external is used 
+  $ generate 'wait for' if this external is used 
   (w=0;proc waitfor),
+  $ procedure a_ROOT calls initialization and the
+  $  root of each module, then the main root
   T+"void a_ROOT(void){%n a_data_setup();%n",
        <<ITEM->ptr,0->head,(nxt:ptr>>>ITEM;
    (=type*ITEM[ptr]=
@@ -129,13 +151,18 @@ $  print the head of the generated c file
     +),next+ITEM+ptr,:nxt),
   T+"}%n".
 $ rule declaration head *********************************** $
-$  int/void <ID>(parameters);
-$   parameters: 
-$      (int F1,int F3,int F5,int A[3]); "A" is for out and inout args
-$      (int F1,int A[3],int C,int V[]); if it has a vararg block
+$  generate forward declaration for rules with standard call
+$  external rules with pidgin call are not prototypes (they
+$  are #define's)
+$  static/extern int/void <ID>(parameters); where parameters:
+$    (int F1,int F3,int F5,int A[3]) "A" is for out and inout args
+$    (int F1,int A[3],int C,int V[]) if it has a vararg block
 
 'a'rule typer+>item:
   is item flag+item+rcan fail,T+"static int %r("+item;T+"static void %r("+item.
+'a'external rule typer+>item:
+  is item flag+item+rcan fail,T+"extern int %p("+tag*ITEM[item];
+  T+"extern void %p("+tag*ITEM[item].
 'a'arg sep+>sep>:
   sep=0,1->sep;print char+/,/.
 'a'out args+>out+>sep>:
@@ -148,16 +175,23 @@ $      (int F1,int A[3],int C,int V[]); if it has a vararg block
                T+"int C,int V[])";
       arg sep+sep,T+"int F%d"+cnt,:nxt);
    (n=0,T+"void";out args+out+sep),print char+/)/).
-'a'rule declaration+>item: $ forward declaration $
-  is item flag+item+texternal;
-  rule typer+item,rule args+item,T+"; /* %p */%n"+tag*ITEM[item].
+'q'is standard external+>item-x:
+  $ check if the string starts with a letter
+  get tag image+tag*ITEM[item]+x,string elem+LEXT+x+0+x,
+    (=x=[/a/:/z/;/A/:/Z/],+;-).
 
-$ variable,list,file definition *************************** $
-$  variable:   int S1099=<initial value>; /* <tag> */
+$ data declaration ***************************************** $
+$ apart from rule prototypes, variables, list, files are
+$ defined.
+$  variable:   static int S1099=<initial value>; /* <tag> */
 $  list,file:  #define S1101 (S1100+sizeof_LIST); /* <tag> */
-$  followed by #define BLOCK_TOTAL (S1101+sizeof_DFILE)
-$              int a_DATA_BLOCK[BLOCK_TOTAL];
-$              int a_FILL[]={
+$ external
+$  variable:   extern int XXXX;
+$  constant:   extern int XXXX;
+$  list:       extern void XXXX(int,int); /* initializer */
+$  file:       extern void XXXX(int);     /* initializer */
+$ an external constant can be a procedure call or a global
+$  variable, but not a #define value.
 
 'table'MESSAGE=(
   "sizeof_LIST"   :sizeof list,
@@ -166,19 +200,29 @@ $              int a_FILL[]={
   "BLOCK_TOTAL"   :block total
 ).
 
+'p'external plain declaration+>item:
+  $ variable or constant; prototye definition
+  is item flag+item+texternal,T+"extern int %p;%n"+tag*ITEM[item].
 'a'var declaration+>item:
-  $ external variables are declared as well
+  external plain declaration+item;
   T+"static int %r=%d; /* %p */%n"+item+adm*ITEM[item]+tag*ITEM[item].
 'a'block declaration+>item+>prev+>sf:
   $ list, file declaration; this defines the offset only
   T+"#define %r ("+item,
   (prev=0,T+"0";T+"%r+%p"+prev+sf),
-  T+") /* %p */%n"+tag*ITEM[item].
-
+  T+") /* %p */%n"+tag*ITEM[item],
+  (is item flag+item+texternal,
+    T+"extern void %p(int,int);%n"+tag*ITEM[item];+).
+'a'rule declaration+>item: $ forward declaration $
+  is item flag+item+texternal,
+    (is standard external+item,external rule typer+item,
+        rule args+item,T+";%n";+);
+  rule typer+item,rule args+item,T+"; /* %p */%n"+tag*ITEM[item].
 'a'data declaration-ptr-def-prev-sf:
   0->prev->sf,<<ITEM->ptr,(nxt:ptr>>>ITEM;
   (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
   (=type*ITEM[ptr]=
+   [Iconstant],(external plain declaration+ptr;+);
    [Ivariable;Istatic var],var declaration+ptr;
    [Istack;Itable;Istatic stack],
        block declaration+ptr+prev+sf,ptr->prev,sizeof list->sf;
@@ -191,16 +235,21 @@ $              int a_FILL[]={
    next+ITEM+ptr,:nxt),
   (prev=0,T+"#define %p 0%n"+block total;
           T+"#define %p (%r+%p)%n"+block total+prev+sf),
-  T+"int a_DATA_BLOCK[%p];%n"
-    "static int a_FILL[]={%n"+block total.
+  T+"int a_DATA_BLOCK[%p]; /* stack, table, charfile, datafile */%n"
+    +block total.
 
 $ FILL table ********************************************** $
-$  array of initial values
-$   -1/id;
-$     n=0: last item
+$  generate the fill table with all fillings. 
+$   where: list id, or -1, followed by a sequence of blocks
+$     n=0: last block
 $     n>0: block of n items
 $     n<0: repeat the previous block -n times
 'a'push BUFFER+>x: (* x->BUFFER *)BUFFER.
+
+'a'fill table head:
+  T+"static int a_FILL[]={ /* fill table */%n".
+'a'fill table tail:
+  T+"-1}; /* fill table */%n".
 
 'a'const item+v>:
   RR+Tconst+v;
@@ -244,12 +293,16 @@ $     n<0: repeat the previous block -n times
         +).
    
 $ DATA SETUP ********************************************** $
-$  setup struct for lists first, and then files.
-$  void a_data_setup(void){...}
+$  setup list and file data structures. As file area uses
+$    list bounds, lists should come first. Add external list
+$    and file initializations. Call list_FILL which adds
+$    all fillings.
+$  void a_data_setup(void){ ... }
 $   setup_list(0/1,<id>,calibre,lb,ub,fill size);
 $   setup_chfile(<id>,direction,<stringtable>,<stringptr>);
 $   setup_dfile(<id>,direction,<stringtable>,<stringptr>,number of areas);
 $      add_filearea(<id>,<table>,<hash>);
+$
 
 'a'list initialization+>kind+>item-cal-lb-up-fill:
    is item flag+item+texternal,get calibre+item+cal,
@@ -257,7 +310,8 @@ $      add_filearea(<id>,<table>,<hash>);
            kind+item+cal+tag*ITEM[item];
    get calibre+item+cal,get vupb+item+up,get vlwb+item+lb,
      get fill+item+fill,
-     T+" setup_list(%d,%r,%d,%d,%d,%d);%n"+kind+item+cal+lb+up+fill.
+     T+" setup_list(%d,%r,%d,%d,%d,%d); /* %p */%n"
+        +kind+item+cal+lb+up+fill+tag*ITEM[item].
 
 'a'charfile initialization+>item-dir-id-ptr:
    is item flag+item+texternal,
@@ -265,7 +319,8 @@ $      add_filearea(<id>,<table>,<hash>);
    (is item flag+item+toutfile,2->dir;0->dir),
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr+#,
-     T+" setup_charfile(%r,%d,%r,%r);%n"+item+dir+id+ptr.
+     T+" setup_charfile(%r,%d,%r,%r); /* %p */%n"
+        +item+dir+id+ptr+tag*ITEM[item].
 'f'count file area+>p+cnt>:
    0->cnt,(nxt:p=0;incr+cnt,get file link+p+#+#,:nxt).
 'a'datafile initialization+>item-dir-id-ptr-link-cnt:
@@ -274,13 +329,13 @@ $      add_filearea(<id>,<table>,<hash>);
    (is item flag+item+toutfile,2->dir;0->dir),
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr+link,count file area+link+cnt,
-     T+" setup_dfile(%r,%d,%r,%r,%d);%n"+item+dir+id+ptr+cnt,
+     T+" setup_dfile(%r,%d,%r,%r,%d); /* %p */%n"+item+dir+id+ptr+cnt+tag*ITEM[item],
      (nxt:link=0;
         get file link+link+cnt+id,
         T+"   add_filearea(%r,%r,%d);%n"+item+id+cnt,:nxt).
 
 'a'data initialization-ptr-def:
-   T+"-1};%n" "static void a_data_setup(void){%n",
+   T+"static void a_data_setup(void){%n",
    <<ITEM->ptr,(nxt:ptr>>>ITEM;
     (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
      (=type*ITEM[ptr]=

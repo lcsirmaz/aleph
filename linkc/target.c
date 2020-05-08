@@ -18,13 +18,14 @@ static void init_MSG(void){
   addMSG("BLOCK_TOTAL",block_total);
 }
 
-static int extWaitfor;
+static int extWaitfor,Sroot;
 
 #define addLEXT(x,y)	add_new_string(x,LEXT);expandstack(par);y=LEXT->aupb
 static void init_LEXT(void){
   int par[4];
   par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
-  addLEXT("@waitfor",extWaitfor);
+  addLEXT("@root",Sroot);
+  addLEXT("a_waitfor",extWaitfor);
 }
 
 /* ------------------------------------------------ */
@@ -100,7 +101,7 @@ void targetPrelude(void){
   T("/* ALEPH TARGET FILE%n * modules: ",0,par);
   ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){;}
   else{t=ITEM->offset[ptr-ITEM_type];
-    if(t==Dtitle){par[0]=ITEM->offset[ptr-ITEM_tag];T(" *%p,",1,par);}
+    if(t==Dtitle){par[0]=ITEM->offset[ptr-ITEM_tag];T(" *%p",1,par);}
     else if(t==Dmodule){par[0]=ITEM->offset[ptr-ITEM_tag];
        T(" %p",1,par);}
     ptr+=ITEM_CALIBRE;goto nxt;}
@@ -165,6 +166,13 @@ static void ruleTyper(int item){
   if(isItemFlag(par)){par[0]=item;T("static int %r(",1,par);}
   else{par[0]=item;T("static void %r(",1,par);}
 }
+static void externalRuleTyper(int item){
+  int par[2];
+  par[0]=item;par[1]=rcanfail;
+  if(isItemFlag(par)){par[0]=ITEM->offset[item-ITEM_tag];
+    T("extern int %p(",1,par);}
+  else{par[0]=ITEM->offset[item-ITEM_tag];T("extern void %p(",1,par);}
+}
 static void argSep(int *a){ /* >sep> */
   if(a[0]==0){a[0]=1;}else{printChar(',');}
 }
@@ -184,21 +192,42 @@ static void ruleArgs(int item){
   else{if(n==0){T("void",0,par);}else{par[0]=out;par[1]=sep;outArgs(par);sep=par[1];}
     printChar(')');}
 }
+static int isStandardExternal(int item){
+  int par[4];int x;
+  par[0]=ITEM->offset[item-ITEM_tag];getTagImage(par);x=par[1];
+  par[0]=STACKpar(LEXT);par[1]=x;par[2]=0;if(stringelem(par)){
+    x=par[3];if(('a'<=x&&x<='z')||('A'<=x&&x<='Z')){return 1;}}
+  return 0;
+}
 /* ------------------------------------------------ */
+static int externalPlainDeclaration(int item){
+  int par[2];
+  par[0]=item;par[1]=texternal;if(isItemFlag(par)){
+    par[0]=ITEM->offset[item-ITEM_tag];T("extern int %p;%n",1,par);
+    return 1;}
+  else{ return 0;}
+}
+
 static void varDeclaration(int item){
   int par[3];
-  par[0]=item;par[1]=ITEM->offset[item-ITEM_adm];par[2]=ITEM->offset[item-ITEM_tag];
-  T("static int %r=%d; /* %p */%n",3,par);
+  if(externalPlainDeclaration(item)){;}
+  else{par[0]=item;par[1]=ITEM->offset[item-ITEM_adm];par[2]=ITEM->offset[item-ITEM_tag];
+    T("static int %r=%d; /* %p */%n",3,par);}
 }
 static void blockDeclaration(int item,int prev,int sf){
   int par[3];
   par[0]=item;T("#define %r (",1,par);
   if(prev==0){T("0",0,par);}else {par[0]=prev;par[1]=sf;T("%r+%p",2,par);}
   par[0]=ITEM->offset[item-ITEM_tag];T(") /* %p */%n",1,par);
+  par[0]=item;par[1]=texternal;if(isItemFlag(par)){
+    par[0]=ITEM->offset[item-ITEM_tag];
+    T("extern void %p(int,int);%n",1,par);}
 }
 static void ruleDeclaration(int item){
   int par[2];
-  par[0]=item;par[1]=texternal;if(isItemFlag(par)){;}
+  par[0]=item;par[1]=texternal;if(isItemFlag(par)){
+    if(isStandardExternal(item)){externalRuleTyper(item);
+      ruleArgs(item);T(";%n",0,par);}}
   else{ ruleTyper(item);ruleArgs(item);par[0]=ITEM->offset[item-ITEM_tag];
     T("; /* %p */%n",1,par);}
 }
@@ -208,7 +237,8 @@ void dataDeclaration(void){
   prev=sf=0;ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){;}
   else{par[0]=ptr;if(getItemDef(par)&& ptr!=par[1]){ptr+=ITEM_CALIBRE;goto nxt;}
    t=ITEM->offset[ptr-ITEM_type];
-   if(t==Ivariable||t==IstaticVar){varDeclaration(ptr);}
+   if(t==Iconstant){externalPlainDeclaration(ptr);}
+   else if(t==Ivariable||t==IstaticVar){varDeclaration(ptr);}
    else if(t==Istack||t==Itable||t==IstaticStack){
      blockDeclaration(ptr,prev,sf);prev=ptr;sf=sizeof_list;}
    else if(t==Icharfile){blockDeclaration(ptr,prev,sf);prev=ptr;sf=sizeof_chfile;}
@@ -217,12 +247,17 @@ void dataDeclaration(void){
    ptr+=ITEM_CALIBRE;goto nxt;}
   if(prev==0){par[0]=block_total;T("#define %p 0%n",1,par);}
   else{par[0]=block_total;par[1]=prev;par[2]=sf;T("#define %p (%r+%p)%n",3,par);}
-  par[0]=block_total;T("int a_DATABLOCK[%p];%n"
-    "static int a_FILL[]={%n",1,par);
+  par[0]=block_total;T("int a_DATABLOCK[%p];%n",1,par);
 }
 /* ------------------------------------------------ */
 static void pushBUFFER(int x){
   int par[3];par[0]=STACKpar(BUFFER);par[1]=1;par[2]=x;expandstack(par);
+}
+void fillTableHead(void){
+  int par[1];T("static int a_FILL[]={ /* fill table */%n",0,par);
+}
+void fillTableTail(void){
+  int par[1];T("-1}; /* fill table */%n",0,par);
 }
 static void constItem(int *a){/* v> */
   int par[3];int t;
@@ -263,7 +298,7 @@ static void fillEntries(void){
   obuff=BUFFER->aupb;size=0;nxt:
   par[0]=Dpoint;if(R(par)){;}
   else{fillItem(par);last=par[0];if(fillRepeater(par)){
-    rep=par[1];flushBuffer(size,last,obuff);par[0]=rep;
+    rep=par[0];flushBuffer(size,last,obuff);par[0]=rep;
     T("-%d,%n",1,par);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
     size=0;}
     else{size+=last;}
@@ -284,18 +319,19 @@ void dataSectionIII(void){
 }
 /* ------------------------------------------------ */
 static void listInitialization(int kind,int item){
-  int par[6];int cal,lb,up,fill;
+  int par[7];int cal,lb,up,fill;
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[0]=item;
-    getCalibre(par);cal=par[1];par[0]=kind;par[1]=item;par[2]=cal;
-    par[3]=ITEM->offset[item-ITEM_tag];
-    T(" setup_external_list(%d,%r,%d,\"%p\");%n",4,par);}
+    getCalibre(par);cal=par[1];
+    par[0]=ITEM->offset[item-ITEM_tag];par[1]=item;par[2]=cal;
+    T(" %p(%r,%d);%n",3,par);}
   else{ par[0]=item;getCalibre(par);cal=par[1];getVupb(par);up=par[1];
     getVlwb(par);lb=par[1];getFill(par);fill=par[1];par[0]=kind,
     par[1]=item;par[2]=cal;par[3]=lb;par[4]=up;par[5]=fill;
-    T(" setup_list(%d,%r,%d,%d,%d,%d);%n",6,par);}
+    par[6]=ITEM->offset[item-ITEM_tag];
+    T(" setup_list(%d,%r,%d,%d,%d,%d); /* %p */%n",7,par);}
 }
 static void charfileInitialization(int item){
-  int par[4];int dir,id,ptr;
+  int par[5];int dir,id,ptr;
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[0]=item;
     par[1]=ITEM->offset[item-ITEM_tag];
     T(" setup_external_charfile(%r,\"%p\");%n",2,par);}
@@ -303,7 +339,8 @@ static void charfileInitialization(int item){
     par[1]=tinfile;if(isItemFlag(par)){dir++;}
     par[0]=item;getFileData(par);id=par[1];ptr=par[2];
     par[0]=item;par[1]=dir;par[2]=id;par[3]=ptr;
-    T(" setup_charfile(%r,%d,%r,%r);%n",4,par);}
+    par[4]=ITEM->offset[item-ITEM_tag];
+    T(" setup_charfile(%r,%d,%r,%r);/* %p */%n",5,par);}
 }
 static void countFileArea(int *a){/* >p + cnt> */
   int par[3];
@@ -311,7 +348,7 @@ static void countFileArea(int *a){/* >p + cnt> */
   a[1]++;par[0]=a[0];getFileLink(par);a[0]=par[0];goto nxt;
 }
 static void datafileInitialization(int item){
-  int par[5];int dir,id,ptr,link,cnt;
+  int par[6];int dir,id,ptr,link,cnt;
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[0]=item;
     par[1]=ITEM->offset[item-ITEM_tag];
     T(" setup_external_dfile(%r,\"%p\");%n",2,par);}
@@ -320,7 +357,8 @@ static void datafileInitialization(int item){
     par[0]=item;getFileData(par);id=par[1];ptr=par[2];link=par[3];
     par[0]=link;countFileArea(par);cnt=par[1];
     par[0]=item;par[1]=dir;par[2]=id;par[3]=ptr;par[4]=cnt;
-    T(" setup_dfile(%r,%d,%r,%r,%d);%n",5,par);
+    par[5]=ITEM->offset[item-ITEM_tag];
+    T(" setup_dfile(%r,%d,%r,%r,%d); /* %p */%n",6,par);
     nxt:if(link==0){;}
     else{par[0]=link;getFileLink(par);link=par[0];cnt=par[1];
      id=par[2];par[0]=item;par[1]=id;par[2]=cnt;
@@ -329,7 +367,7 @@ static void datafileInitialization(int item){
 
 void dataInitialization(void){
   int par[4];int ptr,t;
-  T("-1};%nstatic void a_data_setup(void){%n",0,par);
+  T("static void a_data_setup(void){%n",0,par);
   ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){;}
   else{par[0]=ptr;if(getItemDef(par)&& ptr!=par[1]){ptr+=ITEM_CALIBRE;goto nxt;}
     t=ITEM->offset[ptr-ITEM_type];

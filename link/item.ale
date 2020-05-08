@@ -285,6 +285,8 @@ $ file entry ********************************************** $
 
 $ string table ******************************************** $
 $ @StringTable is defined here
+'stack'(next,def)LEXT=(
+  "@StringTable",(0,0):StdString).
 
 'a'add stdstring:
   (* 0->vlwb->vupb->fill,1->calibre->ssel,-1->link *)AUX,

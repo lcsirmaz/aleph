@@ -166,6 +166,7 @@ void unpackstring(int *a){
      if((*goal&0xF0)==0xE0){ // tree byte
         *goal &= 0x0F; goto out2; }
      if((*goal&0xF8)==0xF0){ // four byte
+        *goal &= 0x07;
         if((*chr&0xC0)!=0x80) return;
         *goal <<=6; *goal |= *chr & 0x3F; chr++;
 out2:   if((*chr&0xC0)!=0x80) return;

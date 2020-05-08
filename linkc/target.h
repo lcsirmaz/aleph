@@ -3,7 +3,7 @@
 void openTarget(void),closeTarget(void),deleteTarget(void);
 
 void dataDeclaration(void),dataInitialization(void);
-void dataSectionIII(void);
+void fillTableHead(void),dataSectionIII(void),fillTableTail(void);
 
 void targetPrelude(void),targetMain(void);
 

@@ -13,7 +13,7 @@ extern int
    IpointerConstant,Icharfile,Idatafile,Irule,
    IformalStack,IformalTable,IformalFile,IformalIn,
    IformalOut,IformalInout,IformalRepeat,IformalShift;
-extern int Squoteimage,StdString,Sroot;
+extern int Squoteimage;
 
 extern int inpt,inptValue;
 
@@ -36,7 +36,7 @@ void getTagData(int *a),getTagImage(int *a),
 void tryToOpenSource(int *a),closeSource(void);
 
 /* ------------------------- */
-
+void rehash_lexical(void);
 void initialize_lexical(void);
 
 /* EOF */

@@ -13,7 +13,7 @@ $ HEAD **************************************************** $
    Ipointer constant,Ichar file,Idata file,Irule,
    Iformal stack,Iformal table,Iformalfile,Iformal in,
    Iformal out,Iformal inout,Iformal repeat,Iformal shift.
-'constant'Squote image,StdString,Sroot.
+'constant'Squote image.
 
 'a'next symbol.        $ read next symbol
 'variable' inpt,       $ next symbol
@@ -36,7 +36,6 @@ $ each entry has a data field (zero), and an image (string)
 'a'close source.
 
 'stack'BUFFER,(next,def)LEXT.
-
 
 $ BODY **************************************************** $
 'pragmat'if=compile.
@@ -120,9 +119,7 @@ $   of this tag (global definitons are unique).
   HASH size=HASH increment-1, $current HASH size $
   HASH entries=1.       $ string entries in LEXT table
 'stack'[20](next,def)LEXT=
-  (""            ,(0,0):Squote image,
-   "@StringTable",(0,0):StdString,
-   "@root",       (0,0):Sroot).
+  (""            ,(0,0):Squote image).
 'stack'[1]HASH.
 
 'f'get tag data+>tag+def>:   def*LEXT[tag]->def.

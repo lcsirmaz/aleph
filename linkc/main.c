@@ -32,8 +32,10 @@ static void passii(void){
 static void passiii(void){
   int par[2];
   openTarget();targetPrelude();dataDeclaration();
+  fillTableHead();
   nxt:advanceBaseItem(par); /* ext=par[0]; */
   if(nextSource(par)){skipHeadSection();skipItemSection();dataSectionIII();goto nxt;}
+  fillTableTail();
   dataInitialization();targetMain();
 }
 
@@ -45,7 +47,8 @@ int main(int argc,char *argv[]){
   initialize_input();
   initialize_target();
   initialize_lexical(); /* target adds strings to LEXT to be hash-ed */
-  initialize_item(); /* should come after lexical() which defines StdString */
+  initialize_item(); /* this relies on Itable to be defined */
+  rehash_lexical();  /* thus we have to postpone rehash() */
   /* ---------------------- */
   passi();
   if(wasError()){return 1;}

@@ -23,6 +23,16 @@ static void init_MSG(void){
   addMSG("no main module",no_main_module);
 }
 #undef addMSG
+static int StdString;
+
+#define addLEXT(x,y)	add_new_string(x,LEXT);expandstack(par);y=LEXT->aupb
+static void init_LEXT(void){
+  int par[4];
+  par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
+  addLEXT("@StringTable",StdString);
+}
+#undef addLEXT
+
 /* ------------------------------------------- */
 static int baseItem=0,maxLineno=0,firstItem=0;
 
@@ -377,7 +387,8 @@ void checkAllItems(void){
 /* ------------------------------------------- */
 
 void initialize_item(void){
-  init_MSG();baseItem=firstItem=0;
+  init_MSG();init_LEXT();
+  baseItem=firstItem=0;
   addStdstring();
 }
 

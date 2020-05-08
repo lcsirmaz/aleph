@@ -37,14 +37,14 @@ int a_requestspace(int ID,int n){
 }
 /* setup routines to set up lists and files */
 
-/* compare an ALEPH string and a C string, internal */
+/* compare an ALEPH string to a C string */
 int a_extstrcmp(int ID,int off,const char *str){
   #define st	to_LIST(ID)
   int *ptr=st->offset+off; 
   return strcmp((char*)(ptr+1-*ptr),str);
   #undef  st
 }
-/* fatal with messages, internal */
+/* fatal with messages */
 void a_fatal(const char*m1,const char *m2){
   fputs(m1,stderr);fputc(' ',stderr);fputs(m2,stderr);
   fputs("\nFatal error, aborting\n",stderr);
@@ -81,6 +81,47 @@ void a_list_fill(int *fill){
         else{while(x<0){x++;st->aupb+=cnt;
            for(i=0;i<cnt;i++){*idx=idx[-cnt];idx++;}}}
       } fill++;
+  }
+  #undef st
+}
+static int a_push_string_to(int F1,const char *ptr){
+  /* push string ptr; check that it is correct UTF-8
+     return 0 if cannot get memory; 1 otherwise   */
+  int n,w; int *goal; char *to;
+  #define st	to_LIST(F1)
+  n=strlen(ptr);if(a_requestspace(F1,3+(n/4))==0){ return 0; }
+  n=0;goal=&(st->offset[1+st->aupb]);to=(char*)goal;
+  while(*ptr){ if((*ptr & 0x80)==0){ *to++=*ptr++;n++; }
+      else if((*ptr&0xC0)!=0xC0){ ptr++; } // ignore
+      else if((*ptr&0xE0)==0xC0){ /* two byte */
+        *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
+        else{*to++=*ptr++;n++;}}
+      else if((*ptr&0xF0)==0xE0){ /* three byte */
+        *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
+        else{*to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n-=2;to-=2;}
+        else{*to++=*ptr++;n++;}}}
+      else if((*ptr&0xF8)==0xF0){ /* four byte */
+        *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
+        else{*to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n-=2;to-=2;}
+        else{*to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n-=3;to-=3;}
+        else{*to++=*ptr++;n++;}}}}
+      else{ptr++;}}
+  *to=0;w=1+(n/4);goal[w]=n;goal[w+1]=w+2;st->aupb+=w+2;
+  return 1;
+}
+void setup_stdarg(int F1,int F2 __attribute__((unused))){
+  /* create a table of command line arguments
+     virtual address space:  a_exlist_virtual
+     command line arguments: a_argc,a_argv */
+  int i;
+  #define st	to_LIST(F1)
+  st->offset=0;st->p=0;st->length=0;
+  st->vlwb=a_extlist_virtual+1;a_extlist_virtual+=64536; 
+  st->vupb=a_extlist_virtual-1;st->calibre=1;
+  st->alwb=st->vlwb;st->aupb=st->alwb-1;
+  for(i=a_argc-1;i>=0;i--){ /* add string a_argv[i] */
+    if(a_push_string_to(F1,a_argv[i])==0){
+      a_fatal("setup_stdarg","out of memory");}
   }
   #undef st
 }
@@ -255,7 +296,7 @@ void a_putstring(int F1,int F2,int F3){
   #undef ch
 }
 /* ------------------------------------------------- */
-/* static: fill databuffer */
+/* static: read/write databuffer */
 static int a_read_databuffer(a_DATAFILE *df){
    int cnt,i;char *b;
    cnt=1024*sizeof(int);b=(char*)(df->buffer);
@@ -398,7 +439,7 @@ int a_openfile(int F1,int F2,int F3,int F4){
   return 1;
   #undef df
 }
-/* try open with the default path */
+/* try open the supplied file */
 static int a_tryopen(int F1,int dir){
    #define df	to_DFILE(F1)
    if((dir=='r' && getfl_in(df))|| (dir=='w' && getfl_out(df))){
@@ -407,7 +448,6 @@ static int a_tryopen(int F1,int dir){
    df->fileError=ENOTOPENED; return 0;
    #undef df
 }
-
 
 /* 'p'close filep+""f. */
 int a_closefilep(int F1){

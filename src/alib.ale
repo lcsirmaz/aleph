@@ -41,96 +41,97 @@ $ programs
     ).
 
 $ standard argument,stdin,stdout
-?STDARG 'x''table'STDARG="@stdarg".
+?STDARG 'x''table'STDARG="setup_stdarg".
 ?STDIN  'charfile'STDIN =>"stdin".
 ?STDOUT 'charfile'STDOUT="stdout">.
+$ module sync
+?wait for 'x''q'wait for+t[]+>p="a_waitfor".
 $ arithmetic functions
-?add    'x''f'add+>x+>y+z>	 ="add".          $ x+y -> z
-?subtr  'x''f'subtr+>x+>y+z>	 ="subtr".        $ x-y -> z
-?mult   'x''f'mult+>x+>y+z>	 ="mult".         $ x*y -> z
-?addmult'x''f'addmult+>x+>y+>z+u> ="addmult".      $ x*y+z -> y
-?div    'x''f'div+>x+>y+z>	 ="div".          $ x/y -> z
-?divrem 'x''f'divrem+>x+>y+z>+u> ="divrem".       $ x/y -> z, x%y -> u
-?incr   'x''f'incr+>x>		 ="incr".         $ x++
-?decr   'x''f'decr+>x>		 ="decr".         $ x--
-?getabs 'x''f'getabs+>x+y>	 ="getabs".       $ |x| -> y
-?max    'x''f'max+>x+>y>	 ="max".          $ max(x,y)->y
-?min    'x''f'min+>x+>y>	 ="min".          $ min(x,y)->y
+?add    'x''f'add+>x+>y+z>	 ="__add".          $ x+y -> z
+?subtr  'x''f'subtr+>x+>y+z>	 ="__subtr".        $ x-y -> z
+?mult   'x''f'mult+>x+>y+z>	 ="__mult".         $ x*y -> z
+?addmult'x''f'addmult+>x+>y+>z+u>="__addmult".      $ x*y+z -> y
+?div    'x''f'div+>x+>y+z>	 ="__div".          $ x/y -> z
+?divrem 'x''f'divrem+>x+>y+z>+u> ="@divrem".        $ x/y -> z, x%y -> u
+?incr   'x''f'incr+>x>		 ="__incr".         $ x++
+?decr   'x''f'decr+>x>		 ="__decr".         $ x--
+?getabs 'x''f'getabs+>x+y>	 ="__getabs".       $ |x| -> y
+?max    'x''f'max+>x+>y>	 ="__max".          $ max(x,y)->y
+?min    'x''f'min+>x+>y>	 ="__min".          $ min(x,y)->y
 ?false    'cons'false=0.
 ?true     'cons'true=1.
 ?min int  'cons'min int=0x80000000.
 ?max int  'cons'max int=0x7fffffff.
 ?int size 'cons'int size=10.
 
-?is           'x''q'is+>x                ="@is".
-?bool invert  'x''f'bool invert+>x+y>    ="boolivert".
-?bool and     'x''f'bool and+>x+>y+z>    ="booland".
-?bool or      'x''f'bool or+>x+>y+z>     ="boolor".
-?bool xor     'x''f'bool xor+>x+>y+z>    ="boolxor".
-?is true      'x''q'is true+>x           ="@istrue".
-?is false     'x''q'is false+>x          ="@isfalse".
-?extract bits 'x''f'extract bits+>x+>y+z>="extractbits".
-?left clear   'x''f'left clear+>x>+>n    ="leftclear".
-?right clear  'x''f'right clear+>x>+>n   ="rightclear".
+?is           'x''q'is+>x                ="__is".
+?bool invert  'x''f'bool invert+>x+y>    ="__boolivert".
+?bool and     'x''f'bool and+>x+>y+z>    ="__booland".
+?bool or      'x''f'bool or+>x+>y+z>     ="__boolor".
+?bool xor     'x''f'bool xor+>x+>y+z>    ="__boolxor".
+?is true      'x''q'is true+>x           ="__istrue".
+?is false     'x''q'is false+>x          ="__isfalse".
+?extract bits 'x''f'extract bits+>x+>y+z>="a_extractbits".
+?left clear   'x''f'left clear+>x>+>n    ="__leftclear".
+?right clear  'x''f'right clear+>x>+>n   ="__rightclear".
 
 $stack and tables
 ?nil          'cons'nil=0.
-?was          'x''q'was+t[]+>p           ="@was".
-?next         'x''f'next+t[]+>p>         ="@next".
-?previous     'x''f'previous+t[]+>p>     ="@previous".
-?list length  'x''f'list length+t[]+p>   ="@listlength".
-?unstack      'x''a'unstack+[]st[]       ="@unstack".
-?unstack to   'x''a'unstack to+[]st[]+>p ="@unstackto".
-?scratch      'x''a'scratch+[]st[]       ="@scratch".
-?release      'x''a'release+[]st[]       ="@release".
-?request space'x''p'request space+[]st[]+>n="@requestspace".
-?expand stack 'x''a'expand stack+[]st[]+*+v> ="@expandstack".
+?was          'x''q'was+t[]+>p           ="__was".
+?next         'x''f'next+t[]+>p>         ="__next".
+?previous     'x''f'previous+t[]+>p>     ="__previous".
+?list length  'x''f'list length+t[]+p>   ="__listlength".
+?unstack      'x''a'unstack+[]st[]       ="__unstack".
+?unstack to   'x''a'unstack to+[]st[]+>p ="__unstackto".
+?scratch      'x''a'scratch+[]st[]       ="__scratch".
+?release      'x''a'release+[]st[]       ="a_release".
+?request space'x''p'request space+[]st[]+>n="a_requestspace".
+?expand stack 'x''a'expand stack+[]st[]+*+>v="a_expandstack".
 
 $ strings
-?string length   'x''f'string length+t[]+>p+n> ="stringlength".
-?string width    'x''f'string width+t[]+>p+n> ="stringwidth".
-?previous string 'x''f'previous string+t[]+>p> ="previousstring".
-?compare string  'x''f'compare string+t1[]+>p1+t2[]+>p2+comp> ="comparestring".
-?compare string n'x''f'compare string n+t1[]+>p1+t2[]+>p2+>n+comp> ="comparestringn".
-?string elem     'x''q'string elem+t[]+>ptr+>n+c> ="stringelem".
-?unstack string  'x''a'unstack string+[]st[]="unstackstring".
-?pack string     'x''a'pack string+from[]+>p+[]to[]="packstring".
-?unpack string   'x''a'unpack string+from[]+>p+[]to[]="unspackstring".
-?copy string     'x''a'copy string+from[]+>p+[]to[]="copystring".
+?string length   'x''f'string length+t[]+>p+n> ="__stringlength".
+?string width    'x''f'string width+t[]+>p+n>  ="__stringwidth".
+?previous string 'x''f'previous string+t[]+>p> ="__previousstring".
+?compare string  'x''f'compare string+t1[]+>p1+t2[]+>p2+comp> ="a_comparestring".
+?compare string n'x''f'compare string n+t1[]+>p1+t2[]+>p2+>n+comp> ="a_comparestringn".
+?string elem     'x''q'string elem+t[]+>ptr+>n+c> ="a_stringelem".
+?unstack string  'x''a'unstack string+[]st[]   ="__unstackstring".
+?pack string     'x''a'pack string+from[]+>p+[]to[]="a_packstring".
+?unpack string   'x''a'unpack string+from[]+>p+[]to[]="a_unspackstring".
+?copy string     'x''a'copy string+from[]+>p+[]to[]="a_copystring".
 
 $ file input/output
 ?newline        'cons'newline=10.
 ?sameline       'cons'sameline=-1.
 ?rest line      'cons'rest line=-2.
 ?newpage        'cons'newpage=12.
-?simple hash    'x''f'simple hash+t[]+>p+res>  ="simplehash".
-?get char       'x''p'get char+""f+char>       ="@getchar".
-?put char       'x''a'put char+""f+>char       ="@putchar".
-$ ?fill data file 'x''a'fill data file+""f+*+>lwb+>upb+t[]+>p="@filldatafile".
-?open file      'x''p'open file+""f+>mode+t[]+>p="@openfile".
-?close file     'x''a'close file+""f           ="@closefile".
-?unlink file    'x''a'unlink file+t[]+>p       ="@unlink".
+?simple hash    'x''f'simple hash+t[]+>p+res>  ="a_simplehash".
+?get char       'x''p'get char+""f+char>       ="a_getchar".
+?put char       'x''a'put char+""f+>char       ="a_putchar".
+?open file      'x''p'open file+""f+>mode+t[]+>p="a_openfile".
+?close file     'x''a'close file+""f           ="a_closefile".
+?unlink file    'x''a'unlink file+t[]+>p       ="a_unlinkfile".
 ?numerical      'cons'numerical=0.
 ?pointer        'cons'pointer=1.
-?put datap      'x''p'put datap+""f+>data+>type="@putdatap".
-?put data       'x''a'put data+""f+>data+>type ="@putdata".
-?get data       'x''p'get data+""f+data>+type> ="@getdata".
-?get file error 'x''f'get file error+""f+err>  ="@getfileerror".
-?get file pos   'x''f'get file pos+""f+pos>    ="@getfilepos".
-?set file pos   'x''a'set file pos+""f+>pos    ="@setfilepos".
-?ahead char     'x''a'ahead char+""f+char>     ="@aheadchar".
+?put datap      'x''p'put datap+""f+>data+>type="a_putdatap".
+?put data       'x''a'put data+""f+>data+>type ="a_putdata".
+?get data       'x''p'get data+""f+data>+type> ="a_getdata".
+?get file error 'x''f'get file error+""f+err>  ="__getfileerror".
+?get file pos   'x''f'get file pos+""f+pos>    ="a_getfilepos".
+?set file pos   'x''a'set file pos+""f+>pos    ="a_setfilepos".
+?ahead char     'x''a'ahead char+""f+char>     ="a_aheadchar".
 
 $ relations
 ?@make  'x''f'@make+>f+*+to>    ="@@make".
-?@equal 'x''q'@equal+>x+>y      ="@@equal".
-?@noteq 'x''q'@noteq+>x+>y      ="@@noteq".
-?@more  'x''q'@more+>x+>y       ="@@more".
-?@lseq  'x''q'@lseq+>x+>y       ="@@lseq".
-?@less  'x''q'@less+>x+>y       ="@@less".
-?@mreq  'x''q'@mreq+>x+>y       ="@@mreq".
+?@equal 'x''q'@equal+>x+>y      ="__equal".
+?@noteq 'x''q'@noteq+>x+>y      ="__noteq".
+?@more  'x''q'@more+>x+>y       ="__more".
+?@lseq  'x''q'@lseq+>x+>y       ="__lseq".
+?@less  'x''q'@less+>x+>y       ="__less".
+?@mreq  'x''q'@mreq+>x+>y       ="__mreq".
 
 $ exit
-?exit 'x''e'exit+>x = "@exit".
+?exit 'x''e'exit+>x = "exit".
 
 
 'end'

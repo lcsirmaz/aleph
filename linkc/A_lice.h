@@ -63,7 +63,6 @@ void setup_list(int kind,int ID,int cal,int lb,int up,int fill);
 void setup_charfile(int ID,int dir,int sID,int soff);
 void setup_dfile(int ID,int dir,int sID,int soff,int narea);
 void add_filearea(int ID,int aID,int hash);
-
 void a_list_fill(int *fill);
 
 /* the waitfor() routine calls all roots to check if it finished

@@ -1,0 +1,19 @@
+$ rule generator
+'pragmat'module="rule".
+$ HEAD ****************************************************** $
+
+$ BODY ****************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("error","item","lexical").
+
+$ rule <id> C1,C2,C3
+$   C1: total number of affixes
+$   C2: out affix
+$   C3: repeat affix 
+
+
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+
