@@ -110,7 +110,8 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
   tglobal	= tpublic|timported|texternal,
   touter	= timported|texternal,
   titem mask	= tglobal|rtype|rvararg|routvararg|
-                        rtrace|rcount|rbounds.
+                        rtrace|rcount|rbounds,
+  tassignment	= texternal|rvararg|routvararg.
   
 $ AUX stack ---------------------------------------------- $
 'stack'[10](vlwb,vupb,fill,calibre=count,width=ssel=item,link=data=AUX)AUX.
@@ -284,15 +285,24 @@ $ file entry ********************************************** $
      must+Dpoint+#.
 
 $ string table ******************************************** $
-$ @StringTable is defined here
+$ @StringTable and @@make is defined here
 'stack'(next,def)LEXT=(
-  "@StringTable",(0,0):StdString).
+  "@StringTable",(0,0):StdString,
+  "@@make",      (0,0):Sassignment
+).
 
 'a'add stdstring:
   (* 0->vlwb->vupb->fill,1->calibre->ssel,-1->link *)AUX,
   (* tpublic->flag,Itable->type,0->lineno,StdString->tag,
             >>AUX->adm,0->repr *)ITEM,
   put tag data+StdString+>>ITEM.
+
+'a'add assignment external-old:  $ >in+*+out> $
+   >>AUX->old,(* 3->count->width,0->link *)AUX,
+   (* tassignment->flag,Irule->type,0->lineno,Sassignment->tag,
+           >>AUX->adm,0->repr *)ITEM,
+   push AUX+Iformal in,push AUX+Iformal repeat,push AUX+Iformal out,
+   search formals+old+adm*ITEM,put tag data+Sassignment+>>ITEM.
 
 $ head section ******************************************** $
 $ each module has an ITEM entry linked through the repr field
@@ -374,6 +384,6 @@ $ check if all items are defined ************************** $
 
 $ ROOT **************************************************** $
 
-'root'add stdstring.
+'root'add stdstring,add assignment external.
 'pragmat'endif=compile.
 'end'

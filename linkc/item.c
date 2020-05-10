@@ -8,6 +8,7 @@
 #define tglobal	(tpublic|timported|texternal)
 #define touter  (timported|texternal)
 #define titemMask (tglobal|rtype|rvararg|routvararg|rtrace|rcount|rbounds)
+#define tassignment (texternal|rvararg|routvararg)
 
 static int incompatible_global_types,incompatible_external,
   doubly_defined,not_defined,same_title,two_main_modules,
@@ -23,13 +24,14 @@ static void init_MSG(void){
   addMSG("no main module",no_main_module);
 }
 #undef addMSG
-static int StdString;
+static int StdString,Sassignment;
 
 #define addLEXT(x,y)	add_new_string(x,LEXT);expandstack(par);y=LEXT->aupb
 static void init_LEXT(void){
   int par[4];
   par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
   addLEXT("@StringTable",StdString);
+  addLEXT("@@make",Sassignment);
 }
 #undef addLEXT
 
@@ -296,6 +298,18 @@ static void addStdstring(void){
   par[7-ITEM_adm]=AUX->aupb;par[7-ITEM_repr]=0;expandstack(par);
   par[0]=StdString;par[1]=ITEM->aupb;putTagData(par);
 }
+static void addAssigmentExternal(void){
+  int par[8];int old;
+  old=AUX->aupb;
+  par[0]=STACKpar(AUX);par[1]=3;par[4-AUX_count]=par[4-AUX_width]=3;
+  par[4-AUX_link]=0;expandstack(par);par[0]=STACKpar(ITEM);par[1]=6;
+  par[7-ITEM_flag]=tassignment;par[7-ITEM_type]=Irule;par[7-ITEM_lineno]=0;
+  par[7-ITEM_tag]=Sassignment;par[7-ITEM_repr]=0;par[7-ITEM_adm]=AUX->aupb;
+  expandstack(par);pushAUX(IformalIn);pushAUX(IformalRepeat);
+  pushAUX(IformalOut);par[0]=old;par[1]=ITEM->offset[ITEM->aupb-ITEM_adm];
+  searchFormals(par);ITEM->offset[ITEM->aupb-ITEM_adm]=par[1];
+  par[0]=Sassignment;par[1]=ITEM->aupb;putTagData(par);
+}
 
 /* =========================================== */
 static void checkModuleTitle(void){
@@ -389,7 +403,7 @@ void checkAllItems(void){
 void initialize_item(void){
   init_MSG();init_LEXT();
   baseItem=firstItem=0;
-  addStdstring();
+  addStdstring();addAssigmentExternal();
 }
 
 /* EOF */

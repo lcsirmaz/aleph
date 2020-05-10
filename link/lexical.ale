@@ -22,6 +22,8 @@ $ HEAD **************************************************** $
 'p'RR+>x+y>:x=inpt,inpt value->y,next symbol.
 'a'must+>x+y>:x=inpt,inpt value->y,next symbol;
               corrupted obj file+_title_+_line_.
+$ save and restore input position
+'a'save input position,restore input position.
 
 $ manupulating LEXT entries
 $ each entry has a data field (zero), and an image (string)
@@ -73,7 +75,19 @@ $ other characters: ()[] .*;:> +-/~|^
       [:31],:next char;
       +);
    end char->char.
-$ CHARACTERS ****************************** $
+$ RE-READ INPUT ******************************************* $
+$ rules are read more than once; a single position can be
+$  saved and restored
+'variable'
+  last filepos=0,
+  last char=0,last inpt=0,last inpt value=0.
+'a'save input position:
+  get file pos+SOURCE+last filepos,char->last char,
+    inpt->last inpt,inpt value->last inpt value.
+'a'restore input position:
+  set file pos+SOURCE+last filepos,last char->char,
+    last inpt->inpt,last inpt value->inpt value.
+$ CHARACTERS ********************************************** $
 'p'bold letter+x>:
   =char= [/a/:/z/],char->x,nextchar;-.
 'p'digit+x>:
@@ -119,7 +133,7 @@ $   of this tag (global definitons are unique).
   HASH size=HASH increment-1, $current HASH size $
   HASH entries=1.       $ string entries in LEXT table
 'stack'[20](next,def)LEXT=
-  (""            ,(0,0):Squote image).
+  (""      ,(0,0):Squote image).
 'stack'[1]HASH.
 
 'f'get tag data+>tag+def>:   def*LEXT[tag]->def.
@@ -137,13 +151,13 @@ $   of this tag (global definitons are unique).
     (nxt:ptr2=0,HASH[hash]->next*LEXT[ptr],ptr->HASH[hash]->out,
        incr+HASH entries,
        (HASH entries<HASH size;
-        add+HASH size+HASH increment+HASH size,0->HASH entries,rehash);
+        add+HASH size+HASH increment+HASH size,rehash);
      subtr+ptr2+<>LEXT+string2,compare string+LEXT+string+LEXT+string2+eq,
        (eq=0,ptr2->out;
         next*LEXT[ptr2]->ptr2,:nxt)).
 
 'a'rehash-ptr-block:
-   >>HASH->ptr, $ clear all entries in HASH
+   0->HASH entries,>>HASH->ptr, $ clear all entries in HASH
      (nxt:ptr<<<HASH;0->HASH[ptr],previous+HASH+ptr,:nxt),
    $ makes sure there are HASH size entries
    subtr+>>HASH+<<HASH+block,incr+block,

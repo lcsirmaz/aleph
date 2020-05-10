@@ -30,6 +30,7 @@ static void must(int *a){if(inpt==a[0]){a[1]=inptValue;nextSymbol();}
   else{printf("** must() failed, a[0]=%d ",a[0]);printPointer(a); printf(" got=%d ",inpt);a[0]=inpt;printPointer(a);printf("\n");exit(8);}}
 
 void nextSymbol(void);
+void saveInputPoistion(void),restoreInputPosition(void);
 
 void getTagData(int *a),getTagImage(int *a),
      putTagData(int *a),addLEXTentry(int *a);

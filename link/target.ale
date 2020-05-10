@@ -17,7 +17,7 @@ $ generating code $
    $  the main root
 $ BODY **************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("item","data","lexical","error").
+'pragmat'require=("item","data","lexical","error","rule").
 
 $ manipulate target file ********************************** $
 'charfile'TARGET="aleph.c">.
@@ -292,6 +292,16 @@ $     n<0: repeat the previous block -n times
         R+Dfill,fill entries,:nxt;
         +).
    
+$ RULE generation ***************************************** $
+$ generate the rules
+'a'data section iv:
+   (nxt:R+Dexpression,skip entry,:nxt;
+        R+Dlist,skip entry,:nxt;
+        R+Dfile,skip entry,:nxt;
+        R+Dfill,skip entry,:nxt;
+        +),
+   (nxt:R+Drule,make rule,:nxt;+).
+
 $ DATA SETUP ********************************************** $
 $  setup list and file data structures. As file area uses
 $    list bounds, lists should come first. Add external list

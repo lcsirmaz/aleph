@@ -56,11 +56,10 @@ $   Dfill <item> <filling> Dpoint
 
 $ HEADER ****************************************************** $
 'stack'(flag,type,tag,lineno,adm,repr)ITEM.
-'stack'(flag,type,tag,adm,tnext,fnext)NODE.
 
 $ opening and closing
 'a'open obj file,close obj file,delete obj file.
-$ writing to OBJ  ??????  NODE, FORMAL/LOCAL var ??????
+$ writing to OBJ: NODE, ITEM, FORMAL/LOCAL
 'a'W+>x,Wcons+>x,Wtag+>x.
 $ create header and item list
 'a'create obj header.
@@ -102,7 +101,7 @@ $ stacks ------------------------------------------------------ $
 
 $ each tag has an ITEM entry assigned consecutively
 'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
-'stack'[10](flag,type,tag,adm,tnext,fnext)NODE.
+'stack'[10](type,tag,adm,tnext,fnext)NODE.
 
 $ obj file ==================================================== $
 'charfile' OBJ="aleph.ice">.
@@ -129,10 +128,9 @@ $ writing to the OBJ file
     add+r+c+r,put char+OBJ+r.
 
 'a'W+>x: =x=
-   [DSYMB],put string+OBJ+DSYMB+x;
-$   [INDICATOR],put as string+OBJ+INDICATOR+x,separator;
-   [ITEM], put char+OBJ+/I/,subtr+x+<ITEM+x,print int+x,separator;
-   [NODE], put char+OBJ+/N/,subtr+x+<NODE+x,print int+x,separator;
+   [DSYMB],put string+OBJ+DSYMB+x,(x=Dpoint,put char+OBJ+newline;+);
+   [ITEM], put char+OBJ+/I/,subtr+x+<ITEM+x,div+x+<>ITEM+x,print int+x,separator;
+   [NODE], put char+OBJ+/N/,subtr+x+<NODE+x,dix+x+<>NODE+x,print int+x,separator;
    internal error+wrong W argument+x.
 'a'Wcons+>x:print int+x,separator.
 'a'Wtag+>tag-repr:

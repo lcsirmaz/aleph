@@ -652,7 +652,19 @@ void getFileError(int *a){ a[1]=parDFILE(a[0])->fileError; }
 void getFilePos(int *a){
 #   define df	parDFILE(a[0])
     a[1]=0;
-    if(!getfl_data(df) || df->fhandle<=0 ) return;
+    if(!getfl_data(df)){ // charfile
+#   define ch	parCHFILE(a[0])
+      long offset;
+      if(!ch->f){ch->fileError=ENOTOPENED; return;}
+      offset=ftell(ch->f);
+      if(offset<-1l || offset>0x7fff0000l){
+        fprintf(stderr,"get file pos error %ld\n",offset);
+        ch->fileError=errno;
+      } else { a[1]=(int)offset;}
+      return;
+#   undef ch
+    }
+    if(df->fhandle<=0 ) return;
     a[1]=df->fpos;
     return;
 #   undef df
@@ -662,7 +674,17 @@ void setFilePos(int *a){
     off_t offset;
 #   define df	parDFILE(a[0])
     df->fileError=ESEEKERROR;
-    if(!getfl_data(df) || df->fhandle<=0 || getfl_rw(df)
+#   define ch	parCHFILE(a[0])
+    if(!getfl_data(df)){ // charfile
+      if(a[1]<0 || !ch->f) return;
+      if(fseek(ch->f,(long)a[1],SEEK_SET)){
+          fprintf(stderr,"set file pos error for character file %d, errno=%d\n",a[0],errno);
+          ch->fileError=errno;
+      }
+      return;
+#   undef ch
+    }
+    if(df->fhandle<=0 || getfl_rw(df)
       || a[1]<0 ) return;
     if(getfl_eof(df) && a[1]>= df->fpos) return;
     if(a[1]==0){a[1]=32+3*df->inarea; } // special case

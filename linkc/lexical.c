@@ -39,6 +39,16 @@ static void nextChar(void){
   else{Achar=endChar;}
 }
 /* ----------------------------------------- */
+static int lastFilepos,lastChar,lastInpt,lastInptValue;
+void saveInputPosition(void){
+  int par[2];par[0]=CHFILEpar(SOURCE);getFilePos(par);lastFilepos=par[1];
+  lastChar=Achar;lastInpt=inpt;lastInptValue=inptValue;
+}
+void restoreInputPosition(void){
+  int par[2];par[0]=CHFILEpar(SOURCE);par[1]=lastFilepos;setFilePos(par);
+  Achar=lastChar;inpt=lastInpt;inptValue=lastInptValue;
+}
+/* ----------------------------------------- */
 static int boldLetter(int *a){
   if('a'<=Achar&&Achar<='z'){a[0]=Achar;nextChar();return 1;}
   else{return 0;}
@@ -117,7 +127,7 @@ static void enterString(int *a){/* >ptr + out> */
   if(ptr2==0){LEXT->offset[a[0]-LEXT_next]=HASH->offset[hash];
      a[1]=HASH->offset[hash]=a[0];HASHentries++;
      if(HASHentries<HASHsize){;}
-     else{HASHsize+=HASHincrement;HASHentries=0;rehash();}}
+     else{HASHsize+=HASHincrement;rehash();}}
   else{string2=ptr2-LEXT_CALIBRE;par[0]=STACKpar(LEXT);par[1]=string;
 //if(LEXT->offset[string2]>30){printf("%d=(%d,%d), HASH=%d\n",ptr2,LEXT->offset[ptr2],LEXT->offset[ptr2-1],HASH->offset[hash]);exit(88);}
      par[2]=STACKpar(LEXT);par[3]=string2;comparestring(par);
@@ -126,7 +136,7 @@ static void enterString(int *a){/* >ptr + out> */
 }
 static void rehash(void){
   int par[4];int ptr,block;
-  ptr=HASH->aupb;nxt1:if(ptr<HASH->alwb){;}
+  HASHentries=0;ptr=HASH->aupb;nxt1:if(ptr<HASH->alwb){;}
   else{HASH->offset[ptr]=0;ptr-=HASH_CALIBRE;goto nxt1;}
   block=HASH->aupb-HASH->alwb+1;
   nxt2:if(block>=HASHsize){;}

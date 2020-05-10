@@ -1,17 +1,100 @@
 $ rule generator
 'pragmat'module="rule".
 $ HEAD ****************************************************** $
+'a'make rule.
 
 $ BODY ****************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("error","item","lexical").
+'pragmat'require=("error","item","lexical","target").
+
+$ check if two nodes are the same .. to be done later $
+$ make a hash table, and store nodes with the same hash
+$  check if nodes with the same hash are actually equal
+$  (do it for rule calls only - check equality of parameters)
+$  link equal nodes (but with possibly different exit)
+
+'stack'[10](type,tag,adm,tnext,fnext)NODE.
 
 $ rule <id> C1,C2,C3
 $   C1: total number of affixes
 $   C2: out affix
 $   C3: repeat affix 
 
+'p'is limit:
+  R+Dcalibre;R+Dlwb;R+Dupb;R+Dvlwb;R+Dvupb.
 
+'a'skip affix:
+   R+Tformal; $ formal affix
+   R+Tlocal;  $ local affix
+   R+Titem;
+   R+Tconst;  $ constant
+   is limit,(R+Tformal;must+Titem+#);
+   R+Dsub,skip affix,must+Dbus+#,(R+Tformal;must+Titem+#),must+Tconst+#;
+   corrupted obj file+_title_+_line_.
+
+'a'skip zone:
+   R+Tconst;
+   R+Titem;
+   +.
+'a'skip area:
+   (nxt:skip zone,(R+Dcolon,:nxt;R+Dsemicolon,:nxt;+)),
+   must+Dout+#,must+Tconst+#. $ goal node $
+
+'a'skip box:
+   must+Tnode+#, $ the node number
+   skip affix,
+   (nxt:R+Darea,must+Tconst+#, $ line number $
+                    skip area,:nxt;
+        +).
+
+'a'skip extension:
+   must+Tnode+#, $ node number
+   (R+Tformal;must+Titem+#),must+Tconst+#, $ number of items $
+   (nxt2:skip affix,(nxt:R+Dto,must+Tconst+#,:nxt;
+                     R+Dout,must+Tconst+#;
+                     :nxt2)).
+'a'skip in affix+>type:
+  type=Iformal out;skip affix.
+'a'skip out affix+>type:
+  (type=Iformal out;type=Iformal inout),skip affix;+.
+'a'skip in affixes+>tag+>rep>-n-i-type:
+  get number of formals+tag+n,rep->i,
+  (nxt:i>=n;
+   get formal+tag+i+type,incr+i,
+     (type=Iformal repeat,i->rep;skip in affix+type,:nxt)).
+'a'skip block in affixes+>tag+>rep+>cnt:
+  cnt=0;
+  decr+cnt,skip in affixes+tag+rep,:skip block in affixes.
+'a'skip out affixes+>tag+>rep-n-i-type:
+  get number of formals+tag+n,rep->i,
+  (nxt:i>=n;
+   get formal+tag+i+type,incr+i,
+   (type=Iformal repeat;skip out affix+type,:nxt)).
+'a'skip block out affixes+>tag+>rep+>cnt:
+  cnt=0;
+  decr+cnt,skip out affixes+tag+rep,:skip block out affixes.
+
+'a'read node-tag-rep-cnt:
+   must+Tnode+#, $ the node number
+   must+Titem+tag,must+Tconst+#,must+Tconst+#,must+Tconst+#, $ C1,C2,C3 $
+   0->rep->cnt,skip in affixes+tag+rep,
+   (-star:rep=0; $ we hit *: number of blocks + whether the actual * $
+     must+Dstar+#,must+Tconst+cnt,must+Tconst+star,(star=0;decr+cnt),
+     skip block in affixes+tag+rep+cnt,
+     (star=0;must+Dstar+#)),
+   must+Dout+#,must+Tconst+# $ the "false" exit $
+   skip out affixes+tag+0,
+   (rep=0;skip block out affixes+tag+rep+cnt),
+   must+Dout+#,must+Tconst+#. $ the "true" exit $
+
+'a'make rule-rtag-minloc-maxloc:
+   save input position, $ redo several times
+   must+Titem+rtag,must+Tconst+minloc,must+Tconst+maxloc,
+   (nxt: R+Dpoint; 
+         R+Dnode,read node,:nxt;
+         R+Dbox,skip box,:nxt;
+         R+Dextension,skip extension,:nxt;
+         corrupted obj file+_title_+_line_).
 
 'root'+.
 'pragmat'endif=compile.

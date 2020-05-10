@@ -607,16 +607,13 @@ $   C2: number of out/inout affixes (if only these are passed by name)
 $  there is a * affix in the called rule:
 $   the above numbers are BEFORE *. Affixes after * are passed on the stack
 $   C3: total number of variable affixes passed; this can be zero
-$   C4: whether there is a * actual affix (if the above number is zero, this
-$        flag must be set)
-$ if C4=0 (no tailing * affix) or C3=0, then this call requires stack size
+$  rep: whether there is a * actual affix (if C3 is zero, this must be set)
+$ if rep=0 (no tailing * affix) or C3=0, then this call requires stack size
 $  C1+C3 // C2+C3 // zero
-$ if C4!=0 and C3!=0, the stack sizes are
+$ if rep!=0 and C3!=0, the stack sizes are
 $  C1  //  C2  // C3 + dynamic
 $ If C3=0 no need to allocate dymamic stack even if there is a * formal.
-$ Assignment is a variable affix rule, thus
-$   a->b->c->d->e->f 
-$ gives C1=6, C2=5. Optimization reduces this numbers.
+$ 
 $ ---------------------------------------------------- $
 $ traverse RULE and assign nodes to unassigned Unode entries
 $ node 0 and 1 are the true and false returns, respectively
