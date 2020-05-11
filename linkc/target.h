@@ -4,8 +4,11 @@ void openTarget(void),closeTarget(void),deleteTarget(void);
 
 void dataDeclaration(void),dataInitialization(void);
 void fillTableHead(void),dataSectionIII(void),fillTableTail(void);
+void dataSectionIV(void);
 
 void targetPrelude(void),targetMain(void);
+
+int isPidginRule(int item);
 
 /* ----------------------- */
 

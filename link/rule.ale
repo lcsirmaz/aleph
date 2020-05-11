@@ -7,6 +7,91 @@ $ BODY ****************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("error","item","lexical","target").
 
+$ ZONE ****************************************************** $
+$ a zone is a disjoint union of closed intervals [a_i,b_i]
+$  it is storead as a linked list of (wp,up,next) with the
+$  lower bounds increasing. (lw,up) of the head is ignored
+'stack'[1](lw,up,next)ZONE.
+
+'a'find interval pair+>set+>up-ni:
+   $ up >= up*ZONE[set]; drop intervals until up
+   up<=up*ZONE[set];
+   next*ZONE[set]->ni,up->up*ZONE[set],(nxt:
+     ni=0,0->next*ZONE[set];
+     up<lw*ZONE[ni],ni->next*ZONE[set];
+     up<=up*ZONE[ni],up*ZONE[ni]->up*ZONE[set],
+        next*ZONE[ni]->next*ZONE[set];
+     next*ZONE[ni]->ni,:nxt).
+'a'add interval+>set+>lw+>up+>new>-ni:
+   $ add the [lw,up] interval to the set
+   next*ZONE[set]->ni,
+   (ni=0,1->new,(* lw->lw,up->up,0->next *)ZONE,
+               >>ZONE->next*ZONE[set];
+    lw<lw*ZONE[ni],1->new, $ starts before [lw,up] of this interval
+      (up<lw*ZONE[ni],(*lw->lw,up->up,ni->next *)ZONE,
+               >>ZONE->next*ZONE[set];
+       lw->lw*ZONE[ni],find interval pair+ni+up);
+    lw<=up*ZONE[ni], $ starts inside, keep old starting point
+      (up<=up*ZONE[ni]; $ not new
+       1->new,find interval pair+ni+up);
+    ni->set,:add interval).
+'q'diff1+>x+>y-z:subtr+y+x+z,z=1.
+'a'merge intervals+>set-ni:
+   $ merge [a,b],[b+1,c]
+   next*ZONE[set]=0;
+   next*ZONE[set]->set,next*ZONE[set]->ni,
+   (nxt:(ni!=0,diff1+up*ZONE[set]+lw*ZONE[ni]),
+        up*ZONE[ni]->up*ZONE[set],
+        next*ZONE[ni]->next*ZONE[set]->ni,:nxt;
+    :merge intervals).
+'q'complete zone+>set:
+   next*ZONE[set]->set,is+set,
+      lw*ZONE[set]=min int,up*ZONE[set]=maxint.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'read area interval+lw>+up>-tag-count:
+   $ read an interval from an area
+   (RR+Tconst+lw,lw->up,1->count;
+    RR+Titem+tag,(get item def+tag+tag;+),
+      (=type*ITEM[tag]=
+       [Iconstant;Ipointer constant],repr*ITEM[tag]->lw,lw->up,1->count;
+       [Istack;Itable;Istatic stack],
+         get vlwb+tag+lw,get calibre+tag+up,subtr+lw+up+lw,incr+lw,
+         get vupb+tag+up,2->count;
+       corrupted obj file+_title_+_line_);
+    0->lw->up->count),
+   (R+Dcolon,(count=0,min int->lw;count=1;corrupted obj file+_title_+_line_),
+      (RR+Tconst+up;
+       RR+Titem+tag,(get item def+tag+tag;+),
+       (=type*ITEM[tag]=
+        [Iconstant;Ipointer constant],repr*ITEM[tag]->up;
+        corrupted obj file+_title_+_line_);
+       max int->up);
+    count=0,corrupted obj file+_title_+_line_;
+    +).
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'table'MESSAGE=(
+  "area at %l: lower bound %d exceeds upper bound %d":larger lower bound,
+  "area at %l: this alternative never succeeds"      :cannot succeed,
+  "last area at %l: not all cases are covered"       :area may fail
+).
+'a'check area+>set+dl>-new-lw-up:
+   must+Tconst+dl,0->new,
+   (nxt:read area interval+lw+up,
+         (lw<=up,add interval+set+lw+up+new;
+           error+larger lower bound+dl+lw+up),
+         (R+Dsemicolon,:nxt;+)),
+   merge intervals+set,
+   (is+new;error+cannot succeed+dl).
+    
+'a'check areas-set-dl:
+   $ looking at the first Darea; Dcomma is not touched
+   scratch+ZONE,(* 0->lw->up->next *) ZONE, >>ZONE->set,
+   0->dl,(nxt:R+Darea,check area+set+dl,must+Dout+#,:nxt;
+      complete zone+set;
+      warning+area may fail+dl).
+     
+
+
 $ check if two nodes are the same .. to be done later $
 $ make a hash table, and store nodes with the same hash
 $  check if nodes with the same hash are actually equal
@@ -15,10 +100,41 @@ $  link equal nodes (but with possibly different exit)
 
 'stack'[10](type,tag,adm,tnext,fnext)NODE.
 
-$ rule <id> C1,C2,C3
+$ Figure out stack size.
+$   1) no repeat affix: all out affixes are passed as an array A[];
+$      take the maximum of out affixes
+$   2) repeat affix with no formal * at the end: all affixes in the
+$      repeat block are in A[]; pass the block number and A
+$   3) repeat affix, formal * only: pass C and V[].
+$   4) repeat affix, formal * and additional affixes: allocate
+$      dynamic array, (max of additional blocks + C)*block size
+
+'a'skip node:
+   R+Dcomma;next symbol,:skip node.
+'variable'C2=0,C3=0.
+'a'find rule stack size-tag-x:
+  must+Tnode+#, $ node number
+  must+Titem+tag,
+  (is pidgin rule+tag; $ do nothing
+   must+Tconst+#,must+Tconst+x,max+x+C2,must+Tconst+x,max+x+C3).
+
+'a'find stack size:
+  0->C2->C3,
+  (nxt:R+Dnode,find rule stack size,skip node,:nxt;
+       R+Dbox,skip node,:nxt;
+       R+Dextension,skip node,:nxt;
+       R+Dpoint;+).
+
+
+
+$ rule <id> C1,C2,C3 
 $   C1: total number of affixes
 $   C2: out affix
 $   C3: repeat affix 
+
+
+
+
 
 'p'is limit:
   R+Dcalibre;R+Dlwb;R+Dupb;R+Dvlwb;R+Dvupb.
@@ -27,6 +143,7 @@ $   C3: repeat affix
    R+Tformal; $ formal affix
    R+Tlocal;  $ local affix
    R+Titem;
+   R+Dnoarg;  $ only as out affix  
    R+Tconst;  $ constant
    is limit,(R+Tformal;must+Titem+#);
    R+Dsub,skip affix,must+Dbus+#,(R+Tformal;must+Titem+#),must+Tconst+#;
@@ -38,20 +155,20 @@ $   C3: repeat affix
    +.
 'a'skip area:
    (nxt:skip zone,(R+Dcolon,:nxt;R+Dsemicolon,:nxt;+)),
-   must+Dout+#,must+Tconst+#. $ goal node $
+   must+Dout+#. $ goal node $
 
 'a'skip box:
    must+Tnode+#, $ the node number
    skip affix,
    (nxt:R+Darea,must+Tconst+#, $ line number $
                     skip area,:nxt;
-        +).
+        must+Dcomma+#).
 
 'a'skip extension:
    must+Tnode+#, $ node number
    (R+Tformal;must+Titem+#),must+Tconst+#, $ number of items $
    (nxt2:skip affix,(nxt:R+Dto,must+Tconst+#,:nxt;
-                     R+Dout,must+Tconst+#;
+                     RR+Dout+#,must+Dcomma+#;
                      :nxt2)).
 'a'skip in affix+>type:
   type=Iformal out;skip affix.
@@ -64,7 +181,8 @@ $   C3: repeat affix
      (type=Iformal repeat,i->rep;skip in affix+type,:nxt)).
 'a'skip block in affixes+>tag+>rep+>cnt:
   cnt=0;
-  decr+cnt,skip in affixes+tag+rep,:skip block in affixes.
+  (cnt<0,incr+cnt;decr+cnt),
+       skip in affixes+tag+rep,:skip block in affixes.
 'a'skip out affixes+>tag+>rep-n-i-type:
   get number of formals+tag+n,rep->i,
   (nxt:i>=n;
@@ -72,24 +190,25 @@ $   C3: repeat affix
    (type=Iformal repeat;skip out affix+type,:nxt)).
 'a'skip block out affixes+>tag+>rep+>cnt:
   cnt=0;
-  decr+cnt,skip out affixes+tag+rep,:skip block out affixes.
+  (cnt<0,incr+cnt;decr+cnt),
+    skip out affixes+tag+rep,:skip block out affixes.
 
 'a'read node-tag-rep-cnt:
    must+Tnode+#, $ the node number
    must+Titem+tag,must+Tconst+#,must+Tconst+#,must+Tconst+#, $ C1,C2,C3 $
    0->rep->cnt,skip in affixes+tag+rep,
-   (-star:rep=0; $ we hit *: number of blocks + whether the actual * $
-     must+Dstar+#,must+Tconst+cnt,must+Tconst+star,(star=0;decr+cnt),
-     skip block in affixes+tag+rep+cnt,
-     (star=0;must+Dstar+#)),
-   must+Dout+#,must+Tconst+# $ the "false" exit $
+   (rep=0; $ we hit *: number of blocks + whether the actual * $
+     must+Dstar+#,must+Tconst+cnt,skip block in affixes+tag+rep+cnt,
+     (cnt>0;must+Dstar+#)),
+   must+Dout+#, $ the "false" exit $
    skip out affixes+tag+0,
    (rep=0;skip block out affixes+tag+rep+cnt),
-   must+Dout+#,must+Tconst+#. $ the "true" exit $
+   must+Dout+#,must+Dcomma+#. $ the "true" exit $
 
 'a'make rule-rtag-minloc-maxloc:
    save input position, $ redo several times
    must+Titem+rtag,must+Tconst+minloc,must+Tconst+maxloc,
+   must+Tconst+#, $ number of nodes $
    (nxt: R+Dpoint; 
          R+Dnode,read node,:nxt;
          R+Dbox,skip box,:nxt;

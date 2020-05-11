@@ -683,7 +683,7 @@ static void wextension(void){
   par[0]=tag;Wtag(par);optr=BUFFER->aupb;wtransportList(par);Wcons(par);
   par[0]=0;par[1]=optr+1;wcopyAffixFromBUFFER(par);par[0]=STACKpar(BUFFER);
   par[1]=optr;unstackto(par);pushRULE(Utrue,0);
-  par[0]=RULEtop;wlabel(par);
+  par[0]=RULEtop;wlabel(par);par[0]=Dcomma;W(par);
 }
 static int wlimit(int *a){/* x> */
   int par[1];
@@ -803,8 +803,8 @@ static void wbeforeAffixes(int *a){/*>tag + >b + >cnt + >rep */
   a[1]++;par[0]=a[0];getAdm(par);formal=par[1];repeat=0;nxt:
   if(a[1]>BUFFER->aupb){return;}
   par[0]=formal;getType(par);ftype=par[1];
-  if(ftype==IformalRepeat){par[0]=Dstar;W(par);par[0]=a[2];Wcons(par);
-    if(a[3]){par[0]=1;Wcons(par);}else{par[0]=0;Wcons(par);}
+  if(ftype==IformalRepeat){par[0]=Dstar;W(par);
+    if(a[3]){par[0]=1-a[2];}else{par[0]=a[2]; }Wcons(par);
     par[0]=formal;getAdm(par);formal=par[1];repeat=formal;goto nxt;}
   else{a[1]++;
     par[0]=formal;getAdm(par);formal=par[1];if(formal==0){formal=repeat;}}
@@ -866,7 +866,7 @@ static void wactualRule(int *a){/* >tag */
   else if(a[0]==Xshiftaffix){par[0]=frep;wafterShiftRule(par);}
   else if((par[0]=a[0],par[1]=rshiftrule,isTagFlag(par))){;}
   else{par[0]=frep;par[1]=repeat;wafterVarargBlock(par);}
-  pushRULE(Utrue,0);par[0]=RULEtop;wlabel(par);
+  pushRULE(Utrue,0);par[0]=RULEtop;wlabel(par);par[0]=Dcomma;W(par);
   par[0]=STACKpar(BUFFER);par[1]=oldBUFF;unstackto(par);
 }
 /* - - - - - - - - - - - - - - - - - - */
@@ -888,6 +888,7 @@ static void wreadBox(void){
   else{buff=RULE->offset[ptr-RULE_data];ptr+=RULE_CALIBRE;
     fptr=RULE->offset[ptr-RULE_data];ptr+=RULE_CALIBRE;
     par[0]=buff;warea(par);par[0]=ptr;wlabel(par);ptr=fptr;goto nxt;}
+  par[0]=Dcomma;W(par);
 }
 static void wclassification(void){
   int par[2]; nxt:

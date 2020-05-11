@@ -659,7 +659,8 @@ $ extension ------------------------------------------ $
    W+Dextension,W+data*RULE[RULEtop],Wtag+tag,
    >>BUFFER->optr,w transport list+cnt,Wcons+cnt,
    optr->ptr,incr+ptr,w copy affix from BUFFER+0+ptr,
-   unstack to+BUFFER+optr,push RULE+Utrue+0,w label+RULEtop.
+   unstack to+BUFFER+optr,push RULE+Utrue+0,w label+RULEtop,
+   W+Dcomma.
 $ actual rule --------------------------------------- $
 'p'w limit+x>:
   Q+Dupb,Dupb->x;
@@ -754,7 +755,7 @@ $ replacement for L*L[>>L], figure out the standard selector
   (nxt:b>>>BUFFER; $ we run out of stored affixes
      get type+formal+ftype,
       (ftype=Iformal repeat, $ formal * affix; number of blocks,actual *
-          W+Dstar,Wcons+cnt,(is+rep,Wcons+1;Wcons+0),
+          W+Dstar,(rep=0;subtr+1+cnt+cnt),Wcons+cnt,
           get adm+formal+formal,formal->repeat,:nxt;
        incr+b,                   $ skip Dplus $
         get adm+formal+formal,(formal=0,repeat->formal;+),
@@ -807,7 +808,7 @@ $ replacement for L*L[>>L], figure out the standard selector
     tag=Xshift affix,w after shiftrule+frep;
     is tag flag+tag+rshiftrule;
     w after vararg block+frep+repeat),
-   push RULE+Utrue+0,w label+RULEtop,
+   push RULE+Utrue+0,w label+RULEtop,W+Dcomma,
    unstack to+BUFFER+oldBUFF.
 
 $ classification ------------------------------------- $
@@ -823,7 +824,7 @@ $ classification ------------------------------------- $
       $ RULE[ptr] is (Unode,BUFFER),(Ufalse/Umark,next),(Utrue,tptr)
       data*RULE[ptr]->buff,next+RULE+ptr,data*RULE[ptr]->fptr,
       next+RULE+ptr,w area+buff,w label+ptr,fptr->ptr,:nxt),
-   W+Dbox.
+   W+Dcomma.
 'a'w classification:
    mustQ+Darea,Qskip+Darea,push RULE+Unode+0,push RULE+Ufalse+0,
    push RULE+Utrue+0,push RULE+Uhead+0,w alt tail,

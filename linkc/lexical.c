@@ -6,12 +6,11 @@
 #include <limits.h> /* INT_MAX */
 
 /* exported variables */
-int inpt=0,inptValue=0;
+int inpt=0,inptValue=0,sourceLine=1;
 
 /* prototypes */
 static void nextChar(void),enterString(int *a),rehash(void);
 /* other stuff */
-
 static void extendBUFFER(int *a){
   int par[3];par[0]=STACKpar(BUFFER);par[1]=1;par[2]=a[0];
   expandstack(par);
@@ -19,7 +18,7 @@ static void extendBUFFER(int *a){
 void tryToOpenSource(int *a){/* >res */
   int par[4];
   par[0]=CHFILEpar(SOURCE);par[1]='r';par[2]=STACKpar(LEXT);
-  par[3]=LEXT->aupb;if(openFile(par)){a[0]=0;nextChar();nextSymbol();return;}
+  par[3]=LEXT->aupb;if(openFile(par)){a[0]=0;sourceLine=1;nextChar();nextSymbol();return;}
   par[0]=CHFILEpar(SOURCE);getFileError(par);if(par[1]==2){a[0]=1;}else{a[0]=-1;}
 }
 void closeSource(void){
@@ -29,13 +28,12 @@ void closeSource(void){
 
 static int Achar=' ';
 #define endChar	1
-static int readChar(int *a){int par[2];
-  par[0]=CHFILEpar(SOURCE);if(Agetchar(par)){a[0]=par[1];return 1;}
-  return 0;
-}
 static void nextChar(void){
-  int par[1];nxt:
-  if(readChar(par)){Achar=par[0];if(Achar==newline){;}else if(Achar<=31){goto nxt;}}
+  int par[2];nxt:
+  par[0]=CHFILEpar(SOURCE);
+  if(Agetchar(par)){Achar=par[1];
+    if(Achar==newline){sourceLine++;}
+    else if(Achar<=31){goto nxt;}}
   else{Achar=endChar;}
 }
 /* ----------------------------------------- */
@@ -70,9 +68,9 @@ static void comment(void){
 /* ------------------------------------------ */
 static void readIndex(int *a){/* >sign+x> */
   int par[3];
-  if('0'<=Achar&&Achar<='9'){;}else{corruptedObjFile(__FILE__,__LINE__);}
-  a[1]=Achar-'0';nextChar();nxt:
-  if(digit(par)){a[1]=a[1]*10+par[0];goto nxt;}
+  if(digit(par) && (par[0]>0||a[1]==0)){a[1]=par[0];}
+  else{corruptedObjFile(__FILE__,__LINE__);}
+  nxt:if(digit(par)){a[1]=a[1]*10+par[0];goto nxt;}
   else if(a[0]){a[1]=0-a[1];}
 }
 static void readMinus(int *a){/* x> + y> */
@@ -90,6 +88,13 @@ static void readZero(int *a){/* x> */
    nextChar();if('0'<=Achar&&Achar<='9'){par[0]=0;readIndex(par);a[0]=par[1];}
    else if(Achar=='x'||Achar=='X'){readHex(a);}
    else{a[0]=0;}
+}
+static void readDestination(int *a){ /* x> */
+   int par[2];
+   if(Achar=='N'){nextChar();par[0]=0;readIndex(par);a[0]=par[1];}
+   else if(Achar=='0'){nextChar();a[0]=0;}
+   else if(Achar=='-'){nextChar();par[0]=1;readIndex(par);a[0]=par[1];}
+   else{corruptedObjFile(__FILE__,__LINE__);}
 }
 /* strings */
 int Squoteimage;
@@ -165,8 +170,8 @@ static int firstBOLD,lastBOLD,firstTYPE,lastTYPE;
 int Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
    Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
    Dmodule,Dtitle,
-   Dand,Dbus,Dclose,Dcolon,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
-   Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
+   Dand,Dbus,Dclose,Dcolon,Dcomma,Dcompl,Ddiv,Dminus,Dnoarg,
+   Dopen,Dor,Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
    Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
    Iconstant,Ivariable,IstaticVar,Itable,Istack,IstaticStack,
    IpointerConstant,Icharfile,Idatafile,Irule,
@@ -216,6 +221,7 @@ static void init_BOLD(void){
   addBOLD("]",Dbus);
   addBOLD(")",Dclose);
   addBOLD(":",Dcolon);
+  addBOLD(",",Dcomma);
   addBOLD("~",Dcompl);
   addBOLD("/",Ddiv);
   addBOLD("-",Dminus);
@@ -296,13 +302,14 @@ void nextSymbol(void){
   else if(Achar==']'){inpt=Dbus;nextChar();}
   else if(Achar==')'){inpt=Dclose;nextChar();}
   else if(Achar==':'){inpt=Dcolon;nextChar();}
+  else if(Achar==','){inpt=Dcomma;nextChar();}
   else if(Achar=='~'){inpt=Dcompl;nextChar();}
   else if(Achar=='/'){inpt=Ddiv;nextChar();}
   else if(Achar=='-'){nextChar();readMinus(par);inpt=par[0];inptValue=par[1];}
   else if(Achar=='#'){inpt=Dnoarg;nextChar();}
   else if(Achar=='('){inpt=Dopen;nextChar();}
   else if(Achar=='|'){inpt=Dor;nextChar();}
-  else if(Achar=='>'){inpt=Dout;nextChar();}
+  else if(Achar=='>'){inpt=Dout;nextChar();readDestination(par);inptValue=par[0];}
   else if(Achar=='+'){inpt=Dplus;nextChar();}
   else if(Achar=='.'){inpt=Dpoint;nextChar();}
   else if(Achar==';'){inpt=Dsemicolon;nextChar();}

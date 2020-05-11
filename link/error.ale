@@ -110,7 +110,9 @@ $ error handling ******************************************** $
 
 'a'message head+>M-obj:
   nlcr,print char+M,print char+/ /,get obj file+obj,
-  (obj=0;print base+obj),tab line+message col.
+  (obj=0;print base+obj),
+  (M=/F/,print char+///,print form+source line;+),
+  print char+/ /,tab line+message col.
 
 'a'error+*+>mess:
    message head+/E/,format print+*,nlcr,

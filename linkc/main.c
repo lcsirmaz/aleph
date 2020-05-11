@@ -39,6 +39,12 @@ static void passiii(void){
   dataInitialization();targetMain();
 }
 
+static void passiv(void){
+  int par[2];
+  nxt:advanceBaseItem(par);
+  if(nextSource(par)){skipHeadSection();skipItemSection();dataSectionIV();goto nxt;}
+}
+
 int main(int argc,char *argv[]){
   initialize_stdstacks(argc,argv);
   initialize_stdfiles();
@@ -55,6 +61,8 @@ int main(int argc,char *argv[]){
   passii();
   if(wasError()){return 1;}
   passiii();
+  if(wasError()){return 1;}
+  passiv();
   return 0;
 }
 

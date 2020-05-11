@@ -63,7 +63,7 @@
 #define MESSAGE_CALIBRE	1
 #define EXPRESSION_CALIBRE 1
 
-#define ZONE_lb		2
+#define ZONE_lw		2
 #define ZONE_up		1
 #define ZONE_next	0
 #define ZONE_CALIBRE	3

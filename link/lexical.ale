@@ -5,8 +5,8 @@ $ HEAD **************************************************** $
    Darea,Dbox,Dcalibre,Dexpression,Dextension,Dfile,Dfill,
    Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
    Dmodule,Dtitle,
-   Dand,Dbus,Dclose,Dcolon,Dcompl,Ddiv,Dminus,Dnoarg,Dopen,Dor,
-   Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
+   Dand,Dbus,Dclose,Dcolon,Dcomma,Dcompl,Ddiv,Dminus,Dnoarg,
+   Dopen,Dor,Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,Dxor,
    Dend,Tconst,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
    $ types $
    Iconstant,Ivariable,Istatic var,Itable,Istack,Istatic stack,
@@ -17,11 +17,14 @@ $ HEAD **************************************************** $
 
 'a'next symbol.        $ read next symbol
 'variable' inpt,       $ next symbol
-           inpt value. $ auxiliary value
+           inpt value, $ auxiliary value
+           source line.$ source line count
+
 'p'R+>x:x=inpt,next symbol.
 'p'RR+>x+y>:x=inpt,inpt value->y,next symbol.
 'a'must+>x+y>:x=inpt,inpt value->y,next symbol;
               corrupted obj file+_title_+_line_.
+'pragmat'macro=(R,RR,must).           
 $ save and restore input position
 'a'save input position,restore input position.
 
@@ -46,7 +49,7 @@ $ BODY **************************************************** $
 'stack'[2]BUFFER.
 'a'extend BUFFER+>x: (* x->BUFFER *)BUFFER.
 
-'variable'inpt=0,inpt value=0.
+'variable'inpt=0,inpt value=0,source line=1.
 
 $ .ice file constituents:
 $ 'bold'
@@ -58,7 +61,8 @@ $ other characters: ()[] .*;:> +-/~|^
 
 'charfile'SOURCE=>"objfile".   $ obj file $
 'a'try to open source+res>-errno:
-   open file+SOURCE+/r/+LEXT+>>LEXT,0->res,next char,next symbol;
+   open file+SOURCE+/r/+LEXT+>>LEXT,0->res,
+      1->source line,next char,next symbol;
    get file error+SOURCE+errno,(errno=2,1->res;-1->res).
 'a'close source:
    close file+SOURCE.
@@ -66,12 +70,10 @@ $ other characters: ()[] .*;:> +-/~|^
 'variable'char=/ /.
 'constant'end char=1.
   
-'p'read char+char>:
-   get char+SOURCE+char.
 'a'next char:
-   read char+char,
+   get char+SOURCE+char,
      (=char=
-      [newline],+;
+      [newline],incr+source line;
       [:31],:next char;
       +);
    end char->char.
@@ -102,8 +104,7 @@ $ CHARACTERS ********************************************** $
   char=newline;char=end char;next char,:comment.
 $ NUMBER ********************************** $
 'a'read index+>sign+x>-d:
-  (=char=[/0/:/9/],+;corrupted obj file+_title_+_line_),
-  subtr+char+/0/+x,next char,
+  ((digit+x,(x>0;sign=0));corrupted obj file+_title_+_line_),
   (nxt:digit+d,addmult+x+10+d+x,:nxt;
        is+sign,subtr+0+x+x;
        +).
@@ -112,12 +113,16 @@ $ NUMBER ********************************** $
       Dminus->x,0->y.
 'a'read hex+x>-d:
    0->x,(nxt:hexdigit+d,left clear+x+4,bool or+x+d+x,:nxt;+).
-
 'a'read zero+x>:
    next char,(=char=
    [/0/:/9/],read index+0+x;
    [/x/;/X/],read hex+x;
    0->x).
+'a'read destination+x>:
+  =char=[/N/],next char,read index+0+x;
+        [/0/],next char,0->x;
+        [/-/],next char,read index+1+x;
+        corrupted obj file+_title_+_line_.
 $ STRING ********************************** $
 $ strings identify tags, sources and titles.
 $ each tag has at most one unique global definition,
@@ -222,6 +227,7 @@ $ single characters $
  "]"		:Dbus,
  ")"		:Dclose,
  ":"		:Dcolon,
+ ","		:Dcomma,
  "~"		:Dcompl,
  "/"		:Ddiv,
  "-"		:Dminus,
@@ -290,13 +296,14 @@ $ READ ************************************ $
    [/]/],Dbus->inpt,next char;
    [/)/],Dclose->inpt,next char;
    [/:/],Dcolon->inpt,next char;
+   [/,/],Dcomma->inpt,next char;
    [/~/],Dcompl->inpt,next char;
    [///],Ddiv->inpt,next char;
    [/-/],next char,read minus+inpt+inpt value;
    [/#/],Dnoarg->inpt,next char;
    [/(/],Dopen->inpt,next char;
    [/|/],Dor->inpt,next char;
-   [/>/],Dout->inpt,next char;
+   [/>/],Dout->inpt,next char,read destination+inpt value;
    [/+/],Dplus->inpt,next char;
    [/./],Dpoint->inpt,next char;
    [/;/],Dsemicolon->inpt,next char;

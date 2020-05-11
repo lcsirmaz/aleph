@@ -4,6 +4,7 @@
 #include "error.h"
 #include "item.h"
 #include "lexical.h"
+#include "rule.h"
 
 static int target_file_name,cannot_open_target;
 static int sizeof_list,sizeof_chfile,sizeof_dfile,block_total;
@@ -192,13 +193,18 @@ static void ruleArgs(int item){
   else{if(n==0){T("void",0,par);}else{par[0]=out;par[1]=sep;outArgs(par);sep=par[1];}
     printChar(')');}
 }
-static int isStandardExternal(int item){
+int isPidginRule(int item){
   int par[4];int x;
-  par[0]=ITEM->offset[item-ITEM_tag];getTagImage(par);x=par[1];
-  par[0]=STACKpar(LEXT);par[1]=x;par[2]=0;if(stringelem(par)){
-    x=par[3];if(('a'<=x&&x<='z')||('A'<=x&&x<='Z')){return 1;}}
+  par[0]=item;par[1]=texternal;if(isItemFlag(par)){
+    par[0]=ITEM->offset[item-ITEM_tag];getTagImage(par);x=par[1];
+    par[0]=STACKpar(LEXT);par[1]=x;par[2]=0;if(stringelem(par)){
+      x=par[3];if(('a'<=x&&x<='z')||('A'<=x&&x<='Z')){return 1;}}}
   return 0;
 }
+//static int isStandardExternal(int item){
+//  int par[4];int x;
+//  return 0;
+//}
 /* ------------------------------------------------ */
 static int externalPlainDeclaration(int item){
   int par[2];
@@ -225,13 +231,12 @@ static void blockDeclaration(int item,int prev,int sf){
 }
 static void ruleDeclaration(int item){
   int par[2];
+  if(isPidginRule(item){return;}
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){
-    if(isStandardExternal(item)){externalRuleTyper(item);
-      ruleArgs(item);T(";%n",0,par);}}
+     externalRuleTyper(item);ruleArgs(item);T(";%n",0,par);}
   else{ ruleTyper(item);ruleArgs(item);par[0]=ITEM->offset[item-ITEM_tag];
     T("; /* %p */%n",1,par);}
 }
-
 void dataDeclaration(void){
   int par[3];int ptr,prev,sf,t;
   prev=sf=0;ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){;}
@@ -316,6 +321,16 @@ void dataSectionIII(void){
   par[0]=Dlist;if(R(par)){skipEntry();goto nxt;}
   par[0]=Dfile;if(R(par)){skipEntry();goto nxt;}
   par[0]=Dfill;if(R(par)){fillEntries();goto nxt;}
+}
+void dataSectionIV(void){
+  int par[3];
+  nxt:par[0]=Dexpression;if(R(par)){skipEntry();goto nxt;}
+  par[0]=Dlist;if(R(par)){skipEntry();goto nxt;}
+  par[0]=Dfile;if(R(par)){skipEntry();goto nxt;}
+  par[0]=Dfill;if(R(par)){skipEntry();goto nxt;}
+  nxt2: par[0]=Drule;if(R(par)){makeRule();goto nxt2;}
+  par[0]=Dend;if(R(par)){;}
+  else{printf("datasection iv: wrong end of the file\n");exit(99);}
 }
 /* ------------------------------------------------ */
 static void listInitialization(int kind,int item){

@@ -141,7 +141,8 @@ static void messageHead(int M){
   int par[3];
   nlcr();printChar(M);printChar(' ');getObjFile(par);
   if(par[0]==0){;}else{printBase(par);}
-  tabLine(messageCol);
+  if(M=='F'){printChar('/');printForm(sourceLine);}
+  printChar(' ');tabLine(messageCol);
 }
 void error(int n,int *a){/* + * +>mess */
   int par[1];

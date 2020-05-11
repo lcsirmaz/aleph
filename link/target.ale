@@ -15,6 +15,8 @@ $ generating code $
 'a'target main.
    $ generate 'wait for' external; call module roots, and
    $  the main root
+'q'is pidgin rule+>item.
+   $ the external rule uses pidgin call
 $ BODY **************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("item","data","lexical","error","rule").
@@ -152,8 +154,8 @@ $    the main root.
   T+"}%n".
 $ rule declaration head *********************************** $
 $  generate forward declaration for rules with standard call
-$  external rules with pidgin call are not prototypes (they
-$  are #define's)
+$  external rules with pidgin call have no prototypes (they
+$  can be #define's)
 $  static/extern int/void <ID>(parameters); where parameters:
 $    (int F1,int F3,int F5,int A[3]) "A" is for out and inout args
 $    (int F1,int A[3],int C,int V[]) if it has a vararg block
@@ -175,8 +177,11 @@ $    (int F1,int A[3],int C,int V[]) if it has a vararg block
                T+"int C,int V[])";
       arg sep+sep,T+"int F%d"+cnt,:nxt);
    (n=0,T+"void";out args+out+sep),print char+/)/).
-'q'is standard external+>item-x:
+
+$ the external rule uses pidgin parameter passing
+'q'is pidgin rule+>item-x:
   $ check if the string starts with a letter
+  is item flag+item+texternal,
   get tag image+tag*ITEM[item]+x,string elem+LEXT+x+0+x,
     (=x=[/a/:/z/;/A/:/Z/],+;-).
 
@@ -214,9 +219,9 @@ $  variable, but not a #define value.
   (is item flag+item+texternal,
     T+"extern void %p(int,int);%n"+tag*ITEM[item];+).
 'a'rule declaration+>item: $ forward declaration $
-  is item flag+item+texternal,
-    (is standard external+item,external rule typer+item,
-        rule args+item,T+";%n";+);
+  is pidgin rule+item; $ no prototype $
+  is item flag+item+texternal,external rule typer+item,
+          rule args+item,T+";%n";
   rule typer+item,rule args+item,T+"; /* %p */%n"+tag*ITEM[item].
 'a'data declaration-ptr-def-prev-sf:
   0->prev->sf,<<ITEM->ptr,(nxt:ptr>>>ITEM;
@@ -300,7 +305,8 @@ $ generate the rules
         R+Dfile,skip entry,:nxt;
         R+Dfill,skip entry,:nxt;
         +),
-   (nxt:R+Drule,make rule,:nxt;+).
+   (nxt:R+Drule,make rule,:nxt;+),
+   (R+Dend;corrupted obj file+_title_+_line_).
 
 $ DATA SETUP ********************************************** $
 $  setup list and file data structures. As file area uses

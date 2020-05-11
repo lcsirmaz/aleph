@@ -118,7 +118,7 @@ void setup_stdarg(int F1,int F2 __attribute__((unused))){
   st->offset=0;st->p=0;st->length=0;
   st->vlwb=a_extlist_virtual+1;a_extlist_virtual+=64536; 
   st->vupb=a_extlist_virtual-1;st->calibre=1;
-  st->alwb=st->vlwb;st->aupb=st->alwb-1;
+  st->alwb=st->vlwb;st->aupb=st->alwb-st->calibre;
   for(i=a_argc-1;i>=0;i--){ /* add string a_argv[i] */
     if(a_push_string_to(F1,a_argv[i])==0){
       a_fatal("setup_stdarg","out of memory");}
@@ -358,8 +358,10 @@ int a_putdatap(int F1,int F2,int F3)
  */
 #define ALEPH_BINARY_MAGIC	(int)0xAB0347DE
 int a_openfile(int F1,int F2,int F3,int F4){
-  int *arg3=to_LIST(F3)->offset+F4;
+  int *arg3; 
     int cnt,j;int *buf;
+  if(F3==0||F4==0){ch->fileError=EBADARG; return 0;}
+  arg3=to_LIST(F3)->offset+F4;
   #define df	to_DFILE(F1)
   if(!getfl_data(df)){ // not a datafile
   #define ch	to_CHFILE(F1)
