@@ -16,7 +16,7 @@ $ BODY ********************************************************* $
 'a'skip source:
   Q cons+#;
   (Q+Dlwb;Q+Dupb;Q+Dvlwb;Q+Dvupb;Q+Dcalibre),must Qtag+#;
-  Q+Dsub,skip source,mustQ+Dbus,must Qtag+#,(Qtag+#;must Qcons+#);
+  Q+Dsub,must Qtag+#,skip source,mustQ+Dbus,must Qtag+#,(Qtag+#;must Qcons+#);
   Q+Dnoarg;
   must Qtag+#.
 'a'skip affixes:

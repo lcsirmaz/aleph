@@ -150,11 +150,11 @@ $ search "tag" as a label; complain if not found
   R+Scolon,(is tag+x,search jump+x;error+tag expected after+Scolon).
 
 $ SEL*LIST [ index ] ==>
-$  Dsub <index> Dbus Dtag(LIST) Dtag/Dcons
+$  Dsub Dtag(LIST) <index> Dbus Dtag Dtag/Dcons
 'a'index source+>tag+>err>:
-   R+Ssub,D+Dsub,source+tag+err,D+Dbus,
+   R+Ssub,D+Dsub,Dtag+tag,source+tag+err,D+Dbus,
       (R+Sbus;Eerror+err+expected after+Sbus+tag);
-   D+Dsub,D+Dupb,Dtag+tag,D+Dbus.
+   D+Dsub,Dtag+tag,D+Dupb,Dtag+tag,D+Dbus.
 $ emit the selector after the index value
 'a'selector+>sel+>tag-type-repr:
    pack selector+sel+tag+sel,

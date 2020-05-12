@@ -184,13 +184,13 @@ static int terminator(void){
 }
 static void indexSource(int *a){ /* >tag + >err> */
   int par[2];int va[3];
-  par[0]=Ssub;if(R(par)){par[0]=Dsub;D(par);par[0]=a[0];par[1]=a[1];
-    source(par);a[1]=par[1];par[0]=Dbus;D(par);par[0]=Sbus;
-    if(R(par)){;}
+  par[0]=Ssub;if(R(par)){par[0]=Dsub;D(par);par[0]=a[0];Dtag(par);
+    par[0]=a[0];par[1]=a[1];source(par);a[1]=par[1];
+    par[0]=Dbus;D(par);par[0]=Sbus;if(R(par)){;}
     else{par[0]=a[1];va[0]=expected_after;va[1]=Sbus;va[2]=a[0];
       Eerror(par,3,va);a[1]=par[0];}}
-  else{par[0]=Dsub;D(par);par[0]=Dupb;D(par);par[0]=a[0];
-    Dtag(par);par[0]=Dbus;D(par);}
+  else{par[0]=Dsub;D(par);par[0]=a[0];Dtag(par);par[0]=Dupb;D(par);
+    par[0]=a[0];Dtag(par);par[0]=Dbus;D(par);}
 }
 static void selector(int *a){ /* >sel + >tag */
   int par[4];int repr;

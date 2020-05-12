@@ -231,7 +231,7 @@ static void blockDeclaration(int item,int prev,int sf){
 }
 static void ruleDeclaration(int item){
   int par[2];
-  if(isPidginRule(item){return;}
+  if(isPidginRule(item)){return;}
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){
      externalRuleTyper(item);ruleArgs(item);T(";%n",0,par);}
   else{ ruleTyper(item);ruleArgs(item);par[0]=ITEM->offset[item-ITEM_tag];

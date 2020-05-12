@@ -227,15 +227,15 @@ $ - - - - - - - - - - - - $
   $  atype: Inoarg, Iformal repeat, other
   Qcons+x,putQ+Dconst+x,0->atype;
   limit op+x,must Qtag+tag,putQ+x+tag,0->atype;
-  Q+Dsub,putQ+Dsub,fsimple affix+atype,mustQ+Dbus,must Qtag+tag,
-    read selector+x,putQ+Dbus+tag+Dconst+x;
+  Q+Dsub,must Qtag+tag,putQ+Dsub+tag,fsimple affix+atype,
+    mustQ+Dbus,must Qtag+tag,read selector+x,putQ+Dbus+tag+Dconst+x;
   Q+Dnoarg,Inoarg->atype;
   must Qlist+tag+loc,0->atype,get type+tag+type,(=type=
     [Iconstant;Ipointer constant;Ivariable;Istatic var;
      Iformal in;Iformal out;Iformal inout;Ilocal],putQ+tag;
     [Istack;Itable;Istatic stack;Iformal stack;Iformal table],
      $ T ==> T*T[>>T] $
-     final ssel+tag+loc+x,putQ+Dsub+Dupb+tag+Dbus+tag+Dconst+x;
+     final ssel+tag+loc+x,putQ+Dsub+tag+Dupb+tag+Dbus+tag+Dconst+x;
     [Iformal repeat],putQ+tag,Iformal repeat->atype;
     internal error+fatal+_line_).
 

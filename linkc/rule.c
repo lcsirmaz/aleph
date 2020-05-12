@@ -18,7 +18,7 @@ static void findIntervalPair(int set,int up){
      ZONE->offset[ni-ZONE_next];}
   else{ni=ZONE->offset[ni-ZONE_next];goto nxt;}
 }
-static void add_interval(int *a){/* >set + >lw + >up + >new> */
+static void addInterval(int *a){/* >set + >lw + >up + >new> */
   int ni;int par[6];             /*   0      1    2      3   */
   again:ni=ZONE->offset[a[0]-ZONE_next];
   if(ni==0){a[3]=1;par[0]=STACKpar(ZONE);par[1]=3;par[4-ZONE_lw]=a[1];
@@ -38,7 +38,7 @@ static int diff1(int x,int y){if(y==x+1){return 1;}else{return 0;}}
 static void mergeIntervals(int set){
   int ni;
   again:if(ZONE->offset[set-ZONE_next]==0){return;}
-  set=ZONE->offset[ZONE_next];ni=ZONE->offset[set-ZONE_next];
+  set=ZONE->offset[set-ZONE_next];ni=ZONE->offset[set-ZONE_next];
   nxt:if(ni!=0 && diff1(ZONE->offset[set-ZONE_up],ZONE->offset[ni-ZONE_lw])){
     ZONE->offset[set-ZONE_up]=ZONE->offset[ni-ZONE_up];
     ZONE->offset[set-ZONE_next]=ZONE->offset[ni-ZONE_next];goto nxt;}
@@ -50,7 +50,6 @@ static int completeZone(int set){
     &&ZONE->offset[set-ZONE_lw]==INT_MIN && ZONE->offset[set-ZONE_up]==INT_MAX){
       return 1;}else{return 0;}
 }
-/* ------------------------------------------------ */
 static void readAreaInterval(int *a){/* lw> + up> */
   int par[3];int t,tag,count;
   par[0]=Tconst;if(RR(par)){a[0]=par[1];a[1]=a[0];count=1;}
@@ -61,18 +60,50 @@ static void readAreaInterval(int *a){/* lw> + up> */
     else if(t==Istack||t==Itable||t==IstaticStack){par[0]=tag;
       getVlwb(par);a[0]=par[1];getCalibre(par);a[1]=par[1];
       a[0]-=a[1];a[0]++;getVupb(par);a[1]=par[1];count=2;}
-    else{corruptedObjFile(__FILE__,__LINE__);}}
+    else{corruptedObjFile(__FILE__,__LINE__);count=0;}}
   else{a[0]=a[1]=count=0;}
   par[0]=Dcolon;if(R(par)){
    if(count==0){a[0]=INT_MIN;}else if(count==1){;}
    else{corruptedObjFile(__FILE__,__LINE__);}
-   par[0]=Tconst;if(RR(par)){a[1]=par[2];}
+   par[0]=Tconst;if(RR(par)){a[1]=par[1];}
    else if(par[0]=Titem,RR(par)){tag=par[1];par[0]=tag;
      if(getItemDef(par)){tag=par[1];}t=ITEM->offset[tag-ITEM_type];
      if(t==Iconstant||t==IpointerConstant){a[1]=ITEM->offset[tag-ITEM_repr];}
      else{corruptedObjFile(__FILE__,__LINE__);}}
    else{a[1]=INT_MAX;}}
   else if(count==0){corruptedObjFile(__FILE__,__LINE__);}
+}
+/* ------------------------------------------------ */
+static int larger_lower_bound,cannot_succeed,area_may_fail;
+
+#define addMSG(x,y)	 add_new_string(x,MESSAGE);y=MESSAGE->aupb
+static void init_MSG(void){
+ addMSG("area at %l: lower bound %d exceeds upper bound %d",larger_lower_bound);
+ addMSG("area at %l: this alternative never succeeds",cannot_succeed);
+ addMSG("last area at %l: not all cases are covered",area_may_fail);
+}
+#undef addMSG
+/* ------------------------------------------------ */
+static void checkArea(int *a){/* >set + dl> */
+  int par[4];int nnew,lw,up;
+  par[0]=Tconst;must(par);a[1]=par[1];nnew=0;nxt:
+  readAreaInterval(par);lw=par[0];up=par[1];
+  if(lw<=up){par[0]=a[0];par[1]=lw;par[2]=up;par[3]=nnew;
+     addInterval(par);nnew=par[3];}
+  else{par[0]=larger_lower_bound;par[1]=a[1];par[2]=lw;par[3]=up;
+     error(4,par);}
+  par[0]=Dsemicolon;if(R(par)){goto nxt;}
+  mergeIntervals(a[0]);
+  if(nnew){;}else{par[0]=cannot_succeed;par[1]=a[1];error(2,par);}
+}
+static void checkAreas(void){
+  int par[5];int set,dl;
+  par[0]=STACKpar(ZONE);scratch(par);par[0]=STACKpar(ZONE);par[1]=3;
+  par[2]=par[3]=par[4]=0;expandstack(par);set=ZONE->aupb;dl=0;nxt:
+  par[0]=Darea;if(R(par)){par[0]=set;checkArea(par);dl=par[1];
+  par[0]=Dout;must(par);goto nxt;}
+  if(completeZone(set)){;}else{
+    par[0]=area_may_fail;par[1]=dl;warning(2,par);}
 }
 /* ------------------------------------------------ */
 static int isLimit(void){
@@ -92,7 +123,7 @@ static void skipAffix(void){
   par[0]=Dnoarg;if(R(par)){return;}
   par[0]=Tconst;if(R(par)){return;}
   if(isLimit()){par[0]=Tformal;if(R(par)){;}else{par[0]=Titem;must(par);} return;}
-  par[0]=Dsub;if(R(par)){skipAffix();par[0]=Dbus;must(par);
+  par[0]=Dsub;if(R(par)){par[0]=Titem;must(par);skipAffix();par[0]=Dbus;must(par);
      par[0]=Tformal;if(R(par)){;}else{par[0]=Titem;must(par);}
      par[0]=Tconst;must(par);return;}
 printf("skip affix, inpt=%d ",inpt);par[0]=inpt;printPointer(par);printf("\n");
@@ -111,8 +142,10 @@ static void skipArea(void){
 }
 static void skipBox(void){
   int par[3];
-  par[0]=Tnode;must(par);skipAffix();nxt:
-  par[0]=Darea;if(R(par)){par[0]=Tconst;must(par);skipArea();goto nxt;}
+  par[0]=Tnode;must(par);skipAffix();
+  checkAreas();
+//  skipAffix();nxt:
+//  par[0]=Darea;if(R(par)){par[0]=Tconst;must(par);skipArea();goto nxt;}
   par[0]=Dcomma;must(par);
 }
 static void skipExtension(void){
@@ -180,6 +213,11 @@ void makeRule(void){
   par[0]=Dbox;if(R(par)){skipBox();goto nxt;}
   par[0]=Dextension;if(R(par)){skipExtension();goto nxt;}
   corruptedObjFile(__FILE__,__LINE__);
+}
+
+/* ------------------------------------------------------ */
+void initialize_rule(void){
+  init_MSG();
 }
 
 /* EOF */

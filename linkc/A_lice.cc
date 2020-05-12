@@ -16,8 +16,11 @@
  *  so avoid these idenitifers as well.
  */
 
+/* LISTS: allocation, initialization, standard rules */
+
 /* 'p'request space+[]st[]+>n:
-    make sure the list has a least as much allocated space
+ *   make sure the list has a least n words allocated space
+ *   called for stacks and tables to make space for filling
  */
 int a_requestspace(int ID,int n){
   if(n<=0) return 1; /* OK */
@@ -26,7 +29,7 @@ int a_requestspace(int ID,int n){
         // not enough virtual space
   int newsize=st->aupb-st->vlwb+st->calibre+n;
         // one more than the size
-  if(newsize<=st->length) return 0;
+  if(newsize<=st->length) return 1;
   newsize= (newsize+1023)&~1023; //round it
   int *ptr = realloc(st->p,sizeof(int)*newsize );
   if(!ptr) return 0; // no memory
@@ -35,28 +38,46 @@ int a_requestspace(int ID,int n){
   #undef st
   return 1;
 }
-/* setup routines to set up lists and files */
+/* a_extension(stack,size)
+ *  stack extension calls it to make room for the
+ *  new block. Aborts if cannot garantee the
+ *  requested space
+ */
+void a_extension(int ID,int n){
+  if(a_requestspace(ID,n)){ return; }
+  a_fatal("extension failed",
+    to_LIST(ID)->aupb+n>to_LIST(ID)->vupb ? "out of virtual space"
+                                          : "out of memory");
+}
 
-/* compare an ALEPH string to a C string */
+/* list initialization */
+
+/* int a_extstrcmp(int stack, int off, const char *str)
+ * compare the ALEPH string at stack[off] to a C string
+ * used by a_waitform t compare requested module names
+ */
 int a_extstrcmp(int ID,int off,const char *str){
   #define st	to_LIST(ID)
   int *ptr=st->offset+off; 
   return strcmp((char*)(ptr+1-*ptr),str);
   #undef  st
 }
-/* fatal with messages */
+/* a_fatal(*m1,*m2)
+ * message to stderr when a fatal error occurs
+ */
 void a_fatal(const char*m1,const char *m2){
   fputs(m1,stderr);fputc(' ',stderr);fputs(m2,stderr);
   fputs("\nFatal error, aborting\n",stderr);
   exit(256);
 }
 /* setup a list structure
-   kind:  0 - table, 1- stack (ignored)
+   a_setup_list(kind,list,calibre,vlwb,vupb,fill size)
+   kind:  0 - table, 1 - stack (ignored)
    cal:   calibre
-   lb,up: virtual lower and upper bound (corrected for calibre)
+   vlwb,vupb: virtual lower and upper bounds
    fill:  fill size
  */
-void setup_list(int kind __attribute__((unused)),
+void a_setup_list(int kind __attribute__((unused)),
                int ID,int cal,int lb,int up,int fill){
   #define st	to_LIST(ID)
   st->offset=0; st->p=0; st->length=0;
@@ -65,11 +86,11 @@ void setup_list(int kind __attribute__((unused)),
   a_requestspace(ID,fill);
   #undef st
 }
-/* add list filling 
-   filling is collected in the integer array 'fill'
-   after usage it can be discarder; the same routing
-   can read an external file and fill the lists
-*/
+/* a_list_fill(int *fill)
+ *  filling is collected in the integer array 'fill'
+ *  after this call 'fill' can be discarded; the
+ *  content could come from an external file
+ */
 void a_list_fill(int *fill){
   int ID,x,i,cnt,*idx;
   #define st	to_LIST(ID)
@@ -84,9 +105,13 @@ void a_list_fill(int *fill){
   }
   #undef st
 }
+/* a_push_string_to(list,char *chr)
+ * internal routine used by setup_stdarg()
+ * store a C text string at an ALEPH list
+ * with check for correct UTF-8 encoding
+ * return value: 1: OK, 0: out of memory
+ */
 static int a_push_string_to(int F1,const char *ptr){
-  /* push string ptr; check that it is correct UTF-8
-     return 0 if cannot get memory; 1 otherwise   */
   int n,w; int *goal; char *to;
   #define st	to_LIST(F1)
   n=strlen(ptr);if(a_requestspace(F1,3+(n/4))==0){ return 0; }
@@ -109,10 +134,13 @@ static int a_push_string_to(int F1,const char *ptr){
   *to=0;w=1+(n/4);goal[w]=n;goal[w+1]=w+2;st->aupb+=w+2;
   return 1;
 }
+/* setup_stdarg(list,kind)
+ * setup routine for the standard external table
+ * STDARG, fills the table with online arguments
+ *    a_extlist_virtual: virtual space 
+ *    a_argc,a_argv: porgram line arguments
+ */
 void setup_stdarg(int F1,int F2 __attribute__((unused))){
-  /* create a table of command line arguments
-     virtual address space:  a_exlist_virtual
-     command line arguments: a_argc,a_argv */
   int i;
   #define st	to_LIST(F1)
   st->offset=0;st->p=0;st->length=0;
@@ -125,13 +153,188 @@ void setup_stdarg(int F1,int F2 __attribute__((unused))){
   }
   #undef st
 }
+/* standard list routines; they are inline'd */
+/* 'q'was+t[]+>p */
+//int a_was(int F1,int F2){
+//# define st to_LIST(F1)
+//   return (st->alwb-st->calibre<F2 && F2<= st->aupb)?1 : 0;
+//# undef  st
+//}
+/* 'f'next+t[]+>p> */
+//void a_next(int F1, int A[1]){
+//   A[0]+=to_LIST(F1)->calibre;
+//}
+/* 'f'previous+t[]+>p> */
+//void a_previous(int F1,int A[1]){
+//   A[0]-=to_LIST(F1)->calibre;
+//}
+/* 'a'unstack+[]st[] */
+//void a_unstack(int F1){
+//   to_LIST(F1)->aupb -= to_LIST(F1)->calibre;
+//}
+/* 'a'unstack to+[]st[]+>p */
+//void a_unstackto(int F1,int F2){
+//   to_LIST(F1)->aupb=F2;
+//}
+/* 'f'list length+t[]+len> */
+//void a_listlength(int F1,int A[1]){
+//#  define st	to_LIST(F1)
+//   A[0]=st->aupb-st->alwb+st->calibre;
+//#  undef st
+//}
+/* 'a'scratch+[]st[] */
+//void a_scratch(int F1){
+//#  define st	to_LIST(F1)
+//   st->aupb=st->alwb-st->calibre;
+//#  undef st
+//}
+/* 'a'release+[]st[] */
+void a_release(int F1){
+#  define st	to_LIST(F1)
+   st->aupb=st->alwb-st->calibre;
+   free(st->p);st->p=0;st->length=0;
+#  undef st
+}
+/* strings */
+/* 'f'string length+t[]+>p+len> */
+void a_stringlength(int F1,int F2,int A[1]){
+   A[0]=to_LIST(F1)->offset[-1+F2];
+}
+/* 'f'string width+t[]+>p+len> */
+void a_stringwidth(int F1,int F2,int A[1]){
+   A[0]=to_LIST(F1)->offset[F2];
+}
+/* 'f'previous string+t[]+>p> */
+void a_previousstring(int F1,int A[1]){
+   A[0]-=to_LIST(F1)->offset[A[0]];
+}
+/* 'f'compare string+t1[]+>p1+t2[]+>p2+res> */
+void a_comparestring(int F1,int F2,int F3,int F4,int A[1]){
+  int *ptr1=to_LIST(F1)->offset+F2,
+      *ptr2=to_LIST(F3)->offset+F4;
+  A[0]=strcmp((char*)(ptr1+1-*ptr1),(char*)(ptr2+1-*ptr2));
+}
+/* 'f'compare string n+t1[]+>p1+t2[]+>p2+>n+res> */
+void a_comparestringn(int F1,int F2,int F3,int F4,int F5,int A[1]){
+  int *ptr1=to_LIST(F1)->offset+F2,
+      *ptr2=to_LIST(F3)->offset+F4;
+  A[0]=strncmp((char*)(ptr1+1-*ptr1),(char*)(ptr2+1-*ptr2),F5);
+}
+/* 'q'string elem+t[]+>p+>n+c> */
+int a_stringelem(int F1,int F2,int F3,int A[1]){
+  int *ptr=to_LIST(F1)->offset+F2;
+  const char *chr=(char*)(ptr+1-*ptr);
+  int c;
+  if(F3<0 || F3>=ptr[-1]) return 0;
+  for(;F3>=0;F3--){
+    c=*chr;chr++;if(c==0) return 0;
+    if((c&0x80)==0) continue;
+    if((c&0xE0)==0xC0){ // two byte
+       c &= 0x1F; goto out1;}
+    if((c&0xF0)==0xE0){ // three byte
+       c &= 0x0F; goto out2;}
+    if((c&0xF8)==0xF0){ // four byte
+       if((*chr&0xC0)!=0x80) return 0;
+       c<<=6; c|= *chr&0x3F; chr++;
+out2:  if((*chr&0xC0)!=0x80) return 0;
+       c<<=6; c|= *chr&0x3F; chr++;
+out1:  if((*chr&0xC0)!=0x80) return 0;
+       c<<=6; c|= *chr &0x3F; chr++;
+       continue;
+    } 
+    return 0; // some error
+  }
+  A[0]=c;return 1;
+}
+/* 'a'unstack string+[]st[] */
+void a_unstackstring(int F1){
+#  define st	to_LIST(F1)
+  st->aupb-= st->offset[st->aupb];
+#  undef st
+}
+/* 'a'pack string+t[]+>p+[]st[] */
+void a_packstring(int F1,int F2,int F3){
+   int len,i;
+   int *ptr=to_LIST(F1)->offset+to_LIST(F1)->aupb-F2+1; // start
+   int width=3*sizeof(int);for(i=0;i<F2;i++){
+     width += ptr[i]<=0 ? 0 : ptr[i]<0x80?1 :
+            ptr[i]<0x800 ? 2 : ptr[i]<0x10000 ? 3 :
+            ptr[i]<0x110000 ? 4 : 0;
+   }
+   width /= sizeof(int);a_extension(F3,width);
+   int *goal=to_LIST(F3)->offset+1+to_LIST(F3)->aupb;
+   char *chr=(char*)goal;len=0;
+   for(i=0;i<F2;i++){
+     if(ptr[i]<0||ptr[i]>0x110000) continue;
+     len++;
+     if(ptr[i]<0x80){ *chr=ptr[i]; chr++; continue; }
+     if(ptr[i]<0x800){ *chr = 0xC0|(ptr[i]>>6);chr++;
+                       *chr = 0x80|(ptr[i]&0x3F); chr++;
+                       continue; }
+     if(ptr[i]<0x10000){ *chr = 0xE0|(ptr[i]>>12);chr++;
+                       *chr = 0x80|((ptr[i]>>6)&0x3F); chr++;
+                       *chr = 0x80|(ptr[i]&0x3F); chr++;
+                       continue; }
+            *chr = 0xF0|(ptr[i]>>18); chr++;
+            *chr = 0x80|((ptr[i]>>12)&0x3F); chr++;
+            *chr = 0x80|((ptr[i]>>6)&0x3F); chr++;
+            *chr = 0x80|(ptr[i]&0x3F); chr++;
+   }
+   *chr=0;
+   goal[width-2]=len;goal[width-1]=width;
+   to_LIST(F3)->aupb+=width;
+}
+/* 'a'unpack string+t[]+>p+[]st[] */
+void a_unpackstring(int F1,int F2,int F3){
+   int i;
+   int *ptr=to_LIST(F1)->offset+F2;
+   int n=ptr[-1]; // number of characters
+   //some sanity check
+   if(n<0 || n>99000 || ptr[0]<0 || n>4*ptr[0])
+      a_fatal("unpack string","called with no string");
+   a_extension(F3,n);
+   unsigned *goal=(unsigned*)(to_LIST(F3)->offset+1+to_LIST(F3)->aupb);
+   char *chr=(char*)(ptr+1-*ptr);
+   for(i=0;i<n;i++,goal++){
+     *goal=*chr;chr++;if(*goal==0) a_fatal("unpack string","wrong encoding");
+     if((*goal&0x80)==0) continue;
+     if((*goal&0xE0)==0xC0){ // two byte
+       *goal &=0x1F; goto out1; }
+     if((*goal&0xF0)==0xE0){ // three byte
+       *goal &=0x0F; goto out2; }
+     if((*goal&0xF8)==0xF0){ // four byte 
+       if((*chr&0xC0)!=0x80) return;
+       *goal<<=6; *goal |= *chr&0x3F; chr++;
+out2:  if((*chr&0xC0)!=0x80) return;
+       *goal<<=6; *goal |= *chr&0x3F; chr++;
+out1:  if((*chr&0xC0)!=0x80) return;
+       *goal<<=6; *goal |= *chr&0x3F; chr++;
+       continue;
+     }
+     return; // some error
+   }
+   to_LIST(F3)->aupb += n;
+}
+/* 'a'copy string+t1[]+>p+[]st[] */
+void a_copystring(int F1,int F2,int F3){
+   int i;
+   int *ptr=to_LIST(F1)->offset+F2; int n=ptr[0]; // width
+   // some sanity check
+   if(n<0 || n>25000 || ptr[-1]>4*n) a_fatal("copy string","wrong string");
+   a_extension(F3,n);
+   int *goal=to_LIST(F3)->offset+n+to_LIST(F3)->aupb;
+   for(i=0;i<n;i++) goal[-i]=ptr[-i];
+   to_LIST(F3)->aupb+=n;
+}
 /* ------------------------------------------------------ */
 /* input / output */
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 
-#define EWASOPENED	10001	// file was open in openFile+f 
+/* err values returned for file error */
+
+#define EWASOPENED	10001	// file was already open 
 #define EBADARG		10002	// mode is not /r/ or /w/ or /a/
 #define ETRUNCATED	10003   // file is truncated (end is missing)
 #define EWRONGALEPH	10004	// input datafile is not an aleph file
@@ -168,9 +371,10 @@ void setup_stdarg(int F1,int F2 __attribute__((unused))){
 #define getfl_out(x)		getflag_general(x,0x40)
 #define setfl_out(x,y)		setflag_general(x,y,0x40)
 
-/* character file:
-    dir     0,1,2,3 1/3: in, 2,2: out
-    dd,off  init string
+/*  setup a character file structure
+ *   ID      structure index
+ *   dir     1,3: in, 2,3: out
+ *   dd,off  init string for implicit open
  */
 void setup_charfile(int ID,int dir,int dd,int off){
   #define ch	to_CHFILE(ID)
@@ -180,11 +384,12 @@ void setup_charfile(int ID,int dir,int dd,int off){
   if(dir&3){setfl_out(ch,1);}
   #undef ch
 }
-/* data file 
-    dir     0,1,2,3 direction
-    dd,off  init string
-    cnt     number of items in file area
-*/
+/* setup datafiile structure
+ *  ID      structure index
+ *  dir     1,3: in, 2,3: out
+ *  dd,off  init string for implicit open
+ *  cnt     number of lists in file area
+ */
 void setup_dfile(int ID,int dir, int dd, int off,int cnt){
   #define df	to_DFILE(ID)
   df->openflag=0;df->fileError=0; df->st1=dd;df->st2=off;
@@ -195,11 +400,12 @@ void setup_dfile(int ID,int dir, int dd, int off,int cnt){
   if(cnt>=a_MAXIMAL_AREA){a_fatal("datafile area number","error");}
   #undef df
 }
-/* add filearea
-     list: the list
-     hash: hash value for the list
-     do not check if the same list is added again
-*/
+/* add a filearea
+ *   ID     structure index
+ *   list   index of the list
+ *   hash   hash value for the list ID
+ *           no check is made if the same list is added twice
+ */
 void add_filearea(int ID,int list,int hash){
   int i,tmp;
   #define df	to_DFILE(ID)
@@ -220,9 +426,20 @@ void add_filearea(int ID,int list,int hash){
 
 /* char file input/output */
 
-static int a_tryopen(int F1,int dir);
+/* a_tryopen 
+ *   try to open the given string */
+static int a_tryopen(int F1,int dir){
+   #define df	to_DFILE(F1)
+   if((dir=='r' && getfl_in(df))|| (dir=='w' && getfl_out(df))){
+      return a_openfile(F1,dir,df->st1,df->st2);
+   }
+   df->fileError=ENOTOPENED; return 0;
+   #undef df
+}
 
-/* 'p'get char+""f+char>.  read an utf-8 encoded character  */
+/* 'p'get char+""f+char>.  
+ *    read a utf-8 encoded character
+ */
 int a_getchar(int F1,int A[1]){
    int c;
    #define ch	to_CHFILE(F1)
@@ -253,7 +470,9 @@ out1:
    goto again;
    #undef ch
 }
-/* 'a'ahead char+""f+char>. look ahead for the next character */
+/* 'a'ahead char+""f+char>.
+ *   look ahead for the next character
+ */
 void a_aheadchar(int F1,int A[1]){
    #define ch to_CHFILE(F1)
    A[0]=-1;if(getfl_data(ch)){ch->fileError=ENOCHARFILE; return; }
@@ -264,7 +483,9 @@ void a_aheadchar(int F1,int A[1]){
    #undef ch
 }
 #define a_maxchar	0x10ffff
-/* 'a'put char+""f + >char. write a char to the file */
+/* 'a'put char+""f + >char. 
+ *   write a character to the char file
+ */
 void a_putchar(int F1,int F2){
    #define ch to_CHFILE(F1)
    if(getfl_data(ch)){ch->fileError=ENOCHARFILE; return;}
@@ -284,7 +505,9 @@ void a_putchar(int F1,int F2){
       putc((F2&0x3F)|0x80,ch->f)<0) ch->fileError=errno;
    #undef ch
 }
-/* 'a'put string+""f+T[]+>ptr. */
+/* 'a'put string+""f+T[]+>ptr. 
+ *      write a string to a character file
+ */
 void a_putstring(int F1,int F2,int F3){
   #define ch	to_CHFILE(F1)
   if(getfl_data(ch)){ch->fileError=EWRONGTYPE; return;}
@@ -296,7 +519,12 @@ void a_putstring(int F1,int F2,int F3){
   #undef ch
 }
 /* ------------------------------------------------- */
-/* static: read/write databuffer */
+/* binary input/output
+ * a_read_databuffer 
+ *    fill the databuffer
+ * a_write_databuffer
+ *    flush databuffer
+ */
 static int a_read_databuffer(a_DATAFILE *df){
    int cnt,i;char *b;
    cnt=1024*sizeof(int);b=(char*)(df->buffer);
@@ -321,7 +549,9 @@ static int a_write_databuffer(a_DATAFILE *df){
    }
    return 0;
 }
-/* 'p'put datap + ""f + >data+>type */
+/* 'p'put datap + ""f + >data+>type 
+ *    add the next data
+ */
 int a_putdatap(int F1,int F2,int F3)
 {  int cnt;
    #define df	to_DFILE(F1)
@@ -352,17 +582,17 @@ int a_putdatap(int F1,int F2,int F3)
    #undef df
 }
 /* 'p'open file + ""f + >mode + T[]+>ptr.
-    mode: r - reading, must exist
-          w - writing, created, chopeed if exist
-          a - append; charfile only
+ *  open a file
+ *   mode: r - reading, must exist
+ *         w - writing, created, chopeed if exist
+ *         a - append; charfile only
  */
 #define ALEPH_BINARY_MAGIC	(int)0xAB0347DE
 int a_openfile(int F1,int F2,int F3,int F4){
-  int *arg3; 
-    int cnt,j;int *buf;
-  if(F3==0||F4==0){ch->fileError=EBADARG; return 0;}
-  arg3=to_LIST(F3)->offset+F4;
+  int *arg3;int cnt,j;int *buf;
   #define df	to_DFILE(F1)
+  if(F3==0||F4==0){df->fileError=EBADARG; return 0;}
+  arg3=to_LIST(F3)->offset+F4;
   if(!getfl_data(df)){ // not a datafile
   #define ch	to_CHFILE(F1)
     if(ch->f){ch->fileError=EWASOPENED; return 0; }
@@ -441,16 +671,6 @@ int a_openfile(int F1,int F2,int F3,int F4){
   return 1;
   #undef df
 }
-/* try open the supplied file */
-static int a_tryopen(int F1,int dir){
-   #define df	to_DFILE(F1)
-   if((dir=='r' && getfl_in(df))|| (dir=='w' && getfl_out(df))){
-      return a_openfile(F1,dir,df->st1,df->st2);
-   }
-   df->fileError=ENOTOPENED; return 0;
-   #undef df
-}
-
 /* 'p'close filep+""f. */
 int a_closefilep(int F1){
   int ret;

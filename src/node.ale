@@ -267,7 +267,7 @@ $ actual rule --------------------------------------- $
    0->repeat,
      (Qcons+#;
       g limit,must Qtag+#;
-     Q+Dsub,utype to slice+utype+type,g simple affix+type+#,
+     Q+Dsub,must Qtag+#,utype to slice+utype+type,g simple affix+type+#,
        mustQ+Dbus,must Qtag+#,(Qcons+#;must Qtag+#);
      Q+Dnoarg;
      must Qtag+tag,get type+tag+type,
@@ -702,7 +702,7 @@ $ replacement for L*L[>>L], figure out the standard selector
         get calibre+tag+x,push BUFFER+Dconst+x);
      w limit+x,must Qtag+tag,push BUFFER+x+tag;
      Q+Dnoarg,push BUFFER+Dnoarg;
-     Q+Dsub,push BUFFER+Dbus,utype to slice+utype+type,
+     Q+Dsub,must Qtag+tag,push BUFFER+Dsub+tag,utype to slice+utype+type,
        w simple affix+type+#,mustQ+Dbus,must Qtag+tag,
          $ this is the selector $
        (Qcons+x;must Qtag+x,get repr+x+x),
@@ -710,7 +710,7 @@ $ replacement for L*L[>>L], figure out the standard selector
      must Qlist+tag+local,get type+tag+type,(=type=
        [Iformal repeat],push BUFFER+Dstar,tag->repeat; $ actual * affix $
        [Istack;Itable;Istatic stack;Iformal stack;Iformal table],
-          final ssel+tag+local+x,push BUFFER+Dsub+Dupb+tag+Dbus+tag+Dconst+x;
+          final ssel+tag+local+x,push BUFFER+Dsub+tag+Dupb+tag+Dbus+tag+Dconst+x;
        [Iformal in;Iformal out;Iformal inout;Ilocal],
           w handle affix+utype,push BUFFER+tag;
        push BUFFER+tag)).
@@ -879,7 +879,7 @@ $    Dbox,<node>,<source>,(Darea,<area>,Dcolon,<node/->)*,Dbox
 $    Dextension,<node>,<list>,#width,(<source>,(Dto,off)+)+,Dcolon <node/->
 $    <source> ::= <tag> | <formal> | <local> | Dnoarg | <index> |
 $                  Dstar | <limitop><list>
-$    <index> ::= Dsub, <source>, Dbus, <list>, #offset
+$    <index> ::= Dsub, <list> <source>, Dbus, <list>, #offset
 $    <list> ::= <tag> | <formal>
 $    W+Dpoint.
 

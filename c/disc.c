@@ -305,7 +305,8 @@ static void fsimpleAffix(int *a){/* atype> */
   if(Qcons(par)){x=par[0];par[0]=Dconst;par[1]=x;putQ(2,par);a[0]=0;}
   else if(limitOp(par)){x=par[0];mustQtag(par);tag=par[0];
     par[0]=x;par[1]=tag;putQ(2,par);a[0]=0;}
-  else if((par[0]=Dsub,Q(par))){par[0]=Dsub;putQ(1,par);
+  else if((par[0]=Dsub,Q(par))){par[0]=Dsub;mustQtag(par);par[1]=par[0];
+    par[0]=Dsub;putQ(2,par);
     fsimpleAffix(a);par[0]=Dbus;mustQ(par);mustQtag(par);tag=par[0];
     readSelector(par);x=par[0];par[0]=Dbus;par[1]=tag;par[2]=Dconst;
     par[3]=x;putQ(4,par);}
@@ -316,8 +317,8 @@ static void fsimpleAffix(int *a){/* atype> */
       ||type==IformalInout||type==Ilocal){par[0]=tag;putQ(1,par);}
     else if(type==Istack||type==Itable||type==IstaticStack||
       type==IformalTable||type==IformalStack){par[0]=tag;par[1]=loc;
-      finalSsel(par);x=par[2];par[0]=Dsub;par[1]=Dupb;par[2]=tag;
-      par[3]=Dbus;par[4]=tag;par[5]=Dconst;par[6]=x;putQ(7,par);}
+      finalSsel(par);x=par[2];par[0]=Dsub;par[1]=tag;par[2]=Dupb;par[3]=tag;
+      par[4]=Dbus;par[5]=tag;par[6]=Dconst;par[7]=x;putQ(8,par);}
     else if(type==IformalRepeat){par[0]=tag;putQ(1,par);a[0]=IformalRepeat;}
     else{printf("fsimpleAffix (disc), wrong formal type %d\n",type);exit(23);}}
 }

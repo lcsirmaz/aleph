@@ -59,7 +59,7 @@ int a_extstrcmp(int table,int off,const char *str);
   /* compare the ALEPH string with the one given as the last argument */
 void a_fatal(const char *m1,const char* m2);
   /* fatal error; print both strings to stderr and abort */
-void setup_list(int kind,int ID,int cal,int lb,int up,int fill);
+void a_setup_list(int kind,int ID,int cal,int lb,int up,int fill);
 void setup_charfile(int ID,int dir,int sID,int soff);
 void setup_dfile(int ID,int dir,int sID,int soff,int narea);
 void add_filearea(int ID,int aID,int hash);
@@ -81,6 +81,36 @@ int a_R##x(int table,int off){				\
   virtual address for external lists */
 extern int a_argc; extern char *a_argv[];
 extern int a_extlist_virtual;
+
+/* extension */
+
+  /* 'p' request space+[]st[]+>n */
+int a_requestspace(int ID,int n);
+  /* 'a'extension+[]st[]+>n */
+void a_extension(int ID,int n);
+  /* 'a'release+[]st[] */
+void a_release(int ID);
+
+/* input/output */
+
+  /* 'p'open file+""f+>mode+t[]+>ptr */
+int a_openfile(int F1,int F2,int F3,int F4);
+  /* 'p'close filep+""f */
+int a_closefilep(int F1);
+  /* 'a'close file+""f */
+void a_closefile(int F1);
+  /* 'p'get char+""f+char> */
+int a_getchar(int F1,int A[1]);
+  /* 'a'ahead char+""f+char> */
+void a_aheadchar(int F1,int A[1]);
+  /* 'a'put char+""f+>char */
+void a_putchar(int F1,int F2);
+  /* 'a'put string+""f+t[]+>p */
+void a_putstring(int F1,int F2,int F3);
+  /* 'p'put datap+""f+>data+>type */
+int a_putdatap(int F1,int F2,int F3);
+  /* 'a'put data+""f+>data+>type */
+void a_putdata(int F1,int F2,int F3);
 
 #endif
 /* EOF */

@@ -7,6 +7,7 @@
 #include "input.h"
 #include "error.h"
 #include "target.h"
+#include "rule.h"
 
 
 static void passi(void){
@@ -52,6 +53,7 @@ int main(int argc,char *argv[]){
   initialize_error();
   initialize_input();
   initialize_target();
+  initialize_rule();
   initialize_lexical(); /* target adds strings to LEXT to be hash-ed */
   initialize_item(); /* this relies on Itable to be defined */
   rehash_lexical();  /* thus we have to postpone rehash() */

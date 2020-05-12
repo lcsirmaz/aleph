@@ -225,8 +225,8 @@ static void gsimpleAffix(int *a){/* >utype + repeat> */
   int par[3];int tag,type;
   a[1]=0;if(Qcons(par)){;}
   else if(glimit()){mustQtag(par);}
-  else if((par[0]=Dsub,Q(par))){par[0]=a[0];utypeToSlice(par);type=par[1];
-    par[0]=type;gsimpleAffix(par);par[0]=Dbus;mustQ(par);
+  else if((par[0]=Dsub,Q(par))){mustQtag(par);par[0]=a[0];utypeToSlice(par);
+    type=par[1];par[0]=type;gsimpleAffix(par);par[0]=Dbus;mustQ(par);
     mustQtag(par);if(Qcons(par)){;}else{mustQtag(par);}}
   else if((par[0]=Dnoarg,Q(par))){;}
   else{mustQtag(par);tag=par[0];getType(par);type=par[1];
@@ -734,7 +734,7 @@ static void wafterShiftRule(int *a){/*>ptr */
 }
 
 static void wsimpleAffix(int *a){/* >utype+ repeat> */
-  int par[7];int tag,type,local,x;
+  int par[8];int tag,type,local,x;
   a[1]=0;if(Qcons(par)){par[1]=par[0];par[0]=Dconst,pushBUFFER(2,par);return;}
   par[0]=Dcalibre;if(Q(par)){mustQtag(par);tag=par[0];
     if(hasFormalType(par)){par[0]=Dcalibre;par[1]=tag;pushBUFFER(2,par);}
@@ -743,7 +743,8 @@ static void wsimpleAffix(int *a){/* >utype+ repeat> */
   if(wlimit(par)){x=par[0];mustQtag(par);par[1]=par[0];par[0]=x;
     pushBUFFER(2,par);return;}
   par[0]=Dnoarg;if(Q(par)){pushBUFFER(1,par);return;}
-  par[0]=Dsub;if(Q(par)){pushBUFFER(1,par);par[0]=a[0];utypeToSlice(par);
+  par[0]=Dsub;if(Q(par)){mustQtag(par);par[1]=par[0];par[0]=Dsub;
+    pushBUFFER(2,par);par[0]=a[0];utypeToSlice(par);
     type=par[1];par[0]=type;wsimpleAffix(par);par[0]=Dbus;mustQ(par);
     mustQtag(par);tag=par[0];if(Qcons(par)){x=par[0];}
     else{mustQtag(par);getRepr(par);x=par[1];}
@@ -753,8 +754,8 @@ static void wsimpleAffix(int *a){/* >utype+ repeat> */
     if(type==IformalRepeat){par[0]=Dstar;pushBUFFER(1,par);a[1]=tag;}
     else if(type==Istack||type==IstaticStack||type==IformalStack
       ||type==IformalTable){par[0]=tag;par[1]=local;finalSsel(par);x=par[2];
-        par[0]=Dsub;par[1]=Dupb;par[2]=tag;par[3]=Dbus;par[4]=tag;
-        par[5]=Dconst;par[6]=x;pushBUFFER(7,par);}
+        par[0]=Dsub;par[1]=tag;par[2]=Dupb;par[3]=tag;par[4]=Dbus;
+        par[5]=tag;par[6]=Dconst;par[7]=x;pushBUFFER(8,par);}
     else if(type==IformalIn||type==IformalOut||type==IformalInout||type==Ilocal){
       par[0]=a[0];whandleAffix(par);par[0]=tag;pushBUFFER(1,par);}
     else{par[0]=tag;pushBUFFER(1,par);}

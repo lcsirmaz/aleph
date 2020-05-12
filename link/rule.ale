@@ -90,7 +90,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
       complete zone+set;
       warning+area may fail+dl).
      
-
+$ ============================================================ $
 
 $ check if two nodes are the same .. to be done later $
 $ make a hash table, and store nodes with the same hash
@@ -98,7 +98,26 @@ $  check if nodes with the same hash are actually equal
 $  (do it for rule calls only - check equality of parameters)
 $  link equal nodes (but with possibly different exit)
 
-'stack'[10](type,tag,adm,tnext,fnext)NODE.
+'stack'[10](hash,flag,tag,adm,fnext,tnext)NODE.
+
+'q'is node flag+>node+>flag-x:
+   bool and+flag*NODE[node]+flag+x,x!=0.
+'a'set node flag+>node+>flag:
+   bool or+flag+flag*NODE[node]+flag*NODE[node].
+'a'clear node flag+>node+>flag:
+  bool invert+flag+flag,bool and+flag+flag*NODE[node]+flag*NODE[node].
+
+'constant' $ node flags $
+  nnode		= 0x0001, $ node
+  nextension	= 0x0002, $ extension
+  nbox		= 0x0004. $ box
+
+'variable'node ptr=0.     $ the actual node
+'a'create nodes-n:
+  scratch+NODE,<<NODE->node ptr,must+Tconst+n, $ number of nodes $
+  (nxt: n=0;
+     (* 0->hash->flag->tag->adm->fnext->tnext *)NODE,
+     decr+n,:nxt).
 
 $ Figure out stack size.
 $   1) no repeat affix: all out affixes are passed as an array A[];
@@ -112,6 +131,7 @@ $      dynamic array, (max of additional blocks + C)*block size
 'a'skip node:
    R+Dcomma;next symbol,:skip node.
 'variable'C2=0,C3=0.
+
 'a'find rule stack size-tag-x:
   must+Tnode+#, $ node number
   must+Titem+tag,
@@ -133,11 +153,11 @@ $   C2: out affix
 $   C3: repeat affix 
 
 
-
-
-
 'p'is limit:
   R+Dcalibre;R+Dlwb;R+Dupb;R+Dvlwb;R+Dvupb.
+'a'skip list:
+   R+Tformal;
+   must+Titem+#.
 
 'a'skip affix:
    R+Tformal; $ formal affix
@@ -145,31 +165,17 @@ $   C3: repeat affix
    R+Titem;
    R+Dnoarg;  $ only as out affix  
    R+Tconst;  $ constant
-   is limit,(R+Tformal;must+Titem+#);
-   R+Dsub,skip affix,must+Dbus+#,(R+Tformal;must+Titem+#),must+Tconst+#;
+   is limit,skip list;
+   R+Dsub,skip list,skip affix,must+Dbus+#,skip list,must+Tconst+#;
    corrupted obj file+_title_+_line_.
-
-'a'skip zone:
-   R+Tconst;
-   R+Titem;
-   +.
-'a'skip area:
-   (nxt:skip zone,(R+Dcolon,:nxt;R+Dsemicolon,:nxt;+)),
-   must+Dout+#. $ goal node $
-
-'a'skip box:
-   must+Tnode+#, $ the node number
-   skip affix,
-   (nxt:R+Darea,must+Tconst+#, $ line number $
-                    skip area,:nxt;
-        must+Dcomma+#).
 
 'a'skip extension:
    must+Tnode+#, $ node number
-   (R+Tformal;must+Titem+#),must+Tconst+#, $ number of items $
+   skip list,must+Tconst+#, $ extension size $
    (nxt2:skip affix,(nxt:R+Dto,must+Tconst+#,:nxt;
-                     RR+Dout+#,must+Dcomma+#;
+                     RR+Dout+tnext*NODE[this node], must+Dcomma+#;
                      :nxt2)).
+
 'a'skip in affix+>type:
   type=Iformal out;skip affix.
 'a'skip out affix+>type:
@@ -194,25 +200,37 @@ $   C3: repeat affix
     skip out affixes+tag+rep,:skip block out affixes.
 
 'a'read node-tag-rep-cnt:
-   must+Tnode+#, $ the node number
    must+Titem+tag,must+Tconst+#,must+Tconst+#,must+Tconst+#, $ C1,C2,C3 $
    0->rep->cnt,skip in affixes+tag+rep,
-   (rep=0; $ we hit *: number of blocks + whether the actual * $
+   (rep=0; $ we hit *: number of blocks + actual * $
      must+Dstar+#,must+Tconst+cnt,skip block in affixes+tag+rep+cnt,
      (cnt>0;must+Dstar+#)),
-   must+Dout+#, $ the "false" exit $
+   must+Dout+fnext*NODE[this node], $ the "false" exit $
    skip out affixes+tag+0,
    (rep=0;skip block out affixes+tag+rep+cnt),
-   must+Dout+#,must+Dcomma+#. $ the "true" exit $
+   must+Dout+tnext*NODE[this node],must+Dcomma+#. $ the "true" exit $
+
+'a'fill NODE:
+   $ first scan, fill all nodes
+   R+Dpoint;
+   R+Dbox,must+Tnode+#, $ node number $
+      set node flag+node ptr+nbox,
+      skip affix, check areas,must+Dcomma+#,next+NODE+node ptr,:fill nodes;
+   R+Dnode,must+Tnode+#, $ node number $
+      set node flag+node ptr+nnode,
+      
 
 'a'make rule-rtag-minloc-maxloc:
-   save input position, $ redo several times
    must+Titem+rtag,must+Tconst+minloc,must+Tconst+maxloc,
-   must+Tconst+#, $ number of nodes $
+   create nodes, $ number of nodes $
+   save input position, $ redo several times
+   <<NODE->node ptr,fill NODE,
    (nxt: R+Dpoint; 
-         R+Dnode,read node,:nxt;
-         R+Dbox,skip box,:nxt;
-         R+Dextension,skip extension,:nxt;
+         R+Dnode,create node+nnode,read node,:nxt;
+         R+Dbox,create node+nbox,must+Tnode+#, $ node number $
+            skip affix,check areas,must+Dcomma+#,
+         skip box,:nxt;
+         R+Dextension,create node+nextension,skip extension,:nxt;
          corrupted obj file+_title_+_line_).
 
 'root'+.
