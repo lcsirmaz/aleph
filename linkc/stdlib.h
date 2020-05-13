@@ -162,6 +162,7 @@ typedef struct {
 } aDATAFILE;
 
 void simplehash(int *a);	// 'f'simplehash + st[] + >ptr + res>
+void blockhash(int *a);		// 'f'block hash + t[] + >ptr + res>
 void fillDatafile(int *a);	// 'a'fill data file + ""f + >n + >lwb1 + >upb1 + >hash1+ ...
 int openFile(int *a);		// 'p' open file + ""f + >mode + t[] + >ptr
 int closeFile(int *a);		// 'p' close file + ""f

@@ -106,6 +106,7 @@ $ file input/output
 ?rest line      'cons'rest line=-2.
 ?newpage        'cons'newpage=12.
 ?simple hash    'x''f'simple hash+t[]+>p+res>  ="a_simplehash".
+?block hash	'x''f'block hash+t[]+>p+res>   ="a_blockhash".
 ?get char       'x''p'get char+""f+char>       ="a_getchar".
 ?put char       'x''a'put char+""f+>char       ="a_putchar".
 ?open file      'x''p'open file+""f+>mode+t[]+>p="a_openfile".

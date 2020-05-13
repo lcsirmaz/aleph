@@ -332,6 +332,17 @@ void simplehash(int *a){ /* a simple hash function */
   }
   a[2]=(int)(v1<<16|v2);
 }
+void blockhash(int *a){ /* block hash function */
+  unsigned char *v=(unsigned char*)(parSTACK(a[0])->offset+a[1]+1);
+  unsigned v1=0x135345+47*(*v), v2=0xeca864+107*(*v<<3);
+  int cnt=sizeof(int)*(parSTACK(a[0])->aupb-a[1]);
+  for(;cnt>0;cnt--){
+     v1=(29*v1+17*v2+1259*(*v^v2)) % 0x1010309;
+     v2=(23*v2+257*v1+1237*(*v^v1)) % 0x1010507;
+     v++;
+  }
+  a[2]=(int)(v1<<16|v2);
+}
 void fillDatafile(int *a){
 int i,tmp,done;
 #  define df	parDFILE(a[0])

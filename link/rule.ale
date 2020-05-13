@@ -1,16 +1,17 @@
 $ rule generator
 'pragmat'module="rule".
-$ HEAD ****************************************************** $
+$ HEAD **************************************************** $
 'a'make rule.
 
-$ BODY ****************************************************** $
+$ BODY **************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("error","item","lexical","target").
 
-$ ZONE ****************************************************** $
+$ ZONE **************************************************** $
 $ a zone is a disjoint union of closed intervals [a_i,b_i]
 $  it is storead as a linked list of (wp,up,next) with the
 $  lower bounds increasing. (lw,up) of the head is ignored
+$  if the last zone succeeds, mark it as nzone (no jump)
 'stack'[1](lw,up,next)ZONE.
 
 'a'find interval pair+>set+>up-ni:
@@ -47,7 +48,7 @@ $  lower bounds increasing. (lw,up) of the head is ignored
 'q'complete zone+>set:
    next*ZONE[set]->set,is+set,
       lw*ZONE[set]=min int,up*ZONE[set]=maxint.
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'read area interval+lw>+up>-tag-count:
    $ read an interval from an area
    (RR+Tconst+lw,lw->up,1->count;
@@ -68,7 +69,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
        max int->up);
     count=0,corrupted obj file+_title_+_line_;
     +).
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'table'MESSAGE=(
   "area at %l: lower bound %d exceeds upper bound %d":larger lower bound,
   "area at %l: this alternative never succeeds"      :cannot succeed,
@@ -87,78 +88,96 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    $ looking at the first Darea; Dcomma is not touched
    scratch+ZONE,(* 0->lw->up->next *) ZONE, >>ZONE->set,
    0->dl,(nxt:R+Darea,check area+set+dl,must+Dout+#,:nxt;
-      complete zone+set;
+      complete zone+set,set node flag+nzone;
       warning+area may fail+dl).
      
-$ ============================================================ $
-
-$ check if two nodes are the same .. to be done later $
-$ make a hash table, and store nodes with the same hash
-$  check if nodes with the same hash are actually equal
-$  (do it for rule calls only - check equality of parameters)
-$  link equal nodes (but with possibly different exit)
+$ NODES *************************************************** $
+$ information on each node. 
+$   tag: list (item of formal); rule called (defined)
+$   fnext,tnext: false, true node number (0: none, -1: true, -2: false)
+$   hash: for a rule, the hash of affixes
+$   adm:  pointer to the affixes if hashes are equal
 
 'stack'[10](hash,flag,tag,adm,fnext,tnext)NODE.
 
-'q'is node flag+>node+>flag-x:
-   bool and+flag*NODE[node]+flag+x,x!=0.
-'a'set node flag+>node+>flag:
-   bool or+flag+flag*NODE[node]+flag*NODE[node].
-'a'clear node flag+>node+>flag:
-  bool invert+flag+flag,bool and+flag+flag*NODE[node]+flag*NODE[node].
-
 'constant' $ node flags $
-  nnode		= 0x0001, $ node
+  nrule		= 0x0001, $ node
   nextension	= 0x0002, $ extension
-  nbox		= 0x0004. $ box
+  nbox		= 0x0004, $ box
+  npidgin	= 0x0008, $ pidgin call syntax
+  nlabel	= 0x0010, $ have label
+  nzone		= 0x0800, $ don't check last zone
+  nstored	= 0x1000, $ affixes stored in BUFFER
+  narg same	= 0x2000, $ same arguments as in adm
+  nsame		= 0x4000. $ same call as in adm
 
-'variable'node ptr=0.     $ the actual node
+'variable'this node=0.     $ the actual node
+
+'q'is node flag+>flag-x:
+   bool and+flag*NODE[this node]+flag+x,x!=0.
+'q'has node flag+>node+>flag-x:
+   bool and+flag*NODE[node]+flag+x,x!=0.
+'a'set node flag+>flag:
+   bool or+flag+flag*NODE[this node]+flag*NODE[this node].
+'a'put node flag+>node+>flag:
+   bool or+flag+flag*NODE[node]+flag*NODE[node].
+$'a'clear node flag+>flag:
+$  bool invert+flag+flag,bool and+flag+flag*NODE[this node]+flag*NODE[this node].
+
 'a'create nodes-n:
-  scratch+NODE,<<NODE->node ptr,must+Tconst+n, $ number of nodes $
+  $ read number of NODEs and create them
+  scratch+NODE,must+Tconst+n, $ number of nodes $
   (nxt: n=0;
      (* 0->hash->flag->tag->adm->fnext->tnext *)NODE,
      decr+n,:nxt).
+'a'advance node:
+  $ advanceto the next node; complain of more than allocated
+  must+Tnode+#, $ skip the node number
+  (this node=0,<<NODE->this node;next+NODE+this node),
+  (this node<= >>NODE;corrupted obj file+_title_+_line_).
 
-$ Figure out stack size.
-$   1) no repeat affix: all out affixes are passed as an array A[];
-$      take the maximum of out affixes
-$   2) repeat affix with no formal * at the end: all affixes in the
-$      repeat block are in A[]; pass the block number and A
+$ STACK SIZE ********************************************** $
+$ ignore if pidgin syntax. Otherwise
+$   1) no repeat affix: inout and out affixes are passed in A[];
+$   2) repeat affix, no formal * at the end: inout/out before *
+$        and all variable affixes are in A[]
 $   3) repeat affix, formal * only: pass C and V[].
-$   4) repeat affix, formal * and additional affixes: allocate
-$      dynamic array, (max of additional blocks + C)*block size
+$   4) repeat affix, formal * and additional repeat affixes:
+$        inout/out in A[] (if any), all repeat affix in a
+$        dynamic array (additional blocks + C)*block size
+$  for a rule:
+$   C1: total number of affixes NOT in the variable block
+$   C2: inout/out affixes BEFORE variable block plus all
+$        affixes in the variable block IF the last affix is not *
+$   C3: number of variable affixes BEFORE the last *
+$
+'variable'
+  C2=0,
+  C3=0.
 
-'a'skip node:
-   R+Dcomma;next symbol,:skip node.
-'variable'C2=0,C3=0.
+'a'set rule head-tag-x2-x3:
+  must+Titem+tag,(get item def+tag+tag;+),tag->tag*NODE[this node],
+  must+Tconst+#, $ C1, ignore #
+  must+Tconst+x2,must+Tconst+x3,
+  (is pidgin rule+tag,set node flag+npidgin; $ do not count $
+   max+x2+C2,max+x3+C3).
+'a'skip rule head:
+  next symbol,next symbol,next symbol,next symbol.
+'a'clear stack size:
+  0->C2->C3.
 
-'a'find rule stack size-tag-x:
-  must+Tnode+#, $ node number
-  must+Titem+tag,
-  (is pidgin rule+tag; $ do nothing
-   must+Tconst+#,must+Tconst+x,max+x+C2,must+Tconst+x,max+x+C3).
-
-'a'find stack size:
-  0->C2->C3,
-  (nxt:R+Dnode,find rule stack size,skip node,:nxt;
-       R+Dbox,skip node,:nxt;
-       R+Dextension,skip node,:nxt;
-       R+Dpoint;+).
-
-
-
-$ rule <id> C1,C2,C3 
-$   C1: total number of affixes
-$   C2: out affix
-$   C3: repeat affix 
-
+$ skip ==================================================== $
+$ skip a unit; skip an affix, skip an area $ 
+'a'skip to comma:
+   R+Dcomma;next symbol,:skip to comma.
+'a'skip to label+label>:
+   RR+Dout+label;next symbol,:skip to label.
 
 'p'is limit:
   R+Dcalibre;R+Dlwb;R+Dupb;R+Dvlwb;R+Dvupb.
-'a'skip list:
+'a'skip list: $ global or formal list $
    R+Tformal;
    must+Titem+#.
-
 'a'skip affix:
    R+Tformal; $ formal affix
    R+Tlocal;  $ local affix
@@ -169,71 +188,217 @@ $   C3: repeat affix
    R+Dsub,skip list,skip affix,must+Dbus+#,skip list,must+Tconst+#;
    corrupted obj file+_title_+_line_.
 
-'a'skip extension:
-   must+Tnode+#, $ node number
-   skip list,must+Tconst+#, $ extension size $
-   (nxt2:skip affix,(nxt:R+Dto,must+Tconst+#,:nxt;
-                     RR+Dout+tnext*NODE[this node], must+Dcomma+#;
-                     :nxt2)).
+$ node equality ******************************************* $
+$ store all arguments in BUFFER and compute their HASH
+$  if two hashes are equal, store arguments again and check
+$  equality verbatim. If equal, set tag*NODE to equal node,
+$  otherwise leave tag*NODE to point to BUFFER
+$
+'a'push BUFFER+*+>x:
+  (* x->BUFFER *)BUFFER,(shift affix block+*,:push BUFFER;+). 
 
-'a'skip in affix+>type:
-  type=Iformal out;skip affix.
-'a'skip out affix+>type:
-  (type=Iformal out;type=Iformal inout),skip affix;+.
-'a'skip in affixes+>tag+>rep>-n-i-type:
-  get number of formals+tag+n,rep->i,
-  (nxt:i>=n;
-   get formal+tag+i+type,incr+i,
-     (type=Iformal repeat,i->rep;skip in affix+type,:nxt)).
-'a'skip block in affixes+>tag+>rep+>cnt:
-  cnt=0;
-  (cnt<0,incr+cnt;decr+cnt),
-       skip in affixes+tag+rep,:skip block in affixes.
-'a'skip out affixes+>tag+>rep-n-i-type:
-  get number of formals+tag+n,rep->i,
-  (nxt:i>=n;
-   get formal+tag+i+type,incr+i,
-   (type=Iformal repeat;skip out affix+type,:nxt)).
-'a'skip block out affixes+>tag+>rep+>cnt:
-  cnt=0;
-  (cnt<0,incr+cnt;decr+cnt),
-    skip out affixes+tag+rep,:skip block out affixes.
+'a'store list+>symb-x:
+   RR+Tformal+x,push BUFFER+symb+Tformal+x;
+   must+Titem+x,push BUFFER+symb+Titem+x.
+'a'store limit:
+   R+Dlwb,store list+Dlwb;
+   R+Dupb,store list+Dupb;
+   R+Dvlwb,store list+Dvlwb;
+   R+Dvupb,store list+Dvupb;
+   must+Dcalibre+#,store list+Dcalibre.
+'a'store affix-x:
+   RR+Tformal+x,push BUFFER+Tformal+x;
+   RR+Tlocal+x,push BUFFER+Tlocal+x;
+   RR+Titem+x,push BUFFER+Titem+x;
+   R+Dnoarg,push BUFFER+Dnoarg;
+   RR+Tconst+x,push BUFFER+Tconst+x;
+   R+Dsub,store list+Dsub,store affix,must+Dbus+#,
+     skip list,must+Tconst+x,push BUFFER+Dbus+x;
+   store limit.
+'a'store in affix+>type:
+   type=Iformal out;store affix.
+'a'store out affix+>type:
+   (type=Iformal out;type=Iformal inout),store affix;+.
+'a'store in affixes+>rep>-tag-n-i-type:
+   tag*NODE[this node]->tag,get number of formals+tag+n,rep->i,
+   (nxt:i>=n;
+    get formal+tag+i+type,incr+i,
+      (type=Iformal repeat,i->rep;store in affix+type,:nxt)).
+'a'store block in affixes+>rep+>cnt:
+   (nxt:cnt=0;
+       (cnt<0,incr+cnt;decr+cnt),store in affixes+rep,:nxt).
+'a'store out affixes+>rep-tag-n-i-type:
+   tag*NODE[this node]->tag,get number of formals+tag+n,rep->i,
+   (nxt:i>=n;
+    get formal+tag+i+type,incr+i,
+      (type=Iformal repeat;store out affix+type,:nxt)).
+'a'store block out affixes+>rep+>cnt:
+   (nxt:cnt=0;
+    (cnt<0,incr+cnt;decr+cnt),store out affixes+rep,:nxt).
+'a'store rule affixes-rep-cnt:
+   0->rep->cnt,store in affixes+rep,
+   (rep=0;
+    $ we hit * $
+    must+Dstar+#,must+Tconst+cnt,push BUFFER+Dstar+cnt,
+      store block in affixes+rep+cnt,(cnt>0;must+Dstar+#)),
+   must+Dout+fnext*NODE[this node], $ false exit $
+   push BUFFER+Dout,store out affixes+0,
+   (rep=0;store block out affixes+rep+cnt),
+   must+Dout+tnext*NODE[this node], $ true exit, don't store $
+   must+Dcomma+#.
 
-'a'read node-tag-rep-cnt:
-   must+Titem+tag,must+Tconst+#,must+Tconst+#,must+Tconst+#, $ C1,C2,C3 $
-   0->rep->cnt,skip in affixes+tag+rep,
-   (rep=0; $ we hit *: number of blocks + actual * $
-     must+Dstar+#,must+Tconst+cnt,skip block in affixes+tag+rep+cnt,
-     (cnt>0;must+Dstar+#)),
-   must+Dout+fnext*NODE[this node], $ the "false" exit $
-   skip out affixes+tag+0,
-   (rep=0;skip block out affixes+tag+rep+cnt),
-   must+Dout+tnext*NODE[this node],must+Dcomma+#. $ the "true" exit $
+'a'compute rule affix hash-old:
+   >>BUFFER->old,store rule affixes,
+     block hash+BUFFER+old+hash*NODE[this node],
+     unstack to+BUFFER+old.
+'q'node with same hash+>nn-h-t-n:
+   hash*NODE[nn]->h,tag*NODE[nn]->t,<<NODE->n,
+   (nxt:n>>>NODE,-;
+    (n!=nn,has node flag+n+nrule,hash*NODE[n]=h,tag*NODE[n]=t);
+    next+NODE+n,:nxt).
+'q'node hash different-n:
+   $ check if there are two rule nodes with the same hash
+   <<NODE->n,(nxt:n>>>NODE;
+     (has node flag+n+nrule,node with same hash+n),-;
+     next+NODE+n,:nxt).
 
-'a'fill NODE:
-   $ first scan, fill all nodes
-   R+Dpoint;
-   R+Dbox,must+Tnode+#, $ node number $
-      set node flag+node ptr+nbox,
-      skip affix, check areas,must+Dcomma+#,next+NODE+node ptr,:fill nodes;
-   R+Dnode,must+Tnode+#, $ node number $
-      set node flag+node ptr+nnode,
-      
+'q'equal affixes+>p1+>p2:
+   $ check if BUFFER blocks at p1 and p2 are equal.
+   $ go back until Dcomma is found
+   BUFFER[p1]=BUFFER[p2],
+      (BUFFER[p1]=Dcomma;decr+p1,decr+p2,:equal affixes).
+
+'a'compare to stored affixes+>oldbuffer-n-h-keep:
+   $ node arguments are store in BUFFER; go over nodes
+   $  with the same hash and check if affixes are the
+   $  same. If yes, or no further same hash, release
+   $  BUFFER. If yes, mark a flag and set the NODE in
+   $  adm.
+   hash*NODE[this node]->h,1->keep,<<NODE->n,
+   (nxt:n>=this node;
+        (has node flag+n+nstored,hash*NODE[n]=h,
+          equal affixes+adm*NODE[this node]+adm*NODE[n]),
+          0->keep,
+          n->adm*NODE[this node],set node flag+narg same;
+         next+NODE+n,:nxt),
+   $ check if we should keep the arguments
+   (keep=0;
+    0->keep,next+NODE+n,(nxt:n>>>NODE;
+        (has node flag+n+nrule,hash*NODE[n]=h),1->keep;
+         next+NODE+n,:nxt)),
+   (keep=0,unstack to+BUFFER+oldbuffer;
+    set node flag+nstored).
+'a'check node hash-old:
+   $ if some other rule node has the same hash, re-read and compare
+   node with same hash+this node,
+     >>BUFFER->old,push BUFFER+Dcomma,store rule affixes,
+     >>BUFFER->adm*NODE[this node],compare to stored affixes+old;
+   skip to comma.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+$ determine which rule nodes are different
+$   adm*NODE -> points back; SAME node if flag&nsame;
+$                            same arg  if flag&narg same
+$   to determine if args are the same, travel backward
+'q'same nodes+>n1+>n2:
+   tag*NODE[n1]=tag*NODE[n2],
+   hash*NODE[n1]=hash*NODE[n2],
+   fnext*NODE[n1]=fnext*NODE[n2],
+   tnext*NODE[n1]=tnext*NODE[n2],
+   (nxt:has node flag+n1+narg same,adm*NODE[n1]->n1,:nxt;+),
+   (nxt:has node flag+n2+narg same,adm*NODE[n2]->n2,:nxt;+),
+   n1=n2.
+'f'get node index+>node+idx>:
+   subtr+node+<<NODE+idx,div+idx+<>NODE+idx,incr+idx.
+'a'replace labels+>n1+>n2-n:
+   $ replace fnext/tnext of n2 to n1
+   (nxt:has node flag+n1+nsame,adm*NODE[n1]->n1,:nxt;+),
+   n1->adm*NODE[n2],put node flag+n2+nsame,
+   $ figure out numbers corresponding to nodes n1,n2
+   get node index+n1+n1,get node index+n2+n2,<<NODE->n,
+   (nxt:n>>>NODE;
+        (fnext*NODE[n]=n2,n1->fnext*NODE[n];+),
+          (tnext*NODE[n]=n2,n1->tnext*NODE[n];+),
+          next+NODE+n,:nxt).
+'a'find equal nodes-yes-n1-n2:
+   $ after this rule, a node with flag nsame is the same as
+   $  adm*NODE (go down!). fnext and tnext entries in rule
+   $  nodes are changed
+   0->yes,<<NODE->n1,(nxt:n1>=>>NODE;
+     has node flag+n1+nsame,next+NODE+n1,:nxt;
+     n1->n2,next+NODE+n2,(nxt2:
+        n2>>>NODE,next+NODE+n1,:nxt;
+        has node flag+n2+nsame,next+NODE+n2,:nxt2;
+        (same nodes+n1+n2,1->yes,replace labels+n1+n2;+),
+          next+NODE+n2,:nxt2)),
+   (yes=0;:find equal nodes).
+$ labels -------------------------------------------------- $
+$ mark nodes which have labels
+'f'find next node+idx>-n:
+   $ the next node label which is not skipped
+   0->idx,this node->n,next+NODE+n,
+     (nxt:n>>>NODE;
+          has node flag+n+nsame,next+NODE+n,:nxt;
+          subtr+n+<<NODE+idx,div+idx+<>NODE+idx,incr+idx).
+'a'mark node+>nxt+>label:
+   label<=0;
+   label=nxt;
+   decr+label,addmult+label+<>NODE+<<NODE+label,
+     put node flag+label+nlabel.
+'a'rule label-idx:
+   is node flag+nsame; $ won't be generated, skip it
+   find next node+idx,mark node+idx+fnext*NODE[this node],
+        mark node+idx+tnext*NODE[this node].
+'a'area labels-nxt-l1-l2:
+   find next node+nxt,0->l1->l2,
+   (nxt:R+Darea,
+          mark node+0+l1,l2->l1,skip to label+l2,:nxt;
+        is node flag+nzone,mark node+nxt+l1,mark node+nxt+l2;
+        mark node+0+l1,mark node+nxt+l2).
+'a'extension label-nxt-label:
+   find next node+nxt,skip to label+label,
+      mark node+nxt+label.
+$ scan **************************************************** $
+
+'a'scan i:
+   $ first scan. 
+   $  box:       check limits
+   $  extension: ignore
+   $  calls:     collect affix set to check identical ones;
+   $             determine stack size
+   R+Dbox,advance node,set node flag+nbox,
+      skip affix,check areas,must+Dcomma+#,:scan i;
+   R+Dextension,advance node,set node flag+nextension,
+      skip to comma,:scan i;
+   R+Dnode,advance node,set node flag+nrule,
+      set rule head,compute rule affix hash,:scan i;
+   must+Dpoint+#. $ ASSERT: this node = >>NODE $
+'a'scan ii-obuff:
+   $ second scan: determine which rule nodes are equal
+   >>BUFFER->obuff,
+   (nxt:R+Dbox,advance node,skip to comma,:nxt;
+        R+Dextension,advance node,skip to comma,:nxt;
+        R+Dnode,advance node,
+          skip rule head,check node hash,:nxt;
+        must+Dpoint+#),
+   unstack to+BUFFER+obuff,find equal nodes.
+'a'scan iii:
+   $ determine which nodes should have labels
+   R+Dbox,advance node,skip affix,area labels,
+     must+Dcomma+#,:scan iii;
+   R+Dextension,advance node,extension label,must+Dcomma+#,:scan iii;
+   R+Dnode,advance node,rule label,skip to comma,:scan iii;
+   must+Dpoint+#.
 
 'a'make rule-rtag-minloc-maxloc:
    must+Titem+rtag,must+Tconst+minloc,must+Tconst+maxloc,
-   create nodes, $ number of nodes $
-   save input position, $ redo several times
-   <<NODE->node ptr,fill NODE,
-   (nxt: R+Dpoint; 
-         R+Dnode,create node+nnode,read node,:nxt;
-         R+Dbox,create node+nbox,must+Tnode+#, $ node number $
-            skip affix,check areas,must+Dcomma+#,
-         skip box,:nxt;
-         R+Dextension,create node+nextension,skip extension,:nxt;
-         corrupted obj file+_title_+_line_).
+   create nodes,        $ read number of nodes $
+   save input position, $ restart from this point $
+   0->this node,clear stack size,scan i,
+   (node hash different;
+    restore input position,0->this node,scan ii),
+   restore input position,0->this node,scan iii.
+
 
 'root'+.
 'pragmat'endif=compile.
 'end'
-

@@ -70,6 +70,10 @@ void printPointer(int *a){
     par[0]=STACKpar(BOLD);par[1]=a[0];print(par);}
   else if(par[0]=STACKpar(LEXT),par[1]=a[0],was(par)){
     par[0]=STACKpar(LEXT);par[1]=a[0]-LEXT_CALIBRE;print(par); }
+//DEBUG
+  else if(par[0]=STACKpar(ITEM),par[1]=a[0],was(par)){
+    par[0]=ITEM->offset[a[0]-ITEM_tag];printPointer(par);}
+//
   else{internalError(__FILE__,__LINE__);}
 }
 static void printBase(int *a){/* >str */

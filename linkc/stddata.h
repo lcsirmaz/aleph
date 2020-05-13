@@ -77,13 +77,14 @@
 #define ITEM_repr	0
 #define ITEM_CALIBRE	6 /* selectors in the linker only */
 
-#define NODE_flag	5
-#define NODE_type	4
+#define NODE_hash	5
+#define NODE_flag	4
 #define NODE_tag	3
 #define NODE_adm	2
 #define NODE_tnext	1
 #define NODE_fnext	0
 #define NODE_CALIBRE	6
+
 #define STDARG_CALIBRE	1
 
 #define AUX_vlwb	5
