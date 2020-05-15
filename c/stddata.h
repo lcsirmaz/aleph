@@ -30,10 +30,9 @@
 
 /* files */
 #define aa_DISC         (21*sizeof_STACK)
-//#define aa_OBJ          (aa_DISC+sizeof_DFILE)
 #define aa_SOURCE       (aa_DISC+2*sizeof_DFILE)
 #define aa_PRINTFILE    (aa_SOURCE+sizeof_CHFILE)
-#define aa_OBJ          (aa_SOURCE+2*sizeof_CHFILE)
+#define aa_ICE          (aa_SOURCE+2*sizeof_CHFILE)
 
 /* total */
 #define aa_TOTAL        (aa_SOURCE+3*sizeof_CHFILE)
@@ -63,7 +62,7 @@
 #define DISC            parDFILE(aa_DISC)
 #define SOURCE          parCHFILE(aa_SOURCE)
 #define PRINTFILE       parCHFILE(aa_PRINTFILE)
-#define OBJ             parCHFILE(aa_OBJ)
+#define ICE             parCHFILE(aa_ICE)
 //#define TARGET          parCHFILE(aa_TARGET)
 /*--------------------------------------------------------*/
 /* selector offsets and calibre  for each list */
@@ -129,7 +128,7 @@
 #define MESSAGE_CALIBRE	1
 /* types.ale */
 #define INDICATOR_CALIBRE 1
-/* disc, obj */
+/* disc, ice */
 #define ITEM_CALIBRE	6 /* selectors in the linker only */
 
 /* disc */

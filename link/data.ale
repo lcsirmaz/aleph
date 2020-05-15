@@ -25,11 +25,11 @@ $ BODY **************************************************** $
 'f'check list type+>item:
   =type*ITEM[item]=
   [Itable;Istack;Istatic stack],+;
-  corrupted obj file+_title_+_line_.
+  corrupted ice file+_title_+_line_.
 'f'check constant type+>item:
   =type*ITEM[item]=
   [Iconstant;Ipointer constant],+;
-  corrupted obj file+_title_+_line_.
+  corrupted ice file+_title_+_line_.
 
 $ list section ============================================ $
 'variable'link lists=0.
@@ -45,11 +45,11 @@ $ list section ============================================ $
    $ <item> <etype> <esize> .
    $   1: [const], 2: [=const=], 3: [tag], 4: [=tag=]
    must+Titem+item,check list type+item,
-     (is item flag+item+timported,corrupted obj file+_title_+_line_;+),
+     (is item flag+item+timported,corrupted ice file+_title_+_line_;+),
      must+Tconst+etype,
      (=etype=[1;2],must+Tconst+esize;
              [3;4],must+Titem+esize,check constant type+esize;
-             corrupted obj file+_title_+_line_),
+             corrupted ice file+_title_+_line_),
      put vupb+item+etype,put vlwb+item+esize,
      remember list+item,must+Dpoint+#.
 
@@ -64,7 +64,8 @@ $ list section ============================================ $
 
 'a'fill initializer+>list-item:
   R+Dcolon,must+Titem+item,
-    ((type*ITEM[item]=Ipointer constant,adm*ITEM[item]=0);corrupted obj file+_title_+_line_),
+    ((type*ITEM[item]=Ipointer constant,adm*ITEM[item]=0);
+       corrupted ice file+_title_+_line_),
     list->adm*ITEM[item],:fill initializer;
   +.
 
@@ -150,7 +151,7 @@ $ repeat constant must have value betweem 1 and 10000 (hardcoded in lists.ale)$
    get fill+list+cnt,add+size+cnt+cnt,put fill+list+cnt.
 'a'loose initializer+>list-item-offset:
    R+Dcolon,must+Titem+item,
-      (get item def+item+#,corrupted obj file+_title_+_line_;+),
+      (get item def+item+#,corrupted ice file+_title_+_line_;+),
       get fill+list+offset,offset->repr*ITEM[item],
                            list->adm*ITEM[item],
       $ the tvalue flag is not set yet (this is relative address)
@@ -206,7 +207,7 @@ $ adm:  link to list definition
 'a'finalize pointer constants-ptr:
   <<ITEM->ptr,(nxt:ptr>>>ITEM;
   (type*ITEM[ptr]=Ipointer constant,
-    (get item def+ptr+#,corrupted obj file+_title_+_line_;+),
+    (get item def+ptr+#,corrupted ice file+_title_+_line_;+),
     set pointer value+ptr;
    +),
   next+ITEM+ptr,:nxt).
@@ -217,7 +218,8 @@ $ EXPRESSIONS ********************************************* $
 'a'read expression-item-ptr:
    $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
    must+Titem+item,
-     (=type*ITEM[item]= [Iconstant;Ivariable;Istatic var],+;corrupted obj file+_title_+_line_),
+     (=type*ITEM[item]= [Iconstant;Ivariable;Istatic var],+;
+        corrupted ice file+_title_+_line_),
      push EXPR+item,>>EXPRESSION->ptr,push EXPR+link expr,ptr->link expr,
      >>EXPRESSION->adm*ITEM[item],(nxt:=inpt=
      [Dpoint],next symbol,push EXPR+Dpoint;
@@ -227,7 +229,7 @@ $ EXPRESSIONS ********************************************* $
         push EXPR+item,check list type+item,:nxt;
      [Dplus;Dminus;Dstar;Ddiv;Dand;Dor;Dxor;Dcompl;
       Dopen;Dclose],push EXPR+inpt,next symbol,:nxt;
-      corrupted obj file+_title_+_line_).
+      corrupted ice file+_title_+_line_).
 
 $ DATA section ********************************************* $
 'a'data section:
@@ -300,7 +302,7 @@ $  a value after this
       error+constant refers to itself+tag*ITEM[def]+def,
       set final value+0+def+item;
    set item flag+def+teval,eptr->oldptr,adm*ITEM[def]->eptr,incr+eptr,
-      (was+EXPRESSION+eptr;corrupted obj file+_title_+_line_),
+      (was+EXPRESSION+eptr;corrupted ice file+_title_+_line_),
       (-v:loose expr+0+v,set final value+v+def+item;
           clear item flag+def+teval),
       oldptr->eptr.
@@ -325,7 +327,7 @@ $  constants have the tvalue flag
    E+Dlwb,get expr limit+Dlwb+EXPRESSION[eptr]+v,incr+eptr;
    E+Dupb,get expr limit+Dupb+EXPRESSION[eptr]+v,incr+eptr;
    Eitem+v,final eval+v,repr*ITEM[v]->v;
-   corrupted obj file+_title_+_line_.
+   corrupted ice file+_title_+_line_.
    
 'a'final expr+>prio+v>-op-p-w:
    final base+v,(nxt:Eop+prio+op+p,final expr+p+w,optor+op+w+v,:nxt;+).
@@ -337,7 +339,7 @@ $  constants have the tvalue flag
       error+constant refers to itself+tag*ITEM[def]+item,
       set final value+0+def+item;
    set item flag+def+teval,eptr->oldptr,adm*ITEM[def]->eptr,incr+eptr,
-      (was+EXPRESSION+eptr;corrupted obj file+_title_+_line_),
+      (was+EXPRESSION+eptr;corrupted ice file+_title_+_line_),
       final expr+0+v,oldptr->eptr,set final value+v+def+item.
 'a'final evaluation-ptr:
    link expr->ptr,(nxt:ptr=0;

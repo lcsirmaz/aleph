@@ -10,13 +10,14 @@ $ generating code $
    $  file offsets.
 'a'data initialization.
    $ stack, table, and file structure initialization routines
-'a'fill table head,fill table tail,data section iii.
+'a'fill table head,fill table tail,data section iii,data section iv.
    $ stack and table filling 
 'a'target main.
    $ generate 'wait for' external; call module roots, and
    $  the main root
 'q'is pidgin rule+>item.
    $ the external rule uses pidgin call
+'a'rule declaration head+>item+>C1+>C2+>C3+>minloc+>maxloc.
 $ BODY **************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("item","data","lexical","error","rule").
@@ -153,12 +154,12 @@ $    the main root.
     +),next+ITEM+ptr,:nxt),
   T+"}%n".
 $ rule declaration head *********************************** $
-$  generate forward declaration for rules with standard call
+$  generate forward prototype for rules with standard call
 $  external rules with pidgin call have no prototypes (they
 $  can be #define's)
 $  static/extern int/void <ID>(parameters); where parameters:
 $    (int F1,int F3,int F5,int A[3]) "A" is for out and inout args
-$    (int F1,int A[3],int C,int V[]) if it has a vararg block
+$    (int F1,int a_A[3],int a_C,int a_V[]) if it has a vararg block
 
 'a'rule typer+>item:
   is item flag+item+rcan fail,T+"static int %r("+item;T+"static void %r("+item.
@@ -168,13 +169,13 @@ $    (int F1,int A[3],int C,int V[]) if it has a vararg block
 'a'arg sep+>sep>:
   sep=0,1->sep;print char+/,/.
 'a'out args+>out+>sep>:
-  out=0;arg sep+sep,T+"int A[%d]"+out.
+  out=0;arg sep+sep,T+"int a_A[%d]"+out.
 'a'rule args+>item-n-cnt-type-out-sep:
   get number of formals+item+n,0->cnt->out->sep,
   (nxt: cnt<n,get formal+item+cnt+type,incr+cnt,
      ((type=Iformal out;type=Iformal inout),incr+out,:nxt;
       type=Iformal repeat,out args+out+sep,arg sep+sep,
-               T+"int C,int V[])";
+               T+"int a_C,int a_V[])";
       arg sep+sep,T+"int F%d"+cnt,:nxt);
    (n=0,T+"void";out args+out+sep),print char+/)/).
 
@@ -183,7 +184,43 @@ $ the external rule uses pidgin parameter passing
   $ check if the string starts with a letter
   is item flag+item+texternal,
   get tag image+tag*ITEM[item]+x,string elem+LEXT+x+0+x,
-    (=x=[/a/:/z/;/A/:/Z/],+;-).
+    (=x=[/a/:/z/;/A/:/Z/],-;+).
+$ rule declaration ----------------------------------------- $
+$ formal parameters, locals, and call arguments; maybe dynamic.
+$   formal  F1,F2,a_A[]; a_C, a_V[] (repeat)
+$   local   L4,L5;       a_D[] (dynamic)
+'a'show formals as comment+>item-n-cnt-type:
+  get number of formals+item+n,0->cnt,
+  (nxt:cnt>=n;
+    get formal+item+cnt+type,incr+cnt,
+    (=type=
+     [Iformal in],    T+"+>a";
+     [Iformal out],   T+"+a>";
+     [Iformal inout], T+">a>";
+     [Iformal table], T+"+t[]";
+     [Iformal stack], T+"+[]st[]";
+     [Iformal file],  T+"+""""f";
+     [Iformal repeat],T+"+*"),:nxt).
+'a'declare locals+>minloc+>maxloc:
+  minloc=0;
+  minloc<=maxloc,T+"int L%d;"+minloc,incr+minloc,:declare locals;
+  +.
+
+'a'declare callargs+>item+>C1+>C2+>C3-cnt:
+  (C2=0;T+"int a_A[%d];"+C2),
+  (C3=0;get repeat count+item+cnt,
+        T+"int *a_D=alloca(sizeof(int)*(%d+%d*C));"+C3+cnt),
+  T+"/* %d, %d, %d */%n"+C1+C2+C3.
+'a'rule declaration head+>rule+>C1+>C2+>C3+>minloc+>maxloc:
+  rule typer+rule,rule args+rule,T+"{ /* %p"+tag*ITEM[rule],
+   show formals as comment+rule,T+" */%n",
+   declare locals+minloc+maxloc,
+   declare callargs+rule+C1+C2+C3.
+$   rule->this rule.
+
+$ T affix ************************************************** $
+$ read and translate an affix. Lvalue and Rvalue are the same
+
 
 $ data declaration ***************************************** $
 $ apart from rule prototypes, variables, list, files are
@@ -218,7 +255,7 @@ $  variable, but not a #define value.
   T+") /* %p */%n"+tag*ITEM[item],
   (is item flag+item+texternal,
     T+"extern void %p(int,int);%n"+tag*ITEM[item];+).
-'a'rule declaration+>item: $ forward declaration $
+'a'rule prototype+>item: $ prototype $
   is pidgin rule+item; $ no prototype $
   is item flag+item+texternal,external rule typer+item,
           rule args+item,T+";%n";
@@ -235,7 +272,7 @@ $  variable, but not a #define value.
        block declaration+ptr+prev+sf,ptr->prev,sizeof chfile->sf;
    [Idatafile],
        block declaration+ptr+prev+sf,ptr->prev,sizeof dfile->sf;
-   [Irule], rule declaration+ptr;
+   [Irule], rule prototype+ptr;
    +),
    next+ITEM+ptr,:nxt),
   (prev=0,T+"#define %p 0%n"+block total;
@@ -306,7 +343,7 @@ $ generate the rules
         R+Dfill,skip entry,:nxt;
         +),
    (nxt:R+Drule,make rule,:nxt;+),
-   (R+Dend;corrupted obj file+_title_+_line_).
+   (R+Dend;corrupted ice file+_title_+_line_).
 
 $ DATA SETUP ********************************************** $
 $  setup list and file data structures. As file area uses

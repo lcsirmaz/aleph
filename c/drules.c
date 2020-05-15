@@ -6,7 +6,7 @@
 #include "tags.h"
 #include "display.h"
 #include "types.h"
-#include "obj.h"
+#include "ice.h"
 
 /* messages */
 static int
@@ -392,7 +392,7 @@ static void skipSource(void){
     (par[0]=Dvlwb,Q(par))||(par[0]=Dvupb,Q(par))||(par[0]=Dcalibre,Q(par))){
     mustQtag(par);}
   else if((par[0]=Dsub,Q(par))){mustQtag(par);skipSource();par[0]=Dbus;mustQ(par);
-    mustQtag(par);if(Qcons(par)){;}else{mustQtag(par);}}
+    if(Qcons(par)){;}else{mustQtag(par);}}
   else if((par[0]=Dnoarg,Q(par))){;}
   else{mustQtag(par);}
 }
@@ -550,7 +550,7 @@ static void fsimpleAffix(int *a){ /* >rtag+ >cnt+ >utype + mod> */
       destListTypeError(par);}}
   else if(par[0]=Dsub,Q(par)){mustLtag(par);atag=par[0];par[0]=a[2];
     usliceType(par);type=par[1];par[0]=a[0];par[1]=a[1];par[2]=type;
-    fsimpleAffix(par);a[3]=par[3];par[0]=Dbus;mustQ(par);mustQtag(par);
+    fsimpleAffix(par);a[3]=par[3];par[0]=Dbus;mustQ(par);
     par[0]=a[0];par[1]=a[1];readSelector(par);par[0]=atag;
     getFtype(par);type=par[1];
      if(type==Itable||type==IformalTable){par[0]=a[2];

@@ -9,7 +9,7 @@
 #include "drules.h"
 #include "pragmats.h"
 #include "node.h"
-#include "obj.h"
+#include "ice.h"
 
 /* ---------------------------------------------------- */
 /* messages */

@@ -33,12 +33,12 @@ void releaseEXPRESSION(void){
 static void checkListType(int item){
   int t=ITEM->offset[item-ITEM_type];
   if(t==Itable||t==Istack||t==IstaticStack){;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
 }
 static void checkConstantType(int item){
   int t=ITEM->offset[item-ITEM_type];
   if(t==Iconstant||t==IpointerConstant){;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
 }
 /* lists */
 static int linkLists=0;
@@ -55,7 +55,7 @@ static void listEntry(void){ /* just after the 'list' keyword */
   if(etype==1||etype==2){par[0]=Tconst;must(par);esize=par[1];}
   else if(etype==3||etype==4){par[0]=Titem;must(par);esize=par[1];
     checkConstantType(esize);}
-  else{corruptedObjFile(__FILE__,__LINE__);esize=0;}
+  else{corruptedIceFile(__FILE__,__LINE__);esize=0;}
   par[0]=item;par[1]=etype;putVupb(par);par[0]=item;par[1]=esize;putVlwb(par);
   rememberList(item);par[0]=Dpoint;must(par);
 }
@@ -78,7 +78,7 @@ static void fillInitializer(int list){/* >list */
   nxt:par[0]=Dcolon;if(R(par)){par[0]=Titem;must(par);
     if(ITEM->offset[par[1]-ITEM_type]==IpointerConstant
        && ITEM->offset[par[1]-ITEM_adm]==0){;}
-    else{corruptedObjFile(__FILE__,__LINE__);}
+    else{corruptedIceFile(__FILE__,__LINE__);}
     ITEM->offset[par[1]-ITEM_adm]=list;
     goto nxt;}
 }
@@ -221,7 +221,7 @@ void finalizePointerConstants(void){
   int par[2];int ptr;
   ptr=ITEM->alwb;nxt:if(ptr>ITEM->aupb){return;}
   if(ITEM->offset[ptr-ITEM_type]==IpointerConstant){
-     par[0]=ptr;if(getItemDef(par)){corruptedObjFile(__FILE__,__LINE__);}
+     par[0]=ptr;if(getItemDef(par)){corruptedIceFile(__FILE__,__LINE__);}
      setPointerValue(ptr);}
   ptr+=ITEM_CALIBRE;goto nxt;
 }
@@ -270,7 +270,7 @@ static void readExpression(void){
   int par[3];int item,ptr,t;
   par[0]=Titem;must(par);item=par[1];t=ITEM->offset[item-ITEM_type];
   if(t==Iconstant||t==Ivariable||t==IstaticVar){;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
   pushEXPR(item),ptr=EXPRESSION->aupb;pushEXPR(linkExpr);linkExpr=ptr;
   ITEM->offset[item-ITEM_adm]=EXPRESSION->aupb;nxt:
   if(inpt==Dpoint){nextSymbol();pushEXPR(Dpoint);}
@@ -282,7 +282,7 @@ static void readExpression(void){
   else if(inpt==Dplus||inpt==Dminus||inpt==Dstar||inpt==Ddiv||inpt==Dand||
     inpt==Dor||inpt==Dxor||inpt==Dcompl||inpt==Dopen||inpt==Dclose){
     pushEXPR(inpt);nextSymbol();goto nxt;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
 }
 /* =========================================================== */
 /* data section */
@@ -380,7 +380,7 @@ static void looseEval(int item){
   par[0]=def;par[1]=teval;setItemFlag(par);oldptr=eptr;
   eptr=ITEM->offset[def-ITEM_adm];eptr++;
   par[0]=STACKpar(EXPRESSION);par[1]=eptr;
-  if(was(par)){;}else{corruptedObjFile(__FILE__,__LINE__);}
+  if(was(par)){;}else{corruptedIceFile(__FILE__,__LINE__);}
   par[0]=0;if(looseExpr(par)){par[0]=par[1];par[1]=def;par[2]=item;setFinalValue(par);}
   else{par[0]=def;par[1]=teval;clearItemFlag(par);}
   eptr=oldptr;
@@ -415,7 +415,7 @@ static void finalBase(int *a){ /* v> */
   if(E(Dupb)){par[0]=Dupb;par[0]=EXPRESSION->offset[eptr];
     getExprLimit(par);a[0]=par[2];eptr++;return;}
   if(Eitem(par)){v=par[0];finalEval(v);a[0]=ITEM->offset[v-ITEM_repr]; return;}
-  corruptedObjFile(__FILE__,__LINE__);
+  corruptedIceFile(__FILE__,__LINE__);
 }
 static void finalExpr(int *a){ /* >prio + v> */
   int par[3];int op,p,w;
@@ -436,7 +436,7 @@ static void finalEval(int item){
     setFinalValue(par);return;}
   par[0]=def;par[1]=teval;setItemFlag(par);oldptr=eptr;eptr=
   ITEM->offset[def-ITEM_adm];eptr++;par[0]=STACKpar(EXPRESSION);
-  par[1]=eptr;if(was(par)){;}else{corruptedObjFile(__FILE__,__LINE__);}
+  par[1]=eptr;if(was(par)){;}else{corruptedIceFile(__FILE__,__LINE__);}
   par[0]=0;finalExpr(par);v=par[1];eptr=oldptr;par[0]=v;par[1]=def;
   par[2]=item;setFinalValue(par);
 }

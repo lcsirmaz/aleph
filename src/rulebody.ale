@@ -150,7 +150,7 @@ $ search "tag" as a label; complain if not found
   R+Scolon,(is tag+x,search jump+x;error+tag expected after+Scolon).
 
 $ SEL*LIST [ index ] ==>
-$  Dsub Dtag(LIST) <index> Dbus Dtag Dtag/Dcons
+$  Dsub Dtag(LIST) <index> Dbus Dtag/Dcons
 'a'index source+>tag+>err>:
    R+Ssub,D+Dsub,Dtag+tag,source+tag+err,D+Dbus,
       (R+Sbus;Eerror+err+expected after+Sbus+tag);
@@ -172,9 +172,9 @@ $ a list tag is expected after <L, <<L, <>L, >L, >>L
 'a'source+>tag+>err>-x-y:
    is cons+x,Dcons+x;
    is tag+x,(R+Sasterisk,
-                (is tag+y,index source+y+err,use tag+y,Dtag+y,selector+x+y;
+                (is tag+y,index source+y+err,use tag+y,selector+x+y;
                  Eerror+err+tag expected after+Sasterisk);     
-             ahead+Ssub,index source+x+err,use tag+x,Dtag+x,selector+x+x;
+             ahead+Ssub,index source+x+err,use tag+x,selector+x+x;
              use tag+x,Dtag+x);
    R+Slwb,D+Dlwb,list tag+Slwb+err;
    R+Supb,D+Dupb,list tag+Supb+err;

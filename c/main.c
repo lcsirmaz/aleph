@@ -16,7 +16,7 @@
 #include "tags.h"
 #include "types.h"
 #include "vars.h"
-#include "obj.h"
+#include "ice.h"
 #include "passii.h"
 #include "drules.h"
 #include "node.h"
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
   initialize_tags();	/* MESSAGE, TTAG, LADM */
   initialize_vars();	/* MESSAGE */
   initialize_passii();	/* MESSAGE */
-  initialize_obj();	/* MESSAGE */
+  initialize_ice();	/* MESSAGE */
   initialize_drules();	/* MESSAGE */
   initialize_node();	/* MESSAGE */
   /* this adds standard TTAGs */
@@ -86,21 +86,21 @@ int main(int argc, char *argv[]){
  
 //  listDiscContent(); exit(7);
 //  printf("\n**********************\n\n");
-  openObjFile();
-  createObjHeader();
+  openIceFile();
+  createIceHeader();
   par[0]='r';openDisc(par); // including nextDiscSymbol()
   passII();
-  if(wasError()){deleteDisc();deleteObjFile();return 1;}
+  if(wasError()){deleteDisc();deleteIceFile();return 1;}
   // check for root ????
 
   mCheckMacroRules(); // no recursive macro rules
 
-  if(wasError()){deleteDisc();deleteObjFile();return 1;}
+  if(wasError()){deleteDisc();deleteIceFile();return 1;}
 
   rewindDisc(); // go back to the beginning
   passIII();
 
-  deleteDisc(); closeObjFile();
+  deleteDisc(); closeIceFile();
   
   return 0;
 }

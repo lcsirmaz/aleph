@@ -11,7 +11,8 @@ $ read al items from the .ice file
    put list link+>item+>x.
    $ item is a list, get/set data
 'f'get number of formals+>item+n>,get formal+>item+>i+type>,
-   get formal calibre+>item+>i+cal>,get formal ssel+>item+>i+ssel>.
+   get formal calibre+>item+>i+cal>,get formal ssel+>item+>i+ssel>,
+   get repeat count+>item+cnt>.
    $ item is a rule, get number and type of formal affixes
 'f'get file data+>item+id>+ptr>+link>,get file link+>link>+hash>+id>.
 
@@ -197,7 +198,14 @@ $ item interface ----------------------------------------- $
      i<=0,add+2+p+p,AUX[p]->ssel;
      ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
        decr+i,incr+p,AUX[p]->type,:nxt).
-
+'f'get repeat count+>item+cnt>-p-n-rep:
+   0->cnt->rep,adm*ITEM[item]->p,count*AUX[p]->n,
+   (nxt:n=0;
+        decr+n,incr+p,(rep=0;incr+cnt),
+        (=AUX[p]=
+         [Iformal repeat],1->rep;
+         [Iformal table;Iformal stack],add+2+p+p;
+         +),:nxt).
 'f'get file data+>item+id>+ptr>+link>-p:
   adm*ITEM[item]->p,item*AUX[p]->id,count*AUX[p]->ptr,link*AUX[p]->link.
 
@@ -233,7 +241,7 @@ $ item section ******************************************** $
    >>AUX->bounds.
 
 'f'check item ID+>ID:
-   ID=>>ITEM;corrupted obj file+_title_+_line_.
+   ID=>>ITEM;corrupted ice file+_title_+_line_.
 
 'a'read item-ID-flag-lineno:
    expand ITEM,
@@ -241,14 +249,14 @@ $ item section ******************************************** $
    must+Tconst+flag,bool and+flag+titem mask+flag*ITEM,
    must+Tconst+lineno,
    (lineno<=0;
-    lineno>max lineno,corrupted obj file+_title_+_line_;
+    lineno>max lineno,corrupted ice file+_title_+_line_;
     lineno->lineno*ITEM),
    (=type*ITEM=
     [Irule], store formal affixes+adm*ITEM;
     [Istack;Itable;Istatic stack], store list bounds+adm*ITEM;
     [Iconstant;Ivariable;Istatic var;Ipointer constant;
      Ichar file;Idata file],+;
-    corrupted obj file+_title_+_line_),
+    corrupted ice file+_title_+_line_),
    must+Tstring+tag*ITEM, enter item+>>ITEM.
 
 'a'item section:
@@ -263,7 +271,7 @@ $ file entry ********************************************** $
   (=type*ITEM[item]=
    [Icharfile;Idatafile],type!=Dfile;
    [Itable;Istack;Istatic stack],type!=Dlist;
-   +),corrupted obj file+_title_+_line_;
+   +),corrupted ice file+_title_+_line_;
   +.
 'a'file area+>ptr-list-hash:
   R+Dsub,(nxt:R+Dbus;
@@ -327,7 +335,7 @@ $ each module has an ITEM entry linked through the repr field
 'a'read definition list-n-str:
    must+Tconst+n,
      (n>=max lineno,n->max lineno;
-      corrupted obj file+_title_+_line_),
+      corrupted ice file+_title_+_line_),
      must+Tstring+str,
      (* n->width,str->data *)AUX,
      (adm*ITEM=0,>>AUX->adm*ITEM;+),
@@ -337,7 +345,7 @@ $ each module has an ITEM entry linked through the repr field
   expand ITEM, flag->flag*ITEM,
   (R+Dmodule,Dmodule->type*ITEM;
    R+Dtitle,Dtitle->type*ITEM;
-   corrupted obj file+_title_+_line_),
+   corrupted ice file+_title_+_line_),
   must+Tstring+tag*ITEM, check module title, $ warn for the same title 
   0->max lineno,read definition list,max lineno->lineno*ITEM,
   $ finally link them $

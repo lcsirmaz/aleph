@@ -96,10 +96,10 @@ $ rule types 0x0? 0,1,2,3,4
    rpred       =rside effect|rcan fail,
    rexit       =rno return,
    rtype       =rside effect|rcan fail|rno return,
-$ flags go to the obj file
+$ flags go to the ice file
    ruleflags   = rtype|rvararg|routvararg|rtrace|rcount|rbounds,
-   objflags    = tpublic|timported|texternal|ruleflags.
-$ OBJ routines
+   iceflags    = tpublic|timported|texternal|ruleflags.
+$ ICE routines
 'a'assign items.
    $ go over all tags and stdstring pointers
 'p'Xstring table filling.
@@ -111,7 +111,7 @@ $ macro handling
   
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("display","pragmats","types","lexical","obj","buffer").
+'pragmat'require=("display","pragmats","types","lexical","ice","buffer").
 
 $ standard local stuff $
 $ tag flags for predefined rules
@@ -540,16 +540,16 @@ $ dictionary printing $
   print dict+first tag,release+DICT.
 
 $ ************************************************************ $
-$ OBJ header and Xstring table filling 
+$ ICE header and Xstring table filling 
 'a'assign tags+>y-x:
   y=0;
   add+y+<>TTAG+x,assign tags+left*TTAG[x],
-    define obj tag+adm*TTAG[x],right*TTAG[x]->y,:assign tags.
+    define ice tag+adm*TTAG[x],right*TTAG[x]->y,:assign tags.
 'a'assign items-str:
   assign tags+first tag, $ all tags first
   $ strings, if any
   std strings->str,(nxt:str=0;
-    define obj tag+adm*LADM[str],link*LADM[str]->str,:nxt).
+    define ice tag+adm*LADM[str],link*LADM[str]->str,:nxt).
 'p'Xstring table filling-str:
   is+std strings,std strings->str,Xstring table filling head+Xstring table,
     (nxt:str=0;

@@ -26,9 +26,9 @@ int nextSource(int *a);
 void closeSource(void);
 /* 'a'close source
  *  clean up; close open files */
-void createObjName(void);
-/* 'a'create obj name 
- *  add the ".o" extension to the title */
+void createIceName(void);
+/* 'a'create ice name 
+ *  add the ".ice" extension to the first module base name */
 
 /* 'a' read+x>:
  *   get next symbol into x. It is a pointer to TTAG (tag), LEXT (string),

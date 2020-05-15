@@ -26,8 +26,6 @@
 
 /* files */
 #define aa_PRINTFILE    (21*sizeof_STACK)
-//#define aa_OBJ          (aa_DISC+sizeof_DFILE)
-//#define aa_SOURCE       (aa_DISC+2*sizeof_DFILE)
 #define aa_TARGET       (aa_PRINTFILE+sizeof_CHFILE)
 #define aa_SOURCE       (aa_PRINTFILE+2*sizeof_CHFILE)
 

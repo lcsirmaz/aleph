@@ -60,7 +60,7 @@ int nextSource(int *a){/* >how + ext> */
     a[1]=withExtension;return 1;}
   closeSource();argPtr=0;return 0;
 }
-void getObjFile(int *a){ /* ptr> */
+void getIceFile(int *a){ /* ptr> */
   a[0]=argPtr;
 }
 void cleanUp(void){

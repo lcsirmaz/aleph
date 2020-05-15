@@ -1,7 +1,7 @@
-/* obj.ale */
+/* ice.ale */
 
 #include "stddata.h"
-#include "obj.h"
+#include "ice.h"
 #include "lexical.h"
 #include "display.h"
 #include "disc.h"
@@ -19,7 +19,7 @@ tag_not_defined,type_tag_not_defined,
 tag_type_error,tag_list_type_error,cannot_be_external,
 type_tag_not_used,cannot_have_filling,undefined_selector,wrong_filling_block,
 double_selector,
-large_block_size,small_block_size,opening_OBJ,wrong_Wtag_argument,
+large_block_size,small_block_size,opening_ICE,wrong_Wtag_argument,
 wrong_Wstring_argument;
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
@@ -38,45 +38,45 @@ static void add_messages(void){
  addMSG("filling %p: block size %d is bigger than calibre (%d)",large_block_size);
  addMSG("filling %p: block size %d is smaller than calibre (%d)",small_block_size);
 /* internal error */
- addMSG("cannot open obj file %p, error code: %p",opening_OBJ);
+ addMSG("cannot open ice file %p, error code: %p",opening_ICE);
  addMSG("Wtag: wrong argument %p",wrong_Wtag_argument);
  addMSG("Wstring: wrong argument %p",wrong_Wstring_argument);
 }
 #undef addMSG
 /* ----------------------------------------------------------- */
-void openObjFile(void){
+void openIceFile(void){
    int par[5];
-   createObjName();par[0]=CHFILEpar(OBJ);par[1]='w';
+   createIceName();par[0]=CHFILEpar(ICE);par[1]='w';
    par[2]=STACKpar(LEXT);par[3]=LEXT->aupb;
    if(openFile(par)){par[0]=LEXT->aupb;forgetString(par);}
-   else{par[0]=CHFILEpar(OBJ);getFileError(par);par[2]=par[1];
-     par[0]=opening_OBJ,par[1]=LEXT->aupb;internalError(2,par);}
+   else{par[0]=CHFILEpar(ICE);getFileError(par);par[2]=par[1];
+     par[0]=opening_ICE,par[1]=LEXT->aupb;internalError(2,par);}
 }
-void closeObjFile(void){
-  int par[1];par[0]=CHFILEpar(OBJ);closeFile(par);
+void closeIceFile(void){
+  int par[1];par[0]=CHFILEpar(ICE);closeFile(par);
 }
-void deleteObjFile(void){
+void deleteIceFile(void){
   int par[3];
-  closeObjFile();
-  createObjName();par[0]=STACKpar(LEXT);par[1]=LEXT->aupb;
+  closeIceFile();
+  createIceName();par[0]=STACKpar(LEXT);par[1]=LEXT->aupb;
   unlinkFile(par);par[0]=LEXT->aupb;forgetString(par);
 }
 /* ----------------------------------------------------------- */
-/* writing to OBJ */
+/* writing to ICE */
 static void printInt1(int *a);
 static void separator(void){
-  int par[2];par[0]=CHFILEpar(OBJ);par[1]=' ';Aputchar(par);
+  int par[2];par[0]=CHFILEpar(ICE);par[1]=' ';Aputchar(par);
 }
 static void nlcr(void){
-  int par[2];par[0]=CHFILEpar(OBJ);par[1]=newline;Aputchar(par);
+  int par[2];par[0]=CHFILEpar(ICE);par[1]=newline;Aputchar(par);
 }
 #include <values.h> /* MININT */
 static void printInt(int *a){ /* >n */
   int par[3];
-  if(a[0]==MININT){par[0]=CHFILEpar(OBJ);par[1]='-';Aputchar(par);
+  if(a[0]==MININT){par[0]=CHFILEpar(ICE);par[1]='-';Aputchar(par);
     par[0]=-1;par[1]=a[0];subtr(par);a[0]=par[2];par[0]=a[0];
     par[1]='1';printInt1(par);}
-  else if(a[0]<0){par[0]=CHFILEpar(OBJ);par[1]='-';Aputchar(par);
+  else if(a[0]<0){par[0]=CHFILEpar(ICE);par[1]='-';Aputchar(par);
     par[0]=-a[0];par[1]='0';printInt1(par);}
   else{par[0]=a[0];par[1]='0';printInt1(par);}
 }
@@ -84,21 +84,17 @@ static void printInt1(int *a){ /* +>n + >c */
   int par[4];int q,r;
   par[0]=a[0];par[1]=10;divrem(par);q=par[2];r=par[3];
   if(q==0){;}else{par[0]=q;par[1]='0';printInt1(par);}
-  par[0]=CHFILEpar(OBJ);par[1]=r+a[1];Aputchar(par);
+  par[0]=CHFILEpar(ICE);par[1]=r+a[1];Aputchar(par);
 }
 void W(int *a){ /* +>x */
   int par[3];
-  if(DSYMB->vlwb<=a[0]&&a[0]<=DSYMB->vupb){par[0]=CHFILEpar(OBJ);
+  if(DSYMB->vlwb<=a[0]&&a[0]<=DSYMB->vupb){par[0]=CHFILEpar(ICE);
      par[1]=STACKpar(DSYMB);par[2]=a[0];Aputstring(par);
      if(a[0]==Dpoint){par[1]='\n';Aputchar(par);}}
-//  else if(INDICATOR->vlwb<=a[0]&&a[0]<=INDICATOR->vupb){par[0]=CHFILEpar(OBJ);
-//     par[1]='\'';Aputchar(par);
-//     par[1]=STACKpar(INDICATOR);par[2]=a[0];Aputstring(par);
-//     par[1]='\'';Aputchar(par);}
-  else if(ITEM->vlwb<=a[0]&&a[0]<=ITEM->vupb){par[0]=CHFILEpar(OBJ);
+  else if(ITEM->vlwb<=a[0]&&a[0]<=ITEM->vupb){par[0]=CHFILEpar(ICE);
      par[1]='I';Aputchar(par);par[0]=(a[0]-ITEM->vlwb)/ITEM_CALIBRE+1;printInt(par);
      separator();}
-  else if(NODE->vlwb<=a[0]&&a[0]<=NODE->vupb){par[0]=CHFILEpar(OBJ);
+  else if(NODE->vlwb<=a[0]&&a[0]<=NODE->vupb){par[0]=CHFILEpar(ICE);
      par[1]='N';Aputchar(par);par[0]=(a[0]-NODE->vlwb)/NODE_CALIBRE+1;printInt(par);
      separator();}
   else { printf("ERROR: W(%d) with unknown pointer (",a[0]);printPointer(a);printf(")\n"); /* ITEM->offset[0]=0;*/ exit(88);}
@@ -112,31 +108,31 @@ void Wtag(int *a){/* >tag */
     getRepr(par);par[0]=par[1];if(par[0]>0){W(par);}
     else{printf("\n *** Wtag repr=0 ***");par[0]=a[0];printPointer(par);printf(" ***\n");}}
   else if((par[0]=STACKpar(LLOC),was(par))){
-    if(LLOC->offset[a[0]-LLOC_type]==Ilocal){par[0]=CHFILEpar(OBJ);
+    if(LLOC->offset[a[0]-LLOC_type]==Ilocal){par[0]=CHFILEpar(ICE);
        par[1]='L';Aputchar(par);par[0]=LLOC->offset[a[0]-LLOC_repr];
        printInt(par);separator();}
-    else{par[0]=CHFILEpar(OBJ);par[1]='F';Aputchar(par);
+    else{par[0]=CHFILEpar(ICE);par[1]='F';Aputchar(par);
        par[0]=(a[0]-LLOC->alwb)/LLOC_CALIBRE+1;printInt(par);separator();}}
   else{par[0]=wrong_Wtag_argument;par[1]=a[0];internalError(2,par);}
 }
 static void Wstring(int *a){ /* >str */
   int par[3];
-  if(LEXT->vlwb<=a[0]&&a[0]<=LEXT->vupb){par[0]=CHFILEpar(OBJ);
+  if(LEXT->vlwb<=a[0]&&a[0]<=LEXT->vupb){par[0]=CHFILEpar(ICE);
     par[1]=STACKpar(LEXT);par[2]=a[0];Aputasstring(par);nlcr();}
-  else if(TTAG->vlwb<=a[0]&&a[0]<=TTAG->vupb){par[0]=CHFILEpar(OBJ);
+  else if(TTAG->vlwb<=a[0]&&a[0]<=TTAG->vupb){par[0]=CHFILEpar(ICE);
     par[1]=STACKpar(TTAG);par[2]=a[0]-TTAG->calibre;Aputasstring(par);
     nlcr();}
   else{par[0]=wrong_Wstring_argument;par[1]=a[0];internalError(2,par);}
 }
 static void Wtype(int *a){ /* >type */
   int par[3];
-  par[0]=CHFILEpar(OBJ);par[1]='<';Aputchar(par);
-  par[0]=CHFILEpar(OBJ);par[1]=STACKpar(INDICATOR);par[2]=a[0];
-  Aputstring(par);par[0]=CHFILEpar(OBJ);par[1]='>';Aputchar(par);
+  par[0]=CHFILEpar(ICE);par[1]='<';Aputchar(par);
+  par[0]=CHFILEpar(ICE);par[1]=STACKpar(INDICATOR);par[2]=a[0];
+  Aputstring(par);par[0]=CHFILEpar(ICE);par[1]='>';Aputchar(par);
   separator();
 }
 /* ----------------------------------------------------------- */
-void createObjHeader(void){
+void createIceHeader(void){
    int par[3];int ptr,n,str;
    par[0]=pgtModule;if(isPragmatValue(par)){par[0]=Dmodule;W(par);}
    else{par[0]=Dtitle;W(par);}
@@ -148,7 +144,7 @@ void createObjHeader(void){
    if(XstringTableFilling()){par[0]=Dpoint;W(par);}
 }
 /* ---------------------------------- */
-/* call back routines for objHeader */
+/* call back routines for iceHeader */
 static int nextItem=0;
 static void getNewItem(int *a){ /* item> */
   if(nextItem==0){nextItem=ITEM->alwb; a[0]=nextItem;}
@@ -189,7 +185,7 @@ static void formalAffixes(int *a){ /* >tag */
       getFormalSsel(par);par[0]=par[1];Wcons(par);}
     par[0]=formal;getAdm(par);formal=par[1];goto nxt2;}
 }
-void defineObjTag(int *a){ /* >tag */
+void defineIceTag(int *a){ /* >tag */
   int par[3];int item,type,raw,flag,dl;
   if(a[0]==0){return;}
 //printf("++");par[0]=a[0];printPointer(par);par[0]=a[0];par[1]=tused;printf(" used=%d ++\n",isTagFlag(par)?1:0);
@@ -206,7 +202,7 @@ void defineObjTag(int *a){ /* >tag */
   getNewItem(par);item=par[0];
   par[0]=a[0];par[1]=texternal;if(isTagFlag(par)){getRepr(par);raw=par[1];}
   else{getTag(par);raw=par[1];}
-  par[0]=a[0];par[1]=objflags;getTagFlag(par);flag=par[2];
+  par[0]=a[0];par[1]=iceflags;getTagFlag(par);flag=par[2];
   par[0]=a[0];par[1]=item;putRepr(par);
 //  par[0]=type;if(isPlainType(par)){par[0]=par[1];W(par);
   par[0]=type;Wtype(par);par[0]=item;W(par);
@@ -216,7 +212,7 @@ void defineObjTag(int *a){ /* >tag */
   else if(type==Itable||type==Istack||type==IstaticStack){par[0]=a[0];
    listData(par);}
   else if(type==Irule){par[0]=a[0];formalAffixes(par);}
-  else{printf("*** defineObj: unknown type=");par[0]=type;printPointer(par);printf(" ***");}
+  else{printf("*** defineIce: unknown type=");par[0]=type;printPointer(par);printf(" ***");}
   par[0]=raw; Wstring(par);
 }
 /* ----------------------------------------- */
@@ -492,7 +488,7 @@ void dExpression(void){
 }
 /* ------------------------------------------------------ */
 
-void initialize_obj(void){
+void initialize_ice(void){
   add_messages();
 }
 

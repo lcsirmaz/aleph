@@ -1,6 +1,6 @@
 $ main
 'pragmat'title="compiler".
-'pragmat'require=("disc","input","display","obj","passi","passii",
+'pragmat'require=("disc","input","display","ice","passi","passii",
      "mcheck").
 
 'a'first pass:
@@ -9,15 +9,15 @@ $ main
    close disc,(was error,delete disc;+).
 'a'second pass:
    was error;
-   open obj file,create obj header,
+   open ice file,create ice header,
    open disc+/r/,passII,
    (was error;check macro rules),
-   (was error,delete disc,delete obj file;+).
+   (was error,delete disc,delete ice file;+).
 'a'third pass:
    was error;
    rewind disc, $ and prepare for macro substitution $
    pass III,
-   delete disc,close obj file.
+   delete disc,close ice file.
 
 'root'
    first pass,second pass,third pass.

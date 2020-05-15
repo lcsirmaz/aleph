@@ -10,6 +10,8 @@ $ HEADER ****************************************************** $
    $ add LEXT[ptr] as required source; complain if duplicate
 'a'add included source+>ptr.
    $ add LEXT[ptr] as included source, complain if duplicate
+'q'get first source+ptr>.
+   $ return the LEXT name for the first source
 'f'find linenum+>n+line>+str>.
    $ find LEXT module name and line number within
 'q'next input entry+>ptr>+n>+str>.
@@ -28,9 +30,8 @@ $ BODY ******************************************************** $
 ).
 
 'stack'LEXT=(
- "alib.ale" : stdlib file
+ "alib" : stdlib file
 ).
-
 
 $ values for flag*INPUT
 'constant'
@@ -60,6 +61,10 @@ $  source flags = cmp flag|2. $ $ source:   compile=on, proto=2
    $ don't check multiple submission, leave it to the user
    (is cmdline pragmat+ptr+twoarg+#+#,cpragmat->flag;csource->flag),
       (* flag->flag, -1->n, ptr->string *)INPUT.
+'q'get first source+ptr>-inpt:
+   <<INPUT->inpt,(nxt:inpt>>>INPUT,-;
+     flag*INPUT[inpt]=csource,string*INPUT[inpt]->ptr;
+     next+INPUT+inpt,:nxt).
 'q'was source added+>ptr+inpt>-eq:
    $ check if the same string appears in INPUT
    >>INPUT->inpt,
@@ -116,7 +121,7 @@ $ ===================================================================== $
   (compare string+LEXT+ptr+"-Wall"+eq,eq=0), $warning level=0
      pgt warning level->pid,0->value;
   (compare string+LEXT+ptr+"-o"+eq,eq=0), $ title=
-     1->twoarg,pgt title->pid,0->value;
+     1->twoarg,pgt ice->pid,0->value;
   (compare string+LEXT+ptr+"-I"+eq,eq=0), $ path=
      1->twoarg,pgt path->pid,0->value;
   (string elem+LEXT+ptr+0+eq,eq=/-/,string elem+LEXT+ptr+1+eq,eq=/-/), $ --

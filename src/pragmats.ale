@@ -60,6 +60,7 @@ $ pragmat ID
    pgt macro		=0x345610,  $ macro=<tag>
    pgt public		=0x345611,  $ public=<tag>
    pgt path             =0x345612,  $ path="string", program line argument only
+   pgt ice		=0x345613,  $ ice="string", program line argument only
    pgt skip             =0x34560d.  $ pseudo pragmat, set if skip program text
 
 $ BODY ******************************************************** $
@@ -90,7 +91,8 @@ $ default title if none is given
    trace=0,		$ print when entering a rule
    count=0,		$ profiling
    bounds=0,		$ indexing is done with bound checks
-   include path=0.      $ include path sequence
+   include path=0,      $ include path sequence
+   ice name=0.		$ ice name
 
 'f'get pragmat value+>what+to>:
   =what=
@@ -105,6 +107,7 @@ $ default title if none is given
   [pgt proto],     proto level->to;
   [pgt title],     program title->to; $ ptr to LEXT or 0
   [pgt path],      include path->to;  $ 0 or ptr to LEXT
+  [pgt ice],       ice name->to;
   [pgt margin],    right margin->to;
   internal error+get pragmat error+what.
 'q'is pragmat value+>what:
@@ -136,6 +139,7 @@ $ default title if none is given
   [pgt proto],     to->proto level;  $ 0=none, 1=import, 2=public
   [pgt title],     to->program title;
   [pgt path],      to->include path;
+  [pgt ice],       to->ice name;
   internal error+set pragmat error+what.
 $ ===================================================================== $
 $ default warning levels 

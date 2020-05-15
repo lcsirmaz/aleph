@@ -1,18 +1,18 @@
-$ create the obj file
-'pragmat'module="obj".
+$ create the ice file
+'pragmat'module="ice".
 $
 $ creating the .o file which is a regular ALEPH data file
 $   W+>symb:     an entry to DSYMB or INDICATOR (type)
 $   Wtag+>tag:   repr*LADM[tag] is a pointer to ITEM (can be zero)
 $   Wcons+>n:    write the constant
 $
-$ The OBJ file starts with <OBJ header>, <ITEM list>,
+$ The ICE file starts with <ICE header>, <ITEM list>,
 $   followed by (LIST declaration|File declaration|Expression|Fill)*
 $   in any order (Fill might come earlier than LIST declaration,
 $      the same list can have several Fill)
 $   followed by (RULE definition)*
 
-$ OBJ header:
+$ ICE header:
 $     Dtitle/Dmodule <title string> <lineno block> Dpoint
 $   lineno block: ( <end lineno const> <source string> )*
 $ for each source file the last number for messages
@@ -21,7 +21,7 @@ $ ITEM list:
 $  ( <typer> <item> <flags> <defline> <type-specific> <raw> )*  Dpoint
 $   <typer>   -- Iconstant, Ivariable, Istack, etc;
 $   <item>    -- next entry in ITEM (growing by one)
-$   <flags>   -- tag flags filtered by "objflags"
+$   <flags>   -- tag flags filtered by "iceflags"
 $   <defline> -- define line (for messages)
 $   <type-specific> -- for lists and rules, see below
 $   <raw>     -- string, the raw tag or the specified 'x' string
@@ -59,16 +59,16 @@ $ HEADER ****************************************************** $
 'stack'(type,tag,adm,tnext,fnext)NODE.
 
 $ opening and closing
-'a'open obj file,close obj file,delete obj file.
-$ writing to OBJ: NODE, ITEM, FORMAL/LOCAL
+'a'open ice file,close ice file,delete ice file.
+$ writing to ICE: NODE, ITEM, FORMAL/LOCAL
 'a'W+>x,Wcons+>x,Wtag+>x.
 $ create header and item list
-'a'create obj header.
-$ callback routines for create obj header
-  'a'define obj tag+>tag.
+'a'create ice header.
+$ callback routines for create ice header
+  'a'define ice tag+>tag.
   'a'Xstring table filling head+>tag,Xstring table item+>tag+>str.
 
-$ other OBJ data: list filling, size estimator, file declarer,
+$ other ICE data: list filling, size estimator, file declarer,
 $    expression
 'a'd list filling,d list size,d file data,d expression.
 
@@ -93,7 +93,7 @@ $ warning
   "filling %p: block size %d is bigger than calibre (%d)" :large block size,
   "filling %p: block size %d is smaller than calibre (%d)":small block size,
 $ internal error
-  "FATAL cannot open obj file %p, error code: %p":opening OBJ,
+  "FATAL cannot open ice file %p, error code: %p":opening ICE,
   "FATAL Wtag: wrong argument %p" :wrong Wtag argument,
   "FATAL Wstring: wrong argument %p" :wrong Wstring argument,
   "FATAL W: wring argement type %p" :wrong W argument
@@ -104,54 +104,54 @@ $ each tag has an ITEM entry assigned consecutively
 'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
 'stack'[10](type,tag,adm,tnext,fnext)NODE.
 
-$ obj file ==================================================== $
-'charfile' OBJ="aleph.ice">.
-'a'open obj file-err:
-   create obj name, $ creates the name on >>LEXT $
-   (open file+OBJ+/w/+LEXT+>>LEXT,forget string+>>LEXT;
-    get file error+OBJ+err,
-     internal error+opening OBJ+>>LEXT+err).
-'a'close obj file:
-   close file+OBJ.
-'a'delete obj file:
-   close obj file,create obj name,
+$ ice file ==================================================== $
+'charfile' ICE="aleph.ice">.
+'a'open ice file-err:
+   create ice name, $ creates the name on >>LEXT $
+   (open file+ICE+/w/+LEXT+>>LEXT,forget string+>>LEXT;
+    get file error+ICE+err,
+     internal error+opening ICE+>>LEXT+err).
+'a'close ice file:
+   close file+ICE.
+'a'delete ice file:
+   close ice file,create ice name,
      unlink file+LEXT+>>LEXT,forget string+>>LEXT.
 
 $ ------------------------------------------------------------- $
-$ writing to the OBJ file
-'a'separator: put char+OBJ+/ /.
+$ writing to the ICE file
+'a'separator: put char+ICE+/ /.
 'a'print int+>n:
-  n=min int,put char+OBJ+/-/,subtr+-1+n+n,print int1+n+/1/;
-  n<0,put char+OBJ+/-/,get abs+n+n,print int1+n+/0/;
+  n=min int,put char+ICE+/-/,subtr+-1+n+n,print int1+n+/1/;
+  n<0,put char+ICE+/-/,get abs+n+n,print int1+n+/0/;
   print int1+n+/0/.
 'a'print int1+>n+>c-q-r:
   divrem+n+10+q+r,(q=0;print int1+q+/0/),
-    add+r+c+r,put char+OBJ+r.
+    add+r+c+r,put char+ICE+r.
 
 'a'W+>x: =x=
-   [DSYMB],put string+OBJ+DSYMB+x,(x=Dpoint,put char+OBJ+newline;+);
-   [ITEM], put char+OBJ+/I/,subtr+x+<ITEM+x,div+x+<>ITEM+x,print int+x,separator;
-   [NODE], put char+OBJ+/N/,subtr+x+<NODE+x,div+x+<>NODE+x,print int+x,separator;
+   [DSYMB],put string+ICE+DSYMB+x,(x=Dpoint,put char+ICE+newline;+);
+   [ITEM], put char+ICE+/I/,subtr+x+<ITEM+x,div+x+<>ITEM+x,print int+x,separator;
+   [NODE], put char+ICE+/N/,subtr+x+<NODE+x,div+x+<>NODE+x,print int+x,separator;
    internal error+wrong W argument+x.
 'a'Wcons+>x:print int+x,separator.
 'a'Wtag+>tag-repr:
    was+LADM+tag,get repr+tag+repr, $ can be zero but only if error $
      (repr=0;W+repr);
    was+LLOC+tag,
-     (type*LLOC[tag]=Ilocal,put char+OBJ+/L/,print int+repr*LLOC[tag],separator;
-      put char+OBJ+/F/,subtr+tag+<<LLOC+repr,print int+repr,separator);
+     (type*LLOC[tag]=Ilocal,put char+ICE+/L/,print int+repr*LLOC[tag],separator;
+      put char+ICE+/F/,subtr+tag+<<LLOC+repr,print int+repr,separator);
    internal error+wrong Wtag argument+tag. $ this should not happen $
-$ these are local to OBJ header
+$ these are local to ICE header
 'a'Wstring+>str: $ str is either LEXT string or TTAG block
    (=str=
-    [LEXT], put as string+OBJ+LEXT+str,separator;
-    [TTAG], previous+TTAG+str,put as string+OBJ+TTAG+str,separator;
+    [LEXT], put as string+ICE+LEXT+str,separator;
+    [TTAG], previous+TTAG+str,put as string+ICE+TTAG+str,separator;
     internal error+wrong Wstring argument+str).
 'a'Wtype+>type: $ type is a pointer in INDICATOR
-   put as string+OBJ+INDICATOR+type,separator.
+   put as string+ICE+INDICATOR+type,separator.
 
-$ OBJ header ================================================== $
-'a'create obj header-title-ptr-n-str:
+$ ICE header ================================================== $
+'a'create ice header-title-ptr-n-str:
   $ header
   (is pragmat value+pgt module,W+Dmodule;W+Dtitle),
   get pragmat value+pgt title+title,Wstring+title,
@@ -194,9 +194,9 @@ $   but not for stacks (imported stacks are exceptions)
          get formal ssel+formal+n,Wcons+n;+),
        get adm+formal+formal,:nxt).
     
-$ define obj tag is called for each tag. It sets "repr" to the
+$ define ice tag is called for each tag. It sets "repr" to the
 $  next free ITEM. External tags have LEXT string in "repr".
-'a'define obj tag+>tag-type-item-flag-raw-dl:
+'a'define ice tag+>tag-type-item-flag-raw-dl:
   $ item: next pointer to ITEM
   $ raw tag: LEXT string for externals; TTAG entry for others
   tag=0;
@@ -205,7 +205,7 @@ $  next free ITEM. External tags have LEXT string in "repr".
    (is item tag+tag+type,
      (is tag flag+tag+texternal,get repr+tag+raw;
       get tag+tag+raw),
-     get tag flag+tag+objflags+flag,
+     get tag flag+tag+iceflags+flag,
      get new item+item,put repr+tag+item,
      Wtype+type,W+item,Wcons+flag,Wcons+dl,
      (=type=
@@ -213,7 +213,7 @@ $  next free ITEM. External tags have LEXT string in "repr".
                Icharfile;Idatafile],+;
       [Itable;Istack;Istatic stack],list data+tag;
       [Irule],                      formal affixes+tag;
-      internal error+"define OBJ: type=%p is wrong"+type),
+      internal error+"define ICE: type=%p is wrong"+type),
      Wstring+raw;
     $ error if public and not defined;
     $ if has no definition, clear the type to get error messages when used.

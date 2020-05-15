@@ -143,7 +143,7 @@ int wasError(void){
 
 static void messageHead(int M){
   int par[3];
-  nlcr();printChar(M);printChar(' ');getObjFile(par);
+  nlcr();printChar(M);printChar(' ');getIceFile(par);
   if(par[0]==0){;}else{printBase(par);}
   if(M=='F'){printChar('/');printForm(sourceLine);}
   printChar(' ');tabLine(messageCol);
@@ -167,7 +167,7 @@ void internalError(const char*file,int line){
    printf("%s",file);par[0]=fatal_tail;formatPrint(1,par);nlcr();
    cleanUp();exit(2);
 }
-void corruptedObjFile(const char*file,int line){
+void corruptedIceFile(const char*file,int line){
   int par[2];
   messageHead('F');par[0]=corrupted_head;par[1]=line;formatPrint(2,par);
   printf("%s",file);par[0]=fatal_tail;formatPrint(1,par);nlcr();

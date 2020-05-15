@@ -121,7 +121,8 @@ int wasLexicalInteger(int *a){
 /* -------------------------------------------------------- */
 /* local MESSAGEs */
 static int hex_digit_expected,wrong_character_denotation,unterminated_string,
-   unrecognized_bold,unrecognized_builtin,missing_bold_delimiter,illegal_character;
+   unrecognized_bold,unrecognized_builtin,missing_bold_delimiter,illegal_character,
+   no_source_name;
 
 #define addMSG(x,y)	add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void init_MESSAGE_table(void){
@@ -132,6 +133,7 @@ static void init_MESSAGE_table(void){
   addMSG("wrong built-in '%p'",unrecognized_builtin);
   addMSG("missing ' after '%p'",missing_bold_delimiter);
   addMSG("illegal character: %c",illegal_character);
+  addMSG("fatal: source %d",no_source_name);
 }
 
 void initialize_lexical(void){
@@ -304,17 +306,26 @@ void closeSource(void){
    else if(LEXTptr==0){
      par[0]=CHFILEpar(SOURCE);closeFile(par);LEXTptr=-1;}
 }
-//'a'create obj name
-void createObjName(void){
-   int par[3]; int ptr,n,nn;
-   par[0]=pgtTitle;getPragmatValue(par);ptr=par[1];n=BUFFER->aupb;
+//'a'create ice name
+void createIceName(void){
+   int par[3]; int oldp,ptr,n,nn,ext;
+   oldp=BUFFER->aupb;par[0]=pgtIce;getPragmatValue(par);ptr=par[1];
+   if(ptr){ext=0;}else if(getFirstSource(par)){ptr=par[0];ext=1;}
+   else{par[0]=no_source_name;par[1]=__LINE__;internalError(2,par); exit(23);} 
    par[0]=STACKpar(LEXT);par[1]=ptr;par[2]=STACKpar(BUFFER);
-   unpackstring(par);par[0]=STACKpar(BUFFER);par[1]='.';extend(par);
-   par[1]='i';extend(par);par[1]='c';extend(par);par[1]='e';extend(par);
-   nn=BUFFER->aupb-n;par[0]=STACKpar(BUFFER);par[1]=nn;
-   par[2]=STACKpar(LEXT);packstring(par);par[0]=STACKpar(BUFFER);
-   par[1]=n;unstackto(par);
-}
+   unpackstring(par);nn=BUFFER->aupb;nxt:
+   if(nn<=oldp){;}
+   else if(BUFFER->offset[nn]=='.'){if(ext==0){ext=2;nn=oldp;}
+     else{nn--;par[0]=STACKpar(BUFFER);par[1]=nn;unstackto(par);goto nxt;}}
+   else if(BUFFER->offset[nn]=='/'||BUFFER->offset[nn]=='\\'||
+    BUFFER->offset[nn]==':'){if(ext==1){;}else{nn=oldp;}}
+   else{nn--;goto nxt;}
+   if(ext==2){;}else{par[0]='.';extendBUFFER(par);par[0]='i';
+     extendBUFFER(par);par[0]='c';extendBUFFER(par);par[0]='e';
+     extendBUFFER(par);}
+   n=BUFFER->aupb-nn;par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
+   packstring(par);par[0]=STACKpar(BUFFER);par[1]=oldp;unstackto(par);
+}   
 
 /*=========================================================================*/
 /* special symbols */

@@ -19,6 +19,7 @@
 #define pgtMacro	0x345610
 #define pgtPublic	0x345611
 #define pgtPath		0x345612
+#define pgtIce		0x345613
 #define pgtSkip         0x34560d
 
 /* 'f'get pragmat value+>id+val> */

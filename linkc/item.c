@@ -174,6 +174,16 @@ void getFormalSsel(int *a){/* >item+>i>+ssel> */
   if(type==IformalTable||type==IformalStack){p+=2;}
   a[1]--;p++;type=AUX->offset[p];goto nxt;
 }
+void getRepeatCount(int *a){/* >item+cnt> */
+  int p,n,rep,t;
+  a[1]=rep=0;p=ITEM->offset[a[0]-ITEM_adm];n=AUX->offset[p-AUX_count];
+  nxt:if(n==0){;}
+  else{n--;p++;if(rep==0){;}else{a[1]++;}t=AUX->offset[p];
+    if(t==IformalRepeat){rep=1;}
+    else if(t==IformalTable||t==IformalStack){p+=2;}
+    goto nxt;}
+}
+
 void getFileData(int *a){/* >item+id>+ptr>+link> */
   int p;
   p=ITEM->offset[a[0]-ITEM_adm];a[1]=AUX->offset[p-AUX_item];
@@ -226,7 +236,7 @@ static void storeListBounds(int *a){/* bounds> */
 static void checkItemID(int *a){ /* >n */
   if(a[0]==ITEM->aupb){;}
   else{printf("inpt=%d, baseITEM=%d, aupb=%d\n",a[0],baseItem,ITEM->aupb);
-  corruptedObjFile(__FILE__,__LINE__);}
+  corruptedIceFile(__FILE__,__LINE__);}
 }
 static void readItem(void){
   int par[3];int flag,lineno,type;
@@ -236,14 +246,14 @@ static void readItem(void){
   par[0]=Tconst;must(par);flag=par[1];ITEM->offset[ITEM->aupb-ITEM_flag]=(flag&titemMask);
   par[0]=Tconst;must(par);lineno=par[1];
   if(lineno<=0){;}
-  else if(lineno>maxLineno){corruptedObjFile(__FILE__,__LINE__);}
+  else if(lineno>maxLineno){corruptedIceFile(__FILE__,__LINE__);}
   else{ITEM->offset[ITEM->aupb-ITEM_lineno]=lineno;}
   if(type==Irule){storeFormalAffixes(par);ITEM->offset[ITEM->aupb-ITEM_adm]=par[0];}
   else if(type==Istack||type==IstaticStack||type==Itable){
     storeListBounds(par);ITEM->offset[ITEM->aupb-ITEM_adm]=par[0];}
   else if(type==Iconstant||type==Ivariable||type==IstaticVar||
     type==IpointerConstant||type==Icharfile||type==Idatafile){;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
   par[0]=Tstring;must(par);ITEM->offset[ITEM->aupb-ITEM_tag]=par[1];
   par[0]=ITEM->aupb;enterItem(par);
 }
@@ -263,7 +273,7 @@ static void checkType(int item,int type){
   int t=ITEM->offset[item-ITEM_type];
   if(t==Icharfile||t==Idatafile){if(type==Dfile){return;}}
   else if(t==Itable||t==Istack||t==IstaticStack){if(type==Dlist){return;}}
-  corruptedObjFile(__FILE__,__LINE__);
+  corruptedIceFile(__FILE__,__LINE__);
 }
 static void fileArea(int *a){/* >ptr */
   int par[5];int list,hash;
@@ -327,7 +337,7 @@ static void checkModuleTitle(void){
 static void readDefinitionList(void){
   int par[4];int n,str;nxt:
   par[0]=Tconst;must(par);n=par[1];if(n>=maxLineno){maxLineno=n;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
   par[0]=Tstring;must(par);str=par[1];
   par[0]=STACKpar(AUX);par[1]=2;par[3-AUX_width]=n;par[3-AUX_data]=str;
   expandstack(par);if(ITEM->offset[ITEM->aupb-ITEM_adm]==0){
@@ -339,7 +349,7 @@ void headSection(int *a){
   expandITEM();ITEM->offset[ITEM->aupb-ITEM_flag]=a[0];
   par[0]=Dmodule;if(R(par)){ITEM->offset[ITEM->aupb-ITEM_type]=Dmodule;}
   else if((par[0]=Dtitle,R(par))){ITEM->offset[ITEM->aupb-ITEM_type]=Dtitle;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
   par[0]=Tstring;must(par);ITEM->offset[ITEM->aupb-ITEM_tag]=par[1];
   checkModuleTitle();maxLineno=0;readDefinitionList();
   ITEM->offset[ITEM->aupb-ITEM_lineno]=maxLineno;

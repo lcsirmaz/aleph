@@ -27,7 +27,7 @@ void initialize_input(void){
   addMSG("no input file was specified",no_input_file);
   addMSG("error opening file \"%p\"",error_opening_source);
 /* standard library */
-  add_new_string("alib.ale",LEXT);stdlibFile=LEXT->aupb;
+  add_new_string("alib",LEXT);stdlibFile=LEXT->aupb;
 }
 #undef addMSG
 
@@ -64,6 +64,14 @@ static void addCommandLineArg(int *a){ /* >ptr+ >twoarg> */
   else{flag=csource;}
   par[0]=STACKpar(INPUT);extendStack(par);INPUT->offset[INPUT->aupb-INPUT_flag]=flag;
   INPUT->offset[INPUT->aupb-INPUT_n]=-1;INPUT->offset[INPUT->aupb-INPUT_string]=a[0];
+}
+int getFirstSource(int *a){ /* ptr> */
+  int inpt;
+  inpt=INPUT->alwb;nxt:
+  if(inpt>INPUT->aupb){return 0;}
+  if(INPUT->offset[inpt-INPUT_flag]==csource){a[0]=INPUT->offset[inpt-INPUT_string];
+    return 1;}
+  inpt+=INPUT_CALIBRE;goto nxt;
 }
 static int wasSourceAdded(int *a){ /* >ptr + inpt> */
   int par[5];
@@ -129,7 +137,7 @@ static int isCmdlinePragmat(int *a){ /* >ptr+>twoarg>+pid>+value> */
   comparestringXXX(par,"-W");if(par[2]==0){a[2]=pgtWarningLevel;a[3]=3;return 1;}
   comparestringXXX(par,"-WW");if(par[2]==0){a[2]=pgtWarningLevel;a[3]=2;return 1;}
   comparestringXXX(par,"-Wall");if(par[2]==0){a[2]=pgtWarningLevel;a[3]=0;return 1;}
-  comparestringXXX(par,"-o");if(par[2]==0){a[1]=1;a[2]=pgtTitle;a[3]=0;return 1;}
+  comparestringXXX(par,"-o");if(par[2]==0){a[1]=1;a[2]=pgtIce;a[3]=0;return 1;}
   comparestringXXX(par,"-I");if(par[2]==0){a[1]=1;a[2]=pgtPath;a[3]=0;return 1;}
   par[0]=STACKpar(LEXT);par[1]=a[0];par[2]=0;stringelem(par);
   if(par[3]!='-'){return 0;}par[2]=1;stringelem(par);if(par[3]!='-'){return 0;}

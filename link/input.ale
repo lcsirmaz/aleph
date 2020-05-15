@@ -7,7 +7,7 @@ $ HEADER ********************************************** $
    $   how=1: no extension
    $   how=2: with extension
    $ if fails, the next call repeats the same sequence
-'f'get obj file+obj>. $ an STDARG entry $
+'f'get ice file+ptr>. $ an STDARG entry $
 'a'clean up.          $ for fatal errors $
 
 $ BODY ************************************************ $
@@ -52,7 +52,7 @@ $ BODY ************************************************ $
    next argument,close source,open argument+how,with extension->ext;
    close source,0->arg ptr,-.
 
-'f'get obj file+ptr>:arg ptr->ptr.
+'f'get ice file+ptr>:arg ptr->ptr.
    $ to report the source file $
 'a'clean up:
    close source.

@@ -35,8 +35,8 @@ $ empty string in LEXT
    $ fails if type=0 and cannot open the file
 'a'close source.
    $ clean up after next source; close the open file handler
-'a'create obj name.
-   $ append '.alo' to the title. Use forget string+>>LEXT to free it
+'a'create ice name.
+   $ append '.ice' to the title. Use forget string+>>LEXT to free it
 'a'read+x>.
    $ return the next symbol: one of the symbol names,
    $ or a pointer fo LEXT (string), CONST (constant), 
@@ -155,7 +155,8 @@ $ error messages $
 "unknown key word '%p'"       :unrecognized bold,
 "wrong built-in %p"           :unrecognized builtin,
 "missing ' after '%p'"        :missing bold delimiter,
-"illegal character: %c"       :illegal character
+"illegal character: %c"       :illegal character,
+"fatal: no source %d"         :no source name
 ).
 
 $ ****************** BASIC INPUT-OUTPUT ****************** $
@@ -299,12 +300,22 @@ $  separated by :
    LEXTptr>0,-1->LEXTptr;
    LEXTptr=0,close file+SOURCE,-1->LEXTptr;
    +.
-'a'create obj name-ptr-n-nn:
-   $ add ".ice" extension to the title
-   get pragmat value+pgt title+ptr,>>BUFFER->n,
-     unpack string+LEXT+ptr+BUFFER,extend BUFFER+/./,
-     extend BUFFER+/i/,extend BUFFER+/c/,extend BUFFER+/e/,
-     subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,unstack to+BUFFER+n.
+'a'create ice name-oldp-ptr-n-nn-ext:
+   $ use the -o argument; otherwise the name of the first source
+   >>BUFFER->oldp,get pragmat value+pgt ice+ptr,
+     (is+ptr,0->ext;get first source+ptr,1->ext;
+        internal error+no source name+_line_),
+     unpack string+LEXT+ptr+BUFFER,>>BUFFER->nn,
+          $ does it have an extension; if yes strip it
+     (nxt:nn<=oldp; $ no extension found $
+      (=BUFFER[nn]=
+       [/./],(ext=0,2->ext,oldp->nn;
+              decr+nn,unstack to+BUFFER+nn,:nxt);
+       [///;/\/;/:/],(ext=1;oldp->nn);
+       decr+nn,:nxt)),
+     (ext=2; $ otherwise add extension
+       extend BUFFER+/./,extend BUFFER+/i/,extend BUFFER+/c/,extend BUFFER+/e/),
+      subtr+>>BUFFER+nn+n,pack string+BUFFER+n+LEXT,unstack to+BUFFER+oldp.
    
 $ ******************************************************** $
 $ Symbols

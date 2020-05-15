@@ -2,7 +2,7 @@ $ error
 'pragmat'module="error".
 $ HEADER *********************************************** $
 'e'internal error+T[]+>file+>lineno.
-'e'corrupted obj file+T[]+>file+>lineno.
+'e'corrupted ice file+T[]+>file+>lineno.
 'e'Ferror+*+>msg. $ fatal error $
 'a'error+*+>msg.
 'a'warning+*+>msg.
@@ -108,9 +108,9 @@ $ error handling ******************************************** $
 
 'q'was error: error no>0.
 
-'a'message head+>M-obj:
-  nlcr,print char+M,print char+/ /,get obj file+obj,
-  (obj=0;print base+obj),
+'a'message head+>M-ice:
+  nlcr,print char+M,print char+/ /,get ice file+ice,
+  (ice=0;print base+ice),
   (M=/F/,print char+///,print form+source line;+),
   print char+/ /,tab line+message col.
 
@@ -128,7 +128,7 @@ $ error handling ******************************************** $
 'e'internal error+T[]+>source+>line:
    message head+/F/,format print+fatal head+line,print+T+source,
    format print+fatal tail,nlcr,clean up,exit+2.
-'e'corrupted obj file+T[]+>source+>line:
+'e'corrupted ice file+T[]+>source+>line:
    message head+/F/,format print+corrupted head+line,
    print+T+source,format print+fatal tail,nlcr,clean up,exit+1.
 

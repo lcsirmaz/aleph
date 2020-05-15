@@ -69,7 +69,7 @@ static void comment(void){
 static void readIndex(int *a){/* >sign+x> */
   int par[3];
   if(digit(par) && (par[0]>0||a[1]==0)){a[1]=par[0];}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
   nxt:if(digit(par)){a[1]=a[1]*10+par[0];goto nxt;}
   else if(a[0]){a[1]=0-a[1];}
 }
@@ -94,7 +94,7 @@ static void readDestination(int *a){ /* x> */
    if(Achar=='N'){nextChar();par[0]=0;readIndex(par);a[0]=par[1];}
    else if(Achar=='0'){nextChar();a[0]=0;}
    else if(Achar=='-'){nextChar();par[0]=1;readIndex(par);a[0]=par[1];}
-   else{corruptedObjFile(__FILE__,__LINE__);}
+   else{corruptedIceFile(__FILE__,__LINE__);}
 }
 /* strings */
 int Squoteimage;
@@ -162,7 +162,7 @@ static void readString(int *a){/* x> */
      else{par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
        packstring(par);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
        addLEXTentry(par);a[0]=par[0];}}
-  else if(Achar==newline||Achar==endChar){corruptedObjFile(__FILE__,__LINE__);}
+  else if(Achar==newline||Achar==endChar){corruptedIceFile(__FILE__,__LINE__);}
   else{par[0]=Achar;extendBUFFER(par);n++;goto nxt;}
 }
 /* BOLD ---------------------------------------- */
@@ -251,13 +251,13 @@ static void readBold(int *a){ /* x> */
   nextChar();obuff=BUFFER->aupb;n=0;nxt:
   if(boldLetter(par)){extendBUFFER(par);n++;goto nxt;}
   else if(Achar=='\''){nextChar();}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
   par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
   packstring(par);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
   a[0]=lastBOLD;nxt2:
   par[0]=STACKpar(BOLD);par[1]=a[0];par[2]=STACKpar(LEXT);par[3]=LEXT->aupb;
   comparestring(par);if(par[4]==0){;}
-  else if(a[0]==firstBOLD){corruptedObjFile(__FILE__,__LINE__);}
+  else if(a[0]==firstBOLD){corruptedIceFile(__FILE__,__LINE__);}
   else{par[0]=STACKpar(BOLD);par[1]=a[0];previousstring(par);a[0]=par[1];goto nxt2;}
   par[0]=STACKpar(LEXT);unstackstring(par);
 }
@@ -268,7 +268,7 @@ static void readType(int *a){ /* x> */
   if(boldLetter(par)){extendBUFFER(par);n++;goto nxt;}
   else if(Achar==' '){par[0]=' ';extendBUFFER(par);n++;nextChar();goto nxt;}
   else if(Achar=='>'){nextChar();}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
   par[0]=STACKpar(BUFFER);par[1]=n;par[2]=STACKpar(LEXT);
   packstring(par);par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
   a[0]=lastTYPE;nxt2:
@@ -276,7 +276,7 @@ static void readType(int *a){ /* x> */
   comparestring(par);if(par[4]==0){;}
   else if(a[0]==firstTYPE){
 //printf("type: ");for(n=BUFFER->alwb;n<=BUFFER->aupb;n++){printf("%c",BUFFER->offset[n]);}printf("\n");
-      corruptedObjFile(__FILE__,__LINE__);}
+      corruptedIceFile(__FILE__,__LINE__);}
   else{par[0]=STACKpar(BOLD);par[1]=a[0];previousstring(par);a[0]=par[1];goto nxt2;}
   par[0]=STACKpar(LEXT);unstackstring(par);
 }
@@ -317,7 +317,7 @@ void nextSymbol(void){
   else if(Achar=='['){inpt=Dsub;nextChar();}
   else if(Achar=='^'){inpt=Dxor;nextChar();}
   else if(Achar==endChar){inpt=Dend;}
-  else{corruptedObjFile(__FILE__,__LINE__);}
+  else{corruptedIceFile(__FILE__,__LINE__);}
 }
 
 

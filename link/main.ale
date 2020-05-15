@@ -12,6 +12,7 @@
 'a'pass ii:
    $ determine fill size and relative pointer values
    $  as now we have the repeaters' values
+   was error;
    (-ext:advance base item+ext,next source+ext+#),
       skip head section,skip item section,data section ii,:pass ii;
    was error;
@@ -20,13 +21,21 @@
 
 'a'pass iii:
    $ open the target; generate data and fill section
-   open target,data declaration,
+   open target,target prelude,data declaration,fill table head,
    (nxt:(-ext: advance base item+ext,next source+ext+#),
         skip head section,skip item section,data section iii,:nxt;
     +),
    data initialization,target main.
 
-'root'+.
+'a'pass iv:
+   $ generate rules
+   was error;
+   (-ext:advance base item+ext,next source+ext+#),
+      skip head section,skip item section,data section iv,:pass iv;
+   close target.
+   
+
+'root'pass i,pass ii,pass iii,pass iv.
 
 
 'end'

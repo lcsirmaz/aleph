@@ -60,18 +60,18 @@ static void readAreaInterval(int *a){/* lw> + up> */
     else if(t==Istack||t==Itable||t==IstaticStack){par[0]=tag;
       getVlwb(par);a[0]=par[1];getCalibre(par);a[1]=par[1];
       a[0]-=a[1];a[0]++;getVupb(par);a[1]=par[1];count=2;}
-    else{corruptedObjFile(__FILE__,__LINE__);count=0;}}
+    else{corruptedIceFile(__FILE__,__LINE__);count=0;}}
   else{a[0]=a[1]=count=0;}
   par[0]=Dcolon;if(R(par)){
    if(count==0){a[0]=INT_MIN;}else if(count==1){;}
-   else{corruptedObjFile(__FILE__,__LINE__);}
+   else{corruptedIceFile(__FILE__,__LINE__);}
    par[0]=Tconst;if(RR(par)){a[1]=par[1];}
    else if(par[0]=Titem,RR(par)){tag=par[1];par[0]=tag;
      if(getItemDef(par)){tag=par[1];}t=ITEM->offset[tag-ITEM_type];
      if(t==Iconstant||t==IpointerConstant){a[1]=ITEM->offset[tag-ITEM_repr];}
-     else{corruptedObjFile(__FILE__,__LINE__);}}
+     else{corruptedIceFile(__FILE__,__LINE__);}}
    else{a[1]=INT_MAX;}}
-  else if(count==0){corruptedObjFile(__FILE__,__LINE__);}
+  else if(count==0){corruptedIceFile(__FILE__,__LINE__);}
 }
 /* ------------------------------------------------ */
 static int larger_lower_bound,cannot_succeed,area_may_fail;
@@ -148,21 +148,21 @@ static void advanceNode(void){
   if(thisNode<=NODE->aupb){;}else{printf(" **** advanceNode failed!!!\n");exit(23);}
 }
 /* ================================ */
-static int C2=0,C3=0;
+static int C1=0,C2=0,C3=0;
 
 static void setRuleHead(void){
-   int par[3];int tag,x2,x3;
+   int par[3];int tag,x1,x2,x3;
    par[0]=Titem;must(par);tag=par[1];
    par[0]=tag;if(getItemDef(par)){tag=par[1];}
-   NODE->offset[thisNode-NODE_tag]=tag;par[0]=Tconst;must(par); 
-   par[0]=Tconst;must(par);x2=par[1];must(par);x3=par[1];
+   NODE->offset[thisNode-NODE_tag]=tag;par[0]=Tconst;must(par);
+   x1=par[1];par[0]=Tconst;must(par);x2=par[1];must(par);x3=par[1];
    if(isPidginRule(tag)){setNodeFlag(npidgin);}
-   else{if(C2<x2){C2=x2;}if(C3<x3){C3=x3;}}
+   else{if(C1<x1){C1=x1;}if(C2<x2){C2=x2;}if(C3<x3){C3=x3;}}
 }
 static void skipRuleHead(void){
   nextSymbol();nextSymbol();nextSymbol();nextSymbol();
 }
-static void clearStackSize(void){C2=C3=0;}
+static void clearStackSize(void){C1=C2=C3=0;}
 /* ================================== */
 /* skip */
 static void skipToComma(void){
@@ -190,6 +190,7 @@ static void skipList(void){
 }
 static void skipAffix(void){
   int par[3];
+  par[0]=Dcolon;if(R(par)){;}
   par[0]=Tformal;if(R(par)){return;}
   par[0]=Tlocal;if(R(par)){return;}
   par[0]=Titem;if(R(par)){return;}
@@ -197,8 +198,8 @@ static void skipAffix(void){
   par[0]=Tconst;if(R(par)){return;}
   if(isLimit()){skipList();return;}
   par[0]=Dsub;if(R(par)){skipList();skipAffix();par[0]=Dbus;must(par);
-     skipList();par[0]=Tconst;must(par);return;}
-  corruptedObjFile(__FILE__,__LINE__);
+     par[0]=Tconst;must(par);return;}
+  corruptedIceFile(__FILE__,__LINE__);
 }
 /* ======================================================= */
 static void pushBUFFER(int n,int *a){
@@ -206,75 +207,16 @@ static void pushBUFFER(int n,int *a){
   par[0]=STACKpar(BUFFER);par[1]=1;nxt:if(n==0){;}
   else{par[2]=a[0];expandstack(par);n--;a++;goto nxt;}
 }
-static void storeList(int symb){
-  int par[3];int x;
-  par[0]=Tformal;if(RR(par)){x=par[1];par[0]=symb;
-    par[1]=Tformal;par[2]=x;pushBUFFER(3,par);return;}
-  par[0]=Titem;must(par);x=par[1];par[0]=symb;
-    par[1]=Titem;par[2]=x;pushBUFFER(3,par);
-}
-static void storeLimit(void){
-  int par[3];
-  par[0]=Dlwb;if(R(par)){storeList(Dlwb);return;}
-  par[0]=Dupb;if(R(par)){storeList(Dupb);return;}
-  par[0]=Dvlwb;if(R(par)){storeList(Dvlwb);return;}
-  par[0]=Dvupb;if(R(par)){storeList(Dvupb);return;}
-  par[0]=Dcalibre;must(par);storeList(Dcalibre);return;
-}
-static void storeAffix(void){
-  int par[3];
-  par[0]=Tformal;if(RR(par)){par[0]=Tformal;pushBUFFER(2,par);return;}
-  par[0]=Tlocal;if(RR(par)){par[0]=Tlocal;pushBUFFER(2,par);return;}
-  par[0]=Titem;if(RR(par)){par[0]=Titem;pushBUFFER(2,par);return;}
-  par[0]=Dnoarg;if(R(par)){par[0]=Dnoarg;pushBUFFER(1,par);return;}
-  par[0]=Tconst;if(RR(par)){par[0]=Tconst;pushBUFFER(2,par);return;}
-  par[0]=Dsub;if(R(par)){storeList(Dsub);storeAffix();par[0]=Dbus;
-    must(par),skipList();par[0]=Tconst;must(par);par[0]=Dbus;
-    pushBUFFER(2,par);return;}
-  storeLimit();
-}
-static void storeInAffix(int type){
-  if(type==IformalOut){;}else{storeAffix();}
-}
-static void storeOutAffix(int type){
-  if(type==IformalOut||type==IformalInout){storeAffix();}
-}
-static void storeInAffixes(int *a){/* >rep> */
-  int par[3];int tag,n,i,type;
-  tag=NODE->offset[thisNode-NODE_tag];par[0]=tag;getNumberOfFormals(par);
-  n=par[1];i=a[0];nxt:if(i>=n){;}
-  else{par[0]=tag;par[1]=i;getFormal(par);type=par[2];i++;
-    if(type==IformalRepeat){a[0]=i;}
-    else{storeInAffix(type);goto nxt;}}
-}
-static void storeBlockInAffixes(int rep,int cnt){
-  int par[2];nxt:
-  if(cnt==0){return;}
-  if(cnt<0){cnt++;}else{cnt--;}
-  par[0]=rep;storeInAffixes(par);rep=par[0];goto nxt;
-}
-static void storeOutAffixes(int rep){
-  int par[3];int tag,n,i,type;
-  tag=NODE->offset[thisNode-NODE_tag];par[0]=tag;getNumberOfFormals(par);
-  n=par[1];i=rep;nxt:if(i>=n){;}
-  else{par[0]=tag;par[1]=i;getFormal(par);type=par[2];i++;
-    if(type==IformalRepeat){;}else{storeOutAffix(type);goto nxt;}}
-}
-static void storeBlockOutAffixes(int rep,int cnt){
-  nxt:if(cnt==0){;}
-  else{if(cnt<0){cnt++;}else{cnt--;}storeOutAffixes(rep);goto nxt;}
-}
+
 static void storeRuleAffixes(void){
-  int par[3];int rep,cnt;
-  rep=cnt=0;par[0]=rep;storeInAffixes(par);rep=par[0];
-  if(rep==0){;}
-  else{par[0]=Dstar;must(par);par[0]=Tconst;must(par);cnt=par[1];
-    par[0]=Dstar;par[1]=cnt;pushBUFFER(2,par);
-    storeBlockInAffixes(rep,cnt);if(cnt>0){;}else{par[0]=Dstar;must(par);}}
+  int par[3]; nxt:
+  if(inpt==Tformal||inpt==Tlocal||inpt==Titem||inpt==Tconst){
+    par[0]=inpt;par[1]=inptValue;pushBUFFER(2,par);nextSymbol();goto nxt;}
+  else if(inpt==Dlwb||inpt==Dupb||inpt==Dvlwb||inpt==Dvupb||inpt==Dcalibre||
+    inpt==Dnoarg||inpt==Dsub||inpt==Dbus||inpt==Dcolon||inpt==Dstar){
+    par[0]=inpt;pushBUFFER(1,par);nextSymbol();goto nxt;}
   par[0]=Dout;must(par);NODE->offset[thisNode-NODE_fnext]=par[1];
-  par[0]=Dout;pushBUFFER(1,par);storeOutAffixes(0);
-  if(rep==0){;}else{storeBlockOutAffixes(rep,cnt);}
-  par[0]=Dout;must(par);NODE->offset[thisNode-NODE_tnext]=par[1];
+  must(par);NODE->offset[thisNode-NODE_tnext]=par[1];
   par[0]=Dcomma;must(par);
 }
 static void computeRuleAffixHash(void){
@@ -427,18 +369,20 @@ static void scanIII(void){
 }
 /* ------------------------------------------------------ */
 void makeRule(void){
-   int par[3];int tag;
+   int par[6];int tag,minloc,maxloc;
    par[0]=Titem;must(par);tag=par[1];
-   par[0]=Tconst;must(par);  /* minloc=par[1]; */
-   par[0]=Tconst;must(par);  /* maxloc=par[1]; */
+   par[0]=Tconst;must(par);minloc=par[1];
+   par[0]=Tconst;must(par);maxloc=par[1];
    createNodes();
    saveInputPosition();
    thisNode=0;clearStackSize();scanI();
    if(nodeHashDifferent()){;}
    else{restoreInputPosition();thisNode=0;scanII();}
    restoreInputPosition();thisNode=0;scanIII();
-printf("rule ");par[0]=tag;printPointer(par);printf(" C2=%d,C3=%d, nodes=%d\n",C2,C3,1+(NODE->aupb-NODE->alwb)/NODE_CALIBRE);
-printf("nodes: ");{int n;for(n=NODE->alwb;n<=NODE->aupb;n+=NODE_CALIBRE){printf(" (%d,%x,%d|%d,%d) ",1+(n-NODE->alwb)/NODE_CALIBRE,(nlabel|nsame)&NODE->offset[n-NODE_flag],nsame&NODE->offset[n-NODE_flag]?(1+(NODE->offset[n-NODE_adm]-NODE->alwb)/NODE_CALIBRE):-1,NODE->offset[n-NODE_fnext],NODE->offset[n-NODE_tnext]);} printf("\n");}
+   par[0]=tag;par[1]=C1;par[2]=C2;par[3]=C3;par[4]=minloc;par[5]=maxloc;
+   ruleDeclarationHead(par);
+//printf("rule ");par[0]=tag;printPointer(par);printf(" C2=%d,C3=%d, nodes=%d\n",C2,C3,1+(NODE->aupb-NODE->alwb)/NODE_CALIBRE);
+//printf("nodes: ");{int n;for(n=NODE->alwb;n<=NODE->aupb;n+=NODE_CALIBRE){printf(" (%d,%x,%d|%d,%d) ",1+(n-NODE->alwb)/NODE_CALIBRE,(nlabel|nsame)&NODE->offset[n-NODE_flag],nsame&NODE->offset[n-NODE_flag]?(1+(NODE->offset[n-NODE_adm]-NODE->alwb)/NODE_CALIBRE):-1,NODE->offset[n-NODE_fnext],NODE->offset[n-NODE_tnext]);} printf("\n");}
 }
 /* ------------------------------------------------------ */
 void initialize_rule(void){

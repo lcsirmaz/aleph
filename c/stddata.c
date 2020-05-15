@@ -52,14 +52,14 @@ void add_new_string(char *what, aSTACK *st){
    par[0]=STACKpar(BUFFER); par[1]=oldupb; unstackto(par);
 }
 
-// DISC, OBJ, PRINTFILE, SOURCE
+// DISC, ICE, PRINTFILE, SOURCE
 
 void initialize_stdfiles(void){
   int par[5]; int oldupb;
   SOURCE->openflag=0;		// charfile
   PRINTFILE->openflag=0;	// charfile
   DISC->openflag=0;		// datafile
-  OBJ->openflag=0;		// charfile
+  ICE->openflag=0;		// charfile
 // open file(PRINTFILE,stdstring,"stdout")
   oldupb=TTAG->aupb; add_new_string("stdout",TTAG);
   par[0]=CHFILEpar(PRINTFILE); par[1]='w';par[2]=STACKpar(TTAG);

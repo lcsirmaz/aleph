@@ -7,7 +7,7 @@
 #include "lexical.h"
 #include "lists.h"
 #include "types.h"
-#include "obj.h"
+#include "ice.h"
 
 /* =================================== */
 // 'a'extend+[]st[]+>x is defined in cstdlib
@@ -469,7 +469,7 @@ static void assignTags(int *a){/* >y */
   int par[1]; int x; again:
   if(a[0]==0){return;}
   x=a[0]+TTAG->calibre;par[0]=TTAG->offset[x-TTAG_left];assignTags(par);
-  par[0]=TTAG->offset[x-TTAG_adm];defineObjTag(par);
+  par[0]=TTAG->offset[x-TTAG_adm];defineIceTag(par);
   a[0]=TTAG->offset[x-TTAG_right]; goto again;
 }
 void assignItems(void){
@@ -478,7 +478,7 @@ void assignItems(void){
   /* this is for stdstrings */
   stds=stdstrings;while(stds){
 //par[0]=LADM->offset[stds-LADM_repr];printf("\"");printPointer(par);printf("\" => ");
-    par[0]=LADM->offset[stds-LADM_adm];defineObjTag(par);
+    par[0]=LADM->offset[stds-LADM_adm];defineIceTag(par);
     stds=LADM->offset[stds-LADM_link];
   }
 }

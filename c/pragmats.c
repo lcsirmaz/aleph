@@ -18,7 +18,7 @@
 
 static int tabWidth=8,giveText=0,inLibrary=0,inCompile=0,inModule=0,
   dictOn=0,useStdlib=1,protoLevel=2,programTitle=0,warningLevel=default_warning_level,
-  trace=0,count=0,bounds=0,rightMargin=120,includePath=0;
+  trace=0,count=0,bounds=0,rightMargin=120,includePath=0,iceName=0;
 
 /* forward declarations */
 static void setLibrary(void);
@@ -38,6 +38,7 @@ void getPragmatValue(int *a){/* >what + to> */
   else if(a[0]==pgtProto){a[1]=protoLevel;}
   else if(a[0]==pgtTitle){a[1]=programTitle;}
   else if(a[0]==pgtPath){a[1]=includePath;}
+  else if(a[0]==pgtIce){a[1]=iceName;}
   else if(a[0]==pgtMargin){a[1]=rightMargin;}
   else{printf("getPragmatValue: internal error, what=%d\n",a[0]); exit(28); }
 }
@@ -70,6 +71,7 @@ void setPragmatValue(int *a){ /* >what + >to */
   else if(a[0]==pgtProto){protoLevel=a[1];}
   else if(a[0]==pgtTitle){programTitle=a[1];}
   else if(a[0]==pgtPath){includePath=a[1];}
+  else if(a[0]==pgtIce){iceName=a[1];}
   else{printf("setPragatValue: internal error: what=%d\n",a[0]); exit(28); }
 }
 /* initialize */

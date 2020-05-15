@@ -11,7 +11,7 @@ $ HEAD **************************************************** $
    $ types $
    Iconstant,Ivariable,Istatic var,Itable,Istack,Istatic stack,
    Ipointer constant,Ichar file,Idata file,Irule,
-   Iformal stack,Iformal table,Iformalfile,Iformal in,
+   Iformal stack,Iformal table,Iformal file,Iformal in,
    Iformal out,Iformal inout,Iformal repeat,Iformal shift.
 'constant'Squote image.
 
@@ -23,7 +23,7 @@ $ HEAD **************************************************** $
 'p'R+>x:x=inpt,next symbol.
 'p'RR+>x+y>:x=inpt,inpt value->y,next symbol.
 'a'must+>x+y>:x=inpt,inpt value->y,next symbol;
-              corrupted obj file+_title_+_line_.
+              corrupted ice file+_title_+_line_.
 'pragmat'macro=(R,RR,must).           
 $ save and restore input position
 'a'save input position,restore input position.
@@ -59,7 +59,7 @@ $ <type>
 $  I54 (item), F54 (formal), L54 (local), N54 (node)
 $ other characters: ()[] .*;:> +-/~|^
 
-'charfile'SOURCE=>"objfile".   $ obj file $
+'charfile'SOURCE=>"aleph".   $ ice file $
 'a'try to open source+res>-errno:
    open file+SOURCE+/r/+LEXT+>>LEXT,0->res,
       1->source line,next char,next symbol;
@@ -104,7 +104,7 @@ $ CHARACTERS ********************************************** $
   char=newline;char=end char;next char,:comment.
 $ NUMBER ********************************** $
 'a'read index+>sign+x>-d:
-  ((digit+x,(x>0;sign=0));corrupted obj file+_title_+_line_),
+  ((digit+x,(x>0;sign=0));corrupted ice file+_title_+_line_),
   (nxt:digit+d,addmult+x+10+d+x,:nxt;
        is+sign,subtr+0+x+x;
        +).
@@ -122,7 +122,7 @@ $ NUMBER ********************************** $
   =char=[/N/],next char,read index+0+x;
         [/0/],next char,0->x;
         [/-/],next char,read index+1+x;
-        corrupted obj file+_title_+_line_.
+        corrupted ice file+_title_+_line_.
 $ STRING ********************************** $
 $ strings identify tags, sources and titles.
 $ each tag has at most one unique global definition,
@@ -179,7 +179,7 @@ $   of this tag (global definitons are unique).
      (char=/"/,extend BUFFER+char,incr+n,:nxt;
       n=0,Squote image->x;
       pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,add LEXT entry+x);
-   [newline;end char],corrupted obj file+_title_+_line_;
+   [newline;end char],corrupted ice file+_title_+_line_;
    extend BUFFER+char,incr+n,:nxt)).
 
 $ BOLD ************************************ $
@@ -257,11 +257,11 @@ $ internal $
   next char,>>BUFFER->obuff,0->n,
   (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
         char=/'/,next char;
-        corrupted obj file+_title_+_line_),
+        corrupted ice file+_title_+_line_),
    pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,last BOLD->x,
    (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
         (n=0;
-         x=first BOLD,corrupted obj file+_title_+_line_;
+         x=first BOLD,corrupted ice file+_title_+_line_;
          previous string+BOLD+x,:nxt)),
    unstack string+LEXT.
 $ TYPES *********************************** $
@@ -271,11 +271,11 @@ $ <type>
   (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
          char=/ /,extend BUFFER+/ /,incr+n,next char,:nxt;
          char=/>/,next char;
-         corrupted obj file+_title_+_line_),
+         corrupted ice file+_title_+_line_),
   pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,last TYPE->x,
   (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
        (n=0;
-        x=first TYPE,corrupted obj file+_title_+_line_;
+        x=first TYPE,corrupted ice file+_title_+_line_;
         previous string+BOLD+x,:nxt)),
    unstack string+LEXT.
 $ READ ************************************ $
@@ -311,7 +311,7 @@ $ READ ************************************ $
    [/[/],Dsub->inpt,next char;
    [/^/],Dxor->inpt,next char;
    [end char],Dend->inpt;
-   corrupted obj file+_title_+_line_.
+   corrupted ice file+_title_+_line_.
 
 
 'root'rehash. $ initialize the HASH table for strings $

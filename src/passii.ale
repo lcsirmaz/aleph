@@ -8,7 +8,7 @@ $
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.
-'pragmat'require=("display","disc","drules","tags","obj",
+'pragmat'require=("display","disc","drules","tags","ice",
           "types","pragmats","node").
 
 'table'MESSAGE=(

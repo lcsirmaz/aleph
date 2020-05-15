@@ -4,7 +4,7 @@ void convertToItem(void),getCalibre(int *a),getListLink(int *a),
   getSsel(int *a),getVupb(int *a),getVlwb(int *a),getFill(int *a);
 void putVupb(int *a),putVlwb(int *a),putListLink(int *a),putFill(int *a);
 void getNumberOfFormals(int *a),getFormal(int *a),
-  getFormalCalibre(int *a),getFormalSsel(int *a);
+  getFormalCalibre(int *a),getFormalSsel(int *a),getRepeatCount(int *a);
 void getFileData(int *a),getFileLink(int *a);
 
 int isItemFlag(int *a),getItemDef(int *a);

@@ -379,7 +379,7 @@ $ ---------------------------------------------------- $
    Qcons+#;
    (Q+Dlwb;Q+Dupb;Q+Dvlwb;Q+Dvupb;Q+Dcalibre),must Qtag+#;
    Q+Dsub,must Qtag+#,skip source,mustQ+Dbus,
-     must Qtag+#,(Qcons+#;must Qtag+#);
+     (Qcons+#;must Qtag+#);
    Q+Dnoarg;
    must Qtag+#.
 'a'skip affixes:
@@ -552,7 +552,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - $
      (has list type+atag;must be of list type+rtag+cnt+atag),
      (utype=Uin;dest list type error+rtag+cnt+atag);
    Q+Dsub,must Ltag+atag,u slice type+utype+type,
-     fsimple affix+rtag+cnt+type+mod,mustQ+Dbus,must Qtag+#,
+     fsimple affix+rtag+cnt+type+mod,mustQ+Dbus,
      read selector+rtag+cnt+#,get ftype+atag+type,(=type=
        [Itable;Iformal table],
           (u read only+utype;dest type error+rtag+cnt+atag);

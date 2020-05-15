@@ -21,7 +21,7 @@ static void skipSource(void){
     (par[0]=Dvlwb,Q(par))||(par[0]=Dvupb,Q(par))||(par[0]=Dcalibre,Q(par))){
     mustQtag(par);}
   else if((par[0]=Dsub,Q(par))){mustQtag(par);skipSource();par[0]=Dbus;
-    mustQ(par);mustQtag(par);if(Qtag(par)){;}else{mustQcons(par);}}
+    mustQ(par);if(Qtag(par)){;}else{mustQcons(par);}}
   else if((par[0]=Dnoarg,Q(par))){;}
   else{mustQtag(par);}
 }

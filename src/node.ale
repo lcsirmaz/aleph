@@ -81,7 +81,7 @@ $        Ilocal  -- local                   otherwise -1
 $        Imacro  -- textual replacement     repr: QBUFFER ptr, tag: formal (LADM)
 $        Ilabel  -- label                   repr: RULE ptr
 
-'pragmat'require=("disc","tags","types","display","buffer","obj","symbols"
+'pragmat'require=("disc","tags","types","display","buffer","ice","symbols"
 ).
 
 $ definitions from buffer
@@ -181,7 +181,7 @@ $ use/set values ------------------------------------ $
   Uslicein	=0x234511,
   Usliceout	=0x234512,
   Usliceinout	=0x234513.
-'f'utype to slice+>in+out>:add+in+0x10+out.
+'f'utype to slice+>in+out>:bool or+in+0x10+out.
 'q'in utype+>utype-x:bool and+utype+1+x,x!=0.
      $ used before the call
 'q'out utype+>utype-x:bool and+utype+2+x,x!=0.
@@ -268,7 +268,7 @@ $ actual rule --------------------------------------- $
      (Qcons+#;
       g limit,must Qtag+#;
      Q+Dsub,must Qtag+#,utype to slice+utype+type,g simple affix+type+#,
-       mustQ+Dbus,must Qtag+#,(Qcons+#;must Qtag+#);
+       mustQ+Dbus,(Qcons+#;must Qtag+#);
      Q+Dnoarg;
      must Qtag+tag,get type+tag+type,
        (=type=
@@ -616,7 +616,7 @@ $ If C3=0 no need to allocate dymamic stack even if there is a * formal.
 $ 
 $ ---------------------------------------------------- $
 $ traverse RULE and assign nodes to unassigned Unode entries
-$ node 0 and 1 are the true and false returns, respectively
+$ node -1 and -2 are the true and false returns, respectively
 'variable'node count=0.            $ node count $
 'variable'C1=0,C2=0,C3=0.          $ affix count for a rule $
 'a'reset rule count:
@@ -658,7 +658,7 @@ $ extension ------------------------------------------ $
    must Qtag+tag,push RULE+Unode+0,
    W+Dextension,W+data*RULE[RULEtop],Wtag+tag,
    >>BUFFER->optr,w transport list+cnt,Wcons+cnt,
-   optr->ptr,incr+ptr,w copy affix from BUFFER+0+ptr,
+   optr->ptr,incr+ptr,w copy affix from BUFFER+ptr,
    unstack to+BUFFER+optr,push RULE+Utrue+0,w label+RULEtop,
    W+Dcomma.
 $ actual rule --------------------------------------- $
@@ -703,14 +703,14 @@ $ replacement for L*L[>>L], figure out the standard selector
      w limit+x,must Qtag+tag,push BUFFER+x+tag;
      Q+Dnoarg,push BUFFER+Dnoarg;
      Q+Dsub,must Qtag+tag,push BUFFER+Dsub+tag,utype to slice+utype+type,
-       w simple affix+type+#,mustQ+Dbus,must Qtag+tag,
+       w simple affix+type+#,mustQ+Dbus,
          $ this is the selector $
        (Qcons+x;must Qtag+x,get repr+x+x),
-       push BUFFER+Dbus+tag+Dconst+x;
+       push BUFFER+Dbus+Dconst+x;
      must Qlist+tag+local,get type+tag+type,(=type=
        [Iformal repeat],push BUFFER+Dstar,tag->repeat; $ actual * affix $
        [Istack;Itable;Istatic stack;Iformal stack;Iformal table],
-          final ssel+tag+local+x,push BUFFER+Dsub+tag+Dupb+tag+Dbus+tag+Dconst+x;
+          final ssel+tag+local+x,push BUFFER+Dsub+tag+Dupb+tag+Dbus+Dconst+x;
        [Iformal in;Iformal out;Iformal inout;Ilocal],
           w handle affix+utype,push BUFFER+tag;
        push BUFFER+tag)).
@@ -729,62 +729,56 @@ $ replacement for L*L[>>L], figure out the standard selector
   [Iformal inout], w simple affix+Uinout+repeat;
   internal error+_line_.
 
-'a'w skip affix in BUFFER+>pr+>b>:
-   (nxt:b>>>BUFFER;
-     BUFFER[b]=Dplus;
-     BUFFER[b]=Dminus,incr+b,(pr=0;push RULE+Uuse+0),:nxt;
-     BUFFER[b]=Dconst,incr+b,incr+b,:nxt;
-     incr+b,:nxt).
-
-'a'w copy affix from BUFFER+>pr+>b>:
+'a'w copy affix from BUFFER+>b>:
+  $ BUFFER contains an affix; no Dminus symbol is there
   (nxt:b>>>BUFFER;
     BUFFER[b]=Dplus;
-    BUFFER[b]=Dminus,incr+b,(pr=0;push RULE+Uuse+0),:nxt;
+    BUFFER[b]=Dminus,incr+b,push RULE+Uuse+0,:nxt;
     BUFFER[b]=Dconst,incr+b,Wcons+BUFFER[b],incr+b,:nxt;
     was+LLOC+BUFFER[b],Wtag+BUFFER[b],incr+b,:nxt;
     was+LADM+BUFFER[b],Wtag+BUFFER[b],incr+b,:nxt;
     W+BUFFER[b],incr+b,:nxt).
 
-'a'w before affixes+>tag+>b+>cnt+>rep-formal-ftype-repeat:
+$'a'w before affixes+>tag+>b+>cnt+>rep-formal-ftype-repeat:
   $ actual affixes are in BUFFER separated by Dplus
   $ Dminus just after Dplus shows that this is an out
   $   affix; check the RULE entry if it should be skipped
   $ cnt: repeat block number; rep: !=0 if * is at the end
-  incr+b, $ now BUFFER[b] looks at Dplus $
-  get adm+tag+formal,0->repeat,
-  (nxt:b>>>BUFFER; $ we run out of stored affixes
-     get type+formal+ftype,
-      (ftype=Iformal repeat, $ formal * affix; number of blocks,actual *
-          W+Dstar,(rep=0;subtr+1+cnt+cnt),Wcons+cnt,
-          get adm+formal+formal,formal->repeat,:nxt;
-       incr+b,                   $ skip Dplus $
-        get adm+formal+formal,(formal=0,repeat->formal;+),
-        (BUFFER[b]=Dstar,W+Dstar;
-            $ last affix; rep!=0 (formal * should be added)
-         ftype=Iformal out, $ out affix, no value $
-           w skip affix in BUFFER+0+b,:nxt;
-         w copy affix from BUFFER+0+b,:nxt)
-      )).
+$  incr+b, $$ now BUFFER[b] looks at Dplus $
+$  get adm+tag+formal,0->repeat,
+$  (nxt:b>>>BUFFER; $$ we run out of stored affixes
+$     get type+formal+ftype,
+$      (ftype=Iformal repeat, $$ formal * affix; number of blocks,actual *
+$          W+Dstar,(rep=0;subtr+1+cnt+cnt),Wcons+cnt,
+$          get adm+formal+formal,formal->repeat,:nxt;
+$       incr+b,                   $$ skip Dplus $
+$        get adm+formal+formal,(formal=0,repeat->formal;+),
+$        (BUFFER[b]=Dstar,W+Dstar;
+$            $$ last affix; rep!=0 (formal * should be added)
+$         ftype=Iformal out, $$ out affix, no value $
+$           w skip affix in BUFFER+0+b,:nxt;
+$         w copy affix from BUFFER+0+b,:nxt)
+$      )).
 
-'a'w after affixes+>tag+>b-formal-ftype-repeat:
+'a'w after affixes+>tag+>b+>cnt+>rep-formal-ftype-repeat:
   incr+b, $ now BUFFER[b] looks at Dplus $
   get adm+tag+formal,0->repeat,
   (nxt:b>>>BUFFER; $ no more affixes
     get type+formal+ftype,
-      (ftype=Iformal repeat, $ formal * affix
+      (ftype=Iformal repeat, $ formal * affix, number of blocks
+             W+Dstar,(rep=0;subtr+1+cnt+cnt),Wcons+cnt,
              get adm+formal+formal,formal->repeat,:nxt;
        incr+b, $ skip Dplus $
-       (BUFFER[b]=Dstar,incr+b;
-        (ftype=Iformal out;ftype=Iformal inout),
-            (BUFFER[b]=Dminus,incr+b,push RULE+Uuse+0,
-                (flag*RULE[RULEtop]=Uspare,W+Dnoarg,wskip affix in BUFFER+1+b;
-                 w copy affix from BUFFER+1+b);
-             w copy affix from BUFFER+1+b);
-        w skip affix in BUFFER+1+b),
+       (BUFFER[b]=Dstar,W+Dstar,incr+b;
+        ((ftype=Iformal out;ftype=Iformal inout),BUFFER[b]=Dminus),
+           incr+b,push RULE+Uuse+0,
+           (flag*RULE[RULEtop]=Uspare,decr+b,Dcolon->BUFFER[b];+),
+           w copy affix from BUFFER+b;
+         w copy affix from BUFFER+b),
        get adm+formal+formal,(formal=0,repeat->formal;+),
        :nxt)).
 
-'a'w actual rule+>tag-oldBUFF-formal-ftype-repeat-count-frep:
+'a'w actual rule+>tag-oldBUFF-formal-ftype-repeat-count-frep-flabel:
    push RULE+Unode+0,W+Dnode,W+data*RULE[RULEtop],Wtag+tag,$ node ID+rule $
    >>BUFFER->oldBUFF,reset rule count,
    0->repeat->frep->count,get adm+tag+formal,
@@ -796,29 +790,28 @@ $ replacement for L*L[>>L], figure out the standard selector
      get adm+formal+formal,(formal=0,incr+count,repeat->formal;+),:nxt;
    +),
    count star affix+frep,Wcons+C1,Wcons+C2,Wcons+C3,
-   w before affixes+tag+oldBUFF+count+frep,
    (frep=0;
     tag=Xshift affix, w before shiftrule+frep;
     is tag flag+tag+rshiftrule;
     w before vararg block+frep+repeat),
-   (is tag flag+tag+rcan fail,push RULE+Ufalse+0,w label+RULEtop;
-    w label+0),
-   w after affixes+tag+oldBUFF,
+   (is tag flag+tag+rcan fail,push RULE+Ufalse+0,RULEtop->flabel;
+    0->flabel), $ w label+flabel
+   w after affixes+tag+oldBUFF+count+frep,
    (frep=0;
     tag=Xshift affix,w after shiftrule+frep;
     is tag flag+tag+rshiftrule;
     w after vararg block+frep+repeat),
-   push RULE+Utrue+0,w label+RULEtop,W+Dcomma,
+   push RULE+Utrue+0,w label+flabel,w label+RULEtop,W+Dcomma,
    unstack to+BUFFER+oldBUFF.
 
 $ classification ------------------------------------- $
 'a'w area+>buff:
    $ BUFFER[buff] contains the area description until Dplus
-   W+Darea,incr+buff,w copy affix from BUFFER+0+buff.
+   W+Darea,incr+buff,w copy affix from BUFFER+buff.
 'a'w read box-ptr-buff-fptr:
    push RULE+Unode+0,W+Dbox,W+data*RULE[RULEtop], $ the node ID $
    >>BUFFER->buff->ptr,w simple affix+Uin+#,incr+ptr,
-   w copy affix from BUFFER+0+ptr,unstack to+BUFFER+buff,
+   w copy affix from BUFFER+ptr,unstack to+BUFFER+buff,
    push RULE+Utrue+0,data*RULE[RULEtop]->ptr,push RULE+Ubox+0,mustQ+Dbox,
    (nxt:ptr=0;
       $ RULE[ptr] is (Unode,BUFFER),(Ufalse/Umark,next),(Utrue,tptr)
@@ -858,7 +851,6 @@ $ ==================================================== $
   diagnose rule+tag,
   ((-repr:get repr+tag+repr,repr=0),Qskip+Dpoint;
   $ if macro and not public, dont't do anything
-  $  (skip node generation+tag,Qskip+Dpoint;
    tag->rule compiled,save disc position+dpos+dnum,
    1->expand flag,3->addRULE flag,scratch+RULE,scratch+BUFFER,
    >>RULE->rptr->RULEtop,
@@ -874,12 +866,12 @@ $ ==================================================== $
 $  w rule head+>tag-x:
 $    <RULE>,<tag>,#locals,#nodes, <point>
 $    W+Drule,Wtag+tag, Wcons+min local,Wcons+max local,Wcons+node count,
-$    Dnode,<node>,<tag>,C1,C2,C3,<source>*,Dcolon,<node/0/->,<source>*,Dcolon,<node/->
-$    Dbox,<node>,<source>,(Darea,<area>,Dcolon,<node/->)*,Dbox
-$    Dextension,<node>,<list>,#width,(<source>,(Dto,off)+)+,Dcolon <node/->
+$    Dnode,<node>,<tag>,C1,C2,C3,<source>*,Dout,<node/0/->,<source>*,Dout,<node/->
+$    Dbox,<node>,<source>,(Darea,<area>,Dout,<node/->)*,Dbox
+$    Dextension,<node>,<list>,#width,(<source>,(Dto,off)+)+,Dout <node/->
 $    <source> ::= <tag> | <formal> | <local> | Dnoarg | <index> |
 $                  Dstar | <limitop><list>
-$    <index> ::= Dsub, <list> <source>, Dbus, <list>, #offset
+$    <index> ::= Dsub, <list> <source>, Dbus, #offset
 $    <list> ::= <tag> | <formal>
 $    W+Dpoint.
 

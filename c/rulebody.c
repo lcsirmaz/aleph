@@ -219,12 +219,12 @@ static void source(int *a){ /* >tag + >err> */
   if(isCons(par)){Dcons(par);}
   else if(isTag(par)){x=par[0];par[0]=Sasterisk;
     if(R(par)){if(isTag(par)){y=par[0];par[0]=y;par[1]=a[1];
-        indexSource(par);a[1]=par[1];par[0]=y;useTag(par);par[0]=y;
-        Dtag(par);par[0]=x;par[1]=y;selector(par);}
+        indexSource(par);a[1]=par[1];par[0]=y;useTag(par);
+        par[0]=x;par[1]=y;selector(par);}
       else{par[0]=a[1];va[0]=tag_expected_after;va[1]=Sasterisk;
         Eerror(par,2,va);a[1]=par[0];}}
     else if(ahead(Ssub)){par[0]=x;par[1]=a[1];indexSource(par);a[1]=par[1];
-      par[0]=x;useTag(par);par[0]=x;Dtag(par);par[0]=par[1]=x;selector(par);}
+      par[0]=x;useTag(par);par[0]=par[1]=x;selector(par);}
     else{par[0]=x;useTag(par);par[0]=x;Dtag(par);}}
   else if(par[0]=Slwb,R(par)){par[0]=Dlwb;D(par);par[0]=Slwb;par[1]=a[1];
     listTag(par);a[1]=par[1];}

@@ -5,7 +5,7 @@
 #include "display.h" /* error, Xerror */
 #include "types.h"   /* hasFormalType */
 #include "symbols.h" /* advanceLinenum */
-#include "lexical.h" /* createObjName,forgetString */
+#include "lexical.h" /* createIceName,forgetString */
 #include "tags.h"    /* getRepr */
 
 int
@@ -305,11 +305,11 @@ static void fsimpleAffix(int *a){/* atype> */
   if(Qcons(par)){x=par[0];par[0]=Dconst;par[1]=x;putQ(2,par);a[0]=0;}
   else if(limitOp(par)){x=par[0];mustQtag(par);tag=par[0];
     par[0]=x;par[1]=tag;putQ(2,par);a[0]=0;}
-  else if((par[0]=Dsub,Q(par))){par[0]=Dsub;mustQtag(par);par[1]=par[0];
+  else if((par[0]=Dsub,Q(par))){par[0]=Dsub;mustQtag(par);tag=par[1]=par[0];
     par[0]=Dsub;putQ(2,par);
-    fsimpleAffix(a);par[0]=Dbus;mustQ(par);mustQtag(par);tag=par[0];
-    readSelector(par);x=par[0];par[0]=Dbus;par[1]=tag;par[2]=Dconst;
-    par[3]=x;putQ(4,par);}
+    fsimpleAffix(a);par[0]=Dbus;mustQ(par);
+    readSelector(par);x=par[0];par[0]=Dbus;par[1]=Dconst;
+    par[2]=x;putQ(3,par);}
   else if((par[0]=Dnoarg,Q(par))){a[0]=Inoarg;}
   else{mustQlist(par);tag=par[0];loc=par[1];a[0]=0;par[0]=tag;getType(par);
     type=par[1];if(type==Iconstant||type==IpointerConstant||type==Ivariable
@@ -318,7 +318,7 @@ static void fsimpleAffix(int *a){/* atype> */
     else if(type==Istack||type==Itable||type==IstaticStack||
       type==IformalTable||type==IformalStack){par[0]=tag;par[1]=loc;
       finalSsel(par);x=par[2];par[0]=Dsub;par[1]=tag;par[2]=Dupb;par[3]=tag;
-      par[4]=Dbus;par[5]=tag;par[6]=Dconst;par[7]=x;putQ(8,par);}
+      par[4]=Dbus;par[5]=Dconst;par[6]=x;putQ(7,par);}
     else if(type==IformalRepeat){par[0]=tag;putQ(1,par);a[0]=IformalRepeat;}
     else{printf("fsimpleAffix (disc), wrong formal type %d\n",type);exit(23);}}
 }

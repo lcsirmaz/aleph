@@ -58,16 +58,16 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
        [Istack;Itable;Istatic stack],
          get vlwb+tag+lw,get calibre+tag+up,subtr+lw+up+lw,incr+lw,
          get vupb+tag+up,2->count;
-       corrupted obj file+_title_+_line_);
+       corrupted ice file+_title_+_line_);
     0->lw->up->count),
-   (R+Dcolon,(count=0,min int->lw;count=1;corrupted obj file+_title_+_line_),
+   (R+Dcolon,(count=0,min int->lw;count=1;corrupted ice file+_title_+_line_),
       (RR+Tconst+up;
        RR+Titem+tag,(get item def+tag+tag;+),
        (=type*ITEM[tag]=
         [Iconstant;Ipointer constant],repr*ITEM[tag]->up;
-        corrupted obj file+_title_+_line_);
+        corrupted ice file+_title_+_line_);
        max int->up);
-    count=0,corrupted obj file+_title_+_line_;
+    count=0,corrupted ice file+_title_+_line_;
     +).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'table'MESSAGE=(
@@ -134,7 +134,7 @@ $  bool invert+flag+flag,bool and+flag+flag*NODE[this node]+flag*NODE[this node]
   $ advanceto the next node; complain of more than allocated
   must+Tnode+#, $ skip the node number
   (this node=0,<<NODE->this node;next+NODE+this node),
-  (this node<= >>NODE;corrupted obj file+_title_+_line_).
+  (this node<= >>NODE;corrupted ice file+_title_+_line_).
 
 $ STACK SIZE ********************************************** $
 $ ignore if pidgin syntax. Otherwise
@@ -152,19 +152,17 @@ $        affixes in the variable block IF the last affix is not *
 $   C3: number of variable affixes BEFORE the last *
 $
 'variable'
-  C2=0,
-  C3=0.
+  C1=0,C2=0,C3=0.
 
-'a'set rule head-tag-x2-x3:
+'a'set rule head-tag-x1-x2-x3:
   must+Titem+tag,(get item def+tag+tag;+),tag->tag*NODE[this node],
-  must+Tconst+#, $ C1, ignore #
-  must+Tconst+x2,must+Tconst+x3,
-  (is pidgin rule+tag,set node flag+npidgin; $ do not count $
-   max+x2+C2,max+x3+C3).
+  must+Tconst+x1,must+Tconst+x2,must+Tconst+x3,
+  (is pidgin rule+tag,set node flag+npidgin; $ do not count towards C1-C2-C3 $
+   max+x1+C1,max+x2+C2,max+x3+C3).
 'a'skip rule head:
   next symbol,next symbol,next symbol,next symbol.
 'a'clear stack size:
-  0->C2->C3.
+  0->C1->C2->C3.
 
 $ skip ==================================================== $
 $ skip a unit; skip an affix, skip an area $ 
@@ -179,14 +177,15 @@ $ skip a unit; skip an affix, skip an area $
    R+Tformal;
    must+Titem+#.
 'a'skip affix:
-   R+Tformal; $ formal affix
-   R+Tlocal;  $ local affix
+   (R+Dcolon,-); $ not used formal/local
+   R+Tformal;    $ formal affix
+   R+Tlocal;     $ local affix
    R+Titem;
-   R+Dnoarg;  $ only as out affix  
-   R+Tconst;  $ constant
+   R+Dnoarg;     $ only as out affix  
+   R+Tconst;     $ constant
    is limit,skip list;
-   R+Dsub,skip list,skip affix,must+Dbus+#,skip list,must+Tconst+#;
-   corrupted obj file+_title_+_line_.
+   R+Dsub,skip list,skip affix,must+Dbus+#,must+Tconst+#;
+   corrupted ice file+_title_+_line_.
 
 $ node equality ******************************************* $
 $ store all arguments in BUFFER and compute their HASH
@@ -197,54 +196,33 @@ $
 'a'push BUFFER+*+>x:
   (* x->BUFFER *)BUFFER,(shift affix block+*,:push BUFFER;+). 
 
-'a'store list+>symb-x:
-   RR+Tformal+x,push BUFFER+symb+Tformal+x;
-   must+Titem+x,push BUFFER+symb+Titem+x.
-'a'store limit:
-   R+Dlwb,store list+Dlwb;
-   R+Dupb,store list+Dupb;
-   R+Dvlwb,store list+Dvlwb;
-   R+Dvupb,store list+Dvupb;
-   must+Dcalibre+#,store list+Dcalibre.
-'a'store affix-x:
-   RR+Tformal+x,push BUFFER+Tformal+x;
-   RR+Tlocal+x,push BUFFER+Tlocal+x;
-   RR+Titem+x,push BUFFER+Titem+x;
-   R+Dnoarg,push BUFFER+Dnoarg;
-   RR+Tconst+x,push BUFFER+Tconst+x;
-   R+Dsub,store list+Dsub,store affix,must+Dbus+#,
-     skip list,must+Tconst+x,push BUFFER+Dbus+x;
-   store limit.
-'a'store in affix+>type:
-   type=Iformal out;store affix.
-'a'store out affix+>type:
-   (type=Iformal out;type=Iformal inout),store affix;+.
-'a'store in affixes+>rep>-tag-n-i-type:
-   tag*NODE[this node]->tag,get number of formals+tag+n,rep->i,
-   (nxt:i>=n;
-    get formal+tag+i+type,incr+i,
-      (type=Iformal repeat,i->rep;store in affix+type,:nxt)).
-'a'store block in affixes+>rep+>cnt:
-   (nxt:cnt=0;
-       (cnt<0,incr+cnt;decr+cnt),store in affixes+rep,:nxt).
-'a'store out affixes+>rep-tag-n-i-type:
-   tag*NODE[this node]->tag,get number of formals+tag+n,rep->i,
-   (nxt:i>=n;
-    get formal+tag+i+type,incr+i,
-      (type=Iformal repeat;store out affix+type,:nxt)).
-'a'store block out affixes+>rep+>cnt:
-   (nxt:cnt=0;
-    (cnt<0,incr+cnt;decr+cnt),store out affixes+rep,:nxt).
-'a'store rule affixes-rep-cnt:
-   0->rep->cnt,store in affixes+rep,
-   (rep=0;
-    $ we hit * $
-    must+Dstar+#,must+Tconst+cnt,push BUFFER+Dstar+cnt,
-      store block in affixes+rep+cnt,(cnt>0;must+Dstar+#)),
-   must+Dout+fnext*NODE[this node], $ false exit $
-   push BUFFER+Dout,store out affixes+0,
-   (rep=0;store block out affixes+rep+cnt),
-   must+Dout+tnext*NODE[this node], $ true exit, don't store $
+$'a'store list+>symb-x:
+$   RR+Tformal+x,push BUFFER+symb+Tformal+x;
+$   must+Titem+x,push BUFFER+symb+Titem+x.
+$'a'store limit:
+$   R+Dlwb,store list+Dlwb;
+$   R+Dupb,store list+Dupb;
+$   R+Dvlwb,store list+Dvlwb;
+$   R+Dvupb,store list+Dvupb;
+$   must+Dcalibre+#,store list+Dcalibre.
+$'a'store affix-x:
+$   RR+Tformal+x,push BUFFER+Tformal+x;
+$   RR+Tlocal+x,push BUFFER+Tlocal+x;
+$   RR+Titem+x,push BUFFER+Titem+x;
+$   R+Dnoarg,push BUFFER+Dnoarg;
+$   RR+Tconst+x,push BUFFER+Tconst+x;
+$   R+Dsub,store list+Dsub,store affix,must+Dbus+#,
+$     skip list,must+Tconst+x,push BUFFER+Dbus+x;
+$   store limit.
+
+'a'store rule affixes:
+   (nxt:=inpt=
+     [Tformal;Tlocal;Titem;Tconst],
+        push BUFFER+inpt+inpt value,next symbol,:nxt;
+     [Dlwb;Dupb;Dvlwb;Dvupb;Dcalibre;Dnoarg;Dsub;Dbus;Dstar;Dcolon],
+        push BUFFER+inpt,next symbol,:nxt;
+     +),
+   must+Dout+fnext*NODE[this node],must+Dout+tnext*NODE[this node],
    must+Dcomma+#.
 
 'a'compute rule affix hash-old:
@@ -357,7 +335,7 @@ $ mark nodes which have labels
 'a'extension label-nxt-label:
    find next node+nxt,skip to label+label,
       mark node+nxt+label.
-$ scan **************************************************** $
+$ scans *************************************************** $
 
 'a'scan i:
    $ first scan. 
@@ -382,7 +360,7 @@ $ scan **************************************************** $
         must+Dpoint+#),
    unstack to+BUFFER+obuff,find equal nodes.
 'a'scan iii:
-   $ determine which nodes should have labels
+   $ determine which nodes have labels
    R+Dbox,advance node,skip affix,area labels,
      must+Dcomma+#,:scan iii;
    R+Dextension,advance node,extension label,must+Dcomma+#,:scan iii;
@@ -396,7 +374,8 @@ $ scan **************************************************** $
    0->this node,clear stack size,scan i,
    (node hash different;
     restore input position,0->this node,scan ii),
-   restore input position,0->this node,scan iii.
+   restore input position,0->this node,scan iii,
+   rule declaration head+rtag+C1+C2+C3+minloc+maxloc.
 
 
 'root'+.

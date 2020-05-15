@@ -198,13 +198,46 @@ int isPidginRule(int item){
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){
     par[0]=ITEM->offset[item-ITEM_tag];getTagImage(par);x=par[1];
     par[0]=STACKpar(LEXT);par[1]=x;par[2]=0;if(stringelem(par)){
-      x=par[3];if(('a'<=x&&x<='z')||('A'<=x&&x<='Z')){return 1;}}}
+      x=par[3];
+      if(('a'<=x&&x<='z')||('A'<=x&&x<='Z')){return 0;}else{return 1;}}}
   return 0;
 }
-//static int isStandardExternal(int item){
-//  int par[4];int x;
-//  return 0;
-//}
+/* ------------------------------------------------ */
+static void showFormalsAsComment(int item){
+  int par[3];int n,cnt,type;
+  par[0]=item;getNumberOfFormals(par);n=par[1];cnt=0;nxt:
+  if(cnt>=n){;}
+  else{par[0]=item;par[1]=cnt;getFormal(par);type=par[2];cnt++;
+    if(type==IformalIn){T("+>a",0,par);}
+    else if(type==IformalOut){T("+a>",0,par);}
+    else if(type==IformalInout){T("+>a>",0,par);}
+    else if(type==IformalTable){T("+t[]",0,par);}
+    else if(type==IformalStack){T("+[]st[]",0,par);}
+    else if(type==IformalFile){T("+\"\"f",0,par);}
+    else if(type==IformalRepeat){T("+*",0,par);}
+    else{printf("unknown formal type %d\n",type);exit(33);}
+    goto nxt;}
+}
+static void declareLocals(int minloc,int maxloc){
+  int par[2];
+  nxt:if(minloc==0){;}
+  else if(minloc<=maxloc){par[0]=minloc;T("int L%d;",1,par);
+    minloc++;goto nxt;}
+}
+static void declareCallargs(int item,int C1,int C2,int C3){
+  int par[3];int cnt;
+  if(C2==0){;}else{par[0]=C2;T("int a_A[%d];",1,par);}
+  if(C3==0){;}else{par[0]=item;getRepeatCount(par);cnt=par[1];
+    par[0]=C3;par[1]=cnt;T("int *a_D=alloca(sizeof(int)*(%d+%d*C));",2,par);}
+  par[0]=C1;par[1]=C2;par[2]=C3;T("/* %d,%d,%d */%n",3,par);
+}
+void ruleDeclarationHead(int *a){/* item+C1+C2+C3+minloc+maxloc */
+  int par[3];
+  ruleTyper(a[0]);ruleArgs(a[0]);par[0]=ITEM->offset[a[0]-ITEM_tag];
+  T("{ /* %p",1,par);showFormalsAsComment(a[0]);
+  T(" */%n",0,par);declareLocals(a[4],a[5]);
+  declareCallargs(a[0],a[1],a[2],a[3]);
+}
 /* ------------------------------------------------ */
 static int externalPlainDeclaration(int item){
   int par[2];
