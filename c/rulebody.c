@@ -16,7 +16,7 @@ static int
 expected,expected_after,tag_expected_after,tag_expected,source_or_tag_expected,
 selector_tag_expected,stack_tag_expected,wrong_affix_form,unknown_label,
 source_expected,undefined_formal_selector,member_expected,formal_as_rule,
-no_formal_repeat_affix,wrong_zone;
+no_formal_repeat_affix,wrong_zone,empty_classification;
 
 #define addMSG(x,y) add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void add_messages(void){
@@ -35,6 +35,7 @@ static void add_messages(void){
  addMSG("formal affix %p as a rule",formal_as_rule);
  addMSG("rule %p: no formal repeat affix",no_formal_repeat_affix);
  addMSG("rule %p: zone syntax (cannot be empty)",wrong_zone);
+ addMSG("classification has no cases",empty_classification);
 }
 #undef addMSG
 
@@ -393,14 +394,16 @@ static void area(int *a){/* >err> + last> */
     par[0]=Darea;D(par);par[0]=Dcomma;D(par);alternative();}
 }
 static void classification(void){
-  int par[2];int va[2];int err,last;
-  par[0]=Dbox;D(par);err=0;par[0]=Sbox;par[1]=err;source(par);
+  int par[2];int va[2];int err,last,cnt;
+  par[0]=Dbox;D(par);err=cnt=0;par[0]=Sbox;par[1]=err;source(par);
   err=par[1];par[0]=Dbox;D(par);par[0]=Sbox;
   if(R(par)){;}else{par[0]=err;va[0]=expected;va[1]=Sbox;
     Eerror(par,2,va);}nxt: par[0]=err;area(par);last=par[1];err=par[0];
   if(last){;}else if(par[0]=Ssemicolon,R(par)){par[0]=Dsemicolon;
-   D(par); goto nxt;}
+   D(par);cnt++;goto nxt;}
   if(err){skipAll();}
+  else if(last==0){;}
+  else if(cnt==0){par[0]=empty_classification;Error(1,par);}
 }
 /* ================================================== */
 static void rulePragmats(int *a){ /* >tag */

@@ -74,13 +74,15 @@ static void readAreaInterval(int *a){/* lw> + up> */
   else if(count==0){corruptedIceFile(__FILE__,__LINE__);}
 }
 /* ------------------------------------------------ */
-static int larger_lower_bound,cannot_succeed,area_may_fail;
+static int larger_lower_bound,cannot_succeed,area_may_fail,
+  classification_succeeds;
 
 #define addMSG(x,y)	 add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void init_MSG(void){
  addMSG("area at %l: lower bound %d exceeds upper bound %d",larger_lower_bound);
  addMSG("area at %l: this alternative never succeeds",cannot_succeed);
  addMSG("last area at %l: not all cases are covered",area_may_fail);
+ addMSG("classification at %l: always succeeds",classification_succeeds);
 }
 #undef addMSG
 /* ------------------------------------------------ */
@@ -124,12 +126,13 @@ static void checkArea(int *a){/* >set + dl> */
   if(nnew){;}else{par[0]=cannot_succeed;par[1]=a[1];error(2,par);}
 }
 static void checkAreas(void){
-  int par[5];int set,dl;
+  int par[5];int set,dl,cnt;
   par[0]=STACKpar(ZONE);scratch(par);par[0]=STACKpar(ZONE);par[1]=3;
-  par[2]=par[3]=par[4]=0;expandstack(par);set=ZONE->aupb;dl=0;nxt:
-  par[0]=Darea;if(R(par)){par[0]=set;checkArea(par);dl=par[1];
+  par[2]=par[3]=par[4]=0;expandstack(par);set=ZONE->aupb;dl=cnt=0;nxt:
+  par[0]=Darea;if(R(par)){cnt++;par[0]=set;checkArea(par);dl=par[1];
   par[0]=Dout;must(par);goto nxt;}
-  if(completeZone(set)){setNodeFlag(nzone);}
+  if(completeZone(set)){setNodeFlag(nzone);
+    if(cnt>1){;}else{par[0]=classification_succeeds;par[1]=dl;error(2,par);}}
   else{par[0]=area_may_fail;par[1]=dl;warning(2,par);}
 }
 /* ------------------------------------------------ */
@@ -206,6 +209,33 @@ static void pushBUFFER(int n,int *a){
   int par[3];
   par[0]=STACKpar(BUFFER);par[1]=1;nxt:if(n==0){;}
   else{par[2]=a[0];expandstack(par);n--;a++;goto nxt;}
+}
+static void storeList(int symb){
+  int par[3];int x;
+  par[0]=Tformal;if(RR(par)){x=par[1];
+     par[0]=symb;par[1]=Tformal;par[2]=x;pushBUFFER(3,par);return;}
+  par[0]=Titem;must(par);x=par[1];
+     par[0]=symb;par[1]=Titem;par[2]=x;pushBUFFER(3,par);
+}
+static void storeLimit(void){
+  int par[3];
+  par[0]=Dlwb;if(R(par)){storeList(Dlwb);return;}
+  par[0]=Dupb;if(R(par)){storeList(Dupb);return;}
+  par[0]=Dvlwb;if(R(par)){storeList(Dvlwb);return;}
+  par[0]=Dvupb;if(R(par)){storeList(Dvupb);return;}
+  par[0]=Dcalibre;must(par);storeList(Dcalibre);
+}
+static void storeAffix(void){
+  int par[3];
+  par[0]=Tformal;if(RR(par)){pushBUFFER(2,par);return;}
+  par[0]=Tlocal;if(RR(par)){pushBUFFER(2,par);return;}
+  par[0]=Titem;if(RR(par)){pushBUFFER(2,par);return;}
+  par[0]=Dnoarg;if(R(par)){pushBUFFER(1,par);return;}
+  par[0]=Dcolon;if(R(par)){pushBUFFER(1,par);return;}
+  par[0]=Tconst;if(RR(par)){pushBUFFER(2,par);return;}
+  par[0]=Dsub;if(R(par)){storeList(Dsub);storeAffix();par[0]=Dbus;must(par);
+    par[0]=Tconst;must(par);par[0]=Dbus;pushBUFFER(2,par);return;}
+  storeLimit();
 }
 
 static void storeRuleAffixes(void){
@@ -307,6 +337,12 @@ static void findEqualNodes(void){
   if(yes==0){;}else{goto again;}
 }
 /* ------------------------------------------------------ */
+static void findRealLabel(int *a){/* >old + new> */
+  if(a[0]<=0){a[1]=a[0];return;}
+  a[0]=(a[0]-1)*NODE_CALIBRE+NODE->alwb;nxt:
+  if(hasNodeFlag(a[0],nsame)){a[0]=NODE->offset[a[0]-NODE_adm];goto nxt;}
+  a[1]=(a[0]-NODE->alwb)/NODE_CALIBRE+1;
+}
 static void findNextNode(int *a){/* idx> */
    int n;
    a[0]=0;n=thisNode+NODE_CALIBRE;nxt:
@@ -315,6 +351,7 @@ static void findNextNode(int *a){/* idx> */
    a[0]=1+(n-NODE->alwb)/NODE_CALIBRE;
 }
 static void markNode(int nxt,int label){
+  int par[2];par[0]=label;findRealLabel(par);label=par[1];
   if(label<=0||label==nxt){ return;}
   label=(label-1)*NODE_CALIBRE+NODE->alwb;putNodeFlag(label,nlabel);
 }
@@ -328,7 +365,7 @@ static void ruleLabel(void){
 static void areaLabels(void){
   int nxt,l1,l2;int par[2];
   findNextNode(par);nxt=par[0];l1=l2=0;nxt:par[0]=Darea;
-  if(R(par)){markNode(0,l1);l2=l1;skipToLabel(par);l2=par[0];goto nxt;}
+  if(R(par)){markNode(0,l1);l1=l2;skipToLabel(par);l2=par[0];goto nxt;}
   if(isNodeFlag(nzone)){markNode(nxt,l1);markNode(nxt,l2);}
   else{markNode(0,l1);markNode(nxt,l2);}
 }
@@ -336,6 +373,47 @@ static void extensionLabel(void){
   int nxt,label;int par[1];
   findNextNode(par);nxt=par[0];skipToLabel(par);label=par[0];
   markNode(nxt,label);
+}
+static void generateLabel(void){
+  int par[3];int label,nextnode;
+  advanceNode();findNextNode(par);nextnode=par[0];
+  if(isNodeFlag(nlabel)){label=thisNode-NODE->alwb;
+    label=label/NODE_CALIBRE+1;}
+  else{label=0;}
+  par[0]=label;par[1]=nextnode;Tlabel(par);
+}
+/* ====================================================== */
+static void callRuleHead(void){
+  int par[3];int tag;
+  par[0]=Titem;must(par);tag=par[1];par[0]=tag;
+  if(getItemDef(par)){tag=par[1];}
+  par[0]=Tconst;must(par);must(par);must(par);
+}
+/* ====================================================== */
+static void generateArea(void){
+  int par[3];nxt:
+  readAreaInterval(par);pushBUFFER(2,par);
+  par[0]=Dsemicolon;if(R(par)){pushBUFFER(1,par);goto nxt;}
+}
+static void generateAreas(void){
+  int par[3];int last,out,idx;
+  last=0;par[0]=Darea;must(par);nxt:
+  par[0]=Tconst;must(par);par[0]=0;pushBUFFER(1,par);
+  if(last==0){;}else{BUFFER->offset[last]=BUFFER->aupb;}last=BUFFER->aupb;
+  par[0]=0;pushBUFFER(1,par);out=BUFFER->aupb;generateArea();
+  par[0]=Dout;must(par);idx=par[1];par[0]=idx;findRealLabel(par);
+  BUFFER->offset[out]=par[1];par[0]=Darea;if(R(par)){par[0]=Dplus;
+    pushBUFFER(1,par);goto nxt;}
+  if(isNodeFlag(nzone)){par[0]=STACKpar(BUFFER);par[1]=out;unstackto(par);
+    par[0]=INT_MIN;par[1]=INT_MAX;par[2]=Dplus;pushBUFFER(3,par);}
+  else{par[0]=Dplus;pushBUFFER(1,par);}
+}
+static void generateBox(void){
+  int par[2];int obuff,area;
+  obuff=BUFFER->aupb;storeAffix();par[0]=Dplus;pushBUFFER(1,par);
+  area=BUFFER->aupb;generateAreas();
+  par[0]=obuff;par[1]=area;Tbox(par);
+  par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
 }
 /* ====================================================== */
 static void scanI(void){
@@ -367,6 +445,15 @@ static void scanIII(void){
   par[0]=Dnode;if(R(par)){advanceNode();ruleLabel();skipToComma();goto again;}
   par[0]=Dpoint;must(par);
 }
+static void scanIV(void){
+   int par[3];again:
+   par[0]=Dbox;if(R(par)){generateLabel();generateBox();par[0]=Dcomma;
+     must(par);goto again;}
+   par[0]=Dextension;if(R(par)){generateLabel();skipToComma();goto again;}
+   par[0]=Dnode;if(R(par)){generateLabel();callRuleHead();
+      skipToComma();goto again;}
+   par[0]=Dpoint;must(par);
+}
 /* ------------------------------------------------------ */
 void makeRule(void){
    int par[6];int tag,minloc,maxloc;
@@ -381,6 +468,8 @@ void makeRule(void){
    restoreInputPosition();thisNode=0;scanIII();
    par[0]=tag;par[1]=C1;par[2]=C2;par[3]=C3;par[4]=minloc;par[5]=maxloc;
    ruleDeclarationHead(par);
+   restoreInputPosition();thisNode=0;scanIV();
+   ruleDeclarationTail();
 //printf("rule ");par[0]=tag;printPointer(par);printf(" C2=%d,C3=%d, nodes=%d\n",C2,C3,1+(NODE->aupb-NODE->alwb)/NODE_CALIBRE);
 //printf("nodes: ");{int n;for(n=NODE->alwb;n<=NODE->aupb;n+=NODE_CALIBRE){printf(" (%d,%x,%d|%d,%d) ",1+(n-NODE->alwb)/NODE_CALIBRE,(nlabel|nsame)&NODE->offset[n-NODE_flag],nsame&NODE->offset[n-NODE_flag]?(1+(NODE->offset[n-NODE_adm]-NODE->alwb)/NODE_CALIBRE):-1,NODE->offset[n-NODE_fnext],NODE->offset[n-NODE_tnext]);} printf("\n");}
 }

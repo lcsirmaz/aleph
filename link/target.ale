@@ -18,6 +18,9 @@ $ generating code $
 'q'is pidgin rule+>item.
    $ the external rule uses pidgin call
 'a'rule declaration head+>item+>C1+>C2+>C3+>minloc+>maxloc.
+'a'Tlabel+>this+>next.
+'a'Tbox+>aff+>area.
+'a'rule declaration tail.
 $ BODY **************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("item","data","lexical","error","rule").
@@ -61,15 +64,30 @@ $ print to TARGET file ==================================== $
         add+r+c+r, print char+r.
 'a'print str+T[]+>ptr:
   put string+TARGET+T+ptr.
+'a'print BUFFER+>ptr:
+  =BUFFER[ptr]=
+  [Titem],incr+ptr,print repr+BUFFER[ptr];
+  [Tconst],incr+ptr,print int+BUFFER[ptr];
+  [Tlocal],incr+ptr,print char+/L/,print int+BUFFER[ptr];
+  [Tformal],incr+ptr,formal argument+this rule+BUFFER[ptr];
+  print char+/?/,print int+BUFFER[ptr].
 'a'print ptr+>p:
   was+ITEM+p,tag*ITEM[p]->p,:print ptr;
   was+LEXT+p,get tag image+p+p,print str+LEXT+p;
   was+MESSAGE+p,print str+MESSAGE+p;
+  was+BUFFER+p,print BUFFER+p;
   +.
+'a'print goto+>label:
+  =label=,
+  [0],internal error+_title_+_line_;
+  [-1],(is node flag+this rule+rcan fail,print str+" return 1";print str+"return");
+  [-2],print str+" return 0";
+  print str+" goto a_",print int+label.
 
 'a'T+t[]+*+>fmt-ptr-optr:
 $ formal characters:
 $   r: item, get repr (S<value)
+$   b: BUFFER ptr, type+value
 $   n: newline
 $   p: pointer (LEXT)
 $   d: integer
@@ -79,6 +97,7 @@ $   d: integer
     incr+ptr,(>>BUFFER>ptr,print char+/%/;
       (=BUFFER[ptr]=
        [/r/],(shift affix block+*,print repr+fmt;print char+/?/),incr+ptr,:nxt;
+       [/g/],(shift affix block+*,print goto+fmt;print char+/?/),incr+ptr,:nxt;
        [/n/],print char+newline,incr+ptr,:nxt;
        [/d/],(shift affix block+*,print int+fmt;print char+/?/),incr+ptr,:nxt;
        [/p/],(shift affix block+*,print ptr+fmt;print char+/?/),incr+ptr,:nxt;
@@ -178,6 +197,13 @@ $    (int F1,int a_A[3],int a_C,int a_V[]) if it has a vararg block
                T+"int a_C,int a_V[])";
       arg sep+sep,T+"int F%d"+cnt,:nxt);
    (n=0,T+"void";out args+out+sep),print char+/)/).
+'a'formal argument+>item+>cnt-i-type-out:
+  0->i->out,(nxt:get formal+item+i+type,incr+i,
+     ((type=Iformal out;type=Iformal inout),
+        (i=cnt,T+"a_A[%d]"+out;incr+out,:nxt);
+      type=Iformal repeat,subtr+cnt+i+i,T+"a_V[%d]"+i;
+      i=cnt,T+"F%d"+cnt;
+      :nxt).
 
 $ the external rule uses pidgin parameter passing
 'q'is pidgin rule+>item-x:
@@ -189,6 +215,7 @@ $ rule declaration ----------------------------------------- $
 $ formal parameters, locals, and call arguments; maybe dynamic.
 $   formal  F1,F2,a_A[]; a_C, a_V[] (repeat)
 $   local   L4,L5;       a_D[] (dynamic)
+'variable'this rule=0. $ This rule
 'a'show formals as comment+>item-n-cnt-type:
   get number of formals+item+n,0->cnt,
   (nxt:cnt>=n;
@@ -215,12 +242,10 @@ $   local   L4,L5;       a_D[] (dynamic)
   rule typer+rule,rule args+rule,T+"{ /* %p"+tag*ITEM[rule],
    show formals as comment+rule,T+" */%n",
    declare locals+minloc+maxloc,
-   declare callargs+rule+C1+C2+C3.
-$   rule->this rule.
-
-$ T affix ************************************************** $
-$ read and translate an affix. Lvalue and Rvalue are the same
-
+   declare callargs+rule+C1+C2+C3,
+   rule->this rule.
+'a'rule declaration tail:
+  T+"} /* %p */%n"+this rule.
 
 $ data declaration ***************************************** $
 $ apart from rule prototypes, variables, list, files are
@@ -344,7 +369,84 @@ $ generate the rules
         +),
    (nxt:R+Drule,make rule,:nxt;+),
    (R+Dend;corrupted ice file+_title_+_line_).
+$ global
+'variable'
+  next node idx=0,   $ label of the next node, no jump to it
+  called rule=0.     $ rule to be called
 
+$ label generation
+'a'Tlabel+>label+>nextidx:
+  nextidx->next node idx,(label=0;T+"a_%d: "+label).
+
+$ classification ------------------------------------------ $
+$  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes
+$   the areas
+'table'MESSAGE=(
+   "calibre"  :Tcalibre,
+   "alwb"     :Tlwb,
+   "aupb"     :Tupb,
+   "vlwb"     :Tvlwb,
+   "vupb"     :Tvupb,
+   "a_r"      :classifier $ variable storing classifier's value
+). 
+'f'T limit tail+>what+code>:
+   =what=
+   [Dcalibre],Tcalibre->code;
+   [Dlwb],    Tlwb->code;
+   [Dupb],    Tupb->code;
+   [Dvlwb],   Tvlwb->code;
+   [Dvupb],   Tvupb->code;
+   corrupted ice file+_title_+_line_.
+'a'T affix+>ptr>-x:
+   $ generate an affix from BUFFER[ptr]
+   =BUFFER[ptr]=
+   [Tformal;Tlocal;Titem;Tconst],T+"%p"+ptr,incr+ptr,incr+ptr;
+   [Dcolon],incr+ptr,:T affix;
+   [Dnoarg],incr+ptr,T+"**###**";
+   [Dsub],incr+ptr,T+"to_LIST(%p)->offset["+ptr,incr+ptr,incr+ptr,
+      T affix+ptr,$ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
+      incr+ptr,(x=0,T+"]";T+"-%d]");
+   T limit tail+BUFFER[ptr]+x,incr+ptr,T+"to_LIST(%p)->%p"+BUFFER[ptr]+x,
+      incr+ptr.
+
+'a'box classifier+>ptr+v>:
+  =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tconst],ptr->v;
+     classifier->v,T+"register int %p="+v,T affix+ptr,T+";%n".
+
+'q'is complete area+>ptr:
+  BUFFER[ptr]=0,incr+ptr,incr+ptr,BUFFER[ptr]=min int,incr+ptr,BUFFER[ptr]=max int.
+
+'a'T single if condition+>lw+>up+>v:
+  lw=up,T+"%p==%d"+v+lw;
+  lw=min int,T+"%p<=%d"+v+up;
+  up=max int,T+"%p>=%d"+v+lw;
+  T+"(%d<=%p && %p<=%d)"+lw+v+v+up.
+
+'a'T if condition+>ptr+>v-lw-up:
+  incr+ptr,BUFFER[ptr]->lw,incr+ptr,BUFFER[ptr]->up,
+     T single if condition+lw+up+v,incr+ptr,
+     (BUFFER[ptr]=Dsemicolon,T+"||",:T if condition;+).
+
+'a'T jump to areas+>ptr+>v-goal-fgoal-nextptr:
+  $ ptr: pointer to next; label to jump to if true;
+  $  (lw,up), Dsemicolon or Dplus
+  BUFFER[ptr]->nextptr,
+    (nextptr=0, $ last case, may fail
+        incr+ptr,BUFFER[ptr]->goal,
+        T+" if(!(",T if condition+ptr+v,T+")){a_area_failed(%p);}%n"+v,
+        (goal=next node idx;T+" %g;"+BUFFER[ptr]);
+    is complete area+nextptr,incr+ptr,BUFFER[ptr]->goal,
+        incr+nextptr,BUFFER[nextptr]->fgoal,
+        (goal=next node idx,(goal=fgoal;
+           T+" if(!(",T if condition+ptr+v,T+")){%g;}%n"+fgoal);
+         T+" if(",T if condition+ptr+v,T+"){%g;}%n"+goal,
+           (fgoal=next node idx;T+" %g;"+fgoal));
+    incr+ptr,T+" if(",T if condition+ptr+v,T+"){%g;}%n"+BUFFER[ptr],
+        nextptr->ptr,:T jump to areas).
+
+'a'Tbox+>affix+>area-v:
+  T+"{",incr+affix,box classifier+affix+v,incr+area,
+    T jump to areas+area+v,T+"}%n".
 $ DATA SETUP ********************************************** $
 $  setup list and file data structures. As file area uses
 $    list bounds, lists should come first. Add external list

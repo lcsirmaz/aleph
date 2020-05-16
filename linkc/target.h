@@ -6,11 +6,12 @@ void dataDeclaration(void),dataInitialization(void);
 void fillTableHead(void),dataSectionIII(void),fillTableTail(void);
 void dataSectionIV(void);
 
-void ruleDeclarationHead(int *a);
+void ruleDeclarationHead(int *a),ruleDeclarationTail(void);
 void targetPrelude(void),targetMain(void);
 
 int isPidginRule(int item);
 
+void Tlabel(int *a),Tbox(int *a);
 /* ----------------------- */
 
 void initialize_target(void);

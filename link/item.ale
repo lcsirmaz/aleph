@@ -11,7 +11,6 @@ $ read al items from the .ice file
    put list link+>item+>x.
    $ item is a list, get/set data
 'f'get number of formals+>item+n>,get formal+>item+>i+type>,
-   get formal calibre+>item+>i+cal>,get formal ssel+>item+>i+ssel>,
    get repeat count+>item+cnt>.
    $ item is a rule, get number and type of formal affixes
 'f'get file data+>item+id>+ptr>+link>,get file link+>link>+hash>+id>.
@@ -184,28 +183,24 @@ $ item interface ----------------------------------------- $
 'f'get number of formals+>item+n>: count*AUX[adm*ITEM[item]]->n.
 'f'get formal+>item+>i+type>-p:
    (adm*ITEM[item]->p,i>=count*AUX[p]),0->type;
-   incr+p,AUX[p]->type,(nxt:
-     i<=0;
-     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
-         decr+i,incr+p,AUX[p]->type,:nxt).
-'f'get formal calibre+>item+>i+cal>-p-type:
-   adm*ITEM[item]->p,incr+p,AUX[p]->type,(nxt:
-     i<=0,incr+p,AUX[p]->cal,(cal>0;subtr+0+cal+cal);
-     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
-       decr+i,incr+p,AUX[p]->type,:nxt).
-'f'get formal ssel+>item+>i+ssel>-p-type:
-  adm*ITEM[item]->p,incr+p,AUX[p]->type,(nxt:
-     i<=0,add+2+p+p,AUX[p]->ssel;
-     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
-       decr+i,incr+p,AUX[p]->type,:nxt).
+   incr+p,add+i+p+p,AUX[p]->type.
+$'f'get formal calibre+>item+>i+cal>-p-type:
+$   adm*ITEM[item]->p,incr+p,AUX[p]->type,(nxt:
+$     i<=0,incr+p,AUX[p]->cal,(cal>0;subtr+0+cal+cal);
+$     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
+$       decr+i,incr+p,AUX[p]->type,:nxt).
+$'f'get formal ssel+>item+>i+ssel>-p-type:
+$  adm*ITEM[item]->p,incr+p,AUX[p]->type,(nxt:
+$     i<=0,add+2+p+p,AUX[p]->ssel;
+$     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
+$       decr+i,incr+p,AUX[p]->type,:nxt).
 'f'get repeat count+>item+cnt>-p-n-rep:
    0->cnt->rep,adm*ITEM[item]->p,count*AUX[p]->n,
    (nxt:n=0;
-        decr+n,incr+p,(rep=0;incr+cnt),
-        (=AUX[p]=
-         [Iformal repeat],1->rep;
-         [Iformal table;Iformal stack],add+2+p+p;
-         +),:nxt).
+        decr+n,incr+p,
+          (is+rep,incr+cnt;
+           AUX[p]=Iformal repeat,1->rep;+),:nxt).
+
 'f'get file data+>item+id>+ptr>+link>-p:
   adm*ITEM[item]->p,item*AUX[p]->id,count*AUX[p]->ptr,link*AUX[p]->link.
 
@@ -225,14 +220,20 @@ $ item section ******************************************** $
     compare formals+link+ptr,unstack to+AUX+old,link->ptr;
     link*AUX[link]->link,:nxt).
 
-'a'store formal affixes+formals>-cnt-old-type-x:
+'a'formal affixes+>formals+>cnt-x1-x2-type:
+  cnt=0;
+  decr+cnt,must+Ttype+type,push AUX+type,
+    ((type=Iformal stack;type=Iformal table),
+       must+Tconst+x1,must+Tconst+x2,
+       formal affixes+formals+cnt, $ store the rest $
+       incr+width*AUX[formals],push AUX+x1,
+       incr+width*AUX[formals],push AUX+x2;
+     :formal affixes).
+
+'a'store formal affixes+formals>-cnt-old:
    must+Tconst+cnt,>>AUX->old,
      (* cnt->count->width,0->link *)AUX,>>AUX->formals,
-     (nxt:cnt=0;
-        decr+cnt,must+Ttype+type,push AUX+type,
-        ((type=Iformal stack;type=Iformal table),
-        incr+width*AUX[formals],must+Tconst+x,push AUX+x,
-        incr+width*AUX[formals],must+Tconst+x,push AUX+x;+),:nxt),
+     formal affixes+formals+cnt,
      search formals+old+formals.
 
 'a'store list bounds+bounds>-cal-ssel:

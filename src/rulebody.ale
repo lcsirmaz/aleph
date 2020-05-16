@@ -28,7 +28,8 @@ $ BODY ********************************************************* $
   "rule %p: member expected"       :member expected,
   "formal affix %p as an actuel rule":formal as rule,
   "rule %p: no formal repeat affix":no formal repeat affix,
-  "rule %p: zone syntax (cannot be empty)" :wrong zone
+  "rule %p: zone syntax (cannot be empty)" :wrong zone,
+  "classification has no cases"    :empty classification
   
 ).
 
@@ -275,11 +276,11 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
      alternative;
    1->last,D+Darea,D+Dcolon,D+Darea,D+Dcomma,alternative.
 $ classification: we are after =
-'a'classification-err-last:
-  D+Dbox,0->err,source+Sbox+err,D+Dbox,
+'a'classification-err-last-cnt:
+  D+Dbox,0->err->cnt,source+Sbox+err,D+Dbox,
     (R+Sbox;Eerror+err+expected+Sbox),
-    (nxt:area+err+last,(is+last;R+Ssemicolon,D+Dsemicolon,:nxt;+)),
-    (is+err,skip all;+).
+    (nxt:area+err+last,(is+last;R+Ssemicolon,D+Dsemicolon,incr+cnt,:nxt;+)),
+    (is+err,skip all;last=0;cnt=0,error+empty classification;+).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'get rule tag+string>:
    is+rule tag,Squote image->string;

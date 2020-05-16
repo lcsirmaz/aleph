@@ -156,31 +156,14 @@ void getFormal(int *a){/* >item + >i + type> */
   int p;
   p=ITEM->offset[a[0]-ITEM_adm];
   if(a[1]>=AUX->offset[p-AUX_count]){a[2]=0;return;}
-  p++;a[2]=AUX->offset[p];nxt:if(a[1]<=0){return;}
-  if(a[2]==IformalTable||a[2]==IformalStack){p+=2;}
-  a[1]--;p++;a[2]=AUX->offset[p];goto nxt;
-}
-void getFormalCalibre(int *a){/* >item + >i + cal> */
-  int p,type;
-  p=ITEM->offset[a[0]-ITEM_adm];p++;type=AUX->offset[p];nxt:
-  if(a[1]<=0){p++;a[2]=AUX->offset[p];if(a[2]<0){a[2]=-a[2];};return;}
-  if(type==IformalTable||type==IformalStack){p+=2;}
-  a[1]--;p++;type=AUX->offset[p];goto nxt;
-}
-void getFormalSsel(int *a){/* >item+>i>+ssel> */
-  int p,type;
-  p=ITEM->offset[a[0]-ITEM_adm];p++;type=AUX->offset[p];nxt:
-  if(a[1]<=0){p+=2;a[2]=AUX->offset[p];return;}
-  if(type==IformalTable||type==IformalStack){p+=2;}
-  a[1]--;p++;type=AUX->offset[p];goto nxt;
+  a[2]=AUX->offset[p+1+a[1]];
 }
 void getRepeatCount(int *a){/* >item+cnt> */
-  int p,n,rep,t;
+  int p,n,rep;
   a[1]=rep=0;p=ITEM->offset[a[0]-ITEM_adm];n=AUX->offset[p-AUX_count];
   nxt:if(n==0){;}
-  else{n--;p++;if(rep==0){;}else{a[1]++;}t=AUX->offset[p];
-    if(t==IformalRepeat){rep=1;}
-    else if(t==IformalTable||t==IformalStack){p+=2;}
+  else{n--;p++;if(rep!=0){a[1]++;}
+    else if(AUX->offset[p]==IformalRepeat){rep=1;}
     goto nxt;}
 }
 
@@ -212,17 +195,23 @@ static void searchFormals(int *a){ /* +>old+ >ptr> */
     par[0]=STACKpar(AUX);par[1]=a[0];unstackto(par);a[1]=link;}
     else{link=AUX->offset[link-AUX_link];goto nxt;}}
 }
+static void formalAffixes(int *a){ /* >formals + >cnt */
+  int par[2];int x1,x2,type;
+  nxt:if(a[1]==0){return;}
+  a[1]--;par[0]=Ttype;must(par);type=par[1];pushAUX(type);
+  if(type==IformalStack||type==IformalTable){
+    par[0]=Tconst;must(par);x1=par[1];must(par);x2=par[1];
+    par[0]=a[0];par[1]=a[1];formalAffixes(par);
+    AUX->offset[a[0]-AUX_width]++;pushAUX(x1);
+    AUX->offset[a[0]-AUX_width]++;pushAUX(x2);}
+  else{goto nxt;}
+}
 static void storeFormalAffixes(int *a){ /* formals> */
-  int par[5];int cnt,old,type;
+  int par[5];int cnt,old;
   par[0]=Tconst;must(par);cnt=par[1];old=AUX->aupb;
   par[0]=STACKpar(AUX);par[1]=3;par[4-AUX_count]=par[4-AUX_width]=cnt;
-  par[4-AUX_link]=0;expandstack(par);a[0]=AUX->aupb;nxt:
-  if(cnt==0){;}
-  else{cnt--;par[0]=Ttype;must(par);type=par[1];par[0]=type;pushAUX(type);
-    if(type==IformalStack||type==IformalTable){
-      AUX->offset[a[0]-AUX_width]++;par[0]=Tconst;must(par);pushAUX(par[1]);
-      AUX->offset[a[0]-AUX_width]++;par[0]=Tconst;must(par);pushAUX(par[1]);}
-    goto nxt;}
+  par[4-AUX_link]=0;expandstack(par);a[0]=AUX->aupb;
+  par[0]=a[0];par[1]=cnt;formalAffixes(par);
   par[0]=old;par[1]=a[0];searchFormals(par);a[0]=par[1];
 }
 static void storeListBounds(int *a){/* bounds> */

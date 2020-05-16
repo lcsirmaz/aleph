@@ -8,6 +8,8 @@
 
 static int target_file_name,cannot_open_target;
 static int sizeof_list,sizeof_chfile,sizeof_dfile,block_total;
+static int Tcalibre,Tlwb,Tupb,Tvlwb,Tvupb,classifier;
+static int stdlab0,stdlabM1,stdlabM2,stdgoto;
 
 #define addMSG(x,y)	 add_new_string(x,MESSAGE);y=MESSAGE->aupb
 static void init_MSG(void){
@@ -17,6 +19,16 @@ static void init_MSG(void){
   addMSG("sizeof_CHFILE",sizeof_chfile);
   addMSG("sizeof_DFILE",sizeof_dfile);
   addMSG("BLOCK_TOTAL",block_total);
+  addMSG("calibre",Tcalibre);
+  addMSG("alwb",Tlwb);
+  addMSG("aupb",Tupb);
+  addMSG("vlwb",Tvlwb);
+  addMSG("vupb",Tvupb);
+  addMSG("a_r",classifier);
+  addMSG("return",stdlab0);
+  addMSG("return 1",stdlabM1);
+  addMSG("return 0",stdlabM2);
+  addMSG("goto a_",stdgoto);
 }
 
 static int extWaitfor,Sroot;
@@ -46,6 +58,8 @@ void deleteTarget(void){
   par[1]=target_file_name;unlinkFile(par);
 }
 /* ================================================= */
+static int thisRule=0;
+
 static void printInt(int),printInt1(int n,int c),printPtr(int);
 static void printChar(int ch){
   int par[2];par[0]=CHFILEpar(TARGET);par[1]=ch;Aputchar(par);
@@ -74,22 +88,42 @@ static void printStr(int T,int ptr){
   int par[3];
   par[0]=CHFILEpar(TARGET);par[1]=T;par[2]=ptr;Aputstring(par);
 }
+static void formalArgument(int item,int cnt);
+static void printBUFFER(int p){
+  int t=BUFFER->offset[p];
+  if(t==Titem){p++;printRepr(BUFFER->offset[p]);return;}
+  if(t==Tconst){p++;printInt(BUFFER->offset[p]);return;}
+  if(t==Tlocal){p++;printChar('L');printInt(BUFFER->offset[p]);return;}
+  if(t==Tformal){p++;formalArgument(thisRule,BUFFER->offset[p]); return;}
+  printChar('?');printInt(BUFFER->offset[p]);printf("print BUFFER %d, ???\n",p);
+}
 static void printPtr(int p){
   int par[3];nxt:
   par[0]=STACKpar(ITEM);par[1]=p;if(was(par)){p=ITEM->offset[p-ITEM_tag];goto nxt;}
   par[0]=STACKpar(LEXT);par[1]=p;if(was(par)){par[0]=p;getTagImage(par);p=par[1];
     printStr(STACKpar(LEXT),p);return;}
   par[0]=STACKpar(MESSAGE);par[1]=p;if(was(par)){printStr(STACKpar(MESSAGE),p);return;}
+  par[0]=STACKpar(BUFFER);par[1]=p;if(was(par)){printBUFFER(p);return;}
 //DEBUG
   par[0]=STACKpar(BOLD);par[1]=p;if(was(par)){printStr(STACKpar(BOLD),p);return;}  
   printf("[printPtr: p=%d]",p);
 }
+static void printGoto(int label){
+  int par[2];
+  if(label==0){printf("printGoto zero label\n");exit(8);}
+  else if(label==-1){par[0]=thisRule;par[1]=rcanfail;
+            if(isItemFlag(par)){printPtr(stdlabM1);}else{printPtr(stdlab0);}}
+  else if(label==-2){printPtr(stdlabM2);}
+  else{printPtr(stdgoto);printInt(label);}
+}
+
 #define SHIFT  n--;a++
 static void T(char *fmt,int n,int *a){/* printf */
   nxt:if(*fmt==0){;}
   else if(*fmt!='%'){printChar(*fmt);fmt++;goto nxt;}
   else {fmt++;if(*fmt==0){printChar('%');}
     else if(*fmt=='r'){if(n>0){printRepr(*a);SHIFT;}else{printChar('?');}fmt++;goto nxt;}
+    else if(*fmt=='g'){if(n>0){printGoto(*a);SHIFT;}else{printChar('?');}fmt++;goto nxt;}
     else if(*fmt=='n'){printChar('\n');fmt++;goto nxt;}
     else if(*fmt=='d'){if(n>0){printInt(*a);SHIFT;}else{printChar('?');}fmt++;goto nxt;}
     else if(*fmt=='p'){if(n>0){printPtr(*a);SHIFT;}else{printChar('?');}fmt++;goto nxt;}
@@ -193,6 +227,16 @@ static void ruleArgs(int item){
   else{if(n==0){T("void",0,par);}else{par[0]=out;par[1]=sep;outArgs(par);sep=par[1];}
     printChar(')');}
 }
+static void formalArgument(int item,int cnt){
+  int par[3];int i,type,out;
+  i=out=0;nxt:par[0]=item;par[1]=i;getFormal(par);type=par[2];i++;
+  if(type==IformalOut||type==IformalInout){
+    if(i==cnt){par[0]=out;T("a_A[%d]",1,par);}
+    else{out++;goto nxt;}}
+  else if(type==IformalRepeat){i=cnt-i;par[0]=i;T("a_V[%d]",1,par);}
+  else if(i==cnt){par[0]=cnt;T("F%d",1,par);}
+  else{goto nxt;}
+}
 int isPidginRule(int item){
   int par[4];int x;
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){
@@ -237,6 +281,11 @@ void ruleDeclarationHead(int *a){/* item+C1+C2+C3+minloc+maxloc */
   T("{ /* %p",1,par);showFormalsAsComment(a[0]);
   T(" */%n",0,par);declareLocals(a[4],a[5]);
   declareCallargs(a[0],a[1],a[2],a[3]);
+  thisRule=a[0];
+}
+void ruleDeclarationTail(void){
+  int par[2];
+  par[0]=thisRule;T("} /* %p */%n",1,par);
 }
 /* ------------------------------------------------ */
 static int externalPlainDeclaration(int item){
@@ -364,6 +413,84 @@ void dataSectionIV(void){
   nxt2: par[0]=Drule;if(R(par)){makeRule();goto nxt2;}
   par[0]=Dend;if(R(par)){;}
   else{printf("datasection iv: wrong end of the file\n");exit(99);}
+}
+/*================================================= */
+static int nextNodeIdx,calledRule;
+void Tlabel(int *a){/* >label + >nextidx */
+  int par[1];
+  nextNodeIdx=a[1];if(a[0]==0){;}
+  else{par[0]=a[0];T("a_%d: ",1,par);}
+}
+static void TlimitTail(int *a){/* >what + code> */
+  if(a[0]==Dcalibre){a[1]=Tcalibre;}
+  else if(a[0]==Dlwb){a[1]=Tlwb;}
+  else if(a[0]==Dupb){a[1]=Tupb;}
+  else if(a[0]==Dvlwb){a[1]=Tvlwb;}
+  else if(a[0]==Dvupb){a[1]=Tvupb;}
+  else{ printf("TlimitTail: wrong item %d\n",a[0]);exit(8);}
+}
+static void Taffix(int *a){/* >ptr> */
+  int par[4];int x,t;again:
+  t=BUFFER->offset[a[0]];
+  if(t==Tformal||t==Tlocal||t==Titem||t==Tconst){
+    par[0]=a[0];T("%p",1,par);a[0]+=2;}
+  else if(t==Dcolon){a[0]++;goto again;}
+  else if(t==Dnoarg){a[0]++;T("**###**",0,par);}
+  else if(t==Dsub){a[0]++;par[0]=a[0];T("to_LIST(%p)->offset[",1,par);
+     a[0]++;a[0]++;par[0]=a[0];Taffix(par);a[0]=par[0];
+     a[0]++;x=BUFFER->offset[a[0]]-1;if(x==0){T("]",0,par);}else{par[0]=x;
+       T("-%d]",1,par);}}
+  else{par[0]=BUFFER->offset[a[0]];TlimitTail(par);x=par[1];a[0]++;
+    par[0]=BUFFER->offset[a[0]];par[1]=x;T("to_LIST(%p)->%p",2,par);a[0]++;}
+}
+static void boxClassifier(int *a){/* >ptr + v> */
+  int par[3];int t;
+  t=BUFFER->offset[a[0]];
+  if(t==Titem||t==Tlocal||t==Tformal||t==Tconst){a[1]=a[0];}
+  else{a[1]=classifier;par[0]=a[1];T("register int %p=",1,par);
+    par[0]=a[0];Taffix(par);T(";%n",0,par);}
+}
+static int isCompleteArea(int ptr){
+  if(BUFFER->offset[ptr]==0){ptr+=2;
+    if(BUFFER->offset[ptr]==INT_MIN && BUFFER->offset[ptr+1]==INT_MAX){return 1;}}
+  return 0;
+}
+static void TsingleIfCondition(int lw,int up,int v){
+  int par[4];
+  if(lw==up){par[0]=v;par[1]=lw;T("%p==%d",2,par);}
+  else if(lw==INT_MIN){par[0]=v;par[1]=up;T("%p<=%d",2,par);}
+  else if(up==INT_MAX){par[0]=v;par[1]=lw;T("%p>=%d",2,par);}
+  else{par[0]=lw;par[1]=v;par[2]=v;par[3]=up;
+     T("(%d<=%p && %p<=%d)",4,par);}
+}
+static void TifCondition(int ptr,int v){
+  int par[3];int lw,up;again:
+  ptr++;lw=BUFFER->offset[ptr];ptr++;up=BUFFER->offset[ptr];
+  TsingleIfCondition(lw,up,v);ptr++;
+  if(BUFFER->offset[ptr]==Dsemicolon){T("||",0,par);goto again;}
+}
+static void TjumpToAreas(int ptr,int v){
+  int par[3];int goal,fgoal,nextptr; again:
+  nextptr=BUFFER->offset[ptr];
+  if(nextptr==0){ptr++;goal=BUFFER->offset[ptr];T(" if(!(",0,par);
+    TifCondition(ptr,v);par[0]=v;T(")){a_area_failed(%p);}%n",1,par);
+    if(goal==nextNodeIdx){;}
+    else{par[0]=BUFFER->offset[ptr];T(" %g;",1,par);}}
+  else if(isCompleteArea(nextptr)){ptr++;goal=BUFFER->offset[ptr];
+    nextptr++;fgoal=BUFFER->offset[nextptr];
+    if(goal==nextNodeIdx){if(goal==fgoal){;}else{
+      T(" if(!(",0,par);TifCondition(ptr,v);
+      par[0]=fgoal;T(")){ %g;}%n",1,par);}}
+    else{T(" if(",0,par);TifCondition(ptr,v);par[0]=goal;
+      T("){ %g;}%n",1,par);
+      if(fgoal==nextNodeIdx){;}else{par[0]=fgoal;T(" %g;",1,par);}}}
+  else{ptr++;T(" if(",0,par);TifCondition(ptr,v);par[0]=BUFFER->offset[ptr];
+    T("){ %g;}%n",1,par);ptr=nextptr;goto again;}
+}
+void Tbox(int *a){ /* >affix + >area */
+  int par[3];int v;
+  T("{",0,par);a[0]++;par[0]=a[0];boxClassifier(par);v=par[1];
+  a[1]++;TjumpToAreas(a[1],v);T("}%n",0,par);
 }
 /* ------------------------------------------------ */
 static void listInitialization(int kind,int item){
