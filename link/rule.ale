@@ -211,12 +211,15 @@ $
    RR+Tformal+x,push BUFFER+Tformal+x;
    RR+Tlocal+x,push BUFFER+Tlocal+x;
    RR+Titem+x,push BUFFER+Titem+x;
-   R+Dnoarg,push BUFFER+Dnoarg;
-   R+Dcolon,push BUFFER+Dcolon; 
    RR+Tconst+x,push BUFFER+Tconst+x;
    R+Dsub,store list+Dsub,store affix,must+Dbus+#,
      must+Tconst+x,push BUFFER+Dbus+x;
    store limit.
+'a'store rule affix+type>-x:
+   R+Dcolon,Dcolon->type,push BUFFER+Dcolon,store affix;
+   R+Dnoarg,Dnoarg->type,push BUFFER+Dnoarg;
+   R+Dstar,Dstar->type,(RR+Tconst+x;0->x),push BUFFER+Dstar+x;
+   0->type,store affix.
 
 'a'store rule affixes:
    (nxt:=inpt=
@@ -345,30 +348,57 @@ $ mark nodes which have labels
    find next node+nxt,skip to label+label,
       mark node+nxt+label.
 'a'generate label-label-nextnode:
-   advance node,find next node+nextnode,
+   advance node,(is node flag+nsame;
+    find next node+nextnode,
     (is node flag+nlabel,subtr+this node+<<NODE+label,
       div+label+<>NODE+label,incr+label;0->label),
-    Tlabel+label+nextnode.
+    Tlabel+label+nextnode).
 
 $ generate code ******************************************* $
-'stack'(
-  tag,       $ item, rule to be called
-  C1,C2,C3,  $ as given
-  rep,       $ number of repeat blocks
-  star,      $ is "*" the last actual affix
-  odummy,    $ has a dummy out affix
-  idummy,    $ has discardable inout affix
-  ptr        $ affixes in BUFFER
-) CALL = ((0->*)).
+$ arguments to T rule call:
+$  tag		item, rule to be called
+$  C1,C2,C3	as given
+$  n,		number of affixes, including *
+$  fnext,	true exit label
+$  tnext,	false exit label
+$  rep,		number of repeat items
+$  star,	is "*" the last actual affix
+$  odummy,	has dummy out affix somewhere
+$  idummy,	has discardable inout affix somewhere
+$  ptr		affixes start in BUFFER[ptr+1]
+$
 $ affixes in BUFFER for a rule call:
 $  next:     pointer to next, or zero if last
 $  type:     formal type (formal in, formal out, etc)
 $  affix, closed by Dplus; Dcolon could be at the head
-$
-'a'call rule head-tag-x:
-   must+Titem+tag,(get item def+tag+tag;+),tag->tag*CALL,
-   must+Tconst+x,x->C1*CALL,must+Tconst+x,x->C2*CALL,must+Tconst+x,x->C3*CALL,
-   >>BUFFER->ptr*CALL.
+$            indicating that the out is discardable
+'a'generate rule call-x-type-C1-C2-C3-n
+       -fnext-tnext-rep-star-odummy-idummy-ptr:
+   must+Titem+#,$ (get item def+tag+tag;+), ASSERT tag*NODE[this node]=tag $
+   must+Tconst+x,x->C1,must+Tconst+x,x->C2,must+Tconst+x,x->C3,
+   >>BUFFER->ptr,0->n->idummy->odummy->rep->star,
+   (nxt:R+Dout,must+Dout+#;
+      store rule affix+type,push BUFFER+Dplus,
+      incr+n,(is+rep,incr+rep;+),
+      (type=Dcolon,1->idummy;
+       type=Dnoarg,1->odummy;
+       type=Dstar,(is+rep,1->star;1->rep);
+       +),:nxt),
+   find real label+fnext*NODE[this node]+fnext,
+   find real label+tnext*NODE[this node]+tnext,
+   T rule call+tag*NODE[this node]+C1+C2+C3+n+fnext+tnext+rep+star+odummy+idummy+ptr,
+   unstack to+BUFFER+ptr.
+
+$ generate extension -------------------------------------- $
+'a'generate extension-obuff-x-ptr:
+  >>BUFFER->obuff,store list+0,  $ the stack to be extended $
+  must+Tconst+x,add+obuff+1+ptr,x->BUFFER[ptr], $ width $
+  push BUFFER+0,>>BUFFER->ptr,   $ link affixes $
+  (nxt:store affix,push BUFFER+Dplus,
+     (nxt2:R+Dto,must+Tconst+x,push BUFFER+x,:nxt2;
+           R+Dout,push BUFFER+-1;
+           push BUFFER+-1+0,>>BUFFER->BUFFER[ptr]->ptr,:nxt)),
+  T extension+obuff,unstack to+BUFFER+obuff.
 
 $ generate box -------------------------------------------- $
 $ areas:
@@ -390,6 +420,8 @@ $  lw,up,Dsemicolon or Dplus: the zone
       push BUFFER+Dplus)).
 
 'a'generate box-obuff-area:
+  $ the box affix can be a constant value;
+  $  even in this case we generate all
   >>BUFFER->obuff,store affix,push BUFFER+Dplus,
     >>BUFFER->area,generate areas,Tbox+obuff+area,
     unstack to+BUFFER+obuff.
@@ -428,10 +460,10 @@ $ scans *************************************************** $
 'a'scan iv:
    $ generate the code
    R+Dbox,generate label,generate box,must+Dcomma+#,:scan iv;
-   R+Dextension,generate label,skip to comma,:scan iv;
-   R+Dnode,generate label,call rule head,skip to comma,:scan iv;
+   R+Dextension,generate label,generate extension,must+Dcomma+#,:scan iv;
+   R+Dnode,generate label,(is node flag+nsame,skip to comma,:scan iv;
+                           generate rule call,must+Dcomma+#,:scan iv);
    must+Dpoint+#.
-
 
 'a'make rule-rtag-minloc-maxloc:
    must+Titem+rtag,must+Tconst+minloc,must+Tconst+maxloc,

@@ -28,7 +28,7 @@ static void init_MSG(void){
   addMSG("return",stdlab0);
   addMSG("return 1",stdlabM1);
   addMSG("return 0",stdlabM2);
-  addMSG("goto a_",stdgoto);
+  addMSG("goto ",stdgoto);
 }
 
 static int extWaitfor,Sroot;
@@ -64,15 +64,6 @@ static void printInt(int),printInt1(int n,int c),printPtr(int);
 static void printChar(int ch){
   int par[2];par[0]=CHFILEpar(TARGET);par[1]=ch;Aputchar(par);
 }
-static void printRepr(int item){
-  int par[3];int t;
-  par[0]=STACKpar(ITEM);par[1]=item;if(was(par)){
-    par[0]=item;if(getItemDef(par)){item=par[1];}
-    t=ITEM->offset[item-ITEM_type];
-    if(t==Iconstant||t==IpointerConstant){;}else{printChar('a');printChar('_');}
-    printInt(ITEM->offset[item-ITEM_repr]);}
-  else{printPtr(item);}
-}
 #include <limits.h>
 static void printInt(int n){
   if(n==INT_MIN){printChar('-');n=-1-n;printInt1(n,'1');}
@@ -88,14 +79,50 @@ static void printStr(int T,int ptr){
   int par[3];
   par[0]=CHFILEpar(TARGET);par[1]=T;par[2]=ptr;Aputstring(par);
 }
-static void formalArgument(int item,int cnt);
+static void printPrefix(void){printChar('a');printChar('_');}
+static void printLabelPrefix(void){printPrefix();printChar('G');}
+static void localArgument(int cnt){
+  printPrefix();printChar('L');printInt(cnt);}
+static void printIntIndex(int c,int idx){
+  printPrefix();printChar(c);printChar('[');printInt(idx);printChar(']');}
+static void formalArgument(int cnt){
+  int par[3];int i,type,out;
+  i=out=0;nxt:par[0]=thisRule;par[1]=i;getFormal(par);type=par[2];i++;
+  if(type==IformalOut||type==IformalInout){
+    if(i==cnt){printIntIndex('A',out);}else{out++;goto nxt;}}
+  else if(type==IformalRepeat){i=cnt-i;par[0]=i;
+       if(i<0){printPrefix();printChar('C');}else{printIntIndex('V',i);}}
+  else if(i==cnt){printPrefix();printChar('F');printInt(cnt);}
+  else{goto nxt;}
+}
+
+static void printRepr(int item){
+  int par[3];int t;
+  par[0]=STACKpar(ITEM);par[1]=item;if(was(par)){
+    par[0]=item;if(getItemDef(par)){item=par[1];}
+    t=ITEM->offset[item-ITEM_type];
+    if(t==Iconstant||t==IpointerConstant){;}else{printPrefix();}
+    printInt(ITEM->offset[item-ITEM_repr]);}
+  else{printPtr(item);}
+}
+static void printLocalLabel(int label){
+  printLabelPrefix();printInt(label);
+}
+static void printGoto(int label){
+  int par[2];
+  if(label==0){printf("printGoto zero label\n");exit(8);}
+  else if(label==-1){par[0]=thisRule;par[1]=rcanfail;
+            if(isItemFlag(par)){printPtr(stdlabM1);}else{printPtr(stdlab0);}}
+  else if(label==-2){printPtr(stdlabM2);}
+  else{printPtr(stdgoto);printLocalLabel(label);}
+}
 static void printBUFFER(int p){
   int t=BUFFER->offset[p];
   if(t==Titem){p++;printRepr(BUFFER->offset[p]);return;}
   if(t==Tconst){p++;printInt(BUFFER->offset[p]);return;}
-  if(t==Tlocal){p++;printChar('L');printInt(BUFFER->offset[p]);return;}
-  if(t==Tformal){p++;formalArgument(thisRule,BUFFER->offset[p]); return;}
-  printChar('?');printInt(BUFFER->offset[p]);printf("print BUFFER %d, ???\n",p);
+  if(t==Tlocal){p++;localArgument(BUFFER->offset[p]);return;}
+  if(t==Tformal){p++;formalArgument(BUFFER->offset[p]); return;}
+  printChar('?');printInt(BUFFER->offset[p]);printf("print BUFFER %d, ???\n",p);exit(88);
 }
 static void printPtr(int p){
   int par[3];nxt:
@@ -106,15 +133,7 @@ static void printPtr(int p){
   par[0]=STACKpar(BUFFER);par[1]=p;if(was(par)){printBUFFER(p);return;}
 //DEBUG
   par[0]=STACKpar(BOLD);par[1]=p;if(was(par)){printStr(STACKpar(BOLD),p);return;}  
-  printf("[printPtr: p=%d]",p);
-}
-static void printGoto(int label){
-  int par[2];
-  if(label==0){printf("printGoto zero label\n");exit(8);}
-  else if(label==-1){par[0]=thisRule;par[1]=rcanfail;
-            if(isItemFlag(par)){printPtr(stdlabM1);}else{printPtr(stdlab0);}}
-  else if(label==-2){printPtr(stdlabM2);}
-  else{printPtr(stdgoto);printInt(label);}
+  printf("[printPtr: p=%d]",p);exit(87);
 }
 
 #define SHIFT  n--;a++
@@ -122,11 +141,11 @@ static void T(char *fmt,int n,int *a){/* printf */
   nxt:if(*fmt==0){;}
   else if(*fmt!='%'){printChar(*fmt);fmt++;goto nxt;}
   else {fmt++;if(*fmt==0){printChar('%');}
-    else if(*fmt=='r'){if(n>0){printRepr(*a);SHIFT;}else{printChar('?');}fmt++;goto nxt;}
-    else if(*fmt=='g'){if(n>0){printGoto(*a);SHIFT;}else{printChar('?');}fmt++;goto nxt;}
+    else if(*fmt=='r'){if(n>0){printRepr(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
+    else if(*fmt=='g'){if(n>0){printGoto(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
     else if(*fmt=='n'){printChar('\n');fmt++;goto nxt;}
-    else if(*fmt=='d'){if(n>0){printInt(*a);SHIFT;}else{printChar('?');}fmt++;goto nxt;}
-    else if(*fmt=='p'){if(n>0){printPtr(*a);SHIFT;}else{printChar('?');}fmt++;goto nxt;}
+    else if(*fmt=='d'){if(n>0){printInt(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
+    else if(*fmt=='p'){if(n>0){printPtr(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
     else{printChar(*fmt);fmt++;goto nxt;}}
   if(n>0){printChar('[');printChar('.');printChar('.');printChar('.');printChar(']');}
 }
@@ -142,6 +161,7 @@ void targetPrelude(void){
     ptr+=ITEM_CALIBRE;goto nxt;}
   T("%n */%n#include \"A_lice.h\"%n%n",0,par);
 }
+/*===========================================*/
 static void isWaitfor(int *a){/* >ptr + >w> */
   int par[2];
   if(a[1]){return;}
@@ -151,14 +171,14 @@ static void isWaitfor(int *a){/* >ptr + >w> */
 }
 void procWaitfor(void){
   int par[2];int ptr,head,t;
-  par[0]=0;T("int a_waitfor(int F1,int F2){%n",0,par);
+  par[0]=0;T("int a_waitfor(int a_F1,int a_F2){%n",0,par);
   ptr=ITEM->alwb;head=0;nxt:if(ptr>ITEM->aupb){;}
   else{t=ITEM->offset[ptr-ITEM_type];
    if(t==Dmodule){head=ITEM->offset[ptr-ITEM_tag];}
    else if(t==Dtitle){head=0;}
    else if(t==Irule){if(head==0){;}
      else if(Sroot!=ITEM->offset[ptr-ITEM_tag]){;}
-     else{par[0]=ptr;T(" if(a_R%r(F1,F2)){return 1;}%n",1,par);}}
+     else{par[0]=ptr;T(" if(a_R%r(a_F1,a_F2)){return 1;}%n",1,par);}}
    ptr+=ITEM_CALIBRE;goto nxt;}
   T(" return 0;%n}%n",0,par);
 }
@@ -173,7 +193,6 @@ void targetMain(void){
      else if(Sroot!=ITEM->offset[ptr-ITEM_tag]){;}
      else{par[0]=ptr;par[1]=head;T("a_MROOT(%r,\"%p\")%n",2,par);}}
    ptr+=ITEM_CALIBRE;goto nxt;}
-//  T("/* ********* */%n",0,par);
   if(w){procWaitfor(); }
   T("void a_ROOT(void){%n a_data_setup();%n",0,par);
   ptr=ITEM->alwb;head=0;nxt2:if(ptr>ITEM->aupb){;}
@@ -214,7 +233,7 @@ static void argSep(int *a){ /* >sep> */
 static void outArgs(int *a){/* >out + >sep> */
   int par[1];
   if(a[0]==0){;}
-  else{par[0]=a[1];argSep(par);a[1]=par[0];par[0]=a[0];T("int A[%d]",1,par);}
+  else{par[0]=a[1];argSep(par);a[1]=par[0];par[0]=a[0];T("int a_A[%d]",1,par);}
 }
 static void ruleArgs(int item){
   int par[3];int n,cnt,type,out,sep;
@@ -222,20 +241,10 @@ static void ruleArgs(int item){
   if(cnt<n){par[0]=item;par[1]=cnt;getFormal(par);type=par[2];cnt++;
     if(type==IformalOut||type==IformalInout){out++;goto nxt;}
     else if(type==IformalRepeat){par[0]=out;par[1]=sep;outArgs(par);sep=par[1];
-       par[0]=sep;argSep(par);sep=par[0];T("int C,int V[])",0,par);}
-    else{par[0]=sep;argSep(par);sep=par[0];par[0]=cnt;T("int F%d",1,par);goto nxt;}}
+       par[0]=sep;argSep(par);sep=par[0];T("int a_C,int a_V[])",0,par);}
+    else{par[0]=sep;argSep(par);sep=par[0];par[0]=cnt;T("int a_F%d",1,par);goto nxt;}}
   else{if(n==0){T("void",0,par);}else{par[0]=out;par[1]=sep;outArgs(par);sep=par[1];}
     printChar(')');}
-}
-static void formalArgument(int item,int cnt){
-  int par[3];int i,type,out;
-  i=out=0;nxt:par[0]=item;par[1]=i;getFormal(par);type=par[2];i++;
-  if(type==IformalOut||type==IformalInout){
-    if(i==cnt){par[0]=out;T("a_A[%d]",1,par);}
-    else{out++;goto nxt;}}
-  else if(type==IformalRepeat){i=cnt-i;par[0]=i;T("a_V[%d]",1,par);}
-  else if(i==cnt){par[0]=cnt;T("F%d",1,par);}
-  else{goto nxt;}
 }
 int isPidginRule(int item){
   int par[4];int x;
@@ -265,27 +274,48 @@ static void showFormalsAsComment(int item){
 static void declareLocals(int minloc,int maxloc){
   int par[2];
   nxt:if(minloc==0){;}
-  else if(minloc<=maxloc){par[0]=minloc;T("int L%d;",1,par);
+  else if(minloc<=maxloc){par[0]=minloc;T("int a_L%d;",1,par);
     minloc++;goto nxt;}
 }
 static void declareCallargs(int item,int C1,int C2,int C3){
   int par[3];int cnt;
-  if(C2==0){;}else{par[0]=C2;T("int a_A[%d];",1,par);}
+  if(C2==0){;}else{par[0]=C2;T("int a_P[%d];",1,par);}
   if(C3==0){;}else{par[0]=item;getRepeatCount(par);cnt=par[1];
-    par[0]=C3;par[1]=cnt;T("int *a_D=alloca(sizeof(int)*(%d+%d*C));",2,par);}
+    par[0]=C3;par[1]=cnt;T("int *a_D=alloca(sizeof(int)*(%d+%d*a_C));",2,par);}
   par[0]=C1;par[1]=C2;par[2]=C3;T("/* %d,%d,%d */%n",3,par);
+}
+/* trace and profiling */
+static void addRuleNameAsStatic(void){
+  int par[2];
+  par[0]=thisRule;par[1]=rspecial;if(isItemFlag(par)){
+    par[0]=thisRule;T(" static char *a_rulename=\"%p\";%n",1,par);}  
+}
+static void addProfiling(void){
+  int par[2];
+  par[0]=thisRule;par[1]=rcount;if(isItemFlag(par)){
+   T(" static a_PROFILE a_profile={0ul,NULL,NULL};%n"
+     " a_PROFILING(a_profile,a_rulename);%n",0,par);}
+}
+static void addTracing(void){
+  int par[2]; int n,cnt;
+  par[0]=thisRule;par[1]=rtrace;if(isItemFlag(par)){
+    par[0]=thisRule;getNumberOfFormals(par);n=par[1];cnt=0;par[0]=n;
+    T(" a_trace_rule(a_rulename,%d",1,par);nxt:
+    if(cnt<n){printChar(',');cnt++;formalArgument(cnt);goto nxt;}
+    T(");%n",0,par);}
 }
 void ruleDeclarationHead(int *a){/* item+C1+C2+C3+minloc+maxloc */
   int par[3];
+  thisRule=a[0];
   ruleTyper(a[0]);ruleArgs(a[0]);par[0]=ITEM->offset[a[0]-ITEM_tag];
   T("{ /* %p",1,par);showFormalsAsComment(a[0]);
   T(" */%n",0,par);declareLocals(a[4],a[5]);
   declareCallargs(a[0],a[1],a[2],a[3]);
-  thisRule=a[0];
-}
+  addRuleNameAsStatic();addProfiling();addTracing();
+}  
 void ruleDeclarationTail(void){
   int par[2];
-  par[0]=thisRule;T("} /* %p */%n",1,par);
+  par[0]=thisRule;T(";} /* %p */%n",1,par);
 }
 /* ------------------------------------------------ */
 static int externalPlainDeclaration(int item){
@@ -311,7 +341,7 @@ static void blockDeclaration(int item,int prev,int sf){
     par[0]=ITEM->offset[item-ITEM_tag];
     T("extern void %p(int,int);%n",1,par);}
 }
-static void ruleDeclaration(int item){
+static void rulePrototype(int item){
   int par[2];
   if(isPidginRule(item)){return;}
   par[0]=item;par[1]=texternal;if(isItemFlag(par)){
@@ -330,7 +360,7 @@ void dataDeclaration(void){
      blockDeclaration(ptr,prev,sf);prev=ptr;sf=sizeof_list;}
    else if(t==Icharfile){blockDeclaration(ptr,prev,sf);prev=ptr;sf=sizeof_chfile;}
    else if(t==Idatafile){blockDeclaration(ptr,prev,sf);prev=ptr,sf=sizeof_dfile;}
-   else if(t==Irule){ruleDeclaration(ptr);}
+   else if(t==Irule){rulePrototype(ptr);}
    ptr+=ITEM_CALIBRE;goto nxt;}
   if(prev==0){par[0]=block_total;T("#define %p 0%n",1,par);}
   else{par[0]=block_total;par[1]=prev;par[2]=sf;T("#define %p (%r+%p)%n",3,par);}
@@ -417,10 +447,10 @@ void dataSectionIV(void){
 /*================================================= */
 static int nextNodeIdx,calledRule;
 void Tlabel(int *a){/* >label + >nextidx */
-  int par[1];
   nextNodeIdx=a[1];if(a[0]==0){;}
-  else{par[0]=a[0];T("a_%d: ",1,par);}
+  else{printLocalLabel(a[0]);printChar(':');}
 }
+/* classification */
 static void TlimitTail(int *a){/* >what + code> */
   if(a[0]==Dcalibre){a[1]=Tcalibre;}
   else if(a[0]==Dlwb){a[1]=Tlwb;}
@@ -435,14 +465,42 @@ static void Taffix(int *a){/* >ptr> */
   if(t==Tformal||t==Tlocal||t==Titem||t==Tconst){
     par[0]=a[0];T("%p",1,par);a[0]+=2;}
   else if(t==Dcolon){a[0]++;goto again;}
-  else if(t==Dnoarg){a[0]++;T("**###**",0,par);}
+  else if(t==Dnoarg){a[0]++;T("**###**",0,par);printf("Dnoarg\n");exit(83);}
   else if(t==Dsub){a[0]++;par[0]=a[0];T("to_LIST(%p)->offset[",1,par);
      a[0]++;a[0]++;par[0]=a[0];Taffix(par);a[0]=par[0];
      a[0]++;x=BUFFER->offset[a[0]]-1;if(x==0){T("]",0,par);}else{par[0]=x;
        T("-%d]",1,par);}}
   else{par[0]=BUFFER->offset[a[0]];TlimitTail(par);x=par[1];a[0]++;
-    par[0]=BUFFER->offset[a[0]];par[1]=x;T("to_LIST(%p)->%p",2,par);a[0]++;}
+    par[0]=a[0];par[1]=x;T("to_LIST(%p)->%p",2,par);a[0]++;a[0]++;}
 }
+/* ----------------------------------------- */
+void TruleCall(int *a){
+  /*>tag+>C1+>C2+>C3+>n+>fnext+>tnext+>rep+>star+>odummy+>idummy+>ptr */
+  /*  0   1    2   3  4  5       6      7    8      9       10    11  */
+  int par[8];
+  par[0]=a[0];par[1]=a[3];par[2]=a[5];par[3]=a[6];par[4]=a[7];par[5]=a[8];
+  par[6]=a[9];par[7]=a[10];
+  T("  %r(n=%d,f=%d,t=%d,rep=%d,star=%d,od=%d,id=%d);%n",8,par);
+  calledRule=a[0];
+}
+/* ----------------------------------------- */
+static void extensionBlock(int w,int st,int ptr){
+  int par[3];int offs,x;
+  ptr++;offs=ptr;nxt1:if(BUFFER->offset[offs]==Dplus){;}else{offs++;goto nxt1;}
+  offs++;nxt:if(BUFFER->offset[offs]<0){;}else{
+   x=w-BUFFER->offset[offs];x++;offs++;par[0]=st;par[1]=x;
+   T("to_LIST(%p)->top[%d]=",2,par);goto nxt;}
+  par[0]=ptr;Taffix(par);printChar(';');
+}
+void Textension(int *a){/* ptr */
+  int par[3];int st,w;
+  a[0]++;w=BUFFER->offset[a[0]];a[0]++;st=a[0];
+  par[0]=st;par[1]=w;T(" a_extension(%p,%d);",2,par);
+  a[0]+=2;nxt:extensionBlock(w,st,a[0]);a[0]=BUFFER->offset[a[0]];
+  if(a[0]==0){;}else{goto nxt;}
+  par[0]=st;par[1]=w;T("to_LIST(%p)->aupb+=%d;%n",2,par);
+}
+/* ---------------------------------------------------- */
 static void boxClassifier(int *a){/* >ptr + v> */
   int par[3];int t;
   t=BUFFER->offset[a[0]];
@@ -503,19 +561,18 @@ static void listInitialization(int kind,int item){
     getVlwb(par);lb=par[1];getFill(par);fill=par[1];par[0]=kind,
     par[1]=item;par[2]=cal;par[3]=lb;par[4]=up;par[5]=fill;
     par[6]=ITEM->offset[item-ITEM_tag];
-    T(" setup_list(%d,%r,%d,%d,%d,%d); /* %p */%n",7,par);}
+    T(" a_setup_list(%d,%r,%d,%d,%d,%d); /* %p */%n",7,par);}
 }
 static void charfileInitialization(int item){
   int par[5];int dir,id,ptr;
-  par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[0]=item;
-    par[1]=ITEM->offset[item-ITEM_tag];
-    T(" setup_external_charfile(%r,\"%p\");%n",2,par);}
+  par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[1]=item;
+    par[0]=ITEM->offset[item-ITEM_tag];T(" %p(%r);%n",2,par);}
   else{par[0]=item;par[1]=toutfile;if(isItemFlag(par)){dir=2;}else{dir=0;}
     par[1]=tinfile;if(isItemFlag(par)){dir++;}
     par[0]=item;getFileData(par);id=par[1];ptr=par[2];
     par[0]=item;par[1]=dir;par[2]=id;par[3]=ptr;
     par[4]=ITEM->offset[item-ITEM_tag];
-    T(" setup_charfile(%r,%d,%r,%r);/* %p */%n",5,par);}
+    T(" a_setup_charfile(%r,%d,%r,%r);/* %p */%n",5,par);}
 }
 static void countFileArea(int *a){/* >p + cnt> */
   int par[3];
@@ -524,20 +581,20 @@ static void countFileArea(int *a){/* >p + cnt> */
 }
 static void datafileInitialization(int item){
   int par[6];int dir,id,ptr,link,cnt;
-  par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[0]=item;
-    par[1]=ITEM->offset[item-ITEM_tag];
-    T(" setup_external_dfile(%r,\"%p\");%n",2,par);}
+  par[0]=item;par[1]=texternal;if(isItemFlag(par)){par[1]=item;
+    par[0]=ITEM->offset[item-ITEM_tag];
+    T(" %p(%r);%n",2,par);}
   else{par[0]=item;par[1]=toutfile;if(isItemFlag(par)){dir=2;}else{dir=0;}
     par[1]=tinfile;if(isItemFlag(par)){dir++;}
     par[0]=item;getFileData(par);id=par[1];ptr=par[2];link=par[3];
     par[0]=link;countFileArea(par);cnt=par[1];
     par[0]=item;par[1]=dir;par[2]=id;par[3]=ptr;par[4]=cnt;
     par[5]=ITEM->offset[item-ITEM_tag];
-    T(" setup_dfile(%r,%d,%r,%r,%d); /* %p */%n",6,par);
+    T(" a_setup_dfile(%r,%d,%r,%r,%d); /* %p */%n",6,par);
     nxt:if(link==0){;}
     else{par[0]=link;getFileLink(par);link=par[0];cnt=par[1];
      id=par[2];par[0]=item;par[1]=id;par[2]=cnt;
-     T("   add_filearea(%r,%r,%d);%n",3,par);goto nxt;}}
+     T("   a_add_filearea(%r,%r,%d);%n",3,par);goto nxt;}}
 }
 
 void dataInitialization(void){

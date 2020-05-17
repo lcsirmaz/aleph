@@ -23,8 +23,9 @@
  *   called for stacks and tables to make space for filling
  */
 int a_requestspace(int ID,int n){
-  if(n<=0) return 1; /* OK */
   #define st	to_LIST(ID)
+  if(n<=0){if(st->p){return 1;} /* OK */
+           else{n=1;}}
   if(st->aupb+n>st->vupb) return 0;
         // not enough virtual space
   int newsize=st->aupb-st->vlwb+st->calibre+n;
@@ -41,10 +42,16 @@ int a_requestspace(int ID,int n){
 /* a_extension(stack,size)
  *  stack extension calls it to make room for the
  *  new block. Aborts if cannot garantee the
- *  requested space
+ *  requested space. Sets L->top to be used
+ *  to fill the new block
  */
 void a_extension(int ID,int n){
-  if(a_requestspace(ID,n)){ return; }
+  if(a_requestspace(ID,n)){
+  #define st	to_LIST(ID)
+     st->top=st->offset+st->aupb;
+     return;
+#indef st
+  }
   a_fatal("extension failed",
     to_LIST(ID)->aupb+n>to_LIST(ID)->vupb ? "out of virtual space"
                                           : "out of memory");
@@ -106,7 +113,7 @@ void a_list_fill(int *fill){
   #undef st
 }
 /* a_push_string_to(list,char *chr)
- * internal routine used by setup_stdarg()
+ * internal routine used by a_setup_stdarg()
  * store a C text string at an ALEPH list
  * with check for correct UTF-8 encoding
  * return value: 1: OK, 0: out of memory
@@ -134,13 +141,13 @@ static int a_push_string_to(int F1,const char *ptr){
   *to=0;w=1+(n/4);goal[w]=n;goal[w+1]=w+2;st->aupb+=w+2;
   return 1;
 }
-/* setup_stdarg(list,kind)
+/* a_setup_stdarg(list,kind)
  * setup routine for the standard external table
  * STDARG, fills the table with online arguments
  *    a_extlist_virtual: virtual space 
  *    a_argc,a_argv: porgram line arguments
  */
-void setup_stdarg(int F1,int F2 __attribute__((unused))){
+void a_setup_stdarg(int F1,int F2 __attribute__((unused))){
   int i;
   #define st	to_LIST(F1)
   st->offset=0;st->p=0;st->length=0;
@@ -149,7 +156,7 @@ void setup_stdarg(int F1,int F2 __attribute__((unused))){
   st->alwb=st->vlwb;st->aupb=st->alwb-st->calibre;
   for(i=a_argc-1;i>=0;i--){ /* add string a_argv[i] */
     if(a_push_string_to(F1,a_argv[i])==0){
-      a_fatal("setup_stdarg","out of memory");}
+      a_fatal("a_setup_stdarg","out of memory");}
   }
   #undef st
 }
@@ -376,7 +383,7 @@ void a_copystring(int F1,int F2,int F3){
  *   dir     1,3: in, 2,3: out
  *   dd,off  init string for implicit open
  */
-void setup_charfile(int ID,int dir,int dd,int off){
+void a_setup_charfile(int ID,int dir,int dd,int off){
   #define ch	to_CHFILE(ID)
   ch->openflag=0;ch->fileError=0;ch->st1=dd;ch->st2=off;
   ch->f=NULL; 
@@ -390,7 +397,7 @@ void setup_charfile(int ID,int dir,int dd,int off){
  *  dd,off  init string for implicit open
  *  cnt     number of lists in file area
  */
-void setup_dfile(int ID,int dir, int dd, int off,int cnt){
+void a_setup_dfile(int ID,int dir, int dd, int off,int cnt){
   #define df	to_DFILE(ID)
   df->openflag=0;df->fileError=0; df->st1=dd;df->st2=off;
   df->fhandle=0; df->iflag=0; df->inarea=df->outarea=0;
@@ -406,7 +413,7 @@ void setup_dfile(int ID,int dir, int dd, int off,int cnt){
  *   hash   hash value for the list ID
  *           no check is made if the same list is added twice
  */
-void add_filearea(int ID,int list,int hash){
+void a_add_filearea(int ID,int list,int hash){
   int i,tmp;
   #define df	to_DFILE(ID)
   i=df->outarea;

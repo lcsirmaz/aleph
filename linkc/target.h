@@ -11,7 +11,8 @@ void targetPrelude(void),targetMain(void);
 
 int isPidginRule(int item);
 
-void Tlabel(int *a),Tbox(int *a);
+void Tlabel(int *a),Tbox(int *a),Textension(int *a);
+void TruleCall(int *a);
 /* ----------------------- */
 
 void initialize_target(void);

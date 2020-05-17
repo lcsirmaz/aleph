@@ -41,7 +41,7 @@ $ programs
     ).
 
 $ standard argument,stdin,stdout
-?STDARG   'x''table'STDARG="setup_stdarg".
+?STDARG   'x''table'STDARG="a_setup_stdarg".
 ?STDIN    'charfile'STDIN=>"stdin".
 ?STDOUT   'charfile'STDOUT="stdout">.
 $ module sync

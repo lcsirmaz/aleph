@@ -19,7 +19,9 @@ $ generating code $
    $ the external rule uses pidgin call
 'a'rule declaration head+>item+>C1+>C2+>C3+>minloc+>maxloc.
 'a'Tlabel+>this+>next.
-'a'Tbox+>aff+>area.
+'a'Tbox+>ptr+>area,Textension+>ptr.
+'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
+              +>rep+>star+>odummy+>idummy+>ptr.
 'a'rule declaration tail.
 $ BODY **************************************************** $
 'pragmat'if=compile.
@@ -44,16 +46,25 @@ $ seme externals
   close file+TARGET.
 'a'delete target:
   close target,unlink file+MESSAGE+target file name.  
+$ naming convention *************************************** $
+$  formal parameters: 
+$     a_F%d     if not out/inout (serial number)
+$     a_A[%d]   out/inout (count, starting at zero)
+$     a_C       formal repeat count
+$     a_V[]     repeat block (indexed consecutively from zero)
+$  local variables:
+$     a_L%d     from 'min loc' to 'max loc', inclusive (d>=1)
+$  labels:
+$     a_G%d     d>1, the node number
+$  actual parameters:
+$     a_P[]     for out/inout, fixed size repeat block
+$    *a_D       dynamic size repeat block
+$  items:
+$     a_%d      with the repr number of the item
+
 $ print to TARGET file ==================================== $
 'a'print char+>ch: put char+TARGET+ch.
 
-'a'print repr+>item: $ print the representation $
-   was+ITEM+item,
-     (get item def+item+item;+),
-     (=type*ITEM[item]=
-      [Iconstant;Ipointer constant],+;print char+/a/,print char+/_/),
-     print int+repr*ITEM[item];
-   print ptr+item.
 'a'print int+>n:
    $ print n in decimal; min int does not end with 9
    n=min int, print char+/-/,subtr+-1+n+n,print int1+n+/1/;
@@ -64,32 +75,67 @@ $ print to TARGET file ==================================== $
         add+r+c+r, print char+r.
 'a'print str+T[]+>ptr:
   put string+TARGET+T+ptr.
+
+$ prefix, formal, local, actual arguments
+'a'print prefix:
+   print char+/a/,print char+/_/.
+'a'print label prefix:
+   print prefix,print char+/G/.
+'a'local argument+>cnt:
+   $ local affix
+   print prefix,print char+/L/,print int+cnt.
+'a'print int index+>c+>idx:
+   print prefix,print char+c,print char+/[/,print int+idx,print char+/]/.
+'a'formal argument+>cnt-i-type-out:
+   $ formal affix of this rule
+   0->i->out,(nxt:get formal+this rule+i+type,incr+i,
+     ((type=Iformal out;type=Iformal inout),
+        (i=cnt,print int index+/A/+out;incr+out,:nxt);
+      type=Iformal repeat,subtr+cnt+i+i,
+        (i<0,print prefix,print char+/C/;print int index+/V/+i);
+      i=cnt,print prefix,print char+/F/,print int+cnt;
+      :nxt)).
+'a'print repr+>item:
+   $ representation of an item
+   was+ITEM+item,
+     (get item def+item+item;+),
+     (=type*ITEM[item]=
+      [Iconstant;Ipointer constant],+;print prefix),
+     print int+repr*ITEM[item];
+   print ptr+item.
+'a'print local label+>label:
+   $ local label with prefix a_G
+   print label prefix,print int+label.
+'a'print goto+>label:
+   $ -1: success return, -2: fail return; otherwise jump
+   =label=
+   [0],internal error+_title_+_line_;
+   [-1],(is item flag+this rule+rcan fail,print str+" return 1";print str+"return");
+   [-2],print str+" return 0";
+   print str+" goto ",print local label+label.
+$ print an affix ----------------------------------------- $
+$ affixes are stored in BUFFER. The format character %p
+$   prints a double item from BUFFER
 'a'print BUFFER+>ptr:
   =BUFFER[ptr]=
   [Titem],incr+ptr,print repr+BUFFER[ptr];
   [Tconst],incr+ptr,print int+BUFFER[ptr];
-  [Tlocal],incr+ptr,print char+/L/,print int+BUFFER[ptr];
-  [Tformal],incr+ptr,formal argument+this rule+BUFFER[ptr];
-  print char+/?/,print int+BUFFER[ptr].
+  [Tlocal],incr+ptr,local argument+BUFFER[ptr];
+  [Tformal],incr+ptr,formal argument+BUFFER[ptr];
+  internal error+_title_+_line_.
 'a'print ptr+>p:
   was+ITEM+p,tag*ITEM[p]->p,:print ptr;
   was+LEXT+p,get tag image+p+p,print str+LEXT+p;
   was+MESSAGE+p,print str+MESSAGE+p;
   was+BUFFER+p,print BUFFER+p;
-  +.
-'a'print goto+>label:
-  =label=,
-  [0],internal error+_title_+_line_;
-  [-1],(is node flag+this rule+rcan fail,print str+" return 1";print str+"return");
-  [-2],print str+" return 0";
-  print str+" goto a_",print int+label.
+  internal error+_title_+_line_.
 
 'a'T+t[]+*+>fmt-ptr-optr:
 $ formal characters:
-$   r: item, get repr (S<value)
-$   b: BUFFER ptr, type+value
+$   r: item, get repr
+$   g: goto (return or goto)
 $   n: newline
-$   p: pointer (LEXT)
+$   p: pointer
 $   d: integer
   >>BUFFER->optr,unpack string+t+fmt+BUFFER,add+optr+1+ptr,
   (nxt:>>BUFFER<ptr;
@@ -127,19 +173,19 @@ $     some returns true (or aborts).
 $  a_ROOT() calls initialization, all module roots, and
 $    the main root.
 'f'is waitfor+>ptr+>w>:
-  $ check if the 'wait for' external has been called
+  $ check if the 'wait for' external has ever been called
   is+w;
   (get item def+ptr+ptr,is item flag+ptr+texternal,
     tag*ITEM[ptr]=ext waitfor),1->w;+.
 'a'proc waitfor-ptr-head:
   $ create the external 'wait for' rule
-  T+"int a_waitfor(int F1,int F2){%n",
+  T+"int a_waitfor(int a_F1,int a_F2){%n",
   <<ITEM->ptr,0->head,(nxt:ptr>>>ITEM;
   (=type*ITEM[ptr]=
    [Dmodule],tag*ITEM[ptr]->head;
    [Dtitle],0->head;
    [Irule],(head=0;Sroot!=tag*ITEM[ptr];
-     T+" if(a_R%r(F1,F2)){return 1;}%n"+ptr);
+     T+" if(a_R%r(a_F1,a_F2)){return 1;}%n"+ptr);
    +),next+ITEM+ptr,:nxt),
    T+" return 0;%n}%n".
 'a'target main-ptr-head-w:
@@ -172,13 +218,12 @@ $    the main root.
       T+" %r(); /* %p */%n"+ptr+head);
     +),next+ITEM+ptr,:nxt),
   T+"}%n".
-$ rule declaration head *********************************** $
-$  generate forward prototype for rules with standard call
+$ rule declaration **************************************** $
+$  prototype for (external) rules with standard call 
 $  external rules with pidgin call have no prototypes (they
-$  can be #define's)
-$  static/extern int/void <ID>(parameters); where parameters:
-$    (int F1,int F3,int F5,int A[3]) "A" is for out and inout args
-$    (int F1,int a_A[3],int a_C,int a_V[]) if it has a vararg block
+$     can be #define's)
+$  static/extern int/void <ID>(parameters);
+$    (int a_F1,int a_F3,int a_A[3],int a_C,int a_V[])
 
 'a'rule typer+>item:
   is item flag+item+rcan fail,T+"static int %r("+item;T+"static void %r("+item.
@@ -195,26 +240,18 @@ $    (int F1,int a_A[3],int a_C,int a_V[]) if it has a vararg block
      ((type=Iformal out;type=Iformal inout),incr+out,:nxt;
       type=Iformal repeat,out args+out+sep,arg sep+sep,
                T+"int a_C,int a_V[])";
-      arg sep+sep,T+"int F%d"+cnt,:nxt);
+      arg sep+sep,T+"int a_F%d"+cnt,:nxt);
    (n=0,T+"void";out args+out+sep),print char+/)/).
-'a'formal argument+>item+>cnt-i-type-out:
-  0->i->out,(nxt:get formal+item+i+type,incr+i,
-     ((type=Iformal out;type=Iformal inout),
-        (i=cnt,T+"a_A[%d]"+out;incr+out,:nxt);
-      type=Iformal repeat,subtr+cnt+i+i,T+"a_V[%d]"+i;
-      i=cnt,T+"F%d"+cnt;
-      :nxt).
-
-$ the external rule uses pidgin parameter passing
+$ check if the external rule uses pidgin parameter passing
 'q'is pidgin rule+>item-x:
   $ check if the string starts with a letter
   is item flag+item+texternal,
   get tag image+tag*ITEM[item]+x,string elem+LEXT+x+0+x,
     (=x=[/a/:/z/;/A/:/Z/],-;+).
-$ rule declaration ----------------------------------------- $
-$ formal parameters, locals, and call arguments; maybe dynamic.
-$   formal  F1,F2,a_A[]; a_C, a_V[] (repeat)
-$   local   L4,L5;       a_D[] (dynamic)
+$  declaration
+$    a_L%d     local
+$    a_P[%d]   actual out/inout paramters, fixed repeat block
+$   *a_D       dynamic repeat block content
 'variable'this rule=0. $ This rule
 'a'show formals as comment+>item-n-cnt-type:
   get number of formals+item+n,0->cnt,
@@ -230,28 +267,46 @@ $   local   L4,L5;       a_D[] (dynamic)
      [Iformal repeat],T+"+*"),:nxt).
 'a'declare locals+>minloc+>maxloc:
   minloc=0;
-  minloc<=maxloc,T+"int L%d;"+minloc,incr+minloc,:declare locals;
+  minloc<=maxloc,T+"int a_L%d;"+minloc,incr+minloc,:declare locals;
   +.
-
 'a'declare callargs+>item+>C1+>C2+>C3-cnt:
-  (C2=0;T+"int a_A[%d];"+C2),
-  (C3=0;get repeat count+item+cnt,
-        T+"int *a_D=alloca(sizeof(int)*(%d+%d*C));"+C3+cnt),
-  T+"/* %d, %d, %d */%n"+C1+C2+C3.
+  (C2=0;T+"int a_P[%d];"+C2),
+  (C3=0;get repeat count+item+cnt,$ even if cnt=1 $
+        T+"int *a_D=alloca(sizeof(int)*(%d+%d*a_C));"+C3+cnt).
+$ trace and profiling
+'a'add rule name as static:
+   is item flag+this rule+rspecial,
+     T+" static char *a_rulename=""%p"";%n"+this rule;
+   +.
+'a'add profiling:
+   is item flag+this rule+rcount,
+     T+" static a_PROFILE a_profile={0ul,NULL,NULL};%n"
+       " a_PROFILING(a_profile,a_rulename);%n";
+   +.
+'a'add tracing-n-cnt:
+   is item flag+this rule+rtrace,get number of formals+this rule+n,
+     0->cnt,T+" a_trace_rule(a_rulename,%d"+n,
+     (nxt:cnt<n,print char+/,/,incr+cnt,formal argument+cnt,:nxt;+),
+     T+");%n";
+   +.
+         
 'a'rule declaration head+>rule+>C1+>C2+>C3+>minloc+>maxloc:
-  rule typer+rule,rule args+rule,T+"{ /* %p"+tag*ITEM[rule],
-   show formals as comment+rule,T+" */%n",
-   declare locals+minloc+maxloc,
-   declare callargs+rule+C1+C2+C3,
-   rule->this rule.
+   $ rule declaration head, prototype, trace and count
+   rule->this rule,rule typer+rule,rule args+rule,
+    T+"{ /* %p"+tag*ITEM[rule],
+    show formals as comment+rule,T+" */%n",
+    declare locals+minloc+maxloc,
+    declare callargs+rule+C1+C2+C3,
+    $ trace and count: store rule name as static string
+    add rule name as static,add profiling,add tracing.
 'a'rule declaration tail:
   T+"} /* %p */%n"+this rule.
 
 $ data declaration ***************************************** $
 $ apart from rule prototypes, variables, list, files are
 $ defined.
-$  variable:   static int S1099=<initial value>; /* <tag> */
-$  list,file:  #define S1101 (S1100+sizeof_LIST); /* <tag> */
+$  variable:   static int a_1099=<initial value>; /* <tag> */
+$  list,file:  #define a_1101 (a_1100+sizeof_LIST); /* <tag> */
 $ external
 $  variable:   extern int XXXX;
 $  constant:   extern int XXXX;
@@ -358,8 +413,7 @@ $     n<0: repeat the previous block -n times
         R+Dfile,skip entry,:nxt;
         R+Dfill,fill entries,:nxt;
         +).
-   
-$ RULE generation ***************************************** $
+$ RULE call generation ************************************ $
 $ generate the rules
 'a'data section iv:
    (nxt:R+Dexpression,skip entry,:nxt;
@@ -376,11 +430,9 @@ $ global
 
 $ label generation
 'a'Tlabel+>label+>nextidx:
-  nextidx->next node idx,(label=0;T+"a_%d: "+label).
+  nextidx->next node idx,(label=0;print local label+label,print char+/:/).
 
-$ classification ------------------------------------------ $
-$  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes
-$   the areas
+$ code generation ----------------------------------------- $
 'table'MESSAGE=(
    "calibre"  :Tcalibre,
    "alwb"     :Tlwb,
@@ -389,6 +441,7 @@ $   the areas
    "vupb"     :Tvupb,
    "a_r"      :classifier $ variable storing classifier's value
 ). 
+$ BUFFER[ptr] starts an affix; generate code for it
 'f'T limit tail+>what+code>:
    =what=
    [Dcalibre],Tcalibre->code;
@@ -403,11 +456,37 @@ $   the areas
    [Tformal;Tlocal;Titem;Tconst],T+"%p"+ptr,incr+ptr,incr+ptr;
    [Dcolon],incr+ptr,:T affix;
    [Dnoarg],incr+ptr,T+"**###**";
+$ list with bound checks $
    [Dsub],incr+ptr,T+"to_LIST(%p)->offset["+ptr,incr+ptr,incr+ptr,
       T affix+ptr,$ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
-      incr+ptr,(x=0,T+"]";T+"-%d]");
-   T limit tail+BUFFER[ptr]+x,incr+ptr,T+"to_LIST(%p)->%p"+BUFFER[ptr]+x,
-      incr+ptr.
+      incr+ptr,(x=0,T+"]";T+"-%d]"+x);
+   T limit tail+BUFFER[ptr]+x,incr+ptr,
+      T+"to_LIST(%p)->%p"+ptr+x,incr+ptr,incr+ptr.
+
+$ rule call ----------------------------------------------- $
+'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
+              +>rep+>star+>odummy+>idummy+>ptr:
+   tag->called rule.
+
+$ extension ----------------------------------------------- $
+$  BUFFER[affix+1] is the stack, then width, followed by
+$  a linked list of affixes + target offsets
+'a'extension block+>w+>st+>ptr-offs-x:
+   incr+ptr,$ affix $
+   ptr->offs,(nxt:BUFFER[offs]=Dplus;incr+offs,:nxt),incr+offs,
+   (nxt:BUFFER[offs]<0;
+        subtr+w+BUFFER[offs]+x,incr+x,incr+offs,
+        T+"to_LIST(%p)->top[%d]="+st+x,:nxt),
+   T affix+ptr,print char+/;/.
+'a'T extension+>ptr-st-w:
+   incr+ptr,BUFFER[ptr]->w,incr+ptr,ptr->st,T+" a_extension(%p,%d);"+st+w,
+   $ now L->top[1,2,...,k] works
+   add+2+ptr+ptr, $ BUFFER[ptr] points to the affix; zero if no more $
+   (nxt:extension block+w+st+ptr,BUFFER[ptr]->ptr,(ptr=0;:nxt)),
+   T+"to_LIST(%p)->aupb+=%d;%n"+st+w.
+
+$ classification ------------------------------------------ $
+$  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes areas
 
 'a'box classifier+>ptr+v>:
   =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tconst],ptr->v;
@@ -453,41 +532,40 @@ $    list bounds, lists should come first. Add external list
 $    and file initializations. Call list_FILL which adds
 $    all fillings.
 $  void a_data_setup(void){ ... }
-$   setup_list(0/1,<id>,calibre,lb,ub,fill size);
-$   setup_chfile(<id>,direction,<stringtable>,<stringptr>);
-$   setup_dfile(<id>,direction,<stringtable>,<stringptr>,number of areas);
-$      add_filearea(<id>,<table>,<hash>);
+$   a_setup_list(0/1,<id>,calibre,lb,ub,fill size);
+$   a_setup_chfile(<id>,direction,<stringtable>,<stringptr>);
+$   a_setup_dfile(<id>,direction,<stringtable>,<stringptr>,number of areas);
+$      a_add_filearea(<id>,<table>,<hash>);
 $
 
 'a'list initialization+>kind+>item-cal-lb-up-fill:
    is item flag+item+texternal,get calibre+item+cal,
-     T+" setup_external_list(%d,%r,%d,""%p"");%n"+
-           kind+item+cal+tag*ITEM[item];
+     T+" %p(%r,%d);%n"+tag*ITEM[item]+item+cal;
    get calibre+item+cal,get vupb+item+up,get vlwb+item+lb,
      get fill+item+fill,
-     T+" setup_list(%d,%r,%d,%d,%d,%d); /* %p */%n"
+     T+" a_setup_list(%d,%r,%d,%d,%d,%d); /* %p */%n"
         +kind+item+cal+lb+up+fill+tag*ITEM[item].
 
 'a'charfile initialization+>item-dir-id-ptr:
    is item flag+item+texternal,
-     T+" setup_external_charfile(%r,""%p"");%n"+item+tag*ITEM[item];
+     T+" %p(%r);%n"+tag*ITEM[item]+item;
    (is item flag+item+toutfile,2->dir;0->dir),
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr+#,
-     T+" setup_charfile(%r,%d,%r,%r); /* %p */%n"
+     T+" a_setup_charfile(%r,%d,%r,%r); /* %p */%n"
         +item+dir+id+ptr+tag*ITEM[item].
 'f'count file area+>p+cnt>:
    0->cnt,(nxt:p=0;incr+cnt,get file link+p+#+#,:nxt).
 'a'datafile initialization+>item-dir-id-ptr-link-cnt:
    is item flag+item+texternal,
-     T+" setup_external_dfile(%r,""%p"");%n"+item+tag*ITEM[item];
+     T+" %p(%r);%n"+tag*ITEM[item]+item;
    (is item flag+item+toutfile,2->dir;0->dir),
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr+link,count file area+link+cnt,
-     T+" setup_dfile(%r,%d,%r,%r,%d); /* %p */%n"+item+dir+id+ptr+cnt+tag*ITEM[item],
+     T+" a_setup_dfile(%r,%d,%r,%r,%d); /* %p */%n"+item+dir+id+ptr+cnt+tag*ITEM[item],
      (nxt:link=0;
         get file link+link+cnt+id,
-        T+"   add_filearea(%r,%r,%d);%n"+item+id+cnt,:nxt).
+        T+"   a_add_filearea(%r,%r,%d);%n"+item+id+cnt,:nxt).
 
 'a'data initialization-ptr-def:
    T+"static void a_data_setup(void){%n",

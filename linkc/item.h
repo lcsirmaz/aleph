@@ -37,6 +37,7 @@ void findItemLineno(int *a),findLineno(int*a);
 #define rpred		(rsideeffect|rcanfail)
 #define rexit		rnoreturn
 #define rtype		(rsideeffect|rcanfail|rnoreturn)
+#define rspecial	(rtrace|rbounds|rcount)
 
 /* -------------------------------------------- */
 void initialize_item(void);

@@ -230,14 +230,19 @@ static void storeAffix(void){
   par[0]=Tformal;if(RR(par)){pushBUFFER(2,par);return;}
   par[0]=Tlocal;if(RR(par)){pushBUFFER(2,par);return;}
   par[0]=Titem;if(RR(par)){pushBUFFER(2,par);return;}
-  par[0]=Dnoarg;if(R(par)){pushBUFFER(1,par);return;}
-  par[0]=Dcolon;if(R(par)){pushBUFFER(1,par);return;}
   par[0]=Tconst;if(RR(par)){pushBUFFER(2,par);return;}
   par[0]=Dsub;if(R(par)){storeList(Dsub);storeAffix();par[0]=Dbus;must(par);
     par[0]=Tconst;must(par);par[0]=Dbus;pushBUFFER(2,par);return;}
   storeLimit();
 }
-
+static void storeRuleAffix(int *a){/* type> */
+  int par[3];
+  par[0]=Dcolon;if(R(par)){a[0]=Dcolon;pushBUFFER(1,par);storeAffix();return;}
+  par[0]=Dnoarg;if(R(par)){a[0]=Dnoarg;pushBUFFER(1,par);return;}
+  par[0]=Dstar;if(R(par)){a[0]=Dstar;par[0]=Tconst;if(RR(par)){;}else{par[1]=0;}
+     par[0]=Dstar;pushBUFFER(2,par);return;}
+  a[0]=0;storeAffix();
+}
 static void storeRuleAffixes(void){
   int par[3]; nxt:
   if(inpt==Tformal||inpt==Tlocal||inpt==Titem||inpt==Tconst){
@@ -376,18 +381,47 @@ static void extensionLabel(void){
 }
 static void generateLabel(void){
   int par[3];int label,nextnode;
-  advanceNode();findNextNode(par);nextnode=par[0];
+  advanceNode();if(isNodeFlag(nsame)){return;}
+  findNextNode(par);nextnode=par[0];
   if(isNodeFlag(nlabel)){label=thisNode-NODE->alwb;
     label=label/NODE_CALIBRE+1;}
   else{label=0;}
   par[0]=label;par[1]=nextnode;Tlabel(par);
 }
 /* ====================================================== */
-static void callRuleHead(void){
-  int par[3];int tag;
-  par[0]=Titem;must(par);tag=par[1];par[0]=tag;
-  if(getItemDef(par)){tag=par[1];}
-  par[0]=Tconst;must(par);must(par);must(par);
+static void generateRuleCall(void){
+  int par[14];int type,tag,C1,C2,C3,n,rep,star,odummy,idummy,ptr,
+                  fnext,tnext;
+  par[0]=Titem;must(par);tag=par[1];
+  par[0]=tag;if(getItemDef(par)){tag=par[1];}
+  if(NODE->offset[thisNode-NODE_tag]!=tag){printf("ERROR: not same tag\n");exit(28);}
+  par[0]=Tconst;must(par);C1=par[1];must(par);C2=par[1];must(par);C3=par[1];
+  ptr=BUFFER->aupb,n=idummy=odummy=rep=star=0;nxt:
+  par[0]=Dout;if(R(par)){must(par);}
+  else{storeRuleAffix(par);type=par[0];par[0]=Dplus;pushBUFFER(1,par);
+    n++;if(rep){rep++;}if(type==Dcolon){idummy=1;}
+    else if(type==Dnoarg){odummy=1;}
+    else if(type==Dstar){if(rep){star=1;}else{rep=1;}}
+    goto nxt;}
+  par[0]=NODE->offset[thisNode-NODE_fnext];findRealLabel(par);fnext=par[1];
+  par[0]=NODE->offset[thisNode-NODE_tnext];findRealLabel(par);tnext=par[1];
+  par[0]=tag;par[1]=C1;par[2]=C2;par[3]=C3;par[4]=n;par[5]=fnext;par[6]=tnext;
+  par[7]=rep;par[8]=star;par[9]=odummy;par[10]=idummy;par[11]=ptr;
+  TruleCall(par);par[0]=STACKpar(BUFFER);par[1]=ptr;unstackto(par);
+}
+/* ====================================================== */
+static void generateExtension(void){
+  int par[3];int obuff,x,ptr;
+  obuff=BUFFER->aupb;storeList(0);par[0]=Tconst;must(par);x=par[1];
+  BUFFER->offset[obuff+1]=x;par[0]=0;pushBUFFER(1,par);ptr=BUFFER->aupb;
+  nxt:storeAffix();par[0]=Dplus;pushBUFFER(1,par);nxt2:
+    par[0]=Dto;if(R(par)){par[0]=Tconst;must(par);x=par[1];
+    par[0]=x;pushBUFFER(1,par);goto nxt2;}
+    else if(par[0]=Dout,R(par)){par[0]=-1;pushBUFFER(1,par);}
+    else{par[0]=-1;par[1]=0;pushBUFFER(2,par);BUFFER->offset[ptr]=BUFFER->aupb;
+    ptr=BUFFER->aupb;goto nxt;}
+  par[0]=obuff;Textension(par);par[0]=STACKpar(BUFFER);par[1]=obuff;
+  unstackto(par);
 }
 /* ====================================================== */
 static void generateArea(void){
@@ -449,9 +483,11 @@ static void scanIV(void){
    int par[3];again:
    par[0]=Dbox;if(R(par)){generateLabel();generateBox();par[0]=Dcomma;
      must(par);goto again;}
-   par[0]=Dextension;if(R(par)){generateLabel();skipToComma();goto again;}
-   par[0]=Dnode;if(R(par)){generateLabel();callRuleHead();
-      skipToComma();goto again;}
+   par[0]=Dextension;if(R(par)){generateLabel();generateExtension();
+     par[0]=Dcomma;must(par);goto again;}
+   par[0]=Dnode;if(R(par)){generateLabel();
+       if(isNodeFlag(nsame)){skipToComma();goto again;}
+       else{generateRuleCall();par[0]=Dcomma;must(par);goto again;}}
    par[0]=Dpoint;must(par);
 }
 /* ------------------------------------------------------ */

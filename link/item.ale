@@ -64,7 +64,8 @@ $ rule types
   rque		=rcan fail,
   rpred		=rside effect|rcan fail,
   rexit		=rno return,
-  rtype		=rside effect|rcan fail|rno return.
+  rtype		=rside effect|rcan fail|rno return,
+  rspecial	=rtrace|rcount|rbounds.
 
 'stack'(flag,type,tag,lineno,adm,repr)ITEM.
 

@@ -12,6 +12,7 @@
 typedef struct {
   int *offset;		// offset[idx]
   int *p;		// pointer to the beginning
+  int *top;		// pointer to the top
   int length;		// length of the block
   int alwb,aupb;
   int vlwb,vupb;
@@ -60,9 +61,9 @@ int a_extstrcmp(int table,int off,const char *str);
 void a_fatal(const char *m1,const char* m2);
   /* fatal error; print both strings to stderr and abort */
 void a_setup_list(int kind,int ID,int cal,int lb,int up,int fill);
-void setup_charfile(int ID,int dir,int sID,int soff);
-void setup_dfile(int ID,int dir,int sID,int soff,int narea);
-void add_filearea(int ID,int aID,int hash);
+void a_setup_charfile(int ID,int dir,int sID,int soff);
+void a_setup_dfile(int ID,int dir,int sID,int soff,int narea);
+void a_add_filearea(int ID,int aID,int hash);
 void a_list_fill(int *fill);
 
 /* the waitfor() routine calls all roots to check if it finished
@@ -81,6 +82,19 @@ int a_R##x(int table,int off){				\
   virtual address for external lists */
 extern int a_argc; extern char *a_argv[];
 extern int a_extlist_virtual;
+
+/* profile and trace */
+typedef struct a_PROFILE_ {
+  unsigned long int count;
+  const char        *rulename;
+  struct a_PROFILE_ *link;
+} a_PROFILE;
+extern a_PROFILE *a_profiles;
+#define a_PROFILING(x,y)				\
+  if(0ul==x.count++){x.link=a_profiles;			\
+            x.rulename=y;a_profiles=&x;}
+
+void a_trace_rule(const char*name,int affixno,...);
 
 /* extension */
 
