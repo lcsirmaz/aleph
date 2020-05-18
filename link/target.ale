@@ -19,7 +19,7 @@ $ generating code $
    $ the external rule uses pidgin call
 'a'rule declaration head+>item+>C1+>C2+>C3+>minloc+>maxloc.
 'a'Tlabel+>this+>next.
-'a'Tbox+>ptr+>area,Textension+>ptr.
+'a'T box+>ptr+>area,T extension+>ptr+>label.
 'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
               +>rep+>star+>odummy+>idummy+>ptr.
 'a'rule declaration tail.
@@ -51,7 +51,7 @@ $  formal parameters:
 $     a_F%d     if not out/inout (serial number)
 $     a_A[%d]   out/inout (count, starting at zero)
 $     a_C       formal repeat count
-$     a_V[]     repeat block (indexed consecutively from zero)
+$    *a_V       repeat block (indexed consecutively from zero)
 $  local variables:
 $     a_L%d     from 'min loc' to 'max loc', inclusive (d>=1)
 $  labels:
@@ -110,9 +110,13 @@ $ prefix, formal, local, actual arguments
    $ -1: success return, -2: fail return; otherwise jump
    =label=
    [0],internal error+_title_+_line_;
-   [-1],(is item flag+this rule+rcan fail,print str+" return 1";print str+"return");
-   [-2],print str+" return 0";
-   print str+" goto ",print local label+label.
+   [-1],(is item flag+this rule+rcan fail,print str+" return 1;";print str+"return;");
+   [-2],print str+" return 0;";
+   print str+" goto ",print local label+label,print char+/;/.
+'a'print GOTO+>label:
+   $ goto only if label!=next node idx $
+   label=next node idx;
+   print goto+label.
 $ print an affix ----------------------------------------- $
 $ affixes are stored in BUFFER. The format character %p
 $   prints a double item from BUFFER
@@ -144,6 +148,7 @@ $   d: integer
       (=BUFFER[ptr]=
        [/r/],(shift affix block+*,print repr+fmt;print char+/?/),incr+ptr,:nxt;
        [/g/],(shift affix block+*,print goto+fmt;print char+/?/),incr+ptr,:nxt;
+       [/G/],(shift affix block+*,print GOTO+fmt;print char+/?/),incr+ptr,:nxt;
        [/n/],print char+newline,incr+ptr,:nxt;
        [/d/],(shift affix block+*,print int+fmt;print char+/?/),incr+ptr,:nxt;
        [/p/],(shift affix block+*,print ptr+fmt;print char+/?/),incr+ptr,:nxt;
@@ -223,7 +228,7 @@ $  prototype for (external) rules with standard call
 $  external rules with pidgin call have no prototypes (they
 $     can be #define's)
 $  static/extern int/void <ID>(parameters);
-$    (int a_F1,int a_F3,int a_A[3],int a_C,int a_V[])
+$    (int a_F1,int a_F3,int a_A[3],int a_C,int *a_V)
 
 'a'rule typer+>item:
   is item flag+item+rcan fail,T+"static int %r("+item;T+"static void %r("+item.
@@ -239,7 +244,7 @@ $    (int a_F1,int a_F3,int a_A[3],int a_C,int a_V[])
   (nxt: cnt<n,get formal+item+cnt+type,incr+cnt,
      ((type=Iformal out;type=Iformal inout),incr+out,:nxt;
       type=Iformal repeat,out args+out+sep,arg sep+sep,
-               T+"int a_C,int a_V[])";
+               T+"int a_C,int *a_V)";
       arg sep+sep,T+"int a_F%d"+cnt,:nxt);
    (n=0,T+"void";out args+out+sep),print char+/)/).
 $ check if the external rule uses pidgin parameter passing
@@ -336,7 +341,8 @@ $  variable, but not a #define value.
   (is item flag+item+texternal,
     T+"extern void %p(int,int);%n"+tag*ITEM[item];+).
 'a'rule prototype+>item: $ prototype $
-  is pidgin rule+item; $ no prototype $
+  is pidgin rule+item;   $ no prototype $
+  is builtin rule+item+#;$ standard rule
   is item flag+item+texternal,external rule typer+item,
           rule args+item,T+";%n";
   rule typer+item,rule args+item,T+"; /* %p */%n"+tag*ITEM[item].
@@ -428,9 +434,13 @@ $ global
   next node idx=0,   $ label of the next node, no jump to it
   called rule=0.     $ rule to be called
 
+$ jump to labels ------------------------------------------ $
 $ label generation
 'a'Tlabel+>label+>nextidx:
   nextidx->next node idx,(label=0;print local label+label,print char+/:/).
+'a'jump to label+>label:
+  label=next node idx; $ don't jump $
+  T+" %g%n"+label.
 
 $ code generation ----------------------------------------- $
 'table'MESSAGE=(
@@ -439,7 +449,8 @@ $ code generation ----------------------------------------- $
    "aupb"     :Tupb,
    "vlwb"     :Tvlwb,
    "vupb"     :Tvupb,
-   "a_r"      :classifier $ variable storing classifier's value
+   "a_r1"     :r1, $ variable storing classifier's value
+   "a_r2"     :r2
 ). 
 $ BUFFER[ptr] starts an affix; generate code for it
 'f'T limit tail+>what+code>:
@@ -450,23 +461,80 @@ $ BUFFER[ptr] starts an affix; generate code for it
    [Dvlwb],   Tvlwb->code;
    [Dvupb],   Tvupb->code;
    corrupted ice file+_title_+_line_.
-'a'T affix+>ptr>-x:
+'a'T affix+>ptr:
+   =BUFFER[ptr]=
+   [Dcolon],incr+ptr,T affix inner+ptr;
+   [Dnoarg],+;
+   T affix inner+ptr.
+'a'T affix inner+>ptr>-x:
    $ generate an affix from BUFFER[ptr]
    =BUFFER[ptr]=
    [Tformal;Tlocal;Titem;Tconst],T+"%p"+ptr,incr+ptr,incr+ptr;
-   [Dcolon],incr+ptr,:T affix;
-   [Dnoarg],incr+ptr,T+"**###**";
-$ list with bound checks $
+$ TODO: list with bound checks $
    [Dsub],incr+ptr,T+"to_LIST(%p)->offset["+ptr,incr+ptr,incr+ptr,
-      T affix+ptr,$ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
+      T affix inner+ptr,$ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
       incr+ptr,(x=0,T+"]";T+"-%d]"+x);
    T limit tail+BUFFER[ptr]+x,incr+ptr,
       T+"to_LIST(%p)->%p"+ptr+x,incr+ptr,incr+ptr.
 
 $ rule call ----------------------------------------------- $
+$ called rule, next node idx are there
+'a'gen shiftaffix+>fnext+>tnext-w:
+   $ shift affix block+*
+   get repeat count+this rule+w,
+    ((fnext=next node idx;
+      fnext=tnext,next node idx->tnext;
+      tnext!=next node idx),
+         T+"if(a_C>1){a_C--;a_V+=%d;%G}%G%n"+w+tnext+fnext;
+     $tnext=next node idx$
+         T+"if(a_C<=1){%g} a_C--;a_V+=%d;%n"+fnext+w).
+         
+'a'gen getaffixno+>n+>ptr+>tnext:
+   n!=2,corrupted ice file+_title_+_line_;
+   BUFFER[ptr]=Dnoarg; $  dummy affix
+   BUFFER[ptr]=Dcolon; $  out affix not used
+   T affix+ptr,T+"=a_C;%G%n"+tnext.
+
+'f'next affix+>ptr>:
+   BUFFER[ptr]=Dplus,incr+ptr;
+   incr+ptr,:next affix.
+
+'a'assignment source+>ptr+>star+v>+block>:
+   =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tconst],ptr->v,
+     (is+star,T+"{register int %p;"+r2,1->block;0->block);
+   r1->v,T+"{register int %p="+v,T affix+ptr,
+     (is+star,T+",%p"+r2;+),print char+/;/,1->block.
+
+'a'gen assignment+>rep+>star+>ptr+>tnext-source-v-block-n-cnt:
+   $ rep: one more than affixes after * (including star)
+   $ star: the last actual affix is the formal *
+   $    X->b->c->d->*   (rep=5,star=1)
+   $       b=X;c=X;d=X;for(i=0;i<a_C;i++)a_V[i]=X;
+   ptr->source,next affix+ptr, $ BUFFER[ptr]=Dstar $
+   $ compute number of valid destinations to n
+   0->n,1->cnt,(nxt:cnt>=rep;
+     incr+cnt,next affix+ptr,
+     (=BUFFER[ptr]= [Dstar;Dnoarg;Dcolon],+;incr+n),:nxt),
+   $ if n>1 or star, store source
+   ((n>1;is+star),assignment source+source+star+v+block;
+    0->v->block),
+   source->ptr,next affix+ptr,1->cnt,(nxt:cnt>=rep;
+     incr+cnt,next affix+ptr,
+     (=BUFFER[ptr]= [Dstar;Dnoarg;Dcolon],+;
+       T affix+ptr,
+       (v=0,print char+/=/,T affix+source,print char+/;/;
+        T+"=%p;"+v)),:nxt),
+   (star=0;T+"for(%p=0;%p<a_C;%p++)a_V[%p]=%p;"+r2+r2+r2+r2+v),
+   (block=0;print char+/}/),T+"%G%n"+tnext.
+
 'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
-              +>rep+>star+>odummy+>idummy+>ptr:
-   tag->called rule.
+              +>rep+>star+>odummy+>idummy+>ptr-x:
+   tag->called rule,incr+ptr, $ BUFFER[ptr] is the first affix $
+   (is builtin rule+tag+x,
+        (x=2,gen shiftaffix+fnext+tnext;
+         x=3,gen getaffixno+n+ptr+tnext;
+         gen assignment+rep+star+ptr+tnext);
+    +).
 
 $ extension ----------------------------------------------- $
 $  BUFFER[affix+1] is the stack, then width, followed by
@@ -478,19 +546,19 @@ $  a linked list of affixes + target offsets
         subtr+w+BUFFER[offs]+x,incr+x,incr+offs,
         T+"to_LIST(%p)->top[%d]="+st+x,:nxt),
    T affix+ptr,print char+/;/.
-'a'T extension+>ptr-st-w:
+'a'T extension+>ptr+>label-st-w:
    incr+ptr,BUFFER[ptr]->w,incr+ptr,ptr->st,T+" a_extension(%p,%d);"+st+w,
    $ now L->top[1,2,...,k] works
    add+2+ptr+ptr, $ BUFFER[ptr] points to the affix; zero if no more $
    (nxt:extension block+w+st+ptr,BUFFER[ptr]->ptr,(ptr=0;:nxt)),
-   T+"to_LIST(%p)->aupb+=%d;%n"+st+w.
+   T+"to_LIST(%p)->aupb+=%d;%n"+st+w,jump to label+label.
 
 $ classification ------------------------------------------ $
 $  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes areas
 
 'a'box classifier+>ptr+v>:
   =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tconst],ptr->v;
-     classifier->v,T+"register int %p="+v,T affix+ptr,T+";%n".
+     r1->v,T+"register int %p="+v,T affix+ptr,T+";%n".
 
 'q'is complete area+>ptr:
   BUFFER[ptr]=0,incr+ptr,incr+ptr,BUFFER[ptr]=min int,incr+ptr,BUFFER[ptr]=max int.
@@ -513,14 +581,14 @@ $  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes areas
     (nextptr=0, $ last case, may fail
         incr+ptr,BUFFER[ptr]->goal,
         T+" if(!(",T if condition+ptr+v,T+")){a_area_failed(%p);}%n"+v,
-        (goal=next node idx;T+" %g;"+BUFFER[ptr]);
+        (goal=next node idx;T+" %g"+BUFFER[ptr]);
     is complete area+nextptr,incr+ptr,BUFFER[ptr]->goal,
         incr+nextptr,BUFFER[nextptr]->fgoal,
         (goal=next node idx,(goal=fgoal;
-           T+" if(!(",T if condition+ptr+v,T+")){%g;}%n"+fgoal);
-         T+" if(",T if condition+ptr+v,T+"){%g;}%n"+goal,
-           (fgoal=next node idx;T+" %g;"+fgoal));
-    incr+ptr,T+" if(",T if condition+ptr+v,T+"){%g;}%n"+BUFFER[ptr],
+           T+" if(!(",T if condition+ptr+v,T+")){%g}%n"+fgoal);
+         T+" if(",T if condition+ptr+v,T+"){%g}%n"+goal,
+           (fgoal=next node idx;T+" %g"+fgoal));
+    incr+ptr,T+" if(",T if condition+ptr+v,T+"){%g}%n"+BUFFER[ptr],
         nextptr->ptr,:T jump to areas).
 
 'a'Tbox+>affix+>area-v:

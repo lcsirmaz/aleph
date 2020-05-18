@@ -5,6 +5,7 @@ $ read al items from the .ice file
 
 'a'convert to item.
    $ the item for I<idx>
+'q'is builtin rule+>item+idx>.
 'f'get calibre+>item+x>,get ssel+>item+x>,get fill+>item+x>,
    get vupb+>item+x>,get vlwb+>item+x>,get list link+>item+x>.
 'a'put vupb+>item+>x,put vlwb+>item+>x,put fill+>item+>x,
@@ -111,8 +112,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
   tglobal	= tpublic|timported|texternal,
   touter	= timported|texternal,
   titem mask	= tglobal|rtype|rvararg|routvararg|
-                        rtrace|rcount|rbounds,
-  tassignment	= texternal|rvararg|routvararg.
+                        rtrace|rcount|rbounds.
   
 $ AUX stack ---------------------------------------------- $
 'stack'[10](vlwb,vupb,fill,calibre=count,width=ssel=item,link=data=AUX)AUX.
@@ -185,22 +185,10 @@ $ item interface ----------------------------------------- $
 'f'get formal+>item+>i+type>-p:
    (adm*ITEM[item]->p,i>=count*AUX[p]),0->type;
    incr+p,add+i+p+p,AUX[p]->type.
-$'f'get formal calibre+>item+>i+cal>-p-type:
-$   adm*ITEM[item]->p,incr+p,AUX[p]->type,(nxt:
-$     i<=0,incr+p,AUX[p]->cal,(cal>0;subtr+0+cal+cal);
-$     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
-$       decr+i,incr+p,AUX[p]->type,:nxt).
-$'f'get formal ssel+>item+>i+ssel>-p-type:
-$  adm*ITEM[item]->p,incr+p,AUX[p]->type,(nxt:
-$     i<=0,add+2+p+p,AUX[p]->ssel;
-$     ((type=Iformal table;type=Iformal stack),add+2+p+p;+),
-$       decr+i,incr+p,AUX[p]->type,:nxt).
-'f'get repeat count+>item+cnt>-p-n-rep:
-   0->cnt->rep,adm*ITEM[item]->p,count*AUX[p]->n,
+'f'get repeat count+>item+cnt>-p-n:
+   0->cnt,adm*ITEM[item]->p,count*AUX[p]->n,
    (nxt:n=0;
-        decr+n,incr+p,
-          (is+rep,incr+cnt;
-           AUX[p]=Iformal repeat,1->rep;+),:nxt).
+        decr+n,incr+p,(AUX[p]=Iformal repeat,n->cnt;:nxt)).
 
 'f'get file data+>item+id>+ptr>+link>-p:
   adm*ITEM[item]->p,item*AUX[p]->id,count*AUX[p]->ptr,link*AUX[p]->link.
@@ -255,7 +243,7 @@ $ item section ******************************************** $
     lineno->lineno*ITEM),
    (=type*ITEM=
     [Irule], store formal affixes+adm*ITEM;
-    [Istack;Itable;Istatic stack], store list bounds+adm*ITEM;
+    [Istack;Itable;Istatic stack],store list bounds+adm*ITEM;
     [Iconstant;Ivariable;Istatic var;Ipointer constant;
      Ichar file;Idata file],+;
     corrupted ice file+_title_+_line_),
@@ -297,9 +285,14 @@ $ file entry ********************************************** $
 $ string table ******************************************** $
 $ @StringTable and @@make is defined here
 'stack'(next,def)LEXT=(
-  "@StringTable",(0,0):StdString,
-  "@@make",      (0,0):Sassignment
+  "@StringTable",   (0,0):StdString,
+  "@@make",         (0,0):Sassignment,
+  "shiftaffixblock",(0,0):Sshiftaffix,
+  "getaffixblockno",(0,0):Sgetaffixno
 ).
+'constant'
+  tassignment	= texternal|rvararg|routvararg,
+  tshiftaffix	= tpublic|rpred.  
 
 'a'add stdstring:
   (* 0->vlwb->vupb->fill,1->calibre->ssel,-1->link *)AUX,
@@ -313,7 +306,25 @@ $ @StringTable and @@make is defined here
            >>AUX->adm,0->repr *)ITEM,
    push AUX+Iformal in,push AUX+Iformal repeat,push AUX+Iformal out,
    search formals+old+adm*ITEM,put tag data+Sassignment+>>ITEM.
+'a'add shiftaffix external-old: $ +* $
+   >>AUX->old,(* 1->count->width,0->link *)AUX,
+   (* tshiftaffix->flag,Irule->type,0->lineno,Sshiftaffix->tag,
+           >>AUX->adm,0->repr *)ITEM,
+   push AUX+Iformal shift,
+   search formals+old+adm*ITEM,put tag data+Sshiftaffix+>>ITEM.
+'a'add getaffixno external-old: $ +>n + * $
+   >>AUX->old,(* 2->count->width,0->link *)AUX,
+   (* tpublic->flag,Irule->type,0->lineno,Sgetaffixno->tag,
+           >>AUX->adm,0->repr *)ITEM,
+   push AUX+Iformal out,push AUX+Iformal shift,
+   search formals+old+adm*ITEM,put tag data+Sgetaffixno+>>ITEM.
 
+'q'is builtin rule+>item+idx>:
+  =tag*ITEM[item]=
+  [Sassignment],1->idx;
+  [Sshiftaffix],2->idx;
+  [Sgetaffixno],3->idx;
+  -.
 $ head section ******************************************** $
 $ each module has an ITEM entry linked through the repr field
 'variable'
@@ -394,6 +405,7 @@ $ check if all items are defined ************************** $
 
 $ ROOT **************************************************** $
 
-'root'add stdstring,add assignment external.
+'root'add stdstring,add assignment external,
+      add shiftaffix external,add getaffixno external.
 'pragmat'endif=compile.
 'end'

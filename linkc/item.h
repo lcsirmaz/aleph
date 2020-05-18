@@ -2,6 +2,7 @@
 
 void convertToItem(void),getCalibre(int *a),getListLink(int *a),
   getSsel(int *a),getVupb(int *a),getVlwb(int *a),getFill(int *a);
+int isBuiltinRule(int *a);
 void putVupb(int *a),putVlwb(int *a),putListLink(int *a),putFill(int *a);
 void getNumberOfFormals(int *a),getFormal(int *a),getRepeatCount(int *a);
 void getFileData(int *a),getFileLink(int *a);

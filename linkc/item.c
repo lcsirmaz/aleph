@@ -24,7 +24,7 @@ static void init_MSG(void){
   addMSG("no main module",no_main_module);
 }
 #undef addMSG
-static int StdString,Sassignment;
+static int StdString,Sassignment,Sshiftaffix,Sgetaffixno;
 
 #define addLEXT(x,y)	add_new_string(x,LEXT);expandstack(par);y=LEXT->aupb
 static void init_LEXT(void){
@@ -32,6 +32,8 @@ static void init_LEXT(void){
   par[0]=STACKpar(LEXT);par[1]=2;par[2]=par[3]=0;
   addLEXT("@StringTable",StdString);
   addLEXT("@@make",Sassignment);
+  addLEXT("shiftaffixblock",Sshiftaffix);
+  addLEXT("getaffixblockno",Sgetaffixno);
 }
 #undef addLEXT
 
@@ -159,12 +161,11 @@ void getFormal(int *a){/* >item + >i + type> */
   a[2]=AUX->offset[p+1+a[1]];
 }
 void getRepeatCount(int *a){/* >item+cnt> */
-  int p,n,rep;
-  a[1]=rep=0;p=ITEM->offset[a[0]-ITEM_adm];n=AUX->offset[p-AUX_count];
+  int p,n;
+  a[1]=0;p=ITEM->offset[a[0]-ITEM_adm];n=AUX->offset[p-AUX_count];
   nxt:if(n==0){;}
-  else{n--;p++;if(rep!=0){a[1]++;}
-    else if(AUX->offset[p]==IformalRepeat){rep=1;}
-    goto nxt;}
+  else{n--;p++;if(AUX->offset[p]==IformalRepeat){a[1]=n;}
+               else{goto nxt;}}
 }
 
 void getFileData(int *a){/* >item+id>+ptr>+link> */
@@ -309,7 +310,38 @@ static void addAssigmentExternal(void){
   searchFormals(par);ITEM->offset[ITEM->aupb-ITEM_adm]=par[1];
   par[0]=Sassignment;par[1]=ITEM->aupb;putTagData(par);
 }
-
+#define tshiftaffix	(tpublic|rpred)
+static void addShiftaffixExternal(void){
+  int par[8];int old;
+  old=AUX->aupb;
+  par[0]=STACKpar(AUX);par[1]=3;par[4-AUX_count]=par[4-AUX_width]=1;
+  par[4-AUX_link]=0;expandstack(par);par[0]=STACKpar(ITEM);par[1]=6;
+  par[7-ITEM_flag]=tshiftaffix;par[7-ITEM_type]=Irule;par[7-ITEM_lineno]=0;
+  par[7-ITEM_tag]=Sshiftaffix;par[7-ITEM_repr]=0;par[7-ITEM_adm]=AUX->aupb;
+  expandstack(par);pushAUX(IformalShift);
+  par[0]=old;par[1]=ITEM->offset[ITEM->aupb-ITEM_adm];
+  searchFormals(par);ITEM->offset[ITEM->aupb-ITEM_adm]=par[1];
+  par[0]=Sshiftaffix;par[1]=ITEM->aupb;putTagData(par);
+}
+static void addGetaffixnoExternal(void){
+  int par[8];int old;
+  old=AUX->aupb;
+  par[0]=STACKpar(AUX);par[1]=3;par[4-AUX_count]=par[4-AUX_width]=2;
+  par[4-AUX_link]=0;expandstack(par);par[0]=STACKpar(ITEM);par[1]=6;
+  par[7-ITEM_flag]=tpublic;par[7-ITEM_type]=Irule;par[7-ITEM_lineno]=0;
+  par[7-ITEM_tag]=Sgetaffixno;par[7-ITEM_repr]=0;par[7-ITEM_adm]=AUX->aupb;
+  expandstack(par);pushAUX(IformalOut);pushAUX(IformalShift);
+  par[0]=old;par[1]=ITEM->offset[ITEM->aupb-ITEM_adm];
+  searchFormals(par);ITEM->offset[ITEM->aupb-ITEM_adm]=par[1];
+  par[0]=Sgetaffixno;par[1]=ITEM->aupb;putTagData(par);
+}
+int isBuiltinRule(int *a){/* >item + idx> */
+  int t=ITEM->offset[a[0]-ITEM_tag];
+  if(t==Sassignment){a[1]=1;return 1;}
+  if(t==Sshiftaffix){a[1]=2;return 1;}
+  if(t==Sgetaffixno){a[1]=3;return 1;}
+  return 0;
+}
 /* =========================================== */
 static void checkModuleTitle(void){
   int par[3]; int ptr;
@@ -403,6 +435,7 @@ void initialize_item(void){
   init_MSG();init_LEXT();
   baseItem=firstItem=0;
   addStdstring();addAssigmentExternal();
+  addShiftaffixExternal();addGetaffixnoExternal();
 }
 
 /* EOF */

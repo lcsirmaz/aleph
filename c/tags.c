@@ -12,8 +12,8 @@
 /* =================================== */
 // 'a'extend+[]st[]+>x is defined in cstdlib
 
-#define rshiftarg	(rque|rshiftrule|tdefined|rvararg|tpermanent|raffixes)
-#define rgetarg		(rfunc|rshiftrule|tdefined|rvararg|tpermanent|raffixes)
+#define rshiftarg	(rque|rshiftrule|tdefined|timported|rvararg|tpermanent|raffixes)
+#define rgetarg		(rfunc|rshiftrule|tdefined|timported|rvararg|tpermanent|raffixes)
 #define rrootfl		(rexit|tdefined|tused|tpermanent|raffixes)
 
 /* ------------------------------------ */

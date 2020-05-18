@@ -116,8 +116,8 @@ $ BODY ******************************************************** $
 $ standard local stuff $
 $ tag flags for predefined rules
 'constant'
-   rshiftarg = rque | rshiftrule | tdefined | rvararg | tpermanent | raffixes,
-   rgetarg   = rfunc | rshiftrule | tdefined | rvararg | tpermanent | raffixes,
+   rshiftarg = rque | rshiftrule | tdefined | timported | rvararg | tpermanent | raffixes,
+   rgetarg   = rfunc | rshiftrule | tdefined | timported | rvararg | tpermanent | raffixes,
    rrootfl   = rexit | tused | tdefined | tpermanent | raffixes.
    
 

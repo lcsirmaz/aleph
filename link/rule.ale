@@ -390,15 +390,16 @@ $            indicating that the out is discardable
    unstack to+BUFFER+ptr.
 
 $ generate extension -------------------------------------- $
-'a'generate extension-obuff-x-ptr:
+'a'generate extension-obuff-x-ptr-label:
   >>BUFFER->obuff,store list+0,  $ the stack to be extended $
   must+Tconst+x,add+obuff+1+ptr,x->BUFFER[ptr], $ width $
   push BUFFER+0,>>BUFFER->ptr,   $ link affixes $
   (nxt:store affix,push BUFFER+Dplus,
      (nxt2:R+Dto,must+Tconst+x,push BUFFER+x,:nxt2;
-           R+Dout,push BUFFER+-1;
+           RR+Dout+label,find real label+label+label,
+             push BUFFER+-1,T extension+obuff+label;
            push BUFFER+-1+0,>>BUFFER->BUFFER[ptr]->ptr,:nxt)),
-  T extension+obuff,unstack to+BUFFER+obuff.
+  unstack to+BUFFER+obuff.
 
 $ generate box -------------------------------------------- $
 $ areas:

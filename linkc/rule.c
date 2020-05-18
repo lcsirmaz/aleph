@@ -411,17 +411,18 @@ static void generateRuleCall(void){
 }
 /* ====================================================== */
 static void generateExtension(void){
-  int par[3];int obuff,x,ptr;
+  int par[3];int obuff,x,ptr,label;
   obuff=BUFFER->aupb;storeList(0);par[0]=Tconst;must(par);x=par[1];
   BUFFER->offset[obuff+1]=x;par[0]=0;pushBUFFER(1,par);ptr=BUFFER->aupb;
   nxt:storeAffix();par[0]=Dplus;pushBUFFER(1,par);nxt2:
     par[0]=Dto;if(R(par)){par[0]=Tconst;must(par);x=par[1];
     par[0]=x;pushBUFFER(1,par);goto nxt2;}
-    else if(par[0]=Dout,R(par)){par[0]=-1;pushBUFFER(1,par);}
+    else if(par[0]=Dout,RR(par)){par[0]=par[1];findRealLabel(par);
+      label=par[1];par[0]=-1;pushBUFFER(1,par);par[0]=obuff;par[1]=label;
+      Textension(par);}
     else{par[0]=-1;par[1]=0;pushBUFFER(2,par);BUFFER->offset[ptr]=BUFFER->aupb;
-    ptr=BUFFER->aupb;goto nxt;}
-  par[0]=obuff;Textension(par);par[0]=STACKpar(BUFFER);par[1]=obuff;
-  unstackto(par);
+       ptr=BUFFER->aupb;goto nxt;}
+  par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
 }
 /* ====================================================== */
 static void generateArea(void){
