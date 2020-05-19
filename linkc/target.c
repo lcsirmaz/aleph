@@ -69,7 +69,9 @@ static void printChar(int ch){
 }
 #include <limits.h>
 static void printInt(int n){
-  if(n==INT_MIN){printChar('-');n=-1-n;printInt1(n,'1');}
+  if(n==INT_MIN){
+//     printChar('-');n=-1-n;printInt1(n,'1');}
+     printChar('(');printChar('-');printInt(INT_MAX);printChar('-');printChar('1');printChar(')');}
   else if(n<0){printChar('-');printInt1(-n,'0');}
   else{printInt1(n,'0');}
 }
@@ -93,7 +95,7 @@ static void formalArgument(int cnt){
   i=out=0;nxt:par[0]=thisRule;par[1]=i;getFormal(par);type=par[2];i++;
   if(type==IformalOut||type==IformalInout){
     if(i==cnt){printIntIndex('A',out);}else{out++;goto nxt;}}
-  else if(type==IformalRepeat){i=cnt-i;par[0]=i;
+  else if(type==IformalRepeat){i=cnt-i-1;par[0]=i;
        if(i<0){printPrefix();printChar('C');}else{printIntIndex('V',i);}}
   else if(i==cnt){printPrefix();printChar('F');printInt(cnt);}
   else{goto nxt;}
@@ -108,14 +110,24 @@ static void printRepr(int item){
     printInt(ITEM->offset[item-ITEM_repr]);}
   else{printPtr(item);}
 }
+static void printREPR(int item){
+  int par[3];int t;
+  par[0]=item;if(getItemDef(par)){item=par[1];}
+  t=ITEM->offset[item-ITEM_type];
+  if(t!=Irule){printRepr(item);return;}
+  par[0]=item;par[1]=texternal;if(isItemFlag(par)){printPtr(item);}
+  else{printRepr(item);}
+}
 static void printLocalLabel(int label){
   printLabelPrefix();printInt(label);
 }
 static void printGoto(int label){
-  int par[2];
-  if(label==0){printf("printGoto zero label\n");exit(8);}
+  int par[2];again:
+  if(label==0){par[0]=calledRule;par[1]=rexit;
+      if(isItemFlag(par)){label=-1;goto again;}
+      else{printf("printGoto zero label\n");exit(8);}}
   else if(label==-1){par[0]=thisRule;par[1]=rcanfail;
-            if(isItemFlag(par)){printPtr(stdlabM1);}else{printPtr(stdlab0);}}
+      if(isItemFlag(par)){printPtr(stdlabM1);}else{printPtr(stdlab0);}}
   else if(label==-2){printPtr(stdlabM2);}
   else{printPtr(stdgoto);printLocalLabel(label);printChar(';');}
 }
@@ -149,6 +161,7 @@ static void T(char *fmt,int n,int *a){/* printf */
   else if(*fmt!='%'){printChar(*fmt);fmt++;goto nxt;}
   else {fmt++;if(*fmt==0){printChar('%');}
     else if(*fmt=='r'){if(n>0){printRepr(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
+    else if(*fmt=='R'){if(n>0){printREPR(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
     else if(*fmt=='g'){if(n>0){printGoto(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
     else if(*fmt=='G'){if(n>0){printGOTO(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
     else if(*fmt=='n'){printChar('\n');fmt++;goto nxt;}
@@ -290,7 +303,8 @@ static void declareCallargs(int item,int C1,int C2,int C3){
   if(C2==0){;}else{par[0]=C2;T("int a_P[%d];",1,par);}
   if(C3==0){;}else{par[0]=item;getRepeatCount(par);cnt=par[1];
     par[0]=C3;par[1]=cnt;T("int *a_D=alloca(sizeof(int)*(%d+%d*a_C));",2,par);}
-  par[0]=C1;par[1]=C2;par[2]=C3;T("/* %d,%d,%d */%n",3,par);
+  printChar('\n');
+//  par[0]=C1;par[1]=C2;par[2]=C3;T("/* %d,%d,%d */%n",3,par);
 }
 /* trace and profiling */
 static void addRuleNameAsStatic(void){
@@ -499,7 +513,7 @@ static void genShiftaffix(int fnext,int tnext){
   if(fnext==nextNodeIdx||fnext==tnext||tnext!=nextNodeIdx){
     if(fnext==tnext){tnext=nextNodeIdx;}
     par[0]=w;par[1]=tnext;par[2]=fnext;
-    T("if(a_C>1){a_C--;a_V+=%d;%G} %G%n",2,par);}
+    T("if(a_C>1){a_C--;a_V+=%d;%G} %G%n",3,par);}
   else{par[0]=fnext;par[1]=w;
     T("if(a_C<=1){%g} a_C--;a_V+=%d;%n",2,par);}
 }
@@ -509,7 +523,7 @@ static void genGetaffixno(int n,int ptr,int tnext){
   if(BUFFER->offset[ptr]==Dnoarg||BUFFER->offset[ptr]==Dcolon){;}
   else{Taffix(ptr);par[0]=tnext;T("=a_C;%G%n",1,par);}
 }
-static void nextAffix(int *a){
+static void nextAffix(int *a){ /* >ptr> */
   nxt:if(BUFFER->offset[a[0]]==Dplus){a[0]++;}
   else{a[0]++;goto nxt;}
 }
@@ -542,19 +556,132 @@ static void genAssignment(int rep,int star,int ptr,int tnext){
   par[0]=tnext;T("%G%n",1,par);
 }
 
+/* ---------------------------------------------------------------- */
+static void repeatBlockPreload(int ptr,int n,int rep,int out){
+  int par[4];int size,dn,cnt,type;
+  ptr++;size=BUFFER->offset[ptr];par[0]=ptr;nextAffix(par);ptr=par[0];
+  dn=rep;if(size<0){out=0;cnt=-size;}else{cnt=size;}nxt:
+  if(cnt==0){;}
+  else{par[0]=calledRule;par[1]=dn;getFormal(par);type=par[2];
+    if(type==IformalOut){;}
+    else if(size>0){par[0]=out;T("a_P[%d]=",1,par);Taffix(ptr);printChar(';');}
+    else{par[0]=out;T("a_D[%d]=",1,par);Taffix(ptr);printChar(';');}
+    if(dn==n){dn=rep;}else{dn++;}
+    cnt--;out++;par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}
+  if(size>=0){;}
+  else{par[0]=calledRule;getRepeatCount(par);dn=par[1];
+   // DEBUG
+   par[0]=thisRule;getRepeatCount(par);if(dn!=par[1]){printf("* cnt different: %d, %d\n",dn,par[1]);exit(43);}
+   par[0]=out;par[1]=dn;T("memcpy(a_D+%d,a_V,a_C*%d*sizeof(int));",2,par);}
+}
+static void regularCallPreload(int ptr){
+  int par[3];int n,cnt,out,type;
+  par[0]=calledRule;getNumberOfFormals(par);n=par[1];cnt=out=0;nxt:
+  if(cnt==n){;}
+  else{par[0]=calledRule;par[1]=cnt;getFormal(par);type=par[2];cnt++;
+    if(type==IformalOut){out++;par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}
+    if(type==IformalInout){par[0]=out;T("a_P[%d]=",1,par);out++;Taffix(ptr);
+       printChar(';');par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}
+    if(type==IformalRepeat){repeatBlockPreload(ptr,n,cnt,out);}
+    else{par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}}
+}
+static void repeatBlockCall(int ptr,int out,int sep){
+  int par[3]; int size,dn;
+  if(out==0){;}else{par[0]=sep;argSep(par);sep=par[0];T("a_P",0,par);}
+  par[0]=calledRule;getRepeatCount(par);dn=par[1];ptr++;size=BUFFER->offset[ptr];
+  if(size==0){par[0]=sep;argSep(par);sep=par[0];T("a_C,a_V);",0,par);}
+  else if(size<0){par[0]=sep;argSep(par);sep=par[0];
+    par[0]=(-size)/dn;par[1]=-size;T("a_C+%d /*%d*/,a_D)",2,par);}
+  else{par[0]=sep;argSep(par);sep=par[0];par[0]=size/dn;par[1]=out;par[2]=size;
+    T("%d,a_P+%d)/* %d */",3,par);}
+}
+static void regularRuleCall(int ptr){
+  int par[3];int n,cnt,out,sep,type;
+  par[0]=calledRule;getNumberOfFormals(par);n=par[1];
+  par[0]=calledRule,T("%R(",1,par);cnt=out=sep=0;nxt:
+  if(cnt==n){if(out==0){printChar(')');}
+    else{par[0]=sep;argSep(par);sep=par[0];T("a_P)",0,par);}}
+  else{par[0]=calledRule;par[1]=cnt;getFormal(par);type=par[2];cnt++;
+    if(type==IformalOut||type==IformalInout){out++;par[0]=ptr;
+        nextAffix(par);ptr=par[0];goto nxt;}
+    else if(type==IformalRepeat){repeatBlockCall(ptr,out,sep);}
+    else{par[0]=sep;argSep(par);sep=par[0];Taffix(ptr);par[0]=ptr;
+      nextAffix(par);ptr=par[0];goto nxt;}}
+}
+static int dummyAffix(int ptr){
+  int t=BUFFER->offset[ptr];if(t==Dnoarg||t==Dcolon){return 1;}
+  return 0;
+}
+static void repeatBlockPostload(int ptr,int n,int rep,int out){
+  int par[3];int size,dn,cnt,type;
+  ptr++;size=BUFFER->offset[ptr];par[0]=ptr;nextAffix(par);ptr=par[0];
+  dn=rep;if(size<0){out=0;cnt=-size;}else{cnt=size;}nxt:
+  if(cnt==0){;}
+  else{par[0]=calledRule;par[1]=dn;getFormal(par);type=par[2];
+    if(dummyAffix(ptr)){;}
+    else if(type==IformalOut||type==IformalInout){Taffix(ptr);
+      if(size>0){par[0]=out;T("=a_P[%d];",1,par);}
+      else{par[0]=out;T("=a_D[%d];",1,par);}}
+    if(dn==n){dn=rep;}else{dn++;}
+    cnt--;out++;par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}      
+  if(size>=0){;}
+  else{par[0]=calledRule;getRepeatCount(par);dn=par[1];par[0]=out;
+    par[1]=dn;T("memcpy(a_V,a_D+%d,a_C*%d*sizeof(int));",2,par);}
+}
+static void regularCallPostload(int ptr){
+  int par[3];int n,cnt,out,type;
+  par[0]=calledRule;getNumberOfFormals(par);n=par[1];cnt=out=0;nxt:
+  if(cnt==n){;}
+  else{par[0]=calledRule;par[1]=cnt;getFormal(par);type=par[2];
+    cnt++;if(type==IformalOut||type==IformalInout){
+      if(dummyAffix(ptr)){;}
+      else{Taffix(ptr);par[0]=out;T("=a_P[%d];",1,par);}
+      out++;par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}
+    else if(type==IformalRepeat){repeatBlockPostload(ptr,n,cnt,out);}
+    else{par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}}
+}
+static void regularCallD1(int *a){/* >fnext+>tnext+type> */
+  int par[3];                     /*   0       1     2   */
+  par[0]=calledRule;par[1]=rcanfail;if(isItemFlag(par)){
+    if(a[0]!=nextNodeIdx &&(a[1]==nextNodeIdx||a[0]<=0)){
+      a[2]=2;T("if(!",0,par);}
+    else{a[2]=1;T("if(",0,par);}}
+  else{a[2]=0;}
+}
+static void regularCallD2(int type,int fnext){
+  int par[1];
+  if(type==1){T("){",0,par);}
+  else if(type==2){par[0]=fnext;T("){%G}",1,par);}
+  else{printChar(';');}
+}
+static void regularCallD3(int type,int fnext,int tnext){
+  int par[2];
+  if(type==1){par[0]=tnext;par[1]=fnext;T("%G}%G%n",2,par);}
+  else if(type==2){printChar('\n');}
+  else{par[0]=tnext;T("%G%n",1,par);}
+}
+/* ---------------------------------------------------------------- */
+
+
 void TruleCall(int *a){
   /*>tag+>C1+>C2+>C3+>n+>fnext+>tnext+>rep+>star+>odummy+>idummy+>ptr */
   /*  0   1    2   3  4  5       6      7    8      9       10    11  */
-  int par[8];
+  int par[8];int type;
   calledRule=a[0];a[11]++;
   par[0]=a[0];if(isBuiltinRule(par)){if(par[1]==2){genShiftaffix(a[5],a[6]);}
     else if(par[1]==3){genGetaffixno(a[4],a[11],a[6]);}
     else{genAssignment(a[7],a[8],a[11],a[6]);}}
-  else{  
-    par[0]=a[0];par[1]=a[4];par[2]=a[5];par[3]=a[6];par[4]=a[7];par[5]=a[8];
-    par[6]=a[9];par[7]=a[10];
-    T(" %r(n=%d,f=%d,t=%d,rep=%d,star=%d,od=%d,id=%d);%n",8,par);}
- 
+  else{
+    regularCallPreload(a[11]);
+    par[0]=a[5];par[1]=a[6];regularCallD1(par);type=par[2];
+    regularRuleCall(a[11]);
+    regularCallD2(type,a[5]);
+    regularCallPostload(a[11]);
+    regularCallD3(type,a[5],a[6]);}
+//    par[0]=a[0];par[1]=a[4];par[2]=a[5];par[3]=a[6];par[4]=a[7];par[5]=a[8];
+//    par[6]=a[9];par[7]=a[10];
+//    T(" %r(n=%d,f=%d,t=%d,rep=%d,star=%d,od=%d,id=%d);%n",8,par);}
+
 }
 /* ----------------------------------------- */
 static void extensionBlock(int w,int st,int ptr){

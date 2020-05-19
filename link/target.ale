@@ -66,8 +66,10 @@ $ print to TARGET file ==================================== $
 'a'print char+>ch: put char+TARGET+ch.
 
 'a'print int+>n:
-   $ print n in decimal; min int does not end with 9
-   n=min int, print char+/-/,subtr+-1+n+n,print int1+n+/1/;
+   $ print n in decimal; min int is not allowed in gcc
+   n=min int, $ print char+/-/,subtr+-1+n+n,print int1+n+/1/;
+     print char+/(/,print char+/-/,print int+max int,
+     print char+/-/,print char+/1/,print char+/)/;
    n<0, print char+/-/,get abs+n+n,print int1+n+/0/;
    print int1+n+/0/.
 'a'print int1+>n+>c-q-r:
@@ -91,7 +93,7 @@ $ prefix, formal, local, actual arguments
    0->i->out,(nxt:get formal+this rule+i+type,incr+i,
      ((type=Iformal out;type=Iformal inout),
         (i=cnt,print int index+/A/+out;incr+out,:nxt);
-      type=Iformal repeat,subtr+cnt+i+i,
+      type=Iformal repeat,incr+i,subtr+cnt+i+i,
         (i<0,print prefix,print char+/C/;print int index+/V/+i);
       i=cnt,print prefix,print char+/F/,print int+cnt;
       :nxt)).
@@ -103,13 +105,18 @@ $ prefix, formal, local, actual arguments
       [Iconstant;Ipointer constant],+;print prefix),
      print int+repr*ITEM[item];
    print ptr+item.
+'a'print REPR+>item:
+   $ this is an external rule
+   is item flag+item+texternal,print ptr+item;
+   print repr+item.
 'a'print local label+>label:
    $ local label with prefix a_G
    print label prefix,print int+label.
 'a'print goto+>label:
    $ -1: success return, -2: fail return; otherwise jump
    =label=
-   [0],internal error+_title_+_line_;
+   [0], (is item flag+called rule+rexit,-1->label,:print goto;
+         internal error+_title_+_line_);
    [-1],(is item flag+this rule+rcan fail,print str+" return 1;";print str+"return;");
    [-2],print str+" return 0;";
    print str+" goto ",print local label+label,print char+/;/.
@@ -147,6 +154,7 @@ $   d: integer
     incr+ptr,(>>BUFFER>ptr,print char+/%/;
       (=BUFFER[ptr]=
        [/r/],(shift affix block+*,print repr+fmt;print char+/?/),incr+ptr,:nxt;
+       [/R/],(shift affix block+*,print REPR+fmt;print char+/?/),incr+ptr,:nxt;
        [/g/],(shift affix block+*,print goto+fmt;print char+/?/),incr+ptr,:nxt;
        [/G/],(shift affix block+*,print GOTO+fmt;print char+/?/),incr+ptr,:nxt;
        [/n/],print char+newline,incr+ptr,:nxt;
@@ -277,7 +285,8 @@ $   *a_D       dynamic repeat block content
 'a'declare callargs+>item+>C1+>C2+>C3-cnt:
   (C2=0;T+"int a_P[%d];"+C2),
   (C3=0;get repeat count+item+cnt,$ even if cnt=1 $
-        T+"int *a_D=alloca(sizeof(int)*(%d+%d*a_C));"+C3+cnt).
+        T+"int *a_D=alloca(sizeof(int)*(%d+%d*a_C));"+C3+cnt),
+  print char+newline.
 $ trace and profiling
 'a'add rule name as static:
    is item flag+this rule+rspecial,
@@ -478,7 +487,7 @@ $ TODO: list with bound checks $
       T+"to_LIST(%p)->%p"+ptr+x,incr+ptr,incr+ptr.
 
 $ rule call ----------------------------------------------- $
-$ called rule, next node idx are there
+$ built-in rules: @@make, shift affix block, get affix blockno
 'a'gen shiftaffix+>fnext+>tnext-w:
    $ shift affix block+*
    get repeat count+this rule+w,
@@ -527,14 +536,114 @@ $ called rule, next node idx are there
    (star=0;T+"for(%p=0;%p<a_C;%p++)a_V[%p]=%p;"+r2+r2+r2+r2+v),
    (block=0;print char+/}/),T+"%G%n"+tnext.
 
+$ regular call interface *********************************** $
+$   may fail: <pre> if(<call>){ <post> GOTO <texit> }
+$                  <pre> if(!<call>){ GOTO <fexit> } <post>
+$   cannot fail: <pre> <call> <post> GOTO <texit>
+$      for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
+
+'a'repeat block preload+>ptr+>n+>rep+>out-size-dn-cnt-type:
+   $ BUFFER[ptr]=Dstar,BUFFER[ptr+1]=size,
+   $  size>0: number of items *(not blocks) to a_P[]
+   $  size=0: pass a_C, a_V (nothing to be done)
+   $  size<0: items plus formal block to a_D[]
+   $ rep: first repeat affix
+   $ n:   number of affixes
+   $ out: first free index in a_A[]
+   incr+ptr,BUFFER[ptr]->size,next affix+ptr,rep->dn,
+    (size<0,0->out,subtr+0+size+cnt;size->cnt),
+    (nxt:cnt=0;
+     get formal+called rule+dn+type,
+     (type=Iformal out;
+      size>0,T+"a_P[%d]="+out,T affix+ptr,print char+/;/;
+      T+"a_D[%d]="+out,T affix+ptr,print char+/;/),
+     (dn=n,rep->dn;incr+dn),decr+cnt,incr+out,next affix+ptr,:nxt),
+    (size>=0; $ done, otherwise copy repeat block to a_D[out ...] $
+     get repeat count+called rule+dn, $ same as repeat count+this rule $
+       T+"memcpy(a_D+%d,a_V,a_C*%d*sizeof(int));"+out+dn).
+'a'regular call preload+>ptr-n-cnt-out-type:
+   get number of formals+called rule+n,0->cnt->out,
+   $ before * inout affixes go to a_A[out]
+   (nxt:cnt=n;
+    get formal+called rule+cnt+type,incr+cnt,
+     (type=Iformal out,incr+out,next affix+ptr,:nxt;
+      type=Iformal inout,T+"a_P[%d]="+out,incr+out,T affix+ptr,
+            print char+/;/,next affix+ptr,:nxt;
+      type=Iformal repeat,repeat block preload+ptr+n+cnt+out;
+      next affix+ptr,:nxt)).
+
+'a'repeat block call+>ptr+>out+>sep-size-dn:
+   (out=0;arg sep+sep,T+"a_P"),
+   get repeat count+called rule+dn,incr+ptr,BUFFER[ptr]->size,
+   (size=0,arg sep+sep,T+"a_C,a_V)";
+    size<0,arg sep+sep,subtr+0+size+size,
+                   div+size+dn+size,T+"a_C+%d,a_D)"+size;
+    arg sep+sep,div+size+dn+size,T+"%d,a_P+%d)"+size+out).
+'a'regular rule call+>ptr-n-cnt-out-sep-type:
+   get number of formals+called rule+n,
+   T+"%R("+called rule,0->cnt->out->sep,
+   (nxt:cnt=n,(out=0,print char+/)/;arg sep+sep,T+"a_P)");
+     get formal+called rule+cnt+type,incr+cnt,
+     ((type=Iformal out;type=Iformal inout),incr+out,next affix+ptr,:nxt;
+      type=Iformal repeat,repeat block call+ptr+out+sep;
+      arg sep+sep,T affix+ptr,next affix+ptr,:nxt)).
+
+'q'is dummy affix+>ptr:
+   =BUFFER[ptr]= [Dnoarg;Dcolon],+;-.
+'a'repeat block postload+>ptr+>n+>rep+>out-size-dn-cnt-type:
+   incr+ptr,BUFFER[ptr]->size,next affix+ptr,rep->dn,
+   (size<0,0->out,subtr+0+size+cnt;size->cnt),
+   (nxt:cnt=0;
+    get formal+called rule+dn+type,
+      (is dummy affix+ptr;
+       (type=Iformal out;type=Iformal inout),T affix+ptr,
+          (size>0,T+"=a_P[%d];"+out;T+"=a_D[%d];"+out);
+       +),
+      (dn=n,rep->dn;incr+dn),decr+cnt,incr+out,next affix+ptr,:nxt),
+   (size>=0; $ done, otherwise copy back repeat block from a_D[out] $
+    get repeat count+called rule+dn,
+      T+"memcpy(a_V,a_D+%d,a_C*%d*sizeof(int));"+out+dn).
+'a'regular call postload+>ptr-n-cnt-out-type:
+   get number of formals+called rule+n,0->cnt->out,
+   (nxt:cnt=n;
+    get formal+called rule+cnt+type,incr+cnt,
+      ((type=Iformal out;type=Iformal inout),
+         (is dummy affix+ptr;T affix+ptr,T+"=a_P[%d];"+out),
+         incr+out,next affix+ptr,:nxt;
+       type=Iformal repeat,repeat block postload+ptr+n+cnt+out;
+       next affix+ptr,:nxt)).
+'a'regular call d1+>fnext+>tnext+type>:
+   $ type=1:  if(<call>){ <post> GOTO <tnext>} GOTO <fnext>
+   $ type=2:  if(!<call>){ GOTO <fnext>} <post>
+   $ type=0:  <call> <post> GOTO <tnext>
+   is item flag+called rule+rcan fail,
+     ((fnext!=next node idx,(tnext=next node idx;fnext<=0)),
+           2->type,T+"if(!";
+      1->type,T+"if(");
+   0->type.
+'a'regular call d2+>type+>fnext:
+   type=1,T+"){"; 
+   type=2,T+"){%G}"+fnext;
+   print char+/;/.
+'a'regular call d3+>type+>fnext+>tnext:
+   type=1,T+"%G}%G%n"+tnext+fnext;
+   type=2,print char+newline;
+   T+"%G%n"+tnext.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
-              +>rep+>star+>odummy+>idummy+>ptr-x:
+              +>rep+>star+>odummy+>idummy+>ptr-x-type:
    tag->called rule,incr+ptr, $ BUFFER[ptr] is the first affix $
    (is builtin rule+tag+x,
         (x=2,gen shiftaffix+fnext+tnext;
          x=3,gen getaffixno+n+ptr+tnext;
          gen assignment+rep+star+ptr+tnext);
-    +).
+    is pidgin rule+tag,+;
+    regular call preload+ptr,
+        regular call d1+fnext+tnext+type,
+        regular rule call+ptr,
+        regular call d2+type+fnext,
+        regular call postload+ptr,
+        regular call d3+type+fnext+tnext).
 
 $ extension ----------------------------------------------- $
 $  BUFFER[affix+1] is the stack, then width, followed by
