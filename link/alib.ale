@@ -65,7 +65,7 @@ $ arithmetic functions
 ?int size 'cons'int size=10.
 
 ?is           'x''q'is+>x                ="__is".
-?bool invert  'x''f'bool invert+>x+y>    ="__boolivert".
+?bool invert  'x''f'bool invert+>x+y>    ="__boolinvert".
 ?bool and     'x''f'bool and+>x+>y+z>    ="__booland".
 ?bool or      'x''f'bool or+>x+>y+z>     ="__boolor".
 ?bool xor     'x''f'bool xor+>x+>y+z>    ="__boolxor".
@@ -97,7 +97,7 @@ $ strings
 ?string elem     'x''q'string elem+t[]+>ptr+>n+c> ="a_stringelem".
 ?unstack string  'x''a'unstack string+[]st[]="__unstackstring".
 ?pack string     'x''a'pack string+from[]+>p+[]to[]="a_packstring".
-?unpack string   'x''a'unpack string+from[]+>p+[]to[]="a_unspackstring".
+?unpack string   'x''a'unpack string+from[]+>p+[]to[]="a_unpackstring".
 ?copy string     'x''a'copy string+from[]+>p+[]to[]="a_copystring".
 
 $ file input/output

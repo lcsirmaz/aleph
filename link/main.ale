@@ -25,7 +25,7 @@
    (nxt:(-ext: advance base item+ext,next source+ext+#),
         skip head section,skip item section,data section iii,:nxt;
     +),
-   data initialization,target main.
+   fill table tail,data initialization,target main.
 
 'a'pass iv:
    $ generate rules

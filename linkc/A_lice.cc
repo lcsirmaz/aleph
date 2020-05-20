@@ -50,7 +50,7 @@ void a_extension(int ID,int n){
   #define st	to_LIST(ID)
      st->top=st->offset+st->aupb;
      return;
-#indef st
+#undef st
   }
   a_fatal("extension failed",
     to_LIST(ID)->aupb+n>to_LIST(ID)->vupb ? "out of virtual space"
@@ -76,6 +76,15 @@ void a_fatal(const char*m1,const char *m2){
   fputs(m1,stderr);fputc(' ',stderr);fputs(m2,stderr);
   fputs("\nFatal error, aborting\n",stderr);
   exit(256);
+}
+/* a_area_failed(int v)
+ * go over the last area in a classification 
+ */
+void a_area_failed(int v){
+  char buff[10];int i;
+  buff[8]=0;
+  for(i=7;i!=0;i--){buff[i]=(v&0xf)<10?'0'+(v&0xf):'a'-10+(v&0xf);v>>=4;}
+  a_fatal("last area failed",buff);
 }
 /* setup a list structure
    a_setup_list(kind,list,calibre,vlwb,vupb,fill size)
@@ -598,7 +607,7 @@ int a_putdatap(int F1,int F2,int F3)
 int a_openfile(int F1,int F2,int F3,int F4){
   int *arg3;int cnt,j;int *buf;
   #define df	to_DFILE(F1)
-  if(F3==0||F4==0){df->fileError=EBADARG; return 0;}
+  if(F3<0||F3>0x10000||F4==0){df->fileError=EBADARG; return 0;}
   arg3=to_LIST(F3)->offset+F4;
   if(!getfl_data(df)){ // not a datafile
   #define ch	to_CHFILE(F1)
@@ -797,7 +806,67 @@ void a_setfilepos(int F1,int F2){
     df->iflag=(unsigned)(df->buffer[(df->fpos>>5)&31]) << (df->fpos&31);
 #   undef df
 }
+/* hash functions */
+/* 'f'simple hash+T[]+>p+res> 
+ *  compute the has of the string pointed by p
+ */
+void a_simplehash(int F1,int F2,int A[1]){
+  int *ptr=to_LIST(F1)->offset+F2;
+  unsigned char *v=(unsigned char*)&ptr[1-ptr[0]];
+  unsigned v1=0x135345+47*(*v), v2=0xeca864+107*(*v<<3);
+  while(*v){
+     v1=(29*v1+17*v2+1259*(*v^v2)) % 0x1010309;
+     v2=(23*v2+257*v1+1237*(*v^v1)) % 0x1010507;
+     v++;
+  }
+  A[0]=(int)(v1<<16|v2);
+}
+/* block hash 
+ * 'f'block hash+T[]+>p+res>
+ *   compute hash of the block T[p+1] .. T[T->aupb]
+ */
+void a_blockhash(int F1,int F2,int A[1]){
+  unsigned char *v=(unsigned char*)(to_LIST(F1)->offset+F2+1);
+  unsigned v1=0x135345+47*(*v), v2=0xeca864+107*(*v<<3);
+  int cnt=sizeof(int)*(to_LIST(F1)->aupb-F2);
+  for(;cnt>0;cnt--){
+     v1=(29*v1+17*v2+1259*(*v^v2)) % 0x1010309;
+     v2=(23*v2+257*v1+1237*(*v^v1)) % 0x1010507;
+     v++;
+  }
+  A[0]=(int)(v1<<16|v2);
+}
 
+/* ==================== */
+a_PROFILE *a_profiles;
+
+#include <stdarg.h>
+static int do_trace=0;
+void a_trace_rule(const char *name,int affixno,...){
+  va_list args; int affix;
+  if(do_trace==0){return;}
+  printf(" %s(",name);
+  va_start(args,affixno);
+  while(affixno>0){
+     affix=va_arg(args,int);printf("%d ",affix);
+     affixno--;}
+  va_end(args);
+  printf(")\n");  
+}
+
+int a_argc;char **a_argv;int a_extlist_virtual;
+extern void a_ROOT(void);
+
+int main(int argc,char *argv[]){
+   if(argc>0 && *argv[0]=='D'){do_trace=1;argc--,argv++;}
+   a_argc=argc;a_argv=argv;a_extlist_virtual=0x7f800000;
+   a_ROOT();
+   while(a_profiles){
+     printf("%s => %lu\n",a_profiles->rulename,a_profiles->count);
+     a_profiles=a_profiles->link;
+   }
+   return 0;
+}
 
 
 /* EOF */

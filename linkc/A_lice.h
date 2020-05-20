@@ -20,6 +20,7 @@ typedef struct {
 } a_LIST;
 
 #include <stdio.h>
+#include <stdlib.h>	// abs
 typedef struct {
   unsigned openflag;	// how was it opened
   int fileError;	// last file error
@@ -60,6 +61,8 @@ int a_extstrcmp(int table,int off,const char *str);
   /* compare the ALEPH string with the one given as the last argument */
 void a_fatal(const char *m1,const char* m2);
   /* fatal error; print both strings to stderr and abort */
+void a_area_failed(int v);
+  /* fatal error; end of classification was reached */
 void a_setup_list(int kind,int ID,int cal,int lb,int up,int fill);
 void a_setup_charfile(int ID,int dir,int sID,int soff);
 void a_setup_dfile(int ID,int dir,int sID,int soff,int narea);
@@ -80,7 +83,7 @@ int a_R##x(int table,int off){				\
 }
 /* global variables: command-line arguments;
   virtual address for external lists */
-extern int a_argc; extern char *a_argv[];
+extern int a_argc; extern char **a_argv;
 extern int a_extlist_virtual;
 
 /* profile and trace */
@@ -125,6 +128,8 @@ void a_putstring(int F1,int F2,int F3);
 int a_putdatap(int F1,int F2,int F3);
   /* 'a'put data+""f+>data+>type */
 void a_putdata(int F1,int F2,int F3);
+
+#include "A_xternal.h"
 
 #endif
 /* EOF */

@@ -17,7 +17,7 @@ $ generating code $
    $  the main root
 'q'is pidgin rule+>item.
    $ the external rule uses pidgin call
-'a'rule declaration head+>item+>C1+>C2+>C3+>minloc+>maxloc.
+'a'rule declaration head+>item+>C1+>C2+>C3+>minloc+>maxloc+>locptr.
 'a'Tlabel+>this+>next.
 'a'T box+>ptr+>area,T extension+>ptr+>label.
 'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
@@ -97,18 +97,27 @@ $ prefix, formal, local, actual arguments
         (i<0,print prefix,print char+/C/;print int index+/V/+i);
       i=cnt,print prefix,print char+/F/,print int+cnt;
       :nxt)).
+'a'print pidgin repr+>item-ptr-x-y:
+  $ if tag start with @ then replace it by undescore
+  is pidgin alt+item,print char+/_/,
+     get tag image+tag*ITEM[item]+ptr,1->y,
+     (nxt:string elem+LEXT+ptr+y+x,print char+x,incr+y,:nxt;+);
+  print ptr+item.
+'a'print external repr+>item:
+  =type*ITEM[item]=
+  [Iconstant;Ivariable],print ptr+item;
+  [Irule],(is pidgin rule+item,print pidgin repr+item;
+           print ptr+item);
+  print prefix,print int+repr*ITEM[item].
 'a'print repr+>item:
    $ representation of an item
    was+ITEM+item,
      (get item def+item+item;+),
-     (=type*ITEM[item]=
-      [Iconstant;Ipointer constant],+;print prefix),
-     print int+repr*ITEM[item];
+     (is item flag+item+texternal,print external repr+item;
+      (=type*ITEM[item]=
+          [Iconstant;Ipointer constant],+;print prefix),
+       print int+repr*ITEM[item]);
    print ptr+item.
-'a'print REPR+>item:
-   $ this is an external rule
-   is item flag+item+texternal,print ptr+item;
-   print repr+item.
 'a'print local label+>label:
    $ local label with prefix a_G
    print label prefix,print int+label.
@@ -145,6 +154,7 @@ $   prints a double item from BUFFER
 $ formal characters:
 $   r: item, get repr
 $   g: goto (return or goto)
+$   G: don't print for the next node
 $   n: newline
 $   p: pointer
 $   d: integer
@@ -154,7 +164,6 @@ $   d: integer
     incr+ptr,(>>BUFFER>ptr,print char+/%/;
       (=BUFFER[ptr]=
        [/r/],(shift affix block+*,print repr+fmt;print char+/?/),incr+ptr,:nxt;
-       [/R/],(shift affix block+*,print REPR+fmt;print char+/?/),incr+ptr,:nxt;
        [/g/],(shift affix block+*,print goto+fmt;print char+/?/),incr+ptr,:nxt;
        [/G/],(shift affix block+*,print GOTO+fmt;print char+/?/),incr+ptr,:nxt;
        [/n/],print char+newline,incr+ptr,:nxt;
@@ -261,6 +270,8 @@ $ check if the external rule uses pidgin parameter passing
   is item flag+item+texternal,
   get tag image+tag*ITEM[item]+x,string elem+LEXT+x+0+x,
     (=x=[/a/:/z/;/A/:/Z/],-;+).
+'q'is pidgin alt+>item-x:
+  get tag image+tag*ITEM[item]+x,string elem+LEXT+x+0+x,x=/@/.
 $  declaration
 $    a_L%d     local
 $    a_P[%d]   actual out/inout paramters, fixed repeat block
@@ -278,10 +289,11 @@ $   *a_D       dynamic repeat block content
      [Iformal stack], T+"+[]st[]";
      [Iformal file],  T+"+""""f";
      [Iformal repeat],T+"+*"),:nxt).
-'a'declare locals+>minloc+>maxloc:
+'a'declare locals+>minloc+>maxloc+>locptr:
   minloc=0;
-  minloc<=maxloc,T+"int a_L%d;"+minloc,incr+minloc,:declare locals;
-  +.
+  minloc>maxloc;
+  BUFFER[locptr]=0,incr+minloc,incr+locptr,:declare locals;
+  T+"int a_L%d;"+minloc,incr+minloc,incr+locptr,:declare locals.
 'a'declare callargs+>item+>C1+>C2+>C3-cnt:
   (C2=0;T+"int a_P[%d];"+C2),
   (C3=0;get repeat count+item+cnt,$ even if cnt=1 $
@@ -304,12 +316,12 @@ $ trace and profiling
      T+");%n";
    +.
          
-'a'rule declaration head+>rule+>C1+>C2+>C3+>minloc+>maxloc:
+'a'rule declaration head+>rule+>C1+>C2+>C3+>minloc+>maxloc+>locptr:
    $ rule declaration head, prototype, trace and count
    rule->this rule,rule typer+rule,rule args+rule,
     T+"{ /* %p"+tag*ITEM[rule],
     show formals as comment+rule,T+" */%n",
-    declare locals+minloc+maxloc,
+    add+minloc+locptr+locptr,declare locals+minloc+maxloc+locptr,
     declare callargs+rule+C1+C2+C3,
     $ trace and count: store rule name as static string
     add rule name as static,add profiling,add tracing.
@@ -581,7 +593,7 @@ $      for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
     arg sep+sep,div+size+dn+size,T+"%d,a_P+%d)"+size+out).
 'a'regular rule call+>ptr-n-cnt-out-sep-type:
    get number of formals+called rule+n,
-   T+"%R("+called rule,0->cnt->out->sep,
+   T+"%r("+called rule,0->cnt->out->sep,
    (nxt:cnt=n,(out=0,print char+/)/;arg sep+sep,T+"a_P)");
      get formal+called rule+cnt+type,incr+cnt,
      ((type=Iformal out;type=Iformal inout),incr+out,next affix+ptr,:nxt;
@@ -614,7 +626,7 @@ $      for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
        next affix+ptr,:nxt)).
 'a'regular call d1+>fnext+>tnext+type>:
    $ type=1:  if(<call>){ <post> GOTO <tnext>} GOTO <fnext>
-   $ type=2:  if(!<call>){ GOTO <fnext>} <post>
+   $ type=2:  if(!<call>){ GOTO <fnext>} <post> GOTO <tnext>
    $ type=0:  <call> <post> GOTO <tnext>
    is item flag+called rule+rcan fail,
      ((fnext!=next node idx,(tnext=next node idx;fnext<=0)),
@@ -627,8 +639,45 @@ $      for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
    print char+/;/.
 'a'regular call d3+>type+>fnext+>tnext:
    type=1,T+"%G}%G%n"+tnext+fnext;
-   type=2,print char+newline;
+   type=2,T+"%G%n"+tnext;
    T+"%G%n"+tnext.
+$ pidgin call interface *********************************** $
+$  - function with dummy out affixes only: discard
+$  - pidgin alt: append 0/1 for all out, discard dummy
+
+'q'is pidgin discarded+>ptr-n-cnt-type:
+  is item flag+called rule+rtype,-; $ not a function $
+  get number of formals+called rule+n,0->cnt,
+  (nxt:cnt=n;
+   get formal+called rule+cnt+type,incr+cnt,
+     (is dummy affix+ptr,next affix+ptr,:nxt;
+      (type=Iformal out;type=Iformal inout;type=Iformal repeat),-;
+      next affix+ptr,:nxt)).
+'a'pidgin alt tagtail+>ptr-n-cnt-type:
+   get number of formals+called rule+n,0->cnt,
+   (nxt:cnt=n;
+    get formal+called rule+cnt+type,incr+cnt,
+      (type=Iformal out,(BUFFER[ptr]=Dnoarg,print char+/0/;print char+/1/);+),
+      (type=Iformal repeat;next affix+ptr,:nxt)).
+'a'pidgin repeat block+>ptr-size-cnt:
+   $ BUFFER[ptr]=Dstar
+   incr+ptr,BUFFER[ptr]->size,next affix+ptr,print int+size,
+   (size<0,subtr+0+size+cnt;size->cnt),
+   (nxt:cnt=0;
+    print char+/,/,T affix+ptr,decr+cnt,next affix+ptr,:nxt),
+   (size>0;T+",a_C,a_V").
+'a'pidgin rule args+>ptr+>alt-n-cnt-sep-type:
+   get number of formals+called rule+n,0->cnt->sep,
+   (nxt:cnt=n;
+    get formal+called rule+cnt+type,incr+cnt,
+      (type=Iformal repeat,arg sep+sep,pidgin repeat block+ptr;
+       ((type=Iformal out,is+alt,BUFFER[ptr]=Dnoarg);
+        arg sep+sep,T affix+ptr),
+       next affix+ptr,:nxt)).
+'a'pidgin rule call+>ptr-alt:
+    T+"%r"+called rule,
+    (is pidgin alt+called rule,1->alt,pidgin alt tagtail+ptr;0->alt),
+    print char+/(/,pidgin rule args+ptr+alt,print char+/)/.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
               +>rep+>star+>odummy+>idummy+>ptr-x-type:
@@ -637,7 +686,11 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
         (x=2,gen shiftaffix+fnext+tnext;
          x=3,gen getaffixno+n+ptr+tnext;
          gen assignment+rep+star+ptr+tnext);
-    is pidgin rule+tag,+;
+    is pidgin rule+tag,(is pidgin discarded+ptr;
+        regular call d1+fnext+tnext+type,
+        pidgin rule call+ptr,
+        regular call d2+type+fnext,
+        regular call d3+type+fnext+tnext);
     regular call preload+ptr,
         regular call d1+fnext+tnext+type,
         regular rule call+ptr,

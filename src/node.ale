@@ -675,7 +675,7 @@ $ replacement for L*L[>>L], figure out the standard selector
         
 'a'w handle affix+>utype:
   (in utype+utype,push RULE+Uuse+0;+),
-  $ Dminus marks the affix to have a RULE entry $
+  $ Dminus marks a RULE entry $
   (out utype+utype,push BUFFER+Dminus;+).
 'a'w before vararg block+>ptr+>formal-ftype:
   next+LLOC+ptr,get type+formal+ftype,get adm+formal+formal,
@@ -739,26 +739,13 @@ $ replacement for L*L[>>L], figure out the standard selector
     was+LADM+BUFFER[b],Wtag+BUFFER[b],incr+b,:nxt;
     W+BUFFER[b],incr+b,:nxt).
 
-$'a'w before affixes+>tag+>b+>cnt+>rep-formal-ftype-repeat:
-  $ actual affixes are in BUFFER separated by Dplus
-  $ Dminus just after Dplus shows that this is an out
-  $   affix; check the RULE entry if it should be skipped
-  $ cnt: repeat block number; rep: !=0 if * is at the end
-$  incr+b, $$ now BUFFER[b] looks at Dplus $
-$  get adm+tag+formal,0->repeat,
-$  (nxt:b>>>BUFFER; $$ we run out of stored affixes
-$     get type+formal+ftype,
-$      (ftype=Iformal repeat, $$ formal * affix; number of blocks,actual *
-$          W+Dstar,(rep=0;subtr+1+cnt+cnt),Wcons+cnt,
-$          get adm+formal+formal,formal->repeat,:nxt;
-$       incr+b,                   $$ skip Dplus $
-$        get adm+formal+formal,(formal=0,repeat->formal;+),
-$        (BUFFER[b]=Dstar,W+Dstar;
-$            $$ last affix; rep!=0 (formal * should be added)
-$         ftype=Iformal out, $$ out affix, no value $
-$           w skip affix in BUFFER+0+b,:nxt;
-$         w copy affix from BUFFER+0+b,:nxt)
-$      )).
+'a'copy spare affix+>type+>b>:
+   ftype=Iformal out,W+Dnoarg,
+     (nxt:b>>>BUFFER;
+          BUFFER[b]=Dplus;
+          BUFFER[b]=Dconst,incr+b,incr+b,:nxt;
+          incr+b,:nxt);
+   W+Dcolon,w copy affix from BUFFER+b.
 
 'a'w after affixes+>tag+>b+>cnt+>rep-formal-ftype-repeat:
   incr+b, $ now BUFFER[b] looks at Dplus $
@@ -772,8 +759,8 @@ $      )).
        (BUFFER[b]=Dstar,W+Dstar,incr+b;
         ((ftype=Iformal out;ftype=Iformal inout),BUFFER[b]=Dminus),
            incr+b,push RULE+Uuse+0,
-           (flag*RULE[RULEtop]=Uspare,decr+b,Dcolon->BUFFER[b];+),
-           w copy affix from BUFFER+b;
+           (flag*RULE[RULEtop]=Uspare,copy spare affix+ftype+b;
+            w copy affix from BUFFER+b);
          w copy affix from BUFFER+b),
        get adm+formal+formal,(formal=0,repeat->formal;+),
        :nxt)).

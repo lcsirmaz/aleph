@@ -152,6 +152,7 @@ static void advanceNode(void){
 }
 /* ================================ */
 static int C1=0,C2=0,C3=0;
+static int localAffixPtr=0,doLocalAffixcheck=0;
 
 static void setRuleHead(void){
    int par[3];int tag,x1,x2,x3;
@@ -166,11 +167,25 @@ static void skipRuleHead(void){
   nextSymbol();nextSymbol();nextSymbol();nextSymbol();
 }
 static void clearStackSize(void){C1=C2=C3=0;}
+static void markLocalAffix(int idx){
+  if(doLocalAffixcheck==0){;}
+  else{BUFFER->offset[localAffixPtr+idx]=1;}
+}
+static void pushBUFFER(int,int*);
+static void startLocalAffixcheck(int minloc,int maxloc){
+  int par[1];
+  if(minloc==0){doLocalAffixcheck=0;}
+  else{doLocalAffixcheck=1;localAffixPtr=BUFFER->aupb-minloc+1;
+    nxt:if(minloc>maxloc){;}else{minloc++;par[0]=0;pushBUFFER(1,par);goto nxt;}}
+}
 /* ================================== */
 /* skip */
 static void skipToComma(void){
   int par[2];nxt:
-  par[0]=Dcomma;if(R(par)){;}else{nextSymbol();goto nxt;}
+  par[0]=Dcomma;
+  if(R(par)){;}else{par[0]=Tlocal;
+    if(RR(par)){markLocalAffix(par[1]);goto nxt;}
+           else{nextSymbol();goto nxt;}}
 }
 static void skipToLabel(int *a){ /* label> */
   int par[2];nxt:
@@ -195,7 +210,7 @@ static void skipAffix(void){
   int par[3];
   par[0]=Dcolon;if(R(par)){;}
   par[0]=Tformal;if(R(par)){return;}
-  par[0]=Tlocal;if(R(par)){return;}
+  par[0]=Tlocal;if(RR(par)){markLocalAffix(par[1]);return;}
   par[0]=Titem;if(R(par)){return;}
   par[0]=Dnoarg;if(R(par)){return;}
   par[0]=Tconst;if(R(par)){return;}
@@ -245,7 +260,9 @@ static void storeRuleAffix(int *a){/* type> */
 }
 static void storeRuleAffixes(void){
   int par[3]; nxt:
-  if(inpt==Tformal||inpt==Tlocal||inpt==Titem||inpt==Tconst){
+  if(inpt==Tlocal){markLocalAffix(inptValue);
+    par[0]=inpt;par[1]=inptValue;pushBUFFER(2,par);nextSymbol();goto nxt;}
+  else if(inpt==Tformal||inpt==Titem||inpt==Tconst){
     par[0]=inpt;par[1]=inptValue;pushBUFFER(2,par);nextSymbol();goto nxt;}
   else if(inpt==Dlwb||inpt==Dupb||inpt==Dvlwb||inpt==Dvupb||inpt==Dcalibre||
     inpt==Dnoarg||inpt==Dsub||inpt==Dbus||inpt==Dcolon||inpt==Dstar){
@@ -493,18 +510,20 @@ static void scanIV(void){
 }
 /* ------------------------------------------------------ */
 void makeRule(void){
-   int par[6];int tag,minloc,maxloc;
+   int par[7];int tag,minloc,maxloc,obuff;
    par[0]=Titem;must(par);tag=par[1];
    par[0]=Tconst;must(par);minloc=par[1];
    par[0]=Tconst;must(par);maxloc=par[1];
    createNodes();
    saveInputPosition();
-   thisNode=0;clearStackSize();scanI();
+   thisNode=0;obuff=BUFFER->aupb;clearStackSize();
+     startLocalAffixcheck(minloc,maxloc);scanI();doLocalAffixcheck=0;
    if(nodeHashDifferent()){;}
    else{restoreInputPosition();thisNode=0;scanII();}
-   restoreInputPosition();thisNode=0;scanIII();
    par[0]=tag;par[1]=C1;par[2]=C2;par[3]=C3;par[4]=minloc;par[5]=maxloc;
-   ruleDeclarationHead(par);
+   par[6]=localAffixPtr;ruleDeclarationHead(par);
+   par[0]=STACKpar(BUFFER);par[1]=obuff;unstackto(par);
+   restoreInputPosition();thisNode=0;scanIII();
    restoreInputPosition();thisNode=0;scanIV();
    ruleDeclarationTail();
 //printf("rule ");par[0]=tag;printPointer(par);printf(" C2=%d,C3=%d, nodes=%d\n",C2,C3,1+(NODE->aupb-NODE->alwb)/NODE_CALIBRE);

@@ -100,23 +100,32 @@ static void formalArgument(int cnt){
   else if(i==cnt){printPrefix();printChar('F');printInt(cnt);}
   else{goto nxt;}
 }
-
+static int isPidginAlt(int item);
+static void printPidginRepr(int item){
+  int par[4];int ptr,x,y;
+  if(isPidginAlt(item)){printChar('_');
+    par[0]=ITEM->offset[item-ITEM_tag];getTagImage(par);ptr=par[1];y=1;
+    nxt:par[0]=STACKpar(LEXT);par[1]=ptr;par[2]=y;
+    if(stringelem(par)){x=par[3];printChar(x);y++;goto nxt;}}
+  else{printPtr(item);}
+}
+static void printExternalRepr(int item){
+  int t;
+  t=ITEM->offset[item-ITEM_type];
+  if(t==Iconstant||t==Ivariable){printPtr(item);}
+  else if(t==Irule){if(isPidginRule(item)){printPidginRepr(item);}
+                    else{printPtr(item);}}
+  else{printPrefix();printInt(ITEM->offset[item-ITEM_repr]);}
+} 
 static void printRepr(int item){
   int par[3];int t;
   par[0]=STACKpar(ITEM);par[1]=item;if(was(par)){
     par[0]=item;if(getItemDef(par)){item=par[1];}
-    t=ITEM->offset[item-ITEM_type];
-    if(t==Iconstant||t==IpointerConstant){;}else{printPrefix();}
-    printInt(ITEM->offset[item-ITEM_repr]);}
+    par[0]=item;par[1]=texternal;if(isItemFlag(par)){printExternalRepr(item);}
+    else{t=ITEM->offset[item-ITEM_type];
+     if(t==Iconstant||t==IpointerConstant){;}else{printPrefix();}
+     printInt(ITEM->offset[item-ITEM_repr]);}}
   else{printPtr(item);}
-}
-static void printREPR(int item){
-  int par[3];int t;
-  par[0]=item;if(getItemDef(par)){item=par[1];}
-  t=ITEM->offset[item-ITEM_type];
-  if(t!=Irule){printRepr(item);return;}
-  par[0]=item;par[1]=texternal;if(isItemFlag(par)){printPtr(item);}
-  else{printRepr(item);}
 }
 static void printLocalLabel(int label){
   printLabelPrefix();printInt(label);
@@ -161,7 +170,6 @@ static void T(char *fmt,int n,int *a){/* printf */
   else if(*fmt!='%'){printChar(*fmt);fmt++;goto nxt;}
   else {fmt++;if(*fmt==0){printChar('%');}
     else if(*fmt=='r'){if(n>0){printRepr(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
-    else if(*fmt=='R'){if(n>0){printREPR(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
     else if(*fmt=='g'){if(n>0){printGoto(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
     else if(*fmt=='G'){if(n>0){printGOTO(*a);SHIFT;}else{printChar('?');exit(28);}fmt++;goto nxt;}
     else if(*fmt=='n'){printChar('\n');fmt++;goto nxt;}
@@ -276,6 +284,13 @@ int isPidginRule(int item){
       if(('a'<=x&&x<='z')||('A'<=x&&x<='Z')){return 0;}else{return 1;}}}
   return 0;
 }
+static int isPidginAlt(int item){
+  int par[4];int x;
+  par[0]=ITEM->offset[item-ITEM_tag];getTagImage(par);x=par[1];
+  par[0]=STACKpar(LEXT);par[1]=x;par[2]=0;if(stringelem(par)){
+    if(par[3]=='@')return 1;}
+  return 0;
+}
 /* ------------------------------------------------ */
 static void showFormalsAsComment(int item){
   int par[3];int n,cnt,type;
@@ -292,11 +307,14 @@ static void showFormalsAsComment(int item){
     else{printf("unknown formal type %d\n",type);exit(33);}
     goto nxt;}
 }
-static void declareLocals(int minloc,int maxloc){
+static void declareLocals(int minloc,int maxloc,int locptr){
   int par[2];
-  nxt:if(minloc==0){;}
-  else if(minloc<=maxloc){par[0]=minloc;T("int a_L%d;",1,par);
-    minloc++;goto nxt;}
+  nxt:if(minloc==0){return;}
+  if(minloc>maxloc){;}
+  else if(BUFFER->offset[locptr]==0){
+//printf("local %d missing\n",minloc);
+     minloc++;locptr++;goto nxt;}
+  else{par[0]=minloc;T("int a_L%d;",1,par);minloc++;locptr++;goto nxt;}
 }
 static void declareCallargs(int item,int C1,int C2,int C3){
   int par[3];int cnt;
@@ -326,12 +344,12 @@ static void addTracing(void){
     if(cnt<n){printChar(',');cnt++;formalArgument(cnt);goto nxt;}
     T(");%n",0,par);}
 }
-void ruleDeclarationHead(int *a){/* item+C1+C2+C3+minloc+maxloc */
-  int par[3];
+void ruleDeclarationHead(int *a){/* item+C1+C2+C3+minloc+maxloc+locptr */
+  int par[4];
   thisRule=a[0];
   ruleTyper(a[0]);ruleArgs(a[0]);par[0]=ITEM->offset[a[0]-ITEM_tag];
   T("{ /* %p",1,par);showFormalsAsComment(a[0]);
-  T(" */%n",0,par);declareLocals(a[4],a[5]);
+  T(" */%n",0,par);declareLocals(a[4],a[5],a[6]+a[4]);
   declareCallargs(a[0],a[1],a[2],a[3]);
   addRuleNameAsStatic();addProfiling();addTracing();
 }  
@@ -598,7 +616,7 @@ static void repeatBlockCall(int ptr,int out,int sep){
 static void regularRuleCall(int ptr){
   int par[3];int n,cnt,out,sep,type;
   par[0]=calledRule;getNumberOfFormals(par);n=par[1];
-  par[0]=calledRule,T("%R(",1,par);cnt=out=sep=0;nxt:
+  par[0]=calledRule,T("%r(",1,par);cnt=out=sep=0;nxt:
   if(cnt==n){if(out==0){printChar(')');}
     else{par[0]=sep;argSep(par);sep=par[0];T("a_P)",0,par);}}
   else{par[0]=calledRule;par[1]=cnt;getFormal(par);type=par[2];cnt++;
@@ -608,7 +626,7 @@ static void regularRuleCall(int ptr){
     else{par[0]=sep;argSep(par);sep=par[0];Taffix(ptr);par[0]=ptr;
       nextAffix(par);ptr=par[0];goto nxt;}}
 }
-static int dummyAffix(int ptr){
+static int isDummyAffix(int ptr){
   int t=BUFFER->offset[ptr];if(t==Dnoarg||t==Dcolon){return 1;}
   return 0;
 }
@@ -618,7 +636,7 @@ static void repeatBlockPostload(int ptr,int n,int rep,int out){
   dn=rep;if(size<0){out=0;cnt=-size;}else{cnt=size;}nxt:
   if(cnt==0){;}
   else{par[0]=calledRule;par[1]=dn;getFormal(par);type=par[2];
-    if(dummyAffix(ptr)){;}
+    if(isDummyAffix(ptr)){;}
     else if(type==IformalOut||type==IformalInout){Taffix(ptr);
       if(size>0){par[0]=out;T("=a_P[%d];",1,par);}
       else{par[0]=out;T("=a_D[%d];",1,par);}}
@@ -634,7 +652,7 @@ static void regularCallPostload(int ptr){
   if(cnt==n){;}
   else{par[0]=calledRule;par[1]=cnt;getFormal(par);type=par[2];
     cnt++;if(type==IformalOut||type==IformalInout){
-      if(dummyAffix(ptr)){;}
+      if(isDummyAffix(ptr)){;}
       else{Taffix(ptr);par[0]=out;T("=a_P[%d];",1,par);}
       out++;par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}
     else if(type==IformalRepeat){repeatBlockPostload(ptr,n,cnt,out);}
@@ -657,11 +675,57 @@ static void regularCallD2(int type,int fnext){
 static void regularCallD3(int type,int fnext,int tnext){
   int par[2];
   if(type==1){par[0]=tnext;par[1]=fnext;T("%G}%G%n",2,par);}
-  else if(type==2){printChar('\n');}
+  else if(type==2){par[0]=tnext;T("%G%n",1,par);}
   else{par[0]=tnext;T("%G%n",1,par);}
 }
 /* ---------------------------------------------------------------- */
-
+static int isPidginDiscarded(int ptr){
+  int par[3];int n,cnt,type;
+  par[0]=calledRule;par[1]=rtype;if(isItemFlag(par)){return 0;}
+  par[0]=calledRule;getNumberOfFormals(par);n=par[1];cnt=0;nxt:
+  if(cnt==n){return 1;}
+  par[0]=calledRule;par[1]=cnt;getFormal(par);type=par[2];cnt++;
+  if(isDummyAffix(ptr)){par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}
+  else if(type==IformalOut||type==IformalInout||type==IformalRepeat){return 0;}
+  else{par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}
+}
+static void pidginAltTagtail(int ptr){
+  int par[3]; int n,cnt,type;
+  par[0]=calledRule;getNumberOfFormals(par);n=par[1];cnt=0;nxt:
+  if(cnt==n){;}
+  else{par[0]=calledRule;par[1]=cnt;getFormal(par);type=par[2];cnt++;
+    if(type==IformalOut){
+       if(BUFFER->offset[ptr]==Dnoarg){printChar('0');}else{printChar('1');}}
+    if(type==IformalRepeat){;}
+    else{par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}}
+}
+static void pidginRepeatBlock(int ptr){
+  int par[3];int size,cnt;
+  ptr++;size=BUFFER->offset[ptr];par[0]=ptr;nextAffix(par);ptr=par[0];
+  printInt(size);if(size<0){cnt=-size;}else{cnt=size;}nxt:
+  if(cnt==0){;}
+  else{printChar(',');Taffix(ptr);cnt--;par[0]=ptr;nextAffix(par);ptr=par[0];
+    goto nxt;}
+  if(size>0){;}else{T(",a_C,a_V",0,par);}
+}
+static void pidginRuleArgs(int ptr,int alt){
+  int par[3];int n,cnt,sep,type;
+  par[0]=calledRule;getNumberOfFormals(par);n=par[1];cnt=sep=0;nxt:
+  if(cnt==n){;}
+  else{par[0]=calledRule;par[1]=cnt;getFormal(par);type=par[2];cnt++;
+    if(type==IformalRepeat){par[0]=sep;argSep(par);sep=par[0];
+         pidginRepeatBlock(ptr);}
+    else{if(type==IformalOut&&alt!=0&&BUFFER->offset[ptr]==Dnoarg){;}
+         else{par[0]=sep;argSep(par);sep=par[0];Taffix(ptr);}
+         par[0]=ptr;nextAffix(par);ptr=par[0];goto nxt;}}
+}
+static void pidginRuleCall(int ptr){
+  int par[3];int alt;
+  par[0]=calledRule;T("%r",1,par);
+  if(isPidginAlt(calledRule)){alt=1;pidginAltTagtail(ptr);}else{alt=0;}
+  printChar('(');pidginRuleArgs(ptr,alt);printChar(')');
+}
+/* ---------------------------------------------------------------- */
 
 void TruleCall(int *a){
   /*>tag+>C1+>C2+>C3+>n+>fnext+>tnext+>rep+>star+>odummy+>idummy+>ptr */
@@ -671,6 +735,12 @@ void TruleCall(int *a){
   par[0]=a[0];if(isBuiltinRule(par)){if(par[1]==2){genShiftaffix(a[5],a[6]);}
     else if(par[1]==3){genGetaffixno(a[4],a[11],a[6]);}
     else{genAssignment(a[7],a[8],a[11],a[6]);}}
+  else if(isPidginRule(a[0])){
+    if(isPidginDiscarded(a[11])){;}
+    else{par[0]=a[5];par[1]=a[6];regularCallD1(par);type=par[2];
+         pidginRuleCall(a[11]);
+         regularCallD2(type,a[5]);
+         regularCallD3(type,a[5],a[6]);}}
   else{
     regularCallPreload(a[11]);
     par[0]=a[5];par[1]=a[6];regularCallD1(par);type=par[2];

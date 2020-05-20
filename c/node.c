@@ -775,6 +775,14 @@ static void wcopyAffixFromBUFFER(int *a){/* >b> */
   else if(LADM->alwb<=t && t<=LADM->aupb){par[0]=t;Wtag(par);a[0]++;goto nxt;}
   else{par[0]=t;W(par);a[0]++;goto nxt;}
 }
+static void copySpareAffix(int *a){ /* >type + >b> */
+  int par[2];
+  if(a[0]==IformalOut){par[0]=Dnoarg;W(par);nxt:
+    if(a[1]>BUFFER->aupb||BUFFER->offset[a[1]]==Dplus){;}
+    else if(BUFFER->offset[a[1]]==Dconst){a[1]++;a[1]++;goto nxt;}
+    else{a[1]++;goto nxt;}}
+  else{par[0]=Dcolon;W(par);par[0]=a[1];wcopyAffixFromBUFFER(par);a[1]=par[0];}
+}
 static void wafterAffixes(int *a){/* >tag + >b +>cnt + >rep */
   int par[3];int formal,ftype,repeat;
   a[1]++;par[0]=a[0];getAdm(par);formal=par[1];repeat=0;nxt:
@@ -786,8 +794,9 @@ static void wafterAffixes(int *a){/* >tag + >b +>cnt + >rep */
   a[1]++;if(BUFFER->offset[a[1]]==Dstar){a[1]++;par[0]=Dstar;W(par);}
   else if((ftype==IformalOut||ftype==IformalInout)&&BUFFER->offset[a[1]]==Dminus){
      a[1]++;pushRULE(Uuse,0);
-     if(RULE->offset[RULEtop-RULE_flag]==Uspare){a[1]--;BUFFER->offset[a[1]]=Dcolon;}
-     par[0]=a[1];wcopyAffixFromBUFFER(par);a[1]=par[0];}
+     if(RULE->offset[RULEtop-RULE_flag]==Uspare){
+        par[0]=ftype;par[1]=a[1];copySpareAffix(par);a[1]=par[1];}
+     else{par[0]=a[1];wcopyAffixFromBUFFER(par);a[1]=par[0];}}
   else{par[0]=a[1];wcopyAffixFromBUFFER(par);a[1]=par[0];}
   par[0]=formal;getAdm(par);formal=par[1];if(formal==0){formal=repeat;}
   goto nxt;
