@@ -4,7 +4,7 @@
 #ifndef STDDATA_H
 #define STDDATA_H
 
-#include "stdlib.h"
+#include "STDlib.h"
 
 /* tables and stacks */
 #define aa_LEXT         0

@@ -20,6 +20,7 @@
    assign repr numbers.
 
 'a'pass iii:
+   was error;
    $ open the target; generate data and fill section
    open target,target prelude,data declaration,fill table head,
    (nxt:(-ext: advance base item+ext,next source+ext+#),

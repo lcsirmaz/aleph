@@ -20,7 +20,7 @@ typedef struct {
 } a_LIST;
 
 #include <stdio.h>
-#include <stdlib.h>	// abs
+#include <stdlib.h> // abs
 typedef struct {
   unsigned openflag;	// how was it opened
   int fileError;	// last file error

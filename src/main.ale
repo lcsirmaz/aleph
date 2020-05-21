@@ -1,12 +1,13 @@
 $ main
 'pragmat'title="compiler".
 'pragmat'require=("disc","input","display","ice","passi","passii",
-     "mcheck").
+     "mcheck","tags").
 
 'a'first pass:
-   open disc+/w/, $ give error messages if canno open $
+   open disc+/w/, $ give error messages if cannot open $
    read sources,was root scanned,(was error;read stdlib),
-   close disc,(was error,delete disc;+).
+   close disc,(was error,delete disc;+),
+   print dictionary.
 'a'second pass:
    was error;
    open ice file,create ice header,

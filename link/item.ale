@@ -162,10 +162,11 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
    +.
 
 'a'enter item+>item-tag-def:
-  (is item flag+item+tglobal,-); $ if not global, don't do anything
-  tag*ITEM[item]->tag,get tag data+tag+def,
-  (def=0,put tag data+tag+item;
-   check compatibility+tag+def+item).
+   is item flag+item+tglobal, $ if not global, don't do anything
+     tag*ITEM[item]->tag,get tag data+tag+def,
+     (def=0,put tag data+tag+item;
+      check compatibility+tag+def+item);
+   +.
 
 $ item interface ----------------------------------------- $
 'variable'link formals=0. $ link all formals $

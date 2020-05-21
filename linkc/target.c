@@ -519,7 +519,7 @@ static void TaffixInner(int *a){/* >ptr> */
     par[0]=a[0];T("%p",1,par);a[0]+=2;}
   else if(t==Dsub){a[0]++;par[0]=a[0];T("to_LIST(%p)->offset[",1,par);
      a[0]++;a[0]++;par[0]=a[0];TaffixInner(par);a[0]=par[0];
-     a[0]++;x=BUFFER->offset[a[0]]-1;if(x==0){T("]",0,par);}else{par[0]=x;
+     a[0]++;x=BUFFER->offset[a[0]]-1;a[0]++;if(x==0){T("]",0,par);}else{par[0]=x;
        T("-%d]",1,par);}}
   else{par[0]=BUFFER->offset[a[0]];TlimitTail(par);x=par[1];a[0]++;
     par[0]=a[0];par[1]=x;T("to_LIST(%p)->%p",2,par);a[0]++;a[0]++;}
@@ -611,7 +611,7 @@ static void repeatBlockCall(int ptr,int out,int sep){
   else if(size<0){par[0]=sep;argSep(par);sep=par[0];
     par[0]=(-size)/dn;par[1]=-size;T("a_C+%d /*%d*/,a_D)",2,par);}
   else{par[0]=sep;argSep(par);sep=par[0];par[0]=size/dn;par[1]=out;par[2]=size;
-    T("%d,a_P+%d)/* %d */",3,par);}
+    T("%d,a_P+%d)",2,par);}
 }
 static void regularRuleCall(int ptr){
   int par[3];int n,cnt,out,sep,type;
@@ -843,7 +843,7 @@ static void charfileInitialization(int item){
     par[0]=item;getFileData(par);id=par[1];ptr=par[2];
     par[0]=item;par[1]=dir;par[2]=id;par[3]=ptr;
     par[4]=ITEM->offset[item-ITEM_tag];
-    T(" a_setup_charfile(%r,%d,%r,%r);/* %p */%n",5,par);}
+    T(" a_setup_charfile(%r,%d,%r,%r); /* %p */%n",5,par);}
 }
 static void countFileArea(int *a){/* >p + cnt> */
   int par[3];

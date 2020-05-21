@@ -1,6 +1,6 @@
 /* aleph standard library functions */
 
-#include "stdlib.h"
+#include "STDlib.h"
 #include <malloc.h>
 
 int was(int *a){		// 'a' was + a[] + >p

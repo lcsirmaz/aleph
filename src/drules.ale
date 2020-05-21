@@ -213,7 +213,7 @@ $ - - - - - - - - - - - - - - - - - - - - $
    $ for the block, LTset/LTmod for formals
    <<LLOC->ptr,push RULE+0,                 $ border $
    (is+modT,set RULE flag+>>RULE+UETmod;+), $ modT for the region $
-   (nxt: >>LLOC > ptr;
+   (nxt: ptr>>>LLOC;
       (type*LLOC[ptr]=Ilabel;
        push RULE+ptr,
          $ how they entered the region $

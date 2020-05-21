@@ -131,7 +131,7 @@ $ prefix, formal, local, actual arguments
    print str+" goto ",print local label+label,print char+/;/.
 'a'print GOTO+>label:
    $ goto only if label!=next node idx $
-   label=next node idx;
+   (label=next node idx,next node idx!=0);
    print goto+label.
 $ print an affix ----------------------------------------- $
 $ affixes are stored in BUFFER. The format character %p
@@ -161,7 +161,7 @@ $   d: integer
   >>BUFFER->optr,unpack string+t+fmt+BUFFER,add+optr+1+ptr,
   (nxt:>>BUFFER<ptr;
     BUFFER[ptr]!=/%/,print char+BUFFER[ptr],incr+ptr,:nxt;
-    incr+ptr,(>>BUFFER>ptr,print char+/%/;
+    incr+ptr,(ptr>>>BUFFER,print char+/%/;
       (=BUFFER[ptr]=
        [/r/],(shift affix block+*,print repr+fmt;print char+/?/),incr+ptr,:nxt;
        [/g/],(shift affix block+*,print goto+fmt;print char+/?/),incr+ptr,:nxt;
@@ -284,7 +284,7 @@ $   *a_D       dynamic repeat block content
     (=type=
      [Iformal in],    T+"+>a";
      [Iformal out],   T+"+a>";
-     [Iformal inout], T+">a>";
+     [Iformal inout], T+"+>a>";
      [Iformal table], T+"+t[]";
      [Iformal stack], T+"+[]st[]";
      [Iformal file],  T+"+""""f";
@@ -384,8 +384,7 @@ $  variable, but not a #define value.
    next+ITEM+ptr,:nxt),
   (prev=0,T+"#define %p 0%n"+block total;
           T+"#define %p (%r+%p)%n"+block total+prev+sf),
-  T+"int a_DATA_BLOCK[%p]; /* stack, table, charfile, datafile */%n"
-    +block total.
+  T+"int a_DATABLOCK[%p];%n"+block total.
 
 $ FILL table ********************************************** $
 $  generate the fill table with all fillings. 
@@ -506,7 +505,7 @@ $ built-in rules: @@make, shift affix block, get affix blockno
     ((fnext=next node idx;
       fnext=tnext,next node idx->tnext;
       tnext!=next node idx),
-         T+"if(a_C>1){a_C--;a_V+=%d;%G}%G%n"+w+tnext+fnext;
+         T+"if(a_C>1){a_C--;a_V+=%d;%G} %G%n"+w+tnext+fnext;
      $tnext=next node idx$
          T+"if(a_C<=1){%g} a_C--;a_V+=%d;%n"+fnext+w).
          
@@ -748,7 +747,7 @@ $  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes areas
         incr+nextptr,BUFFER[nextptr]->fgoal,
         (goal=next node idx,(goal=fgoal;
            T+" if(!(",T if condition+ptr+v,T+")){%g}%n"+fgoal);
-         T+" if(",T if condition+ptr+v,T+"){%g}%n"+goal,
+         T+" if(",T if condition+ptr+v,T+"){ %g}%n"+goal,
            (fgoal=next node idx;T+" %g"+fgoal));
     incr+ptr,T+" if(",T if condition+ptr+v,T+"){%g}%n"+BUFFER[ptr],
         nextptr->ptr,:T jump to areas).

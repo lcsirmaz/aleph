@@ -225,7 +225,7 @@ $  the classification Unode data is a BUFFER pointer.
     addRULE flag!=3,Qskip+Darea,0->buff;
     >>BUFFER->buff,get linenum+x,push BUFFER+Dconst+x,
     (nxt:Q+Darea,extend BUFFER+Dplus;
-      Q+Dcolon,extend BUFFER+Dcomma,:nxt;
+      Q+Dcolon,extend BUFFER+Dcolon,:nxt;
       Q+Dsemicolon,extend BUFFER+Dsemicolon,:nxt;
       Qcons+x,push BUFFER+Dconst+x,:nxt;
       must Qtag+x,extend BUFFER+x,:nxt).
@@ -739,7 +739,7 @@ $ replacement for L*L[>>L], figure out the standard selector
     was+LADM+BUFFER[b],Wtag+BUFFER[b],incr+b,:nxt;
     W+BUFFER[b],incr+b,:nxt).
 
-'a'copy spare affix+>type+>b>:
+'a'copy spare affix+>ftype+>b>:
    ftype=Iformal out,W+Dnoarg,
      (nxt:b>>>BUFFER;
           BUFFER[b]=Dplus;

@@ -277,7 +277,7 @@ $  separated by :
   (res=1,scratch+BUFFER,unpack string+LEXT+str+BUFFER,
     add extension,list length+BUFFER+n,pack string+BUFFER+n+LEXT,
     scratch+BUFFER,try to open+>>LEXT+res,forget string+>>LEXT,
-    ((res=1,type=2),try path+str+res)),
+    ((res=1,type=2),try path+str+res;+);+),
   res=0.
   
 'p'next source+>type+>ptr:

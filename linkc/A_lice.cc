@@ -163,7 +163,7 @@ void a_setup_stdarg(int F1,int F2 __attribute__((unused))){
   st->vlwb=a_extlist_virtual+1;a_extlist_virtual+=64536; 
   st->vupb=a_extlist_virtual-1;st->calibre=1;
   st->alwb=st->vlwb;st->aupb=st->alwb-st->calibre;
-  for(i=a_argc-1;i>=0;i--){ /* add string a_argv[i] */
+  for(i=a_argc-1;i>0;i--){ /* add string a_argv[i] */
     if(a_push_string_to(F1,a_argv[i])==0){
       a_fatal("a_setup_stdarg","out of memory");}
   }
@@ -230,13 +230,13 @@ void a_comparestring(int F1,int F2,int F3,int F4,int A[1]){
       *ptr2=to_LIST(F3)->offset+F4;
   A[0]=strcmp((char*)(ptr1+1-*ptr1),(char*)(ptr2+1-*ptr2));
 }
-/* 'f'compare string n+t1[]+>p1+t2[]+>p2+>n+res> */
+/* 'f' compare string n+t1[]+>p1+t2[]+>p2+>n+res> */
 void a_comparestringn(int F1,int F2,int F3,int F4,int F5,int A[1]){
   int *ptr1=to_LIST(F1)->offset+F2,
       *ptr2=to_LIST(F3)->offset+F4;
   A[0]=strncmp((char*)(ptr1+1-*ptr1),(char*)(ptr2+1-*ptr2),F5);
 }
-/* 'q'string elem+t[]+>p+>n+c> */
+/* 'q' string elem+t[]+>p+>n+c> */
 int a_stringelem(int F1,int F2,int F3,int A[1]){
   int *ptr=to_LIST(F1)->offset+F2;
   const char *chr=(char*)(ptr+1-*ptr);
@@ -262,13 +262,13 @@ out1:  if((*chr&0xC0)!=0x80) return 0;
   }
   A[0]=c;return 1;
 }
-/* 'a'unstack string+[]st[] */
+/* 'a' unstack string+[]st[] */
 void a_unstackstring(int F1){
 #  define st	to_LIST(F1)
   st->aupb-= st->offset[st->aupb];
 #  undef st
 }
-/* 'a'pack string+t[]+>p+[]st[] */
+/* 'a' pack string+t[]+>p+[]st[] */
 void a_packstring(int F1,int F2,int F3){
    int len,i;
    int *ptr=to_LIST(F1)->offset+to_LIST(F1)->aupb-F2+1; // start
@@ -300,7 +300,7 @@ void a_packstring(int F1,int F2,int F3){
    goal[width-2]=len;goal[width-1]=width;
    to_LIST(F3)->aupb+=width;
 }
-/* 'a'unpack string+t[]+>p+[]st[] */
+/* 'a' unpack string+t[]+>p+[]st[] */
 void a_unpackstring(int F1,int F2,int F3){
    int i;
    int *ptr=to_LIST(F1)->offset+F2;
@@ -363,6 +363,7 @@ void a_copystring(int F1,int F2,int F3){
 #define ENOCHARFILE	10009	// character input/output on data file
 #define EREADEOF	10010	// getdata, getchar reads EOF
 #define ESEEKERROR	10011	// set file pos
+#define ELARGEFILE	10012	// set file pos
 
 /* openflags: r/w, char/data, EOF */
 #define getflag_general(x,flag)	((x)->openflag&(flag))
@@ -578,10 +579,12 @@ int a_putdatap(int F1,int F2,int F3)
       // check if F2 is within the bounds
       for(cnt=0;cnt<df->outarea &&
          (F2<df->out[cnt].lwb || df->out[cnt].upb<F2);cnt++);
-      if(cnt>=df->outarea){df->fileError=EWRONGVALUE; return 0; }
+      if(cnt>=df->outarea){
+fprintf(stderr,"put data: pointer %d not among areas\n",F1); exit(23);
+         df->fileError=EWRONGVALUE; return 0; }
    }
    df->fileError=0;
-   if((df->fpos*1023)==1023){ // buffer is full, flush
+   if((df->fpos & 1023)==1023){ // buffer is full, flush
      df->buffer[31]=df->iflag;
      if(a_write_databuffer(df)){return 0;}
      for(cnt=1;cnt<32;cnt++)df->buffer[cnt]=0;
@@ -662,6 +665,7 @@ int a_openfile(int F1,int F2,int F3,int F4){
     }
     if(df->buffer[0]!=ALEPH_BINARY_MAGIC
        ||df->buffer[32]<0 || df->buffer[32]>=a_MAXIMAL_AREA ){
+printf("magic=%x,area=%d\n",df->buffer[0],df->buffer[32]);
        df->fileError=EWRONGALEPH;
        close(df->fhandle);df->fhandle=0; return 0;
     }
@@ -687,18 +691,18 @@ int a_openfile(int F1,int F2,int F3,int F4){
   return 1;
   #undef df
 }
-/* 'p'close filep+""f. */
+/* 'p'close filep+""f */
 int a_closefilep(int F1){
   int ret;
   #define df to_DFILE(F1)
   if(!getfl_data(df)){ // not a datafile
   #define ch to_CHFILE(F1)
-    if(!ch->f){ return 1; } // not opened
+    if(!ch->f){ch->fileError=ENOTOPENED;return 1; } // not opened
     if(fclose(ch->f)){ch->fileError=errno;ch->f=0;return 0; }
     ch->f=0; return 1;
   #undef ch
   }
-  if(df->fhandle<=0){ return 1; } // not opened
+  if(df->fhandle<=0){df->fileError=ENOTOPENED; return 1; } // not opened
   if(getfl_rw(df)){ // opened for write
     ret=a_putdatap(F1,-1,1);
     while(ret && (df->fpos&31)!=31){ret = a_putdatap(F1,-1,1);}
@@ -727,7 +731,7 @@ void a_unlinkfile(int F1,int F2){
    int *arg=to_LIST(F1)->offset+F2;
    if(unlink((char*)(arg+1-*arg))<0){;}
 }
-// 'p' get data + ""f + data> + type >
+/* 'p' get data + ""f + data> + type> */
 int a_getdata(int F1,int A[2]){
 #   define df	to_DFILE(F1)
     if(!getfl_data(df)){ df->fileError=ENODATAFILE; return 0;}
@@ -767,11 +771,23 @@ int a_getdata(int F1,int A[2]){
 /* 'f'get file error + ""f +err> */
 void a_getfileerror(int F1,int A[1]){ 
    A[0]=to_DFILE(F1)->fileError; }
+
 /* 'f'get file pos + ""f + pos> */
 void a_getfilepos(int F1,int A[1]){
 #   define df	to_DFILE(F1)
     A[0]=0;
-    if(!getfl_data(df) || df->fhandle<=0 ) return;
+    if(!getfl_data(df)){ // charfile
+#   define ch	to_CHFILE(F1)
+      long offset;
+      if(!ch->f){ch->fileError=ENOTOPENED; return;}
+      offset=ftell(ch->f);
+      if(offset<=-1l){ ch->fileError=errno; }
+      else if( offset>0x7fff0000l){ ch->fileError=ELARGEFILE; }
+      else { A[0]=(int)offset; }
+    return;
+#   undef ch
+    }
+    if(df->fhandle<=0 ) return;
     A[0]=df->fpos;
     return;
 #   undef df
@@ -781,8 +797,16 @@ void a_setfilepos(int F1,int F2){
     off_t offset;
 #   define df	to_DFILE(F1)
     df->fileError=ESEEKERROR;
-    if(!getfl_data(df) || df->fhandle<=0 || getfl_rw(df)
-      || F2<0 ) return;
+#   define ch	to_CHFILE(F1)
+    if(!getfl_data(df)){ // chafile
+       if(F2<0 || !ch->f) return;
+       if(fseek(ch->f,(long)F2,SEEK_SET)){
+         ch->fileError=errno;
+       }
+       return;
+    }
+#   undef ch
+    if(df->fhandle<=0 || getfl_rw(df) || F2<0 ) return;
     if(getfl_eof(df) && F2>= df->fpos) return;
     if(F2==0){F2=32+3*df->inarea; } // special case
     if((F2&1023)<32) return;
@@ -858,7 +882,7 @@ int a_argc;char **a_argv;int a_extlist_virtual;
 extern void a_ROOT(void);
 
 int main(int argc,char *argv[]){
-   if(argc>0 && *argv[0]=='D'){do_trace=1;argc--,argv++;}
+   if(argc>1 && *argv[1]=='D'){do_trace=1;argc--,argv++;}
    a_argc=argc;a_argv=argv;a_extlist_virtual=0x7f800000;
    a_ROOT();
    while(a_profiles){

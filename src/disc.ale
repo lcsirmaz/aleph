@@ -267,26 +267,25 @@ $ - - - - - - - - - - - - $
        (* 0->repr,formal->tag,Imacro->type,0->flag->calibre->ssel *)LLOC,
        handle formal list+formal+ftype; $ and correct lists $
       +),      $ not in the first round
-    (atype!=Inoarg; $ dummy argument is like a local affix $
-     block=0,-1->repr*LLOC,Ilocal->type*LLOC,putQ+>>LLOC;
-     putQ+Dnoarg),
-    get adm+formal+formal,(formal=0,1->block,get adm+repeat+formal;+),
-    (Q+Dplus,putQ+Dplus,:nxt;+))),
-  (-aformal-qptr:block=0,
-    $ no repeat block; the actual affix * is in the top of QBUFFER, 
-    $  it belongs to the very first rule
-    QBUFFER->aformal,putQ+Dend,$ this is the replacement text for * %
-    get adm+aformal+aformal,(nxt:formal=0; $ then aformal=0
-      (* >>QBUFFER->repr,formal->tag,Imacro->type,0->flag->calibre->ssel *)LLOC,
-      get type+formal+ftype,handle formal list+formal+ftype,
-      putQ+repr*LADM[aformal]+Dend,
-      get adm+formal+formal,get adm+aformal+aformal,:nxt);
-   putQ+Dend, $second case, lrep is the * affix in LLOC
-    repr*LLOC[lrep]->qptr,incr+qptr,
-    $ qptr looks at the replacement text of *
-    (nxt:formal=0;
-     next+LLOC+lrep,(type*LLOC[lrep]=Imacro,>>QBUFFER->repr*LLOC[lrep];+),
-     copy QBUFFER affix+qptr,get adm+formal+formal,:nxt)).
+     (atype!=Inoarg; $ dummy argument is like a local affix $
+      block=0,-1->repr*LLOC,Ilocal->type*LLOC,putQ+>>LLOC;
+      putQ+Dnoarg),
+     get adm+formal+formal,
+     (formal=0,1->block,get adm+repeat+formal;+),
+     (Q+Dplus,putQ+Dplus,:nxt;+))),
+  (-aformal-qptr:block=0,QBUFFER->aformal,
+      $ no repeat block; the actual affix * is in the top of QBUFFER, 
+      $  it belongs to the very first rule
+      (nxt:formal=0; $ then aformal=0
+        (* >>QBUFFER->repr,formal->tag,Imacro->type,0->flag->calibre->ssel *)LLOC,
+        get type+formal+ftype,handle formal list+formal+ftype,
+        putQ+repr*LADM[aformal]+Dend,
+        get adm+formal+formal,get adm+aformal+aformal,:nxt);
+    $second case, lrep is the * affix in LLOC
+    repr*LLOC[lrep]->qptr,incr+qptr, $ qptr looks at the replacement text of *
+      (nxt:formal=0;
+       next+LLOC+lrep,(type*LLOC[lrep]=Imacro,>>QBUFFER->repr*LLOC[lrep];+),
+       copy QBUFFER affix+qptr,get adm+formal+formal,:nxt)).
 
 'a'macro arguments+>tag-formal-ftype-atype:
   $ set up the LLOC structure for the formals of rule "tag"
