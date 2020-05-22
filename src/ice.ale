@@ -62,9 +62,11 @@ $ opening and closing
 'a'open ice file,close ice file,delete ice file.
 $ writing to ICE: NODE, ITEM, FORMAL/LOCAL
 'a'W+>x,Wcons+>x,Wtag+>x.
+$ line numbers should be adjusted, this is done here
+'f'adjust linenum+>x>.
 $ create header and item list
 'a'create ice header.
-$ callback routines for create ice header
+$ callback routines to create ice header
   'a'define ice tag+>tag.
   'a'Xstring table filling head+>tag,Xstring table item+>tag+>str.
 
@@ -136,6 +138,7 @@ $ writing to the ICE file
    [NODE], put char+ICE+/N/,subtr+x+<NODE+x,div+x+<>NODE+x,incr+x,print int+x,separator;
    internal error+wrong W argument+x.
 'a'Wcons+>x:print int+x,separator.
+'a'Wline+>x:(x<=0;subtr+x+baseline+x),print int+x,separator.
 'a'Wtag+>tag-repr:
    was+LADM+tag,get repr+tag+repr, $ can be zero but only if error $
      (repr=0;W+repr);
@@ -154,11 +157,16 @@ $ these are local to ICE header
    put char+ICE+/</,put string+ICE+INDICATOR+type,put char+ICE+/>/,separator.
 
 $ ICE header ================================================== $
+'variable'baseline=0.
+'f'adjust linenum+>x>-base:
+  x<=0;
+  first line offset+base,subtr+x+base+x,incr+x.
 'a'create ice header-title-ptr-n-str:
   $ header
   (is pragmat value+pgt module,W+Dmodule;W+Dtitle),
   get pragmat value+pgt title+title,Wstring+title,
-  0->ptr,(nxt:next input entry+ptr+n+str,Wcons+n,Wstring+str,:nxt;W+Dpoint),
+  first line offset+baseline,decr+baseline,
+  0->ptr,(nxt:next input entry+ptr+n+str,Wline+n,Wstring+str,:nxt;W+Dpoint),
   $ item list, including pointers in Xstring table
   assign items,W+Dpoint,
   $ Xstring table elements, if any
@@ -210,7 +218,7 @@ $  next free ITEM. External tags have LEXT string in "repr".
       get tag+tag+raw),
      get tag flag+tag+iceflags+flag,
      get new item+item,put repr+tag+item,
-     Wtype+type,W+item,Wcons+flag,Wcons+dl,
+     Wtype+type,W+item,Wcons+flag,Wline+dl,
      (=type=
       [Iconstant;Ivariable;Istatic var;Ipointer constant;
                Icharfile;Idatafile],+;
@@ -377,7 +385,7 @@ $ only if the list tag is table or used
     
 'a'd list filling-tag-l:
    (must Qtag+tag,is fill tag used+tag),
-      W+Dfill,Wtag+tag,get linenum+l,Wcons+l,
+      W+Dfill,Wtag+tag,get linenum+l,adjust linenum+l,Wcons+l,
       (nxt:Q+Dpoint,W+Dpoint;
            list item+tag,repeater,initializer,:nxt);
    Qskip+Dpoint.

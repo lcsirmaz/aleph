@@ -563,7 +563,7 @@ static void fsimpleAffix(int *a){ /* >rtag+ >cnt+ >utype + mod> */
   else if(par[0]=Dnoarg,Q(par)){a[3]=0;if(a[2]==Uout){;}else{
     par[0]=a[0];par[1]=a[1];dummyAffixError(par);}}
   else{a[3]=0;mustQtag(par);atag=par[0];par[0]=STACKpar(LLOC);par[1]=atag;
-    if(was(par)&&a[1]!=Uout){par[0]=atag;par[1]=Lused;setLocalFlag(par);}
+    if(was(par)&&a[2]!=Uout){par[0]=atag;par[1]=Lused;setLocalFlag(par);}
     par[0]=atag;getFtype(par);type=par[1];
     if(type==Itable||type==IformalTable){par[0]=a[0];par[1]=a[1];
        par[2]=atag;checkSsel(par);par[0]=a[2];if(uReadOnly(par)){;}
@@ -1042,8 +1042,9 @@ void dCheckRule(int *a){ /* >rtag */
        par[1]=Lused;if(isLocalFlag(par)){;}
 //       else if(LLOC->offset[LLOC->aupb-LLOC_type]==Ilocal){
 //           par[0]=local_not_used;par[1]=a[0];par[2]=tag;Warning(4,3,par);}
+       else if(LLOC->offset[LLOC->aupb-LLOC_type]==IformalOut){;}
        else{par[0]=formal_not_used;par[1]=a[0];par[2]=tag;
-           Warning(4,3,par);}
+           Warning(type==IformalInout?2:4,3,par);}
        if(type==IformalRepeat){check=0;par[0]=LLOC->aupb;par[1]=LTset;
          if(isLocalFlag(par)){;}
          else if((par[0]=LLOC->aupb,par[1]=LTmod,isLocalFlag(par))){

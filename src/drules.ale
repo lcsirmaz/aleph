@@ -971,6 +971,8 @@ $  check it, but don't generate code later
           type*LLOC=Iformal shift;
           tag*LLOC->tag,
             (is local flag+>>LLOC+Lused;
+             type*LLOC=Iformal out;
+             type*LLOC=Iformal inout,warning+2+formal not used+rtag+tag;
              warning+4+formal not used+rtag+tag),
             (=type*LLOC=
              [Iformal repeat],0->check,

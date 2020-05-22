@@ -20,8 +20,7 @@ $ generating code $
 'a'rule declaration head+>item+>C1+>C2+>C3+>minloc+>maxloc+>locptr.
 'a'Tlabel+>this+>next.
 'a'T box+>ptr+>area,T extension+>ptr+>label.
-'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
-              +>rep+>star+>odummy+>idummy+>ptr.
+'a'T rule call+>tag+>n+>fnext+>tnext+>rep+>star+>ptr.
 'a'rule declaration tail.
 $ BODY **************************************************** $
 'pragmat'if=compile.
@@ -394,10 +393,11 @@ $     n>0: block of n items
 $     n<0: repeat the previous block -n times
 'a'push BUFFER+>x: (* x->BUFFER *)BUFFER.
 
+'variable'fill total=0.
 'a'fill table head:
-  T+"static int a_FILL[]={ /* fill table */%n".
+  T+"static int a_FILL[]={ /* fill table */%n",0->fill total.
 'a'fill table tail:
-  T+"-1}; /* fill table */%n".
+  T+"-1}; /* fill table size %d */%n"+fill total.
 
 'a'const item+v>:
   RR+Tconst+v;
@@ -412,24 +412,25 @@ $     n<0: repeat the previous block -n times
 'p'fill repeater+rep>:
   R+Dstar,const item+rep.
 'a'flush buffer+>size+>last+>ptr:
-  incr+ptr,(size=0;T+"%d,"+size),
+  add+size+fill total+fill total,add+last+fill total+fill total,
+  incr+ptr,(size=0;T+"%d,"+size,incr+fill total),
   (nxt:size=0;T+"%d,"+BUFFER[ptr],incr+ptr,decr+size,:nxt),
-  (last=0;T+"%d,"+last),
+  (last=0;T+"%d,"+last,incr+fill total),
   (nxt:last=0;T+"%d,"+BUFFER[ptr],incr+ptr,decr+last,:nxt).
 'a'skip fill initializer:
   R+Dcolon,must+Titem+#,:skip fill initializer;+.
 'a'fill entries-list-obuff-size-last-rep:
-   must+Titem+list,must+Tconst+#, $ lineno $
+   must+Titem+list,must+Tconst+#,incr+fill total, $ lineno $
     T+"%r,/* %p */%n"+list+tag*ITEM[list],>>BUFFER->obuff,0->size,
     (nxt:R+Dpoint;
          fill item+last,
            (fill repeater+rep,flush buffer+size+last+obuff,
-               T+"-%d,%n"+rep,
+               T+"-%d,%n"+rep,incr+fill total,
                unstack to+BUFFER+obuff,0->size;
             add+size+last+size),
            skip fill initializer,:nxt),
     flush buffer+size+0+obuff,unstack to+BUFFER+obuff,
-    T+"0,%n".
+    incr+fill total,T+"0,%n".
 'a'skip entry:
    R+Dpoint;next symbol,:skip entry.
 'a'data section iii:
@@ -529,9 +530,15 @@ $ built-in rules: @@make, shift affix block, get affix blockno
    $ rep: one more than affixes after * (including star)
    $ star: the last actual affix is the formal *
    $    X->b->c->d->*   (rep=5,star=1)
+   $    X->b->c->d      (rep=4,star=0)
+   $ ALEPH semantic requires evaluating assignment from left to
+   $  right. The C double assignment a[i]=(i=3) is undefined;
+   $  thus ALEPH assignment is split into separate C assignments:
    $       b=X;c=X;d=X;for(i=0;i<a_C;i++)a_V[i]=X;
+   $  if X is a slice, then it is assigned to a dummy int first
+   $  is the index could change as in L[x]->x->y,
    ptr->source,next affix+ptr, $ BUFFER[ptr]=Dstar $
-   $ compute number of valid destinations to n
+   $ number of valid destinations goes to n
    0->n,1->cnt,(nxt:cnt>=rep;
      incr+cnt,next affix+ptr,
      (=BUFFER[ptr]= [Dstar;Dnoarg;Dcolon],+;incr+n),:nxt),
@@ -678,8 +685,19 @@ $  - pidgin alt: append 0/1 for all out, discard dummy
     (is pidgin alt+called rule,1->alt,pidgin alt tagtail+ptr;0->alt),
     print char+/(/,pidgin rule args+ptr+alt,print char+/)/.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
-'a'T rule call+>tag+>C1+>C2+>C3+>n+>fnext+>tnext
-              +>rep+>star+>odummy+>idummy+>ptr-x-type:
+'a'T rule call+>tag+>n+>fnext+>tnext+>rep+>star+>ptr-x-type:
+   $ tag   rule to be called
+   $ n     total number of arguments including *
+   $ fnext,tnext
+   $       false, true node numbers
+   $ rep   number of repeat items (not blocks)
+   $ star  0/1 indicating if "*" is the last actual affix
+   $ ptr   affixes start at BUFFER[ptr+1], linked
+   $       description is in rule.ale
+   $         Dstar is followed by <n>
+   $           n>0   number of repeat affixes, (integer multiple
+   $                   of repeat block size), star=0
+   $           n<=0  star=1, -n affixes follow
    tag->called rule,incr+ptr, $ BUFFER[ptr] is the first affix $
    (is builtin rule+tag+x,
         (x=2,gen shiftaffix+fnext+tnext;

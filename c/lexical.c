@@ -224,6 +224,7 @@ static void nextVisibleChar(void){
 again:
   if(Achar==' '){nextChar();goto again;}
   else if(Achar==newline){ppline++;nextChar();goto again;}
+//printf("nextVisibleChar, ppline=%d\n",ppline);
 }
 /******************************************************************/
 //'a'try opening+>str+res>

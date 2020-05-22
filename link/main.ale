@@ -36,7 +36,8 @@
    close target.
    
 
-'root'pass i,pass ii,pass iii,pass iv.
+'root'pass i,pass ii,pass iii,pass iv,
+      (was error,delete target;+).
 
 
 'end'

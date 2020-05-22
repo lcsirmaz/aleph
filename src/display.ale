@@ -18,7 +18,6 @@ $
 'table'MESSAGE.
    $ error, warning, message
 'q'was error.
-'f'get error no+x>.
 'a'clear local error+old>.
 'p'was local error+>old.
    $ check if there were errors between these calls;
@@ -44,15 +43,6 @@ $'a'Xwarning+>level+line+*+>mess.
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("buffer","lexical","pragmats","types","tags","input").
-
-$ export
-'pragmat' public=(
-  display char,
-  was error,get error no,clear local error,was local error,
-  MESSAGE, error, Xerror, warning, Xwarning, message,
-  DICT header,DICT item,DICT tail,
-  reset pr line
-).
 
 $ ******************************************************** $
 'constant' T=1, F=0.
@@ -217,8 +207,6 @@ $ MESSAGES $
 
 'q'was error: error no>0.
    $ yes if there was an error
-'f'get error no+x>: error no->x.
-   $ number of error messages
 'a'clear local error+old>:
    $ count errors local to this compound block
    local error no->old, 0->local error no.

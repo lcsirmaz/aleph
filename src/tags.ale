@@ -227,13 +227,13 @@ $   (fcalibre,fssel,type,repr,adm,tag)  <= formal list affix
 
 'stack'[39]( defline=fcalibre,flag=fssel,type=dpos,
            repr=dnum,adm=calibre,tag=ssel=link ) LADM = (
-  (-1,0         ,Iempty,0,0,Pstar)      :Xstar,
-  (-1,tpermanent,Iempty,0,0,Pstdstr)    :Xstring table,
-  (-1,tpermanent,Iempty,0,0,Proot)      :Xroot,
-  (-1,tpermanent,Iempty,0,0,Pshift affx):Xshift affix,
-  (-1,tpermanent,Iempty,0,0,Pget affx)  :Xget affix,
-  (-1,0         ,Iempty,0,0,PParrow)    :Xarrow,
-  (-1,0         ,Iempty,0,0,Pexit)      :Xexit
+  (-2,0         ,Iempty,0,0,Pstar)      :Xstar,
+  (-2,tpermanent,Iempty,0,0,Pstdstr)    :Xstring table,
+  (-2,tpermanent,Iempty,0,0,Proot)      :Xroot,
+  (-2,tpermanent,Iempty,0,0,Pshift affx):Xshift affix,
+  (-2,tpermanent,Iempty,0,0,Pget affx)  :Xget affix,
+  (-2,0         ,Iempty,0,0,PParrow)    :Xarrow,
+  (-2,0         ,Iempty,0,0,Pexit)      :Xexit
 ).
 
 $ LLOC selectors

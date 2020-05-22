@@ -283,7 +283,9 @@ $ classification: we are after =
     (is+err,skip all;last=0;cnt=0,error+empty classification;+).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'get rule tag+string>:
-   is+rule tag,Squote image->string;
+   $ get rule tag as a string; built-in string _rule_
+   is+rule tag,rule tag->string,previous+TTAG+string,
+        copy string+TTAG+string+LEXT,>>LEXT->string;
    Squote image->string.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'rule pragmats+>tag:

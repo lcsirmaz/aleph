@@ -16,6 +16,8 @@ $ HEADER ****************************************************** $
    $ find LEXT module name and line number within
 'q'next input entry+>ptr>+n>+str>.
    $ returns the next file and the next line number
+'f'first line offset+n>.
+   $ the start of line numbering
 $ BODY ******************************************************** $
 
 'pragmat'if=compile.
@@ -103,6 +105,10 @@ $ ===================================================================== $
         (nxt2: ptr>>>INPUT;
                flag*INPUT[ptr]=cpragmat,next+INPUT+ptr,:nxt2;
                n*INPUT[ptr]->n)).
+'f'first line offset+n>-ptr:
+   <<INPUT->ptr,(nxt:ptr>>INPUT,1->n;
+      flag*INPUT[ptr]=cpragmat,next+INPUT+ptr,:nxt;
+      n*INPUT[ptr]->n).
 $ ===================================================================== $
 
 'q'is cmdline pragmat+>ptr+>twoarg>+pid>+value>-eq:
@@ -168,8 +174,6 @@ $ ===================================================================== $
             reset pragmats,set pragmat value+pgt library+0,incr+cnt,:nxt;+),
      (cnt>0;Xerror+0+no input file).
 'a'read stdlib-ptr:
-$ XXXXXXXXXXXXXXXXXXXXXXXXXXXX 
-   $ not if there was an error
    $ read standard library and all included files
    (-x:get pragmat value+pgt stdlib+x,x=0),get linenum+last linenum;
    add source+stdlib file+library,>>INPUT->ptr,

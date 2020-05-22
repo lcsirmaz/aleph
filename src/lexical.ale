@@ -45,8 +45,6 @@ $ empty string in LEXT
    $ go ahead until point, eol or eof; return that symbol
 'a'forget string+>x.
    $ throw away the last element of LEXT
-'q'is same string+>x+>y.
-   $ two strings are the same
 'p'was lexical pointer+>ptr+[]st[].
    $ gives a readable version of a pointer for messages
 'q'was lexical integer+>ptr+x>.
@@ -55,36 +53,8 @@ $ empty string in LEXT
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 
-'pragmat' public=(
-$ symbol names
-  Saction,	Sarrow,		Sasterisk,	Sbooland,
-  Sboolor,	Sboolxor,	Sbox,		Sbus,
-  Scalibre,	Scharfile,	Sclose,
-  Scolon,	Scomplement,	Scomma,
-  Sconssymb,	Sdatafile,	Sdummy symb,
-  Sendsymb,	Seol,		Senquiry,	Sequals,
-  Sexit,
-  Sextsymb,	Sfunction,	Sless,		Slseq,
-  Slwb,		Sminus,		Smore,		Smreq,
-  Snoarg,	Snot equal,	Sopen,
-  Splus,	Spoint,		Spredicate,	Spragsymb,
-  Squestion,	Sright,		Srootsymb,
-  Ssemicolon,	Sslash,		Sstacksymb,	Sstatic,
-  Ssub,		Stablesymb,
-  Supb,		Svarsymb,	Svlwb,
-  Svupb,
-$ empty string in LEXT
-  Squote image,
-$ lists
-  LEXT,		CONST,
-$ rules
-  next source, close source, read, skip, forget string,
-  is same string,
-  was lexical pointer,was lexical integer
-).
-
 $ external stuff $
-'pragmat'require=("display","tags","pragmats","buffer","input").
+'pragmat'require=("display","tags","pragmats","buffer","input","rulebody").
 
 $ ************************************************************** $
 'charfile' SOURCE="stdin">.	$ input file
@@ -405,9 +375,6 @@ $ constants
    x=Squote image;
    x=>>LEXT, unstack string+LEXT;
    +.
-'q'is same string+>x+>y-eq:
-   $ strings x and y are the same
-   compare string+LEXT+x+LEXT+y+eq,eq=0.
 
 $ COMMENTS $
 'a'long comment:
@@ -461,9 +428,10 @@ $ bold symbols are stored in a table
  "x"           :B31       ,(   0,   0,Sextsymb   ),
 $ built-in strings and constants
  "_file_"      :D1        ,(   0,   0,1          ),
- "_line_"      :first bin ,(  D1,  D3,2          ),
- "_rule_"      :D3        ,(   0,  D4,3          ),
- "_title_"     :D4        ,(   0,   0,4          )
+ "_line_"      :D2        ,(  D1,   0,2          ),
+ "_rule_"      :first bin ,(  D2,  D4,3          ),
+ "_source_"    :D4        ,(   0,  D5,4          ),
+ "_title_"     :D5        ,(   0,   0,5          )
 ).
 'a'read bold+x>-n:
   $ read a bold symbol 'abc'; give error messages
@@ -501,10 +469,10 @@ $ _line_, _file_, _rule_
           n<0,right*BOLD[x]->x,:nxt;
           adm*BOLD[x]->x)),
    unstack string+LEXT,(=x=
-     [1],$ file  $ find linenum+0+#+x;
-     [2],$ line  $ find linenum+0+x+#,enter const+x+x;
-     [3],$ rule  $ Sdummy symb->x; $ get "rule tag" from rulebody $
-     [4],$ title $ get pragmat value+pgt title+x,(is+x;Squote image->x);
+     [1;4],$ file  $ find linenum+0+#+x;
+     [2],  $ line  $ find linenum+0+x+#,enter const+x+x;
+     [3],  $ rule  $ get rule tag+x;
+     [5],  $ title $ get pragmat value+pgt title+x,(is+x;Squote image->x);
      $ none of the above $ Sdummy symb->x);
   n=1,error+illegal character+/_/,Sdummy symb->x;
   pack string+BUFFER+n+LEXT,error+unrecognized builtin+>>LEXT,

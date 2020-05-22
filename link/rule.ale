@@ -371,16 +371,16 @@ $ mark nodes which have labels
     Tlabel+label+nextnode).
 
 $ generate code ******************************************* $
-$ arguments to T rule call:
+$ possible arguments to T rule call:
 $  tag		item, rule to be called
-$  C1,C2,C3	as given
-$  n,		number of affixes, including *
-$  fnext,	true exit label
-$  tnext,	false exit label
-$  rep,		number of repeat items
-$  star,	is "*" the last actual affix
-$  odummy,	has dummy out affix somewhere
-$  idummy,	has discardable inout affix somewhere
+$  *C1,C2,C3	as given
+$  n		number of affixes, including *
+$  fnext	true exit label
+$  tnext	false exit label
+$  rep		number of repeat items
+$  star		is "*" the last actual affix
+$  *odummy	has dummy out affix somewhere
+$  *idummy	has discardable inout affix somewhere
 $  ptr		affixes start in BUFFER[ptr+1]
 $
 $ affixes in BUFFER for a rule call:
@@ -388,21 +388,19 @@ $  next:     pointer to next, or zero if last
 $  type:     formal type (formal in, formal out, etc)
 $  affix, closed by Dplus; Dcolon could be at the head
 $            indicating that the out is discardable
-'a'generate rule call-x-type-C1-C2-C3-n
-       -fnext-tnext-rep-star-odummy-idummy-ptr:
+'a'generate rule call-type-n-fnext-tnext-rep-star-ptr:
    must+Titem+#,$ (get item def+tag+tag;+), ASSERT tag*NODE[this node]=tag $
-   must+Tconst+x,x->C1,must+Tconst+x,x->C2,must+Tconst+x,x->C3,
-   >>BUFFER->ptr,0->n->idummy->odummy->rep->star,
+   must+Tconst+#,must+Tconst+#,must+Tconst+#, $ C1,C2,C3, not used $
+   >>BUFFER->ptr,0->n->rep->star,
    (nxt:R+Dout,must+Dout+#;
       store rule affix+type,push BUFFER+Dplus,
       incr+n,(is+rep,incr+rep;+),
-      (type=Dcolon,1->idummy;
-       type=Dnoarg,1->odummy;
+      ($ type=Dcolon,1->idummy; type=Dnoarg,1->odummy; $
        type=Dstar,(is+rep,1->star;1->rep);
        +),:nxt),
    find real label+fnext*NODE[this node]+fnext,
    find real label+tnext*NODE[this node]+tnext,
-   T rule call+tag*NODE[this node]+C1+C2+C3+n+fnext+tnext+rep+star+odummy+idummy+ptr,
+   T rule call+tag*NODE[this node]+n+fnext+tnext+rep+star+ptr,
    unstack to+BUFFER+ptr.
 
 $ generate extension -------------------------------------- $
