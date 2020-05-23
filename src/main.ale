@@ -1,5 +1,23 @@
-$ main
+$ ALEPH compiler main module
 'pragmat'title="compiler".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH)
+$
+$  (C) 2020, L.Csirmaz, Hungary
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU Generatl Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
 'pragmat'require=("disc","input","display","ice","passi","passii",
      "mcheck","tags").
 

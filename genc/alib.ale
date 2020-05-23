@@ -1,4 +1,23 @@
-$ 'pragmat'trace=off,overflow=off,count=off.
+$ ALEPH standard library
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH)
+$
+$  (C) 2020, L.Csirmaz, Hungary
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU Generatl Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ LIBRARY **************************************************** $
 'pragmat'library=on.
 
 $ programs
@@ -44,7 +63,7 @@ $ standard argument,stdin,stdout
 ?STDARG   'x''table'STDARG="a_setup_stdarg".
 ?STDIN    'charfile'STDIN=>"stdin".
 ?STDOUT   'charfile'STDOUT="stdout">.
-$ module sync
+$ module syncronization
 ?wait for 'x''q'wait for+t[]+>p="a_waitfor".
 $ arithmetic functions
 ?add    'x''f'add+>x+>y+z>	 ="__add".         $ x+y -> z
@@ -133,7 +152,6 @@ $ relations
 
 $ exit
 ?exit 'x''e'exit+>x = "exit".
-
 
 'end'
 

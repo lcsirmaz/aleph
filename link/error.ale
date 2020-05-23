@@ -1,5 +1,23 @@
-$ error 
+$ error.ale, erro handling rules
 'pragmat'module="error".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH)
+$
+$  (C) 2020, L.Csirmaz, Hungary
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU Generatl Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
 $ HEADER *********************************************** $
 'e'internal error+T[]+>file+>lineno.
 'e'corrupted ice file+T[]+>file+>lineno.
@@ -61,8 +79,10 @@ $ formatted printing $
    internal error+_title_+_line_.
 'a'print base+>str-obuff-ptr:
    >>BUFFER->obuff,
-   (was+LEXT+str,get tag image+str+str,unpack string+LEXT+str+BUFFER;
-    was+STDARG+str,unpack string+STDARG+str+BUFFER;
+   (was+LEXT+str,get tag image+str+str,
+        unpack string+LEXT+str+BUFFER;
+    was+STDARG+str,
+        unpack string+STDARG+str+BUFFER;
     internal error+_title_+_line_),
    >>BUFFER->ptr,
    $ go back until / or \
@@ -70,7 +90,7 @@ $ formatted printing $
          BUFFER[ptr]=///;BUFFER[ptr]=/\/;BUFFER[ptr]=/:/;
          decr+ptr,:nxt),incr+ptr,
    $ print until the first dot
-   (nxt: >>BUFFER>ptr;BUFFER[ptr]=/./;
+   (nxt: ptr>>>BUFFER;BUFFER[ptr]=/./;
          print char+BUFFER[ptr],incr+ptr,:nxt),
    unstack to+BUFFER+obuff.
 'a'print item+>item-line-source-module:

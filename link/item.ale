@@ -1,7 +1,25 @@
-$ item
-$ HEADER ************************************************* $
+$ item.ale
 'pragmat'module="item".
-$ read al items from the .ice file
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH)
+$
+$  (C) 2020, L.Csirmaz, Hungary
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU Generatl Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER *************************************************** $
+$ read all items from the .ice file
 
 'a'convert to item.
    $ the item for I<idx>
@@ -379,7 +397,7 @@ $  (base item=0;repr*ITEM[base item]->base item),
 $ find position ******************************************* $
 'f'search for line+>ptr+>old+line>+str>:
    (old<=1;old>lineno*ITEM[ptr]),0->line,Squote image->str;
-   adm*ITEM[ptr]->ptr,old->line,decr+line,incr+old,
+   adm*ITEM[ptr]->ptr,old->line,
       (nxt:old>width*AUX[ptr],subtr+old+width*AUX[ptr]+line,add+ptr+2+ptr,:nxt;
            data*AUX[ptr]->str).
 
@@ -410,3 +428,4 @@ $ ROOT **************************************************** $
       add shiftaffix external,add getaffixno external.
 'pragmat'endif=compile.
 'end'
+

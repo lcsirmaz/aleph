@@ -1,7 +1,26 @@
 $ create the ice file
 'pragmat'module="ice".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH)
 $
-$ creating the .o file which is a regular ALEPH data file
+$  (C) 2020, L.Csirmaz, Hungary
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU Generatl Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER *********************************************** $
+$
+$ creating the .ice file which is a character file
 $   W+>symb:     an entry to DSYMB or INDICATOR (type)
 $   Wtag+>tag:   repr*LADM[tag] is a pointer to ITEM (can be zero)
 $   Wcons+>n:    write the constant
@@ -54,7 +73,7 @@ $ <expression>: list of operators, constant values, <item>s
 $ Filling:
 $   Dfill <item> <filling> Dpoint
 
-$ HEADER ****************************************************** $
+$ ************************************************************* $
 'stack'(flag,type,tag,lineno,adm,repr)ITEM.
 'stack'(type,tag,adm,tnext,fnext)NODE.
 
@@ -138,7 +157,7 @@ $ writing to the ICE file
    [NODE], put char+ICE+/N/,subtr+x+<NODE+x,div+x+<>NODE+x,incr+x,print int+x,separator;
    internal error+wrong W argument+x.
 'a'Wcons+>x:print int+x,separator.
-'a'Wline+>x:(x<=0;subtr+x+baseline+x),print int+x,separator.
+'a'Wline+>x:adjust linenum+x,print int+x,separator.
 'a'Wtag+>tag-repr:
    was+LADM+tag,get repr+tag+repr, $ can be zero but only if error $
      (repr=0;W+repr);
@@ -159,8 +178,7 @@ $ these are local to ICE header
 $ ICE header ================================================== $
 'variable'baseline=0.
 'f'adjust linenum+>x>-base:
-  x<=0;
-  first line offset+base,subtr+x+base+x,incr+x.
+  x<=0;subtr+x+baseline+x.
 'a'create ice header-title-ptr-n-str:
   $ header
   (is pragmat value+pgt module,W+Dmodule;W+Dtitle),

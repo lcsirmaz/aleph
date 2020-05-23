@@ -1,6 +1,24 @@
 $ rule generator
 'pragmat'module="rule".
-$ HEAD **************************************************** $
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH)
+$
+$  (C) 2020, L.Csirmaz, Hungary
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU Generatl Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER **************************************************** $
 'a'make rule.
 
 $ BODY **************************************************** $
@@ -91,7 +109,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    0->dl->cnt,(nxt:R+Darea,incr+cnt,check area+set+dl,must+Dout+#,:nxt;
       complete zone+set,set node flag+nzone,
          (cnt>1;error+classification succeeds+dl);
-      warning+area may fail+dl).
+      warning+area may fail+dl,1->store rule name).
      
 $ NODES *************************************************** $
 $ information on each node. 
@@ -157,7 +175,8 @@ $ mark local affixes. Due to optimization, references to local
 $   affixes might disappear (macro substitution).
 'variable'
   C1=0,C2=0,C3=0,
-  local affix ptr=0,do local affix check=0.
+  local affix ptr=0,do local affix check=0,
+  store rule name=0.
 
 'a'set rule head-tag-x1-x2-x3:
   must+Titem+tag,(get item def+tag+tag;+),tag->tag*NODE[this node],
@@ -484,12 +503,14 @@ $ scans *************************************************** $
    must+Titem+rtag,must+Tconst+minloc,must+Tconst+maxloc,
    create nodes,        $ read number of nodes $
    save input position, $ restart from this point $
+   (is item flag+rtag+rspecial,1->store rule name;0->store rule name),
    0->this node,>>BUFFER->obuff,
    clear stack size,start local affix check+minloc+maxloc,
        scan i,0->do local affix check,
    (node hash different;
     restore input position,0->this node,scan ii),
-   rule declaration head+rtag+C1+C2+C3+minloc+maxloc+local affix ptr,
+   rule declaration head+rtag+C1+C2+C3+store rule name
+                            +minloc+maxloc+local affix ptr,
    unstack to+BUFFER+obuff,
    restore input position,0->this node,scan iii,
    restore input position,0->this node,scan iv,

@@ -1,5 +1,24 @@
-$ HEADER ************************************************** $
+$ target.ale
 'pragmat'module="target".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH)
+$
+$  (C) 2020, L.Csirmaz, Hungary
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU Generatl Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ************************************************** $
 $ generating code $
 'a'open target,close target,delete target.
    $ manipulate target files $
@@ -17,7 +36,8 @@ $ generating code $
    $  the main root
 'q'is pidgin rule+>item.
    $ the external rule uses pidgin call
-'a'rule declaration head+>item+>C1+>C2+>C3+>minloc+>maxloc+>locptr.
+'a'rule declaration head+>item+>C1+>C2+>C3+>rulehead
+                                      +>minloc+>maxloc+>locptr.
 'a'Tlabel+>this+>next.
 'a'T box+>ptr+>area,T extension+>ptr+>label.
 'a'T rule call+>tag+>n+>fnext+>tnext+>rep+>star+>ptr.
@@ -275,7 +295,9 @@ $  declaration
 $    a_L%d     local
 $    a_P[%d]   actual out/inout paramters, fixed repeat block
 $   *a_D       dynamic repeat block content
-'variable'this rule=0. $ This rule
+'variable'
+  this rule=0,  $ this rule
+  store name=0. $ store rule name as static string
 'a'show formals as comment+>item-n-cnt-type:
   get number of formals+item+n,0->cnt,
   (nxt:cnt>=n;
@@ -300,7 +322,7 @@ $   *a_D       dynamic repeat block content
   print char+newline.
 $ trace and profiling
 'a'add rule name as static:
-   is item flag+this rule+rspecial,
+   is+store name,
      T+" static char *a_rulename=""%p"";%n"+this rule;
    +.
 'a'add profiling:
@@ -314,10 +336,9 @@ $ trace and profiling
      (nxt:cnt<n,print char+/,/,incr+cnt,formal argument+cnt,:nxt;+),
      T+");%n";
    +.
-         
-'a'rule declaration head+>rule+>C1+>C2+>C3+>minloc+>maxloc+>locptr:
+'a'rule declaration head+>rule+>C1+>C2+>C3+>rn+>minloc+>maxloc+>locptr:
    $ rule declaration head, prototype, trace and count
-   rule->this rule,rule typer+rule,rule args+rule,
+   rule->this rule,rn->store name,rule typer+rule,rule args+rule,
     T+"{ /* %p"+tag*ITEM[rule],
     show formals as comment+rule,T+" */%n",
     add+minloc+locptr+locptr,declare locals+minloc+maxloc+locptr,
@@ -471,7 +492,7 @@ $ code generation ----------------------------------------- $
    "vlwb"     :Tvlwb,
    "vupb"     :Tvupb,
    "a_r1"     :r1, $ variable storing classifier's value
-   "a_r2"     :r2
+   "a_r2"     :r2  $ another auxiliary variable
 ). 
 $ BUFFER[ptr] starts an affix; generate code for it
 'f'T limit tail+>what+code>:
@@ -759,7 +780,7 @@ $  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes areas
   BUFFER[ptr]->nextptr,
     (nextptr=0, $ last case, may fail
         incr+ptr,BUFFER[ptr]->goal,
-        T+" if(!(",T if condition+ptr+v,T+")){a_area_failed(%p);}%n"+v,
+        T+" if(!(",T if condition+ptr+v,T+")){a_area_failed(a_rulename,%p);}%n"+v,
         (goal=next node idx;T+" %g"+BUFFER[ptr]);
     is complete area+nextptr,incr+ptr,BUFFER[ptr]->goal,
         incr+nextptr,BUFFER[nextptr]->fgoal,
