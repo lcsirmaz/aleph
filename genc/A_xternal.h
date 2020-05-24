@@ -23,23 +23,23 @@
 /********************************************************************
 * standard externals
 *
-* External rules starting with a  non-letter. 
-*  Functions with no repeat block are discarder if no out/inout affix
-*  is used later.
-*  The external string starts with @: it is replaced by underscore,
-*  and a 0/1 is appended for each out affixe (see divrem below) as
-*   0  -  dummy actual affix, affix skipped
-*   1  -  not a dummy affix
-*  Affixes are added as arguments:
+* External rules starting with a non-letter.
+*  Functions with no no out/inout affix and no repeat affix block are
+*  discarded.
+*  If the external string starts with @, it is replaced by underscore,
+*    and a 0/1 is appended for each out affixe (see divrem below) as
+*     0  -  dummy actual affix, affix skipped
+*     1  -  not a dummy affix
+*  Affixes are added as they are:
 *     dummy actual affix - empty
-*     formal block start: number of pending affixes (not blocks);
-*         if zero or negative then * is the last affix and ,a_C,a_V)
-*         closes the argument list
-*     the affix.
+*     formal block start: number of blocks;
+*         if zero or negative then after that many blocks a_C,a_V
+*         is added (actual affix list ends with +*)
+*     otherwise the affix itself
 *
-*   function,action:    closing ; added automatically
-*   question,pradicate: possibly preceded by ! to negate (should be
-*     bracketed)
+*   function,action:    closing semicolon is added automatically
+*   question,pradicate: possibly preceded by ! to negate
+*
 ********************************************************************/
 
 #define __add(x,y,z)		z=x+y

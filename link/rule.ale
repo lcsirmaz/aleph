@@ -396,7 +396,7 @@ $  *C1,C2,C3	as given
 $  n		number of affixes, including *
 $  fnext	true exit label
 $  tnext	false exit label
-$  rep		number of repeat items
+$  rep		one plus number of items in the dynamic part 
 $  star		is "*" the last actual affix
 $  *odummy	has dummy out affix somewhere
 $  *idummy	has discardable inout affix somewhere

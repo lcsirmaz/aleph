@@ -979,9 +979,9 @@ void a_blockhash(int F1,int F2,int A[1]){
 /*******************************************************************
 * profile and trace
 *
-*  rules with count=on have an a_PROFILE block which is linked, and
-*   counts the number of calls of the routine. When the program ends,
-*   counts are printed.
+*  rules with count=on have a static a_PROFILE structure, and the
+*   procedure a_PROFILING() is called at the end. This procedure
+*   links and counts the how many times it has been called.
 *  rules with trace=on start with an
 *          a_trace_rule("rule",cnt,F1,F2,...)
 *   call with the rule name, number of incoming arguments, and the

@@ -602,7 +602,12 @@ static void a_1086(int a_F1,int a_F2){ /* relativesize+>a+>a */
 int a_P[4];
 if(__less(a_F1,1)){ goto a_G3;}
 if(!__more(a_F1,100)){ goto a_G4;}
-a_G3:a_P[0]=1922290661;a_P[1]=to_LIST(a_1015)->offset[a_F2-3];a_P[2]=a_F1;a_P[3]=a_F2;a_1097(4,a_P+0);
+a_G3:/* called rule: warning, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290661;a_P[1]=to_LIST(a_1015)->offset[a_F2-3];a_P[2]=a_F1;a_P[3]=a_F2;a_1097(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_G4:__min(100,a_F1);
 __max(1,a_F1);
 a_1084(a_F2,a_F1);return;
@@ -611,7 +616,12 @@ static void a_1047(int a_F1,int a_F2){ /* fixsize+>a+>a */
 int a_P[4];
 if(__less(a_F1,1)){ goto a_G3;}
 if(!__more(a_F1,1000000)){ goto a_G4;}
-a_G3:a_P[0]=1922290675;a_P[1]=to_LIST(a_1015)->offset[a_F2-3];a_P[2]=a_F1;a_P[3]=a_F2;a_1097(4,a_P+0);
+a_G3:/* called rule: warning, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290675;a_P[1]=to_LIST(a_1015)->offset[a_F2-3];a_P[2]=a_F1;a_P[3]=a_F2;a_1097(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_G4:__min(1000000,a_F1);
 __max(1,a_F1);
 __subtr(0,a_F1,a_F1);
@@ -630,7 +640,12 @@ static void a_1050(int a_F1,int a_F2,int a_A[1]){ /* getestimator+>a+>a+a> */
 int a_P[4];
 if(a_1049(a_F1,a_P)){a_A[0]=a_P[0];return;}
 a_A[0]=1;
-a_P[0]=1922290687;a_P[1]=to_LIST(a_1015)->offset[a_F2-3];a_P[2]=to_LIST(a_1015)->offset[a_F1-3];a_P[3]=a_F2;a_1036(4,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290687;a_P[1]=to_LIST(a_1015)->offset[a_F2-3];a_P[2]=to_LIST(a_1015)->offset[a_F1-3];a_P[3]=a_F2;a_1036(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* getestimator */
 static void a_1065(void){ /* loosebounds */
 int a_L1;int a_L2;int a_L3;int a_L4;int a_P[1];
@@ -679,10 +694,21 @@ int a_P[5];
 if(!a_1049(a_F3,a_P)){ goto a_G6;}a_A[0]=a_P[0];
 if(!__lseq(1,a_A[0])){ goto a_G4;}
 if(__lseq(a_A[0],10000)){return;}
-a_G4:a_P[0]=1922290706;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_P[2]=a_F2;a_P[3]=to_LIST(a_1015)->offset[a_F3-3];a_P[4]=a_A[0];a_1097(5,a_P+0);
+a_G4:/* called rule: warning, n=2, rep=1, block size=1,cnt=5 */
+a_P[0]=1922290706;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_P[2]=a_F2;a_P[3]=to_LIST(a_1015)->offset[a_F3-3];a_P[4]=a_A[0];a_1097(5,a_P+0);/* block, n=2, rep=1,cnt=5,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_A[0]=1;return;
 a_G6:a_A[0]=1;
-a_P[0]=1922290721;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_P[2]=a_F2;a_P[3]=to_LIST(a_1015)->offset[a_F3-3];a_1036(4,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290721;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_P[2]=a_F2;a_P[3]=to_LIST(a_1015)->offset[a_F3-3];a_1036(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* repeatervalue */
 static void a_1072(int a_F1,int a_F2,int a_F3){ /* looserepeater+>a+>a+>a */
 int a_L4;int a_L5;int a_P[1];
@@ -784,7 +810,9 @@ if(__less(a_L3,a_L1)){ goto a_G10;}
 __subtr(a_L3,a_L1,a_L3);
 __div(a_L3,a_L2,a_L3);
 if(!__lseq(a_L3,0)){ goto a_G11;}
-a_G10:a_P[0]=1922290730;a_1036(1,a_P+0);return;
+a_G10:/* called rule: error, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=1922290730;a_1036(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G11:a_1092(a_L3);return;
 } /* distributevirtualaddress */
 static void a_1093(int a_F1){ /* setpointervalue+>a */
@@ -971,7 +999,11 @@ if(a_1060(a_F1,32)){return;}
 if(a_1053(a_F1,a_P)){a_L2=a_P[0]; goto a_G4;}
 a_L2=a_F1;
 a_G4:if(!a_1060(a_L2,64)){ goto a_G7;}
-a_P[0]=1922290744;a_P[1]=to_LIST(a_1015)->offset[a_L2-3];a_P[2]=a_L2;a_1036(3,a_P+0);
+/* called rule: error, n=2, rep=1, block size=1,cnt=3 */
+a_P[0]=1922290744;a_P[1]=to_LIST(a_1015)->offset[a_L2-3];a_P[2]=a_L2;a_1036(3,a_P+0);/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1090(0,a_L2,a_F1);return;
 a_G7:a_1091(a_L2,64);
 a_L3=a_1035;
@@ -1042,7 +1074,11 @@ a_G4:if(!a_1060(a_L2,32)){ goto a_G7;}
 to_LIST(a_1015)->offset[a_F1]=to_LIST(a_1015)->offset[a_L2];
 a_1091(a_F1,32);return;
 a_G7:if(!a_1060(a_L2,64)){ goto a_G10;}
-a_P[0]=1922290744;a_P[1]=to_LIST(a_1015)->offset[a_L2-3];a_P[2]=a_F1;a_1036(3,a_P+0);
+/* called rule: error, n=2, rep=1, block size=1,cnt=3 */
+a_P[0]=1922290744;a_P[1]=to_LIST(a_1015)->offset[a_L2-3];a_P[2]=a_F1;a_1036(3,a_P+0);/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1090(0,a_L2,a_F1);return;
 a_G10:a_1091(a_L2,64);
 a_L4=a_1035;
@@ -1273,21 +1309,26 @@ a_1135(16);return;
 static void a_1036(int a_C,int *a_V){ /* error+*+>a */
 int a_P[1];
 a_1117(69);
+/* called rule: formatprint, n=2, rep=1, block size=1,cnt=0 */
 a_1112(a_C,a_V);
 a_1118();
 __incr(a_1108);
 if(__less(a_1108,51)){return;}
-a_P[0]=1922290753;a_1102(1,a_P+0);return;
+/* called rule: Ferror, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=1922290753;a_1102(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* error */
 static void a_1097(int a_C,int *a_V){ /* warning+*+>a */
 
 a_1117(87);
+/* called rule: formatprint, n=2, rep=1, block size=1,cnt=0 */
 a_1112(a_C,a_V);
 a_1118();return;
 } /* warning */
 static void a_1102(int a_C,int *a_V){ /* Ferror+*+>a */
 
 a_1117(70);
+/* called rule: formatprint, n=2, rep=1, block size=1,cnt=0 */
 a_1112(a_C,a_V);
 a_1118();
 a_1105();
@@ -1296,9 +1337,14 @@ exit(1);return;
 static void a_1116(int a_F1,int a_F2,int a_F3){ /* internalerror+t[]+>a+>a */
 int a_P[2];
 a_1117(70);
-a_P[0]=1922290761;a_P[1]=a_F3;a_1112(2,a_P+0);
+/* called rule: formatprint, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=1922290761;a_P[1]=a_F3;a_1112(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1119(a_F1,a_F2);
-a_P[0]=1922290768;a_1112(1,a_P+0);
+/* called rule: formatprint, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=1922290768;a_1112(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1118();
 a_1105();
 exit(2);return;
@@ -1306,9 +1352,14 @@ exit(2);return;
 static void a_1030(int a_F1,int a_F2,int a_F3){ /* corruptedicefile+t[]+>a+>a */
 int a_P[2];
 a_1117(70);
-a_P[0]=1922290779;a_P[1]=a_F3;a_1112(2,a_P+0);
+/* called rule: formatprint, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=1922290779;a_P[1]=a_F3;a_1112(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1119(a_F1,a_F2);
-a_P[0]=1922290768;a_1112(1,a_P+0);
+/* called rule: formatprint, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=1922290768;a_1112(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1118();
 a_1105();
 exit(1);return;
@@ -1371,12 +1422,17 @@ a_G4:a_1150(a_P);a_L2=a_P[0]; goto a_G8;
 a_G5:a_1149(a_P);a_L2=a_P[0];
 if(!__noteq(a_L2,1)){ goto a_G4;}
 a_G8:if(__equal(a_L2,0)){return;}
-a_P[0]=1922290796;a_P[1]=a_1141;a_1102(2,a_P+0);return;
+/* called rule: Ferror, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=1922290796;a_P[1]=a_1141;a_1102(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* openargument */
 static int a_1147(int a_F1,int a_A[1]){ /* nextsource+>a+a> */
 int a_P[1];
 if(!__less(to_LIST(a_1104)->aupb,to_LIST(a_1104)->alwb)){ goto a_G3;}
-a_P[0]=1922290788;a_1102(1,a_P+0); return 1;
+/* called rule: Ferror, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=1922290788;a_1102(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+ return 1;
 a_G3:if(!a_1146()){ goto a_G7;}
 a_1142();
 a_1148(a_F1);
@@ -1459,15 +1515,35 @@ a_G8:if(!a_1200(a_F1,a_F2)){ return 0;} return 1;
 static void a_1167(int a_F1,int a_F2,int a_F3){ /* checkcompatibility+>a+>a+>a */
 int a_P[4];
 if(!a_1186(a_F2,a_F3)){ goto a_G3;}
-a_P[0]=1922290807;a_P[1]=a_F1;a_P[2]=a_F2;a_P[3]=a_F3;a_1036(4,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290807;a_P[1]=a_F1;a_P[2]=a_F2;a_P[3]=a_F3;a_1036(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G3:if(!a_1060(a_F2,16)){ goto a_G6;}
 if(a_1060(a_F3,16)){return;}
-a_P[0]=1922290818;a_P[1]=a_F1;a_P[2]=a_F2;a_P[3]=a_F3;a_1036(4,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290818;a_P[1]=a_F1;a_P[2]=a_F2;a_P[3]=a_F3;a_1036(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G6:if(!a_1060(a_F3,16)){ goto a_G8;}
-a_P[0]=1922290818;a_P[1]=a_F1;a_P[2]=a_F3;a_P[3]=a_F2;a_1036(4,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290818;a_P[1]=a_F1;a_P[2]=a_F3;a_P[3]=a_F2;a_1036(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G8:if(!a_1060(a_F2,4)){ goto a_G11;}
 if(!a_1060(a_F3,4)){return;}
-a_P[0]=1922290828;a_P[1]=a_F1;a_P[2]=a_F2;a_P[3]=a_F3;a_1036(4,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290828;a_P[1]=a_F1;a_P[2]=a_F2;a_P[3]=a_F3;a_1036(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G11:if(!a_1060(a_F3,4)){return;}
 a_1193(a_F1,a_F3);return;
 } /* checkcompatibility */
@@ -1792,10 +1868,17 @@ int a_L1;int a_P[3];
 a_L1=a_1176;
 a_G2:if(__equal(a_L1,0)){return;}
 if(!__equal(to_LIST(a_1015)->offset[to_LIST(a_1015)->aupb-3],to_LIST(a_1015)->offset[a_L1-3])){ goto a_G5;}
-a_P[0]=1922290849;a_P[1]=to_LIST(a_1015)->offset[to_LIST(a_1015)->aupb-3];a_1097(2,a_P+0);return;
+/* called rule: warning, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=1922290849;a_P[1]=to_LIST(a_1015)->offset[to_LIST(a_1015)->aupb-3];a_1097(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G5:if(!__equal(to_LIST(a_1015)->offset[to_LIST(a_1015)->aupb-4],344288204)){ goto a_G8;}
 if(!__equal(to_LIST(a_1015)->offset[a_L1-4],344288204)){ goto a_G8;}
-a_P[0]=1922290858;a_P[1]=to_LIST(a_1015)->offset[to_LIST(a_1015)->aupb-3];a_P[2]=to_LIST(a_1015)->offset[a_L1-3];a_1036(3,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=3 */
+a_P[0]=1922290858;a_P[1]=to_LIST(a_1015)->offset[to_LIST(a_1015)->aupb-3];a_P[2]=to_LIST(a_1015)->offset[a_L1-3];a_1036(3,a_P+0);/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G8:a_L1=to_LIST(a_1015)->offset[a_L1]; goto a_G2;
 } /* checkmoduletitle */
 static void a_1194(void){ /* readdefinitionlist */
@@ -1898,9 +1981,15 @@ a_G7:__next(a_1015,a_L1); goto a_G3;
 a_G8:if(!a_1053(a_L1,a_P)){ goto a_G7;}a_L2=a_P[0];
 if(a_1060(a_L2,4)){ goto a_G7;}
 if(a_1060(a_L2,16)){ goto a_G7;}
-a_P[0]=1922290839;a_P[1]=to_LIST(a_1015)->offset[a_L1-3];a_P[2]=a_L1;a_1036(3,a_P+0); goto a_G7;
+/* called rule: error, n=2, rep=1, block size=1,cnt=3 */
+a_P[0]=1922290839;a_P[1]=to_LIST(a_1015)->offset[a_L1-3];a_P[2]=a_L1;a_1036(3,a_P+0);/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+ goto a_G7;
 a_G14:if(__equal(a_L3,1)){return;}
-a_P[0]=1922290864;a_1036(1,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=1922290864;a_1036(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* checkallitems */
 static void a_1157(void){ /* @root */
 
@@ -2417,12 +2506,20 @@ a_G5:a_L3=0;
 a_G6:a_1311(a_P);a_L4=a_P[0];a_L5=a_P[1];
 if(!__lseq(a_L4,a_L5)){ goto a_G9;}
 a_P[0]=a_L3;a_1271(a_F1,a_L4,a_L5,a_P);a_L3=a_P[0]; goto a_G10;
-a_G9:a_P[0]=1922290879;a_P[1]=a_A[0];a_P[2]=a_L4;a_P[3]=a_L5;a_1036(4,a_P+0);
+a_G9:/* called rule: error, n=2, rep=1, block size=1,cnt=4 */
+a_P[0]=1922290879;a_P[1]=a_A[0];a_P[2]=a_L4;a_P[3]=a_L5;a_1036(4,a_P+0);/* block, n=2, rep=1,cnt=4,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_G10:if(!__equal(344288358,a_1058)){ goto a_G12;}
 a_1078(); goto a_G6;
 a_G12:a_1306(a_F1);
 if(__is(a_L3)){return;}
-a_P[0]=1922290892;a_P[1]=a_A[0];a_1036(2,a_P+0);return;
+/* called rule: error, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=1922290892;a_P[1]=a_A[0];a_1036(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* checkarea */
 static void a_1276(void){ /* checkareas */
 int a_L1;int a_L2;int a_L3;int a_P[2];
@@ -2441,8 +2538,14 @@ a_G12:a_1030(a_1001,16777387,44);return;
 a_G13:if(!a_1280(a_L1)){ goto a_G17;}
 a_1321(2048);
 if(__more(a_L3,1)){return;}
-a_P[0]=1922290917;a_P[1]=a_L2;a_1036(2,a_P+0);return;
-a_G17:a_P[0]=1922290905;a_P[1]=a_L2;a_1097(2,a_P+0);
+/* called rule: error, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=1922290917;a_P[1]=a_L2;a_1036(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
+a_G17:/* called rule: warning, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=1922290905;a_P[1]=a_L2;a_1097(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1334=1;return;
 } /* checkareas */
 static int a_1300(int a_F1){ /* isnodeflag+>a */
@@ -2534,7 +2637,9 @@ a_G3:a_1284=1;
 __subtr(to_LIST(a_1010)->aupb,a_F1,a_1302);
 __incr(a_1302);
 a_G6:if(__more(a_F1,a_F2)){return;}
-a_P[0]=0;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=0;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 __incr(a_F1); goto a_G6;
 } /* startlocalaffixcheck */
 static void a_1326(void){ /* skiptocomma */
@@ -2609,12 +2714,20 @@ int a_L2;int a_P[3];
 if(!__equal(344288387,a_1058)){ goto a_G5;}
 a_L2=a_1059;
 a_1078();
-a_P[0]=a_F1;a_P[1]=344288387;a_P[2]=a_L2;a_1309(3,a_P+0);return;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=3 */
+a_P[0]=a_F1;a_P[1]=344288387;a_P[2]=a_L2;a_1309(3,a_P+0);/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G5:if(!__equal(344288383,a_1058)){ goto a_G8;}
 a_L2=a_1059;
 a_1078(); goto a_G9;
 a_G8:a_1030(a_1001,16777387,44);return;
-a_G9:a_P[0]=a_F1;a_P[1]=344288383;a_P[2]=a_L2;a_1309(3,a_P+0);return;
+a_G9:/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=3 */
+a_P[0]=a_F1;a_P[1]=344288383;a_P[2]=a_L2;a_1309(3,a_P+0);/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* storelist */
 static void a_1330(void){ /* storelimit */
 
@@ -2641,19 +2754,31 @@ int a_L1;int a_P[2];
 if(!__equal(344288387,a_1058)){ goto a_G5;}
 a_L1=a_1059;
 a_1078();
-a_P[0]=344288387;a_P[1]=a_L1;a_1309(2,a_P+0);return;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=344288387;a_P[1]=a_L1;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G5:if(!__equal(344288391,a_1058)){ goto a_G9;}
 a_L1=a_1059;
 a_1078();
-a_P[0]=344288391;a_P[1]=a_L1;a_1309(2,a_P+0);return;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=344288391;a_P[1]=a_L1;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G9:if(!__equal(344288383,a_1058)){ goto a_G13;}
 a_L1=a_1059;
 a_1078();
-a_P[0]=344288383;a_P[1]=a_L1;a_1309(2,a_P+0);return;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=344288383;a_P[1]=a_L1;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G13:if(!__equal(344288371,a_1058)){ goto a_G17;}
 a_L1=a_1059;
 a_1078();
-a_P[0]=344288371;a_P[1]=a_L1;a_1309(2,a_P+0);return;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=344288371;a_P[1]=a_L1;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G17:if(!__equal(344288364,a_1058)){ goto a_G30;}
 a_1078();
 a_1331(344288364);
@@ -2665,7 +2790,10 @@ a_G24:a_1030(a_1001,16777387,44);return;
 a_G25:if(!__equal(344288371,a_1058)){ goto a_G24;}
 a_L1=a_1059;
 a_1078();
-a_P[0]=344288319;a_P[1]=a_L1;a_1309(2,a_P+0);return;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=344288319;a_P[1]=a_L1;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G30:a_1330();return;
 } /* storeaffix */
 static void a_1332(int a_A[1]){ /* storeruleaffix+a> */
@@ -2673,12 +2801,16 @@ int a_L2;int a_P[2];
 if(!__equal(344288325,a_1058)){ goto a_G6;}
 a_1078();
 a_A[0]=344288325;
-a_P[0]=344288325;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288325;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1329();return;
 a_G6:if(!__equal(344288340,a_1058)){ goto a_G10;}
 a_1078();
 a_A[0]=344288340;
-a_P[0]=344288340;a_1309(1,a_P+0);return;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288340;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G10:if(!__equal(344288361,a_1058)){ goto a_G18;}
 a_1078();
 a_A[0]=344288361;
@@ -2686,7 +2818,10 @@ if(!__equal(344288371,a_1058)){ goto a_G16;}
 a_L2=a_1059;
 a_1078(); goto a_G17;
 a_G16:a_L2=0;
-a_G17:a_P[0]=344288361;a_P[1]=a_L2;a_1309(2,a_P+0);return;
+a_G17:/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=344288361;a_P[1]=a_L2;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 a_G18:a_A[0]=0;
 a_1329();return;
 } /* storeruleaffix */
@@ -2697,9 +2832,14 @@ a_G1:{ if(a_1058==344288391){ goto a_G2;}
  if(a_1058==344288188||a_1058==344288210||a_1058==344288214||a_1058==344288218||a_1058==344288163||a_1058==344288340||a_1058==344288364||a_1058==344288319||a_1058==344288361||a_1058==344288325){  goto a_G7;}
   goto a_G9;}
 a_G2:a_1304(a_1059);
-a_G3:a_P[0]=a_1058;a_P[1]=a_1059;a_1309(2,a_P+0);
+a_G3:/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=a_1058;a_P[1]=a_1059;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_G4:a_1078(); goto a_G1;
-a_G7:a_P[0]=a_1058;a_1309(1,a_P+0); goto a_G4;
+a_G7:/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=a_1058;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+ goto a_G4;
 a_G9:if(!__equal(344288349,a_1058)){ goto a_G12;}
 to_LIST(a_1265)->offset[a_1335-1]=a_1059;
 a_1078(); goto a_G13;
@@ -2773,7 +2913,9 @@ static void a_1277(void){ /* checknodehash */
 int a_L1;int a_P[1];
 if(!a_1308(a_1335)){ goto a_G7;}
 a_L1=to_LIST(a_1010)->aupb;
-a_P[0]=344288328;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288328;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1333();
 to_LIST(a_1265)->offset[a_1335-2]=to_LIST(a_1010)->aupb;
 a_1279(a_L1);return;
@@ -2923,7 +3065,9 @@ if(!__equal(344288349,a_1058)){ goto a_G4;}
 
 a_1078(); goto a_G34;
 a_G25:a_1332(a_P);a_L1=a_P[0];
-a_P[0]=344288352;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288352;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 __incr(a_L2);
 if(!__is(a_L5)){ goto a_G30;}
 __incr(a_L5);
@@ -2946,33 +3090,49 @@ a_1078(); goto a_G7;
 a_G6:a_1030(a_1001,16777387,44);return;
 a_G7:__add(a_L1,1,a_L3);
 to_LIST(a_1010)->offset[a_L3]=a_L2;
-a_P[0]=0;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=0;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_L3=to_LIST(a_1010)->aupb;
 a_G11:a_1329();
-a_P[0]=344288352;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288352;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_G13:if(!__equal(344288207,a_1058)){ goto a_G20;}
 a_1078();
 if(!__equal(344288371,a_1058)){ goto a_G6;}
 a_L2=a_1059;
 a_1078();
-a_P[0]=a_L2;a_1309(1,a_P+0); goto a_G13;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=a_L2;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+ goto a_G13;
 a_G20:if(!__equal(344288349,a_1058)){ goto a_G26;}
 a_L4=a_1059;
 a_1078();
 a_1290(a_L4,a_P);a_L4=a_P[0];
-a_P[0]=-1;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=-1;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_1267(a_L1,a_L4); goto a_G28;
-a_G26:a_P[0]=-1;a_P[1]=0;a_1309(2,a_P+0);
+a_G26:/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=-1;a_P[1]=0;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 {register int a_r1=to_LIST(a_1010)->aupb;to_LIST(a_1010)->offset[a_L3]=a_r1;a_L3=a_r1;} goto a_G11;
 a_G28:__unstackto(a_1010,a_L1);return;
 } /* generateextension */
 static void a_1291(void){ /* generatearea */
 int a_L1;int a_L2;int a_P[2];
 a_G1:a_1311(a_P);a_L1=a_P[0];a_L2=a_P[1];
-a_P[0]=a_L1;a_P[1]=a_L2;a_1309(2,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=a_L1;a_P[1]=a_L2;a_1309(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 if(!__equal(344288358,a_1058)){return;}
 a_1078();
-a_P[0]=344288358;a_1309(1,a_P+0); goto a_G1;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288358;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+ goto a_G1;
 } /* generatearea */
 static void a_1292(void){ /* generateareas */
 int a_L1;int a_L2;int a_L3;int a_P[3];
@@ -2984,11 +3144,15 @@ a_G5:a_1030(a_1001,16777387,44);return;
 a_G6:if(!__equal(344288371,a_1058)){ goto a_G5;}
 
 a_1078();
-a_P[0]=0;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=0;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 if(__equal(a_L1,0)){ goto a_G13;}
 to_LIST(a_1010)->offset[a_L1]=to_LIST(a_1010)->aupb;
 a_G13:a_L1=to_LIST(a_1010)->aupb;
-a_P[0]=0;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=0;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_L2=to_LIST(a_1010)->aupb;
 a_1291();
 if(!__equal(344288349,a_1058)){ goto a_G5;}
@@ -2997,17 +3161,27 @@ a_1078();
 a_1290(a_L3,a_P);to_LIST(a_1010)->offset[a_L2]=a_P[0];
 if(!__equal(344288156,a_1058)){ goto a_G25;}
 a_1078();
-a_P[0]=344288352;a_1309(1,a_P+0); goto a_G6;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288352;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+ goto a_G6;
 a_G25:if(!a_1300(2048)){ goto a_G28;}
 __unstackto(a_1010,a_L2);
-a_P[0]=(-2147483647-1);a_P[1]=2147483647;a_P[2]=344288352;a_1309(3,a_P+0);return;
-a_G28:a_P[0]=344288352;a_1309(1,a_P+0);return;
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=3 */
+a_P[0]=(-2147483647-1);a_P[1]=2147483647;a_P[2]=344288352;a_1309(3,a_P+0);/* block, n=2, rep=1,cnt=3,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
+a_G28:/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288352;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* generateareas */
 static void a_1293(void){ /* generatebox */
 int a_L1;int a_L2;int a_P[1];
 a_L1=to_LIST(a_1010)->aupb;
 a_1329();
-a_P[0]=344288352;a_1309(1,a_P+0);
+/* called rule: pushBUFFER, n=2, rep=1, block size=1,cnt=1 */
+a_P[0]=344288352;a_1309(1,a_P+0);/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+
 a_L2=to_LIST(a_1010)->aupb;
 a_1292();
 a_1266(a_L1,a_L2);
@@ -3151,7 +3325,10 @@ static void a_1261(void){ /* @root */
 static void a_1254(void){ /* opentarget */
 int a_P[2];
 if(a_openfile(a_1338,119,a_1017,1922290921)){return;}
-a_P[0]=1922290931;a_P[1]=1922290921;a_1102(2,a_P+0);return;
+/* called rule: Ferror, n=2, rep=1, block size=1,cnt=2 */
+a_P[0]=1922290931;a_P[1]=1922290921;a_1102(2,a_P+0);/* block, n=2, rep=1,cnt=2,dn=1,type=344288311 */
+/* block, n=2, rep=1,cnt=1,dn=1,type=344288311 */
+return;
 } /* opentarget */
 static void a_1246(void){ /* closetarget */
 
@@ -3371,17 +3548,27 @@ a_G38:__unstackto(a_1010,a_L3);return;
 } /* T */
 static void a_1260(void){ /* targetprelude */
 int a_L1;int a_P[2];
-a_P[0]=16778207;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778207;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_L1=to_LIST(a_1015)->alwb;
 a_G3:if(__more(a_L1,to_LIST(a_1015)->aupb)){ goto a_G8;}
 {register int a_r1=to_LIST(a_1015)->offset[a_L1-4];
  if(a_r1==344288204){ goto a_G5;}
  if(a_r1==344288192){  goto a_G6;}
   goto a_G7;}
-a_G5:a_P[0]=16778196;a_P[1]=to_LIST(a_1015)->offset[a_L1-3];a_1337(a_1001,2,a_P+0); goto a_G7;
-a_G6:a_P[0]=16778192;a_P[1]=to_LIST(a_1015)->offset[a_L1-3];a_1337(a_1001,2,a_P+0);
+a_G5:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778196;a_P[1]=to_LIST(a_1015)->offset[a_L1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G7;
+a_G6:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778192;a_P[1]=to_LIST(a_1015)->offset[a_L1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G7:__next(a_1015,a_L1); goto a_G3;
-a_G8:a_P[0]=16778189;a_1337(a_1001,1,a_P+0);return;
+a_G8:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778189;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* targetprelude */
 static void a_1375(int a_F1,int a_A[1]){ /* iswaitfor+>a+>a> */
 int a_P[1];
@@ -3393,7 +3580,9 @@ a_A[0]=1;return;
 } /* iswaitfor */
 static void a_1401(void){ /* procwaitfor */
 int a_L1;int a_L2;int a_P[2];
-a_P[0]=16778179;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778179;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_L1=to_LIST(a_1015)->alwb;
 a_L2=0;
 a_G4:if(__more(a_L1,to_LIST(a_1015)->aupb)){ goto a_G12;}
@@ -3406,9 +3595,14 @@ a_G6:a_L2=to_LIST(a_1015)->offset[a_L1-3]; goto a_G11;
 a_G7:a_L2=0; goto a_G11;
 a_G8:if(__equal(a_L2,0)){ goto a_G11;}
 if(__noteq(374062068,to_LIST(a_1015)->offset[a_L1-3])){ goto a_G11;}
-a_P[0]=16778168;a_P[1]=a_L1;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778168;a_P[1]=a_L1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G11:__next(a_1015,a_L1); goto a_G4;
-a_G12:a_P[0]=16778157;a_1337(a_1001,1,a_P+0);return;
+a_G12:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778157;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* procwaitfor */
 static void a_1259(void){ /* targetmain */
 int a_L1;int a_L2;int a_L3;int a_P[3];
@@ -3426,11 +3620,17 @@ a_G7:a_L2=0; goto a_G12;
 a_G8:a_P[0]=a_L3;a_1375(a_L1,a_P);a_L3=a_P[0];
 if(__equal(a_L2,0)){ goto a_G12;}
 if(__noteq(374062068,to_LIST(a_1015)->offset[a_L1-3])){ goto a_G12;}
-a_P[0]=16778151;a_P[1]=a_L1;a_P[2]=a_L2;a_1337(a_1001,3,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16778151;a_P[1]=a_L1;a_P[2]=a_L2;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G12:__next(a_1015,a_L1); goto a_G4;
 a_G13:if(__equal(a_L3,0)){ goto a_G15;}
 a_1401();
-a_G15:a_P[0]=16778144;a_1337(a_1001,1,a_P+0);
+a_G15:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778144;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_L1=to_LIST(a_1015)->alwb;
 a_L2=0;
 a_G18:if(__more(a_L1,to_LIST(a_1015)->aupb)){ goto a_G26;}
@@ -3443,7 +3643,11 @@ a_G20:a_L2=to_LIST(a_1015)->offset[a_L1-3]; goto a_G25;
 a_G21:a_L2=0; goto a_G25;
 a_G22:if(__equal(a_L2,0)){ goto a_G25;}
 if(__noteq(374062068,to_LIST(a_1015)->offset[a_L1-3])){ goto a_G25;}
-a_P[0]=16778132;a_P[1]=a_L1;a_P[2]=a_L2;a_1337(a_1001,3,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16778132;a_P[1]=a_L1;a_P[2]=a_L2;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G25:__next(a_1015,a_L1); goto a_G18;
 a_G26:a_L1=to_LIST(a_1015)->alwb;
 a_L2=0;
@@ -3457,21 +3661,39 @@ a_G30:a_L2=0; goto a_G35;
 a_G31:a_L2=to_LIST(a_1015)->offset[a_L1-3]; goto a_G35;
 a_G32:if(__equal(a_L2,0)){ goto a_G35;}
 if(__noteq(374062068,to_LIST(a_1015)->offset[a_L1-3])){ goto a_G35;}
-a_P[0]=16778124;a_P[1]=a_L1;a_P[2]=a_L2;a_1337(a_1001,3,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16778124;a_P[1]=a_L1;a_P[2]=a_L2;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G35:__next(a_1015,a_L1); goto a_G28;
-a_G36:a_P[0]=16778117;a_1337(a_1001,1,a_P+0);return;
+a_G36:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778117;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* targetmain */
 static void a_1415(int a_F1){ /* ruletyper+>a */
 int a_P[2];
 if(!a_1060(a_F1,512)){ goto a_G3;}
-a_P[0]=16778114;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);return;
-a_G3:a_P[0]=16778108;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778114;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G3:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778108;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* ruletyper */
 static void a_1361(int a_F1){ /* externalruletyper+>a */
 int a_P[2];
 if(!a_1060(a_F1,512)){ goto a_G3;}
-a_P[0]=16778102;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);return;
-a_G3:a_P[0]=16778096;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778102;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G3:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778096;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* externalruletyper */
 static void a_1348(int a_A[1]){ /* argsep+>a> */
 
@@ -3483,7 +3705,10 @@ static void a_1381(int a_F1,int a_A[1]){ /* outargs+>a+>a> */
 int a_P[2];
 if(__equal(a_F1,0)){return;}
 a_P[0]=a_A[0];a_1348(a_P);a_A[0]=a_P[0];
-a_P[0]=16778090;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778090;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* outargs */
 static void a_1413(int a_F1){ /* ruleargs+>a */
 int a_L2;int a_L3;int a_L4;int a_L5;int a_L6;int a_P[2];
@@ -3498,11 +3723,18 @@ a_G8:__incr(a_L5); goto a_G3;
 a_G9:if(!__equal(a_L4,344288307)){ goto a_G13;}
 a_P[0]=a_L6;a_1381(a_L5,a_P);a_L6=a_P[0];
 a_P[0]=a_L6;a_1348(a_P);
-a_P[0]=16778085;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778085;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G13:a_P[0]=a_L6;a_1348(a_P);a_L6=a_P[0];
-a_P[0]=16778078;a_P[1]=a_L3;a_1337(a_1001,2,a_P+0); goto a_G3;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778078;a_P[1]=a_L3;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
 a_G15:if(!__equal(a_L2,0)){ goto a_G17;}
-a_P[0]=16778073;a_1337(a_1001,1,a_P+0); goto a_G18;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778073;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G18;
 a_G17:a_P[0]=a_L6;a_1381(a_L5,a_P);
 a_G18:a_1388(41);return;
 } /* ruleargs */
@@ -3536,13 +3768,27 @@ __incr(a_L3);
  if(a_L4==344288285){ goto a_G12;}
  if(!(a_L4==344288307)){a_area_failed(a_rulename,a_L4);}
   goto a_G13;}
-a_G7:a_P[0]=16778069;a_1337(a_1001,1,a_P+0); goto a_G3;
-a_G8:a_P[0]=16778066;a_1337(a_1001,1,a_P+0); goto a_G3;
-a_G9:a_P[0]=16778063;a_1337(a_1001,1,a_P+0); goto a_G3;
-a_G10:a_P[0]=16778059;a_1337(a_1001,1,a_P+0); goto a_G3;
-a_G11:a_P[0]=16778055;a_1337(a_1001,1,a_P+0); goto a_G3;
-a_G12:a_P[0]=16778051;a_1337(a_1001,1,a_P+0); goto a_G3;
-a_G13:a_P[0]=16778047;a_1337(a_1001,1,a_P+0); goto a_G3;
+a_G7:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778069;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
+a_G8:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778066;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
+a_G9:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778063;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
+a_G10:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778059;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
+a_G11:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778055;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
+a_G12:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778051;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
+a_G13:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778047;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
 } /* showformalsascomment */
 static void a_1358(int a_F1,int a_F2,int a_F3){ /* declarelocals+>a+>a+>a */
 int a_P[2];
@@ -3551,38 +3797,58 @@ if(__more(a_F1,a_F2)){return;}
 if(!__equal(to_LIST(a_1010)->offset[a_F3],0)){ goto a_G6;}
 a_G4:__incr(a_F1);
 __incr(a_F3); goto a_G1;
-a_G6:a_P[0]=16778044;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0); goto a_G4;
+a_G6:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778044;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G4;
 } /* declarelocals */
 static void a_1357(int a_F1,int a_F2,int a_F3,int a_F4){ /* declarecallargs+>a+>a+>a+>a */
 int a_L5;int a_P[3];
 if(__equal(a_F3,0)){ goto a_G3;}
-a_P[0]=16778039;a_P[1]=a_F3;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778039;a_P[1]=a_F3;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G3:if(__equal(a_F4,0)){ goto a_G6;}
 a_1182(a_F1,a_P);a_L5=a_P[0];
-a_P[0]=16778033;a_P[1]=a_F4;a_P[2]=a_L5;a_1337(a_1001,3,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16778033;a_P[1]=a_F4;a_P[2]=a_L5;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G6:a_1388(10);return;
 } /* declarecallargs */
 static void a_1346(void){ /* addrulenameasstatic */
 int a_P[2];
 if(!__is(a_1419)){return;}
-a_P[0]=16778020;a_P[1]=a_1420;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16778020;a_P[1]=a_1420;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* addrulenameasstatic */
 static void a_1345(void){ /* addprofiling */
 int a_P[1];
 if(!a_1060(a_1420,33554432)){return;}
-a_P[0]=16778009;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16778009;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* addprofiling */
 static void a_1347(void){ /* addtracing */
 int a_L1;int a_L2;int a_P[2];
 if(!a_1060(a_1420,16777216)){return;}
 a_1181(a_1420,a_P);a_L1=a_P[0];
 a_L2=0;
-a_P[0]=16777986;a_P[1]=a_L1;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777986;a_P[1]=a_L1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G5:if(!__less(a_L2,a_L1)){ goto a_G9;}
 a_1388(44);
 __incr(a_L2);
 a_1367(a_L2); goto a_G5;
-a_G9:a_P[0]=16777977;a_1337(a_1001,1,a_P+0);return;
+a_G9:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777977;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* addtracing */
 static void a_1313(int a_F1,int a_F2,int a_F3,int a_F4,int a_F5,int a_F6,int a_F7,int a_F8){ /* ruledeclarationhead+>a+>a+>a+>a+>a+>a+>a+>a */
 int a_P[2];
@@ -3590,9 +3856,14 @@ a_1420=a_F1;
 a_1419=a_F5;
 a_1415(a_F1);
 a_1413(a_F1);
-a_P[0]=16777973;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777973;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1416(a_F1);
-a_P[0]=16777969;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777969;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __add(a_F6,a_F8,a_F8);
 a_1358(a_F6,a_F7,a_F8);
 a_1357(a_F1,a_F2,a_F3,a_F4);
@@ -3602,27 +3873,53 @@ a_1347();return;
 } /* ruledeclarationhead */
 static void a_1314(void){ /* ruledeclarationtail */
 int a_P[2];
-a_P[0]=16777965;a_P[1]=a_1420;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777965;a_P[1]=a_1420;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* ruledeclarationtail */
 static int a_1360(int a_F1){ /* externalplaindeclaration+>a */
 int a_P[2];
 if(!a_1060(a_F1,16)){ return 0;}
-a_P[0]=16777959;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0); return 1;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777959;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ return 1;
 } /* externalplaindeclaration */
 static void a_1422(int a_F1){ /* vardeclaration+>a */
 int a_P[4];
 if(a_1360(a_F1)){return;}
-a_P[0]=16777952;a_P[1]=a_F1;a_P[2]=to_LIST(a_1015)->offset[a_F1-1];a_P[3]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,4,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=4 */
+a_P[0]=16777952;a_P[1]=a_F1;a_P[2]=to_LIST(a_1015)->offset[a_F1-1];a_P[3]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,4,a_P+0);/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* vardeclaration */
 static void a_1350(int a_F1,int a_F2,int a_F3){ /* blockdeclaration+>a+>a+>a */
 int a_P[3];
-a_P[0]=16777942;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777942;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 if(!__equal(a_F2,0)){ goto a_G4;}
-a_P[0]=16777936;a_1337(a_1001,1,a_P+0); goto a_G5;
-a_G4:a_P[0]=16777933;a_P[1]=a_F2;a_P[2]=a_F3;a_1337(a_1001,3,a_P+0);
-a_G5:a_P[0]=16777929;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777936;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G5;
+a_G4:/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777933;a_P[1]=a_F2;a_P[2]=a_F3;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
+a_G5:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777929;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 if(!a_1060(a_F1,16)){return;}
-a_P[0]=16777923;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777923;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* blockdeclaration */
 static void a_1414(int a_F1){ /* ruleprototype+>a */
 int a_P[2];
@@ -3631,10 +3928,15 @@ if(a_1188(a_F1,a_P)){return;}
 if(!a_1060(a_F1,16)){ goto a_G7;}
 a_1361(a_F1);
 a_1413(a_F1);
-a_P[0]=16777914;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777914;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G7:a_1415(a_F1);
 a_1413(a_F1);
-a_P[0]=16777911;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777911;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* ruleprototype */
 static void a_1247(void){ /* datadeclaration */
 int a_L1;int a_L2;int a_L3;int a_L4;int a_P[4];
@@ -3665,9 +3967,20 @@ a_L3=a_L1;
 a_L4=1922290948; goto a_G6;
 a_G19:a_1414(a_L1); goto a_G6;
 a_G21:if(!__equal(a_L3,0)){ goto a_G23;}
-a_P[0]=16777905;a_P[1]=1922290953;a_1337(a_1001,2,a_P+0); goto a_G24;
-a_G23:a_P[0]=16777899;a_P[1]=1922290953;a_P[2]=a_L3;a_P[3]=a_L4;a_1337(a_1001,4,a_P+0);
-a_G24:a_P[0]=16777891;a_P[1]=1922290953;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777905;a_P[1]=1922290953;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G24;
+a_G23:/* called rule: T, n=3, rep=2, block size=1,cnt=4 */
+a_P[0]=16777899;a_P[1]=1922290953;a_P[2]=a_L3;a_P[3]=a_L4;a_1337(a_1001,4,a_P+0);/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
+a_G24:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777891;a_P[1]=1922290953;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* datadeclaration */
 static void a_1402(int a_F1){ /* pushBUFFER+>a */
 
@@ -3676,12 +3989,17 @@ static void a_1402(int a_F1){ /* pushBUFFER+>a */
 } /* pushBUFFER */
 static void a_1252(void){ /* filltablehead */
 int a_P[1];
-a_P[0]=16777883;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777883;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1365=0;return;
 } /* filltablehead */
 static void a_1253(void){ /* filltabletail */
 int a_P[2];
-a_P[0]=16777870;a_P[1]=a_1365;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777870;a_P[1]=a_1365;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* filltabletail */
 static void a_1354(int a_A[1]){ /* constitem+a> */
 int a_P[1];
@@ -3725,17 +4043,29 @@ __add(a_F1,a_1365,a_1365);
 __add(a_F2,a_1365,a_1365);
 __incr(a_F3);
 if(__equal(a_F1,0)){ goto a_G7;}
-a_P[0]=16777856;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777856;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __incr(a_1365);
 a_G7:if(__equal(a_F1,0)){ goto a_G11;}
-a_P[0]=16777853;a_P[1]=to_LIST(a_1010)->offset[a_F3];a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777853;a_P[1]=to_LIST(a_1010)->offset[a_F3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __incr(a_F3);
 __decr(a_F1); goto a_G7;
 a_G11:if(__equal(a_F2,0)){ goto a_G14;}
-a_P[0]=16777850;a_P[1]=a_F2;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777850;a_P[1]=a_F2;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __incr(a_1365);
 a_G14:if(__equal(a_F2,0)){return;}
-a_P[0]=16777847;a_P[1]=to_LIST(a_1010)->offset[a_F3];a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777847;a_P[1]=to_LIST(a_1010)->offset[a_F3];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __incr(a_F3);
 __decr(a_F2); goto a_G14;
 } /* flushbuffer */
@@ -3758,7 +4088,11 @@ a_G5:if(!__equal(344288371,a_1058)){ goto a_G4;}
 
 a_1078();
 __incr(a_1365);
-a_P[0]=16777844;a_P[1]=a_L1;a_P[2]=to_LIST(a_1015)->offset[a_L1-3];a_1337(a_1001,3,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777844;a_P[1]=a_L1;a_P[2]=to_LIST(a_1015)->offset[a_L1-3];a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_L2=to_LIST(a_1010)->aupb;
 a_L3=0;
 a_G13:if(!__equal(344288355,a_1058)){ goto a_G15;}
@@ -3766,7 +4100,10 @@ a_1078(); goto a_G24;
 a_G15:a_1363(a_P);a_L4=a_P[0];
 if(!a_1364(a_P)){ goto a_G22;}a_L5=a_P[0];
 a_1366(a_L3,a_L4,a_L2);
-a_P[0]=16777838;a_P[1]=a_L5;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777838;a_P[1]=a_L5;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __incr(a_1365);
 __unstackto(a_1010,a_L2);
 a_L3=0; goto a_G23;
@@ -3775,7 +4112,9 @@ a_G23:a_1418(); goto a_G13;
 a_G24:a_1366(a_L3,0,a_L2);
 __unstackto(a_1010,a_L2);
 __incr(a_1365);
-a_P[0]=16777834;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777834;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* fillentries */
 static void a_1417(void){ /* skipentry */
 
@@ -3819,7 +4158,10 @@ a_1388(58);return;
 static void a_1376(int a_F1){ /* jumptolabel+>a */
 int a_P[2];
 if(__equal(a_F1,a_1380)){return;}
-a_P[0]=16777826;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777826;a_P[1]=a_F1;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* jumptolabel */
 static void a_1343(int a_F1,int a_A[1]){ /* Tlimittail+>a+a> */
 
@@ -3851,11 +4193,17 @@ int a_L2;int a_P[3];
  if(a_r1==344288387||a_r1==344288391||a_r1==344288383||a_r1==344288371){ goto a_G2;}
  if(a_r1==344288364){  goto a_G5;}
   goto a_G16;}
-a_G2:a_P[0]=16777818;a_P[1]=a_A[0];a_1337(a_1001,2,a_P+0);
+a_G2:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777818;a_P[1]=a_A[0];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G3:__incr(a_A[0]);
 __incr(a_A[0]);return;
 a_G5:__incr(a_A[0]);
-a_P[0]=16777815;a_P[1]=a_A[0];a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777815;a_P[1]=a_A[0];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __incr(a_A[0]);
 __incr(a_A[0]);
 a_P[0]=a_A[0];a_1340(a_P);a_A[0]=a_P[0];
@@ -3863,11 +4211,20 @@ __incr(a_A[0]);
 __subtr(to_LIST(a_1010)->offset[a_A[0]],1,a_L2);
 __incr(a_A[0]);
 if(!__equal(a_L2,0)){ goto a_G15;}
-a_P[0]=16777807;a_1337(a_1001,1,a_P+0);return;
-a_G15:a_P[0]=16777804;a_P[1]=a_L2;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777807;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G15:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777804;a_P[1]=a_L2;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G16:a_1343(to_LIST(a_1010)->offset[a_A[0]],a_P);a_L2=a_P[0];
 __incr(a_A[0]);
-a_P[0]=16777800;a_P[1]=a_A[0];a_P[2]=a_L2;a_1337(a_1001,3,a_P+0); goto a_G3;
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777800;a_P[1]=a_A[0];a_P[2]=a_L2;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G3;
 } /* Taffixinner */
 static void a_1370(int a_F1,int a_F2){ /* genshiftaffix+>a+>a */
 int a_L3;int a_P[4];
@@ -3876,8 +4233,17 @@ if(__equal(a_F1,a_1380)){ goto a_G6;}
 if(!__equal(a_F1,a_F2)){ goto a_G5;}
 a_F2=a_1380; goto a_G6;
 a_G5:if(!__noteq(a_F2,a_1380)){ goto a_G7;}
-a_G6:a_P[0]=16777794;a_P[1]=a_L3;a_P[2]=a_F2;a_P[3]=a_F1;a_1337(a_1001,4,a_P+0);return;
-a_G7:a_P[0]=16777783;a_P[1]=a_F1;a_P[2]=a_L3;a_1337(a_1001,3,a_P+0);return;
+a_G6:/* called rule: T, n=3, rep=2, block size=1,cnt=4 */
+a_P[0]=16777794;a_P[1]=a_L3;a_P[2]=a_F2;a_P[3]=a_F1;a_1337(a_1001,4,a_P+0);/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G7:/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777783;a_P[1]=a_F1;a_P[2]=a_L3;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* genshiftaffix */
 static void a_1369(int a_F1,int a_F2,int a_F3){ /* gengetaffixno+>a+>a+>a */
 int a_P[2];
@@ -3886,7 +4252,10 @@ a_1030(a_1001,16777773,535);return;
 a_G3:if(__equal(to_LIST(a_1010)->offset[a_F2],344288340)){return;}
 if(__equal(to_LIST(a_1010)->offset[a_F2],344288325)){return;}
 a_1339(a_F2);
-a_P[0]=16777769;a_P[1]=a_F3;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777769;a_P[1]=a_F3;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* gengetaffixno */
 static void a_1379(int a_A[1]){ /* nextaffix+>a> */
 
@@ -3901,14 +4270,23 @@ int a_P[2];
 }
 a_A[0]=a_F1;
 if(!__is(a_F2)){ goto a_G6;}
-a_P[0]=16777764;a_P[1]=1922290981;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777764;a_P[1]=1922290981;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G5:a_A[1]=1;return;
 a_G6:a_A[1]=0;return;
 a_G7:a_A[0]=1922290977;
-a_P[0]=16777757;a_P[1]=a_A[0];a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777757;a_P[1]=a_A[0];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1339(a_F1);
 if(!__is(a_F2)){ goto a_G12;}
-a_P[0]=16777750;a_P[1]=1922290981;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777750;a_P[1]=1922290981;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G12:a_1388(59); goto a_G5;
 } /* assignmentsource */
 static void a_1368(int a_F1,int a_F2,int a_F3,int a_F4){ /* genassignment+>a+>a+>a+>a */
@@ -3942,40 +4320,64 @@ if(!__equal(a_L6,0)){ goto a_G26;}
 a_1388(61);
 a_1339(a_L5);
 a_1388(59); goto a_G17;
-a_G26:a_P[0]=16777747;a_P[1]=a_L6;a_1337(a_1001,2,a_P+0); goto a_G17;
+a_G26:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777747;a_P[1]=a_L6;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G17;
 a_G27:if(__equal(a_F2,0)){ goto a_G29;}
-a_P[0]=16777743;a_P[1]=1922290981;a_P[2]=1922290981;a_P[3]=1922290981;a_P[4]=1922290981;a_P[5]=a_L6;a_1337(a_1001,6,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=6 */
+a_P[0]=16777743;a_P[1]=1922290981;a_P[2]=1922290981;a_P[3]=1922290981;a_P[4]=1922290981;a_P[5]=a_L6;a_1337(a_1001,6,a_P+0);/* block, n=3, rep=2,cnt=6,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=5,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G29:if(__equal(a_L7,0)){ goto a_G31;}
 a_1388(125);
-a_G31:a_P[0]=16777732;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0);return;
+a_G31:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777732;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* genassignment */
 static void a_1412(int a_F1,int a_F2,int a_F3,int a_F4){ /* repeatblockpreload+>a+>a+>a+>a */
-int a_L5;int a_L6;int a_L7;int a_L8;int a_P[3];
+int a_L5;int a_L6;int a_L7;int a_L8;int a_L9;int a_P[3];
 __incr(a_F1);
 a_L5=to_LIST(a_1010)->offset[a_F1];
 a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0];
-a_L6=a_F3;
+a_L9=a_F3;
 if(!__less(a_L5,0)){ goto a_G8;}
 a_F4=0;
 __subtr(0,a_L5,a_L7); goto a_G9;
 a_G8:a_L7=a_L5;
-a_G9:if(__equal(a_L7,0)){ goto a_G25;}
-a_1180(a_1352,a_L6,a_P);a_L8=a_P[0];
-if(__equal(a_L8,344288295)){ goto a_G19;}
-if(!__more(a_L5,0)){ goto a_G16;}
-a_P[0]=16777728;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0);
-a_G14:a_1339(a_F1);
-a_1388(59); goto a_G19;
-a_G16:a_P[0]=16777723;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0); goto a_G14;
-a_G19:if(!__equal(a_L6,a_F2)){ goto a_G21;}
-a_L6=a_F3; goto a_G22;
-a_G21:__incr(a_L6);
-a_G22:__decr(a_L7);
+a_G9:a_1182(a_1352,a_P);a_L6=a_P[0];
+__mult(a_L7,a_L6,a_L7);
+a_G11:if(__equal(a_L7,0)){ goto a_G27;}
+a_1180(a_1352,a_L9,a_P);a_L8=a_P[0];
+if(__equal(a_L8,344288295)){ goto a_G21;}
+if(!__more(a_L5,0)){ goto a_G18;}
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777728;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
+a_G16:a_1339(a_F1);
+a_1388(59); goto a_G21;
+a_G18:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777723;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G16;
+a_G21:__incr(a_L9);
+if(__less(a_L9,a_F2)){ goto a_G24;}
+a_L9=a_F3;
+a_G24:__decr(a_L7);
 __incr(a_F4);
-a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G9;
-a_G25:if(__mreq(a_L5,0)){return;}
-a_1182(a_1352,a_P);a_L6=a_P[0];
-a_P[0]=16777718;a_P[1]=a_F4;a_P[2]=a_L6;a_1337(a_1001,3,a_P+0);return;
+a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G11;
+a_G27:if(__mreq(a_L5,0)){return;}
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777718;a_P[1]=a_F4;a_P[2]=a_L6;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* repeatblockpreload */
 static void a_1408(int a_F1){ /* regularcallpreload+>a */
 int a_L2;int a_L3;int a_L4;int a_L5;int a_P[2];
@@ -3988,7 +4390,10 @@ if(!__equal(a_L5,344288295)){ goto a_G9;}
 __incr(a_L4);
 a_G8:a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G3;
 a_G9:if(!__equal(a_L5,344288301)){ goto a_G15;}
-a_P[0]=16777706;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777706;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __incr(a_L4);
 a_1339(a_F1);
 a_1388(59); goto a_G8;
@@ -3996,35 +4401,46 @@ a_G15:if(!__equal(a_L5,344288307)){ goto a_G8;}
 a_1412(a_F1,a_L2,a_L3,a_L4);return;
 } /* regularcallpreload */
 static void a_1410(int a_F1,int a_F2,int a_F3){ /* repeatblockcall+>a+>a+>a */
-int a_L4;int a_L5;int a_P[3];
+int a_L4;int a_P[3];
 if(__equal(a_F2,0)){ goto a_G4;}
 a_P[0]=a_F3;a_1348(a_P);a_F3=a_P[0];
-a_P[0]=16777701;a_1337(a_1001,1,a_P+0);
-a_G4:a_1182(a_1352,a_P);a_L5=a_P[0];
-__incr(a_F1);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777701;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
+a_G4:__incr(a_F1);
 a_L4=to_LIST(a_1010)->offset[a_F1];
-if(!__equal(a_L4,0)){ goto a_G10;}
 a_P[0]=a_F3;a_1348(a_P);
-a_P[0]=16777698;a_1337(a_1001,1,a_P+0);return;
-a_G10:if(!__less(a_L4,0)){ goto a_G15;}
-a_P[0]=a_F3;a_1348(a_P);
+if(!__equal(a_L4,0)){ goto a_G9;}
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777698;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G9:if(!__less(a_L4,0)){ goto a_G12;}
 __subtr(0,a_L4,a_L4);
-__div(a_L4,a_L5,a_L4);
-a_P[0]=16777693;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);return;
-a_G15:a_P[0]=a_F3;a_1348(a_P);
-__div(a_L4,a_L5,a_L4);
-a_P[0]=16777688;a_P[1]=a_L4;a_P[2]=a_F2;a_1337(a_1001,3,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777693;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G12:/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777688;a_P[1]=a_L4;a_P[2]=a_F2;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* repeatblockcall */
 static void a_1409(int a_F1){ /* regularrulecall+>a */
 int a_L2;int a_L3;int a_L4;int a_L5;int a_L6;int a_P[2];
 a_1181(a_1352,a_P);a_L2=a_P[0];
-a_P[0]=16777683;a_P[1]=a_1352;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777683;a_P[1]=a_1352;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_L3=0;a_L4=0;a_L5=0;
 a_G4:if(!__equal(a_L3,a_L2)){ goto a_G9;}
 if(!__equal(a_L4,0)){ goto a_G7;}
 a_1388(41);return;
 a_G7:a_P[0]=a_L5;a_1348(a_P);
-a_P[0]=16777680;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777680;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G9:a_1180(a_1352,a_L3,a_P);a_L6=a_P[0];
 __incr(a_L3);
 if(__equal(a_L6,344288295)){ goto a_G13;}
@@ -4043,33 +4459,44 @@ static int a_1372(int a_F1){ /* isdummyaffix+>a */
   return 0;}
 } /* isdummyaffix */
 static void a_1411(int a_F1,int a_F2,int a_F3,int a_F4){ /* repeatblockpostload+>a+>a+>a+>a */
-int a_L5;int a_L6;int a_L7;int a_L8;int a_P[3];
+int a_L5;int a_L6;int a_L7;int a_L8;int a_L9;int a_P[3];
 __incr(a_F1);
 a_L5=to_LIST(a_1010)->offset[a_F1];
 a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0];
-a_L6=a_F3;
+a_L7=a_F3;
 if(!__less(a_L5,0)){ goto a_G8;}
 a_F4=0;
-__subtr(0,a_L5,a_L7); goto a_G9;
-a_G8:a_L7=a_L5;
-a_G9:if(__equal(a_L7,0)){ goto a_G24;}
-a_1180(a_1352,a_L6,a_P);a_L8=a_P[0];
-if(a_1372(a_F1)){ goto a_G18;}
-if(__equal(a_L8,344288295)){ goto a_G14;}
-if(!__equal(a_L8,344288301)){ goto a_G18;}
-a_G14:a_1339(a_F1);
-if(!__more(a_L5,0)){ goto a_G17;}
-a_P[0]=16777676;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0); goto a_G18;
-a_G17:a_P[0]=16777671;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0);
-a_G18:if(!__equal(a_L6,a_F2)){ goto a_G20;}
-a_L6=a_F3; goto a_G21;
-a_G20:__incr(a_L6);
-a_G21:__decr(a_L7);
+__subtr(0,a_L5,a_L8); goto a_G9;
+a_G8:a_L8=a_L5;
+a_G9:a_1182(a_1352,a_P);a_L6=a_P[0];
+__mult(a_L8,a_L6,a_L8);
+a_G11:if(__equal(a_L8,0)){ goto a_G26;}
+a_1180(a_1352,a_L7,a_P);a_L9=a_P[0];
+if(a_1372(a_F1)){ goto a_G20;}
+if(__equal(a_L9,344288295)){ goto a_G16;}
+if(!__equal(a_L9,344288301)){ goto a_G20;}
+a_G16:a_1339(a_F1);
+if(!__more(a_L5,0)){ goto a_G19;}
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777676;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G20;
+a_G19:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777671;a_P[1]=a_F4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
+a_G20:__incr(a_L7);
+if(__less(a_L7,a_F2)){ goto a_G23;}
+a_L7=a_F3;
+a_G23:__decr(a_L8);
 __incr(a_F4);
-a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G9;
-a_G24:if(__mreq(a_L5,0)){return;}
-a_1182(a_1352,a_P);a_L6=a_P[0];
-a_P[0]=16777666;a_P[1]=a_F4;a_P[2]=a_L6;a_1337(a_1001,3,a_P+0);return;
+a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G11;
+a_G26:if(__mreq(a_L5,0)){return;}
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777666;a_P[1]=a_F4;a_P[2]=a_L6;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* repeatblockpostload */
 static void a_1407(int a_F1){ /* regularcallpostload+>a */
 int a_L2;int a_L3;int a_L4;int a_L5;int a_P[2];
@@ -4082,7 +4509,10 @@ if(__equal(a_L5,344288295)){ goto a_G8;}
 if(!__equal(a_L5,344288301)){ goto a_G13;}
 a_G8:if(a_1372(a_F1)){ goto a_G11;}
 a_1339(a_F1);
-a_P[0]=16777654;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777654;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G11:__incr(a_L4);
 a_G12:a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G3;
 a_G13:if(!__equal(a_L5,344288307)){ goto a_G12;}
@@ -4095,26 +4525,45 @@ if(!__noteq(a_F1,a_1380)){ goto a_G7;}
 if(__equal(a_F2,a_1380)){ goto a_G5;}
 if(!__lseq(a_F1,0)){ goto a_G7;}
 a_G5:a_A[0]=2;
-a_P[0]=16777649;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777649;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G7:a_A[0]=1;
-a_P[0]=16777645;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777645;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G9:a_A[0]=0;return;
 } /* regularcalld1 */
 static void a_1405(int a_F1,int a_F2){ /* regularcalld2+>a+>a */
 int a_P[2];
 if(!__equal(a_F1,1)){ goto a_G3;}
-a_P[0]=16777642;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777642;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G3:if(!__equal(a_F1,2)){ goto a_G5;}
-a_P[0]=16777639;a_P[1]=a_F2;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777639;a_P[1]=a_F2;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G5:a_1388(59);return;
 } /* regularcalld2 */
 static void a_1406(int a_F1,int a_F2,int a_F3){ /* regularcalld3+>a+>a+>a */
 int a_P[3];
 if(!__equal(a_F1,1)){ goto a_G3;}
-a_P[0]=16777635;a_P[1]=a_F3;a_P[2]=a_F2;a_1337(a_1001,3,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777635;a_P[1]=a_F3;a_P[2]=a_F2;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G3:if(!__equal(a_F1,2)){ goto a_G5;}
-a_P[0]=16777631;a_P[1]=a_F3;a_1337(a_1001,2,a_P+0);return;
-a_G5:a_P[0]=16777627;a_P[1]=a_F3;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777631;a_P[1]=a_F3;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G5:/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777627;a_P[1]=a_F3;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* regularcalld3 */
 static int a_1374(int a_F1){ /* ispidgindiscarded+>a */
 int a_L2;int a_L3;int a_L4;int a_P[1];
@@ -4145,7 +4594,7 @@ a_G10:if(__equal(a_L4,344288307)){return;}
 a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G3;
 } /* pidginalttagtail */
 static void a_1383(int a_F1){ /* pidginrepeatblock+>a */
-int a_L2;int a_L3;int a_P[1];
+int a_L2;int a_L3;int a_L4;int a_P[1];
 __incr(a_F1);
 a_L2=to_LIST(a_1010)->offset[a_F1];
 a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0];
@@ -4153,13 +4602,17 @@ a_1391(a_L2);
 if(!__less(a_L2,0)){ goto a_G7;}
 __subtr(0,a_L2,a_L3); goto a_G8;
 a_G7:a_L3=a_L2;
-a_G8:if(__equal(a_L3,0)){ goto a_G13;}
+a_G8:a_1182(a_1352,a_P);a_L4=a_P[0];
+__mult(a_L3,a_L4,a_L3);
+a_G10:if(__equal(a_L3,0)){ goto a_G15;}
 a_1388(44);
 a_1339(a_F1);
 __decr(a_L3);
-a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G8;
-a_G13:if(__more(a_L2,0)){return;}
-a_P[0]=16777623;a_1337(a_1001,1,a_P+0);return;
+a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G10;
+a_G15:if(__more(a_L2,0)){return;}
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777623;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* pidginrepeatblock */
 static void a_1384(int a_F1,int a_F2){ /* pidginruleargs+>a+>a */
 int a_L3;int a_L4;int a_L5;int a_L6;int a_P[1];
@@ -4180,7 +4633,10 @@ a_G14:a_P[0]=a_F1;a_1379(a_P);a_F1=a_P[0]; goto a_G3;
 } /* pidginruleargs */
 static void a_1385(int a_F1){ /* pidginrulecall+>a */
 int a_L2;int a_P[2];
-a_P[0]=16777618;a_P[1]=a_1352;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777618;a_P[1]=a_1352;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 if(!a_1373(a_1352)){ goto a_G5;}
 a_L2=1;
 a_1382(a_F1); goto a_G6;
@@ -4199,17 +4655,18 @@ a_1370(a_F3,a_F4);return;
 a_G6:if(!__equal(a_L8,3)){ goto a_G8;}
 a_1369(a_F2,a_F7,a_F4);return;
 a_G8:a_1368(a_F5,a_F6,a_F7,a_F4);return;
-a_G9:if(!a_1301(a_F1)){ goto a_G15;}
-if(a_1374(a_F7)){return;}
-a_1404(a_F3,a_F4,a_P);a_L9=a_P[0];
+a_G9:if(!a_1301(a_F1)){ goto a_G16;}
+if(!a_1374(a_F7)){ goto a_G12;}
+a_1388(59);return;
+a_G12:a_1404(a_F3,a_F4,a_P);a_L9=a_P[0];
 a_1385(a_F7);
 a_1405(a_L9,a_F3);
-a_G14:a_1406(a_L9,a_F3,a_F4);return;
-a_G15:a_1408(a_F7);
+a_G15:a_1406(a_L9,a_F3,a_F4);return;
+a_G16:a_1408(a_F7);
 a_1404(a_F3,a_F4,a_P);a_L9=a_P[0];
 a_1409(a_F7);
 a_1405(a_L9,a_F3);
-a_1407(a_F7); goto a_G14;
+a_1407(a_F7); goto a_G15;
 } /* Trulecall */
 static void a_1359(int a_F1,int a_F2,int a_F3){ /* extensionblock+>a+>a+>a */
 int a_L4;int a_L5;int a_P[3];
@@ -4222,7 +4679,11 @@ a_G6:if(__less(to_LIST(a_1010)->offset[a_L4],0)){ goto a_G11;}
 __subtr(a_F1,to_LIST(a_1010)->offset[a_L4],a_L5);
 __incr(a_L5);
 __incr(a_L4);
-a_P[0]=16777615;a_P[1]=a_F2;a_P[2]=a_L5;a_1337(a_1001,3,a_P+0); goto a_G6;
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777615;a_P[1]=a_F2;a_P[2]=a_L5;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G6;
 a_G11:a_1339(a_F3);
 a_1388(59);return;
 } /* extensionblock */
@@ -4232,12 +4693,20 @@ __incr(a_F1);
 a_L4=to_LIST(a_1010)->offset[a_F1];
 __incr(a_F1);
 a_L3=a_F1;
-a_P[0]=16777607;a_P[1]=a_L3;a_P[2]=a_L4;a_1337(a_1001,3,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777607;a_P[1]=a_L3;a_P[2]=a_L4;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __add(2,a_F1,a_F1);
 a_G7:a_1359(a_L4,a_L3,a_F1);
 a_F1=to_LIST(a_1010)->offset[a_F1];
 if(!__equal(a_F1,0)){ goto a_G7;}
-a_P[0]=16777599;a_P[1]=a_L3;a_P[2]=a_L4;a_1337(a_1001,3,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777599;a_P[1]=a_L3;a_P[2]=a_L4;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1376(a_F2);return;
 } /* Textension */
 static void a_1351(int a_F1,int a_A[1]){ /* boxclassifier+>a+a> */
@@ -4247,9 +4716,14 @@ int a_P[2];
 }
 a_A[0]=a_F1;return;
 a_G3:a_A[0]=1922290977;
-a_P[0]=16777590;a_P[1]=a_A[0];a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777590;a_P[1]=a_A[0];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1339(a_F1);
-a_P[0]=16777583;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777583;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* boxclassifier */
 static int a_1371(int a_F1){ /* iscompletearea+>a */
 
@@ -4263,12 +4737,30 @@ if(!__equal(to_LIST(a_1010)->offset[a_F1],2147483647)){ return 0;} return 1;
 static void a_1344(int a_F1,int a_F2,int a_F3){ /* Tsingleifcondition+>a+>a+>a */
 int a_P[5];
 if(!__equal(a_F1,a_F2)){ goto a_G3;}
-a_P[0]=16777580;a_P[1]=a_F3;a_P[2]=a_F1;a_1337(a_1001,3,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777580;a_P[1]=a_F3;a_P[2]=a_F1;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G3:if(!__equal(a_F1,(-2147483647-1))){ goto a_G5;}
-a_P[0]=16777576;a_P[1]=a_F3;a_P[2]=a_F2;a_1337(a_1001,3,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777576;a_P[1]=a_F3;a_P[2]=a_F2;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G5:if(!__equal(a_F2,2147483647)){ goto a_G7;}
-a_P[0]=16777572;a_P[1]=a_F3;a_P[2]=a_F1;a_1337(a_1001,3,a_P+0);return;
-a_G7:a_P[0]=16777568;a_P[1]=a_F1;a_P[2]=a_F3;a_P[3]=a_F3;a_P[4]=a_F2;a_1337(a_1001,5,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777572;a_P[1]=a_F3;a_P[2]=a_F1;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G7:/* called rule: T, n=3, rep=2, block size=1,cnt=5 */
+a_P[0]=16777568;a_P[1]=a_F1;a_P[2]=a_F3;a_P[3]=a_F3;a_P[4]=a_F2;a_1337(a_1001,5,a_P+0);/* block, n=3, rep=2,cnt=5,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* Tsingleifcondition */
 static void a_1341(int a_F1,int a_F2){ /* Tifcondition+>a+>a */
 int a_L3;int a_L4;int a_P[1];
@@ -4279,7 +4771,9 @@ a_L4=to_LIST(a_1010)->offset[a_F1];
 a_1344(a_L3,a_L4,a_F2);
 __incr(a_F1);
 if(!__equal(to_LIST(a_1010)->offset[a_F1],344288358)){return;}
-a_P[0]=16777561;a_1337(a_1001,1,a_P+0); goto a_G1;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777561;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G1;
 } /* Tifcondition */
 static void a_1342(int a_F1,int a_F2){ /* Tjumptoareas+>a+>a */
 int a_L3;int a_L4;int a_L5;int a_P[2];
@@ -4287,11 +4781,19 @@ a_G1:a_L5=to_LIST(a_1010)->offset[a_F1];
 if(!__equal(a_L5,0)){ goto a_G10;}
 __incr(a_F1);
 a_L3=to_LIST(a_1010)->offset[a_F1];
-a_P[0]=16777558;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777558;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1341(a_F1,a_F2);
-a_P[0]=16777554;a_P[1]=a_F2;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777554;a_P[1]=a_F2;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 if(__equal(a_L3,a_1380)){return;}
-a_P[0]=16777543;a_P[1]=to_LIST(a_1010)->offset[a_F1];a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777543;a_P[1]=to_LIST(a_1010)->offset[a_F1];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G10:if(!a_1371(a_L5)){ goto a_G25;}
 __incr(a_F1);
 a_L3=to_LIST(a_1010)->offset[a_F1];
@@ -4299,51 +4801,98 @@ __incr(a_L5);
 a_L4=to_LIST(a_1010)->offset[a_L5];
 if(!__equal(a_L3,a_1380)){ goto a_G20;}
 if(__equal(a_L3,a_L4)){return;}
-a_P[0]=16777540;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777540;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1341(a_F1,a_F2);
-a_P[0]=16777536;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);return;
-a_G20:a_P[0]=16777531;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777536;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
+a_G20:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777531;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1341(a_F1,a_F2);
-a_P[0]=16777527;a_P[1]=a_L3;a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777527;a_P[1]=a_L3;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 if(__equal(a_L4,a_1380)){return;}
-a_P[0]=16777522;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777522;a_P[1]=a_L4;a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G25:__incr(a_F1);
-a_P[0]=16777519;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777519;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_1341(a_F1,a_F2);
-a_P[0]=16777515;a_P[1]=to_LIST(a_1010)->offset[a_F1];a_1337(a_1001,2,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=2 */
+a_P[0]=16777515;a_P[1]=to_LIST(a_1010)->offset[a_F1];a_1337(a_1001,2,a_P+0);/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_F1=a_L5; goto a_G1;
 } /* Tjumptoareas */
 static void a_1266(int a_F1,int a_F2){ /* Tbox+>a+>a */
 int a_L3;int a_P[1];
-a_P[0]=16777511;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777511;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 __incr(a_F1);
 a_1351(a_F1,a_P);a_L3=a_P[0];
 __incr(a_F2);
 a_1342(a_F2,a_L3);
-a_P[0]=16777508;a_1337(a_1001,1,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777508;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* Tbox */
 static void a_1377(int a_F1,int a_F2){ /* listinitialization+>a+>a */
 int a_L3;int a_L4;int a_L5;int a_L6;int a_P[8];
 if(!a_1060(a_F2,16)){ goto a_G4;}
 a_1048(a_F2,a_P);a_L3=a_P[0];
-a_P[0]=16777505;a_P[1]=to_LIST(a_1015)->offset[a_F2-3];a_P[2]=a_F2;a_P[3]=a_L3;a_1337(a_1001,4,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=4 */
+a_P[0]=16777505;a_P[1]=to_LIST(a_1015)->offset[a_F2-3];a_P[2]=a_F2;a_P[3]=a_L3;a_1337(a_1001,4,a_P+0);/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G4:a_1048(a_F2,a_P);a_L3=a_P[0];
 a_1056(a_F2,a_P);a_L5=a_P[0];
 a_1055(a_F2,a_P);a_L4=a_P[0];
 a_1052(a_F2,a_P);a_L6=a_P[0];
-a_P[0]=16777499;a_P[1]=a_F1;a_P[2]=a_F2;a_P[3]=a_L3;a_P[4]=a_L4;a_P[5]=a_L5;a_P[6]=a_L6;a_P[7]=to_LIST(a_1015)->offset[a_F2-3];a_1337(a_1001,8,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=8 */
+a_P[0]=16777499;a_P[1]=a_F1;a_P[2]=a_F2;a_P[3]=a_L3;a_P[4]=a_L4;a_P[5]=a_L5;a_P[6]=a_L6;a_P[7]=to_LIST(a_1015)->offset[a_F2-3];a_1337(a_1001,8,a_P+0);/* block, n=3, rep=2,cnt=8,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=7,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=6,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=5,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* listinitialization */
 static void a_1353(int a_F1){ /* charfileinitialization+>a */
 int a_L2;int a_L3;int a_L4;int a_P[6];
 if(!a_1060(a_F1,16)){ goto a_G3;}
-a_P[0]=16777485;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_P[2]=a_F1;a_1337(a_1001,3,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777485;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_P[2]=a_F1;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G3:if(!a_1060(a_F1,64)){ goto a_G5;}
 a_L2=2; goto a_G6;
 a_G5:a_L2=0;
 a_G6:if(!a_1060(a_F1,32)){ goto a_G8;}
 __incr(a_L2);
 a_G8:a_1178(a_F1,a_P);a_L3=a_P[0];a_L4=a_P[1];
-a_P[0]=16777480;a_P[1]=a_F1;a_P[2]=a_L2;a_P[3]=a_L3;a_P[4]=a_L4;a_P[5]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,6,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=6 */
+a_P[0]=16777480;a_P[1]=a_F1;a_P[2]=a_L2;a_P[3]=a_L3;a_P[4]=a_L4;a_P[5]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,6,a_P+0);/* block, n=3, rep=2,cnt=6,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=5,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* charfileinitialization */
 static void a_1355(int a_F1,int a_A[1]){ /* countfilearea+>a+a> */
 int a_P[3];
@@ -4355,7 +4904,11 @@ a_P[0]=a_F1;a_1179(a_P);a_F1=a_P[0]; goto a_G2;
 static void a_1356(int a_F1){ /* datafileinitialization+>a */
 int a_L2;int a_L3;int a_L4;int a_L5;int a_L6;int a_P[7];
 if(!a_1060(a_F1,16)){ goto a_G3;}
-a_P[0]=16777467;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_P[2]=a_F1;a_1337(a_1001,3,a_P+0);return;
+/* called rule: T, n=3, rep=2, block size=1,cnt=3 */
+a_P[0]=16777467;a_P[1]=to_LIST(a_1015)->offset[a_F1-3];a_P[2]=a_F1;a_1337(a_1001,3,a_P+0);/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 a_G3:if(!a_1060(a_F1,64)){ goto a_G5;}
 a_L2=2; goto a_G6;
 a_G5:a_L2=0;
@@ -4363,14 +4916,29 @@ a_G6:if(!a_1060(a_F1,32)){ goto a_G8;}
 __incr(a_L2);
 a_G8:a_1178(a_F1,a_P);a_L3=a_P[0];a_L4=a_P[1];a_L5=a_P[2];
 a_1355(a_L5,a_P);a_L6=a_P[0];
-a_P[0]=16777462;a_P[1]=a_F1;a_P[2]=a_L2;a_P[3]=a_L3;a_P[4]=a_L4;a_P[5]=a_L6;a_P[6]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,7,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=7 */
+a_P[0]=16777462;a_P[1]=a_F1;a_P[2]=a_L2;a_P[3]=a_L3;a_P[4]=a_L4;a_P[5]=a_L6;a_P[6]=to_LIST(a_1015)->offset[a_F1-3];a_1337(a_1001,7,a_P+0);/* block, n=3, rep=2,cnt=7,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=6,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=5,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_G11:if(__equal(a_L5,0)){return;}
 a_P[0]=a_L5;a_1179(a_P);a_L5=a_P[0];a_L6=a_P[1];a_L3=a_P[2];
-a_P[0]=16777449;a_P[1]=a_F1;a_P[2]=a_L3;a_P[3]=a_L6;a_1337(a_1001,4,a_P+0); goto a_G11;
+/* called rule: T, n=3, rep=2, block size=1,cnt=4 */
+a_P[0]=16777449;a_P[1]=a_F1;a_P[2]=a_L3;a_P[3]=a_L6;a_1337(a_1001,4,a_P+0);/* block, n=3, rep=2,cnt=4,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=3,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=2,dn=2,type=344288311 */
+/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+ goto a_G11;
 } /* datafileinitialization */
 static void a_1248(void){ /* datainitialization */
 int a_L1;int a_L2;int a_P[1];
-a_P[0]=16777439;a_1337(a_1001,1,a_P+0);
+/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777439;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+
 a_L1=to_LIST(a_1015)->alwb;
 a_G3:if(__more(a_L1,to_LIST(a_1015)->aupb)){ goto a_G11;}
 if(!a_1053(a_L1,a_P)){ goto a_G7;}a_L2=a_P[0];
@@ -4393,7 +4961,9 @@ a_G16:{register int a_r1=to_LIST(a_1015)->offset[a_L1-4];
   goto a_G15;}
 a_G17:a_1353(a_L1); goto a_G15;
 a_G18:a_1356(a_L1); goto a_G15;
-a_G20:a_P[0]=16777428;a_1337(a_1001,1,a_P+0);return;
+a_G20:/* called rule: T, n=3, rep=2, block size=1,cnt=1 */
+a_P[0]=16777428;a_1337(a_1001,1,a_P+0);/* block, n=3, rep=2,cnt=1,dn=2,type=344288311 */
+return;
 } /* datainitialization */
 static void a_1336(void){ /* @root */
 

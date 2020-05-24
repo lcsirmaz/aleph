@@ -581,25 +581,25 @@ $                  <pre> if(!<call>){ GOTO <fexit> } <post>
 $   cannot fail: <pre> <call> <post> GOTO <texit>
 $      for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
 
-'a'repeat block preload+>ptr+>n+>rep+>out-size-dn-cnt-type:
+'a'repeat block preload+>ptr+>n+>rep+>out-size-bsz-cnt-type-dn:
    $ BUFFER[ptr]=Dstar,BUFFER[ptr+1]=size,
-   $  size>0: number of items *(not blocks) to a_P[]
+   $  size>0: number of blocks to a_P[]
    $  size=0: pass a_C, a_V (nothing to be done)
-   $  size<0: items plus formal block to a_D[]
+   $  size<0: blocks plus the formal blocks in a_V to a_D[]
    $ rep: first repeat affix
    $ n:   number of affixes
    $ out: first free index in a_A[]
    incr+ptr,BUFFER[ptr]->size,next affix+ptr,rep->dn,
     (size<0,0->out,subtr+0+size+cnt;size->cnt),
+    get repeat count+called rule+bsz,mult+cnt+bsz+cnt,
     (nxt:cnt=0;
      get formal+called rule+dn+type,
      (type=Iformal out;
       size>0,T+"a_P[%d]="+out,T affix+ptr,print char+/;/;
       T+"a_D[%d]="+out,T affix+ptr,print char+/;/),
-     (dn=n,rep->dn;incr+dn),decr+cnt,incr+out,next affix+ptr,:nxt),
+     incr+dn,(dn<n;rep->dn),decr+cnt,incr+out,next affix+ptr,:nxt),
     (size>=0; $ done, otherwise copy repeat block to a_D[out ...] $
-     get repeat count+called rule+dn, $ same as repeat count+this rule $
-       T+"memcpy(a_D+%d,a_V,a_C*%d*sizeof(int));"+out+dn).
+     T+"memcpy(a_D+%d,a_V,a_C*%d*sizeof(int));"+out+bsz).
 'a'regular call preload+>ptr-n-cnt-out-type:
    get number of formals+called rule+n,0->cnt->out,
    $ before * inout affixes go to a_A[out]
@@ -611,13 +611,12 @@ $      for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
       type=Iformal repeat,repeat block preload+ptr+n+cnt+out;
       next affix+ptr,:nxt)).
 
-'a'repeat block call+>ptr+>out+>sep-size-dn:
+'a'repeat block call+>ptr+>out+>sep-size:
    (out=0;arg sep+sep,T+"a_P"),
-   get repeat count+called rule+dn,incr+ptr,BUFFER[ptr]->size,
-   (size=0,arg sep+sep,T+"a_C,a_V)";
-    size<0,arg sep+sep,subtr+0+size+size,
-                   div+size+dn+size,T+"a_C+%d,a_D)"+size;
-    arg sep+sep,div+size+dn+size,T+"%d,a_P+%d)"+size+out).
+   incr+ptr,BUFFER[ptr]->size,arg sep+sep,
+   (size=0,T+"a_C,a_V)";
+    size<0,subtr+0+size+size,T+"a_C+%d,a_D)"+size;
+    T+"%d,a_P+%d)"+size+out).
 'a'regular rule call+>ptr-n-cnt-out-sep-type:
    get number of formals+called rule+n,
    T+"%r("+called rule,0->cnt->out->sep,
@@ -629,19 +628,19 @@ $      for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
 
 'q'is dummy affix+>ptr:
    =BUFFER[ptr]= [Dnoarg;Dcolon],+;-.
-'a'repeat block postload+>ptr+>n+>rep+>out-size-dn-cnt-type:
+'a'repeat block postload+>ptr+>n+>rep+>out-size-bsz-dn-cnt-type:
    incr+ptr,BUFFER[ptr]->size,next affix+ptr,rep->dn,
    (size<0,0->out,subtr+0+size+cnt;size->cnt),
+   get repeat count+called rule+bsz,mult+cnt+bsz+cnt,
    (nxt:cnt=0;
     get formal+called rule+dn+type,
       (is dummy affix+ptr;
        (type=Iformal out;type=Iformal inout),T affix+ptr,
           (size>0,T+"=a_P[%d];"+out;T+"=a_D[%d];"+out);
        +),
-      (dn=n,rep->dn;incr+dn),decr+cnt,incr+out,next affix+ptr,:nxt),
+      incr+dn,(dn<n;rep->dn),decr+cnt,incr+out,next affix+ptr,:nxt),
    (size>=0; $ done, otherwise copy back repeat block from a_D[out] $
-    get repeat count+called rule+dn,
-      T+"memcpy(a_V,a_D+%d,a_C*%d*sizeof(int));"+out+dn).
+    T+"memcpy(a_V,a_D+%d,a_C*%d*sizeof(int));"+out+bsz).
 'a'regular call postload+>ptr-n-cnt-out-type:
    get number of formals+called rule+n,0->cnt->out,
    (nxt:cnt=n;
@@ -686,10 +685,11 @@ $  - pidgin alt: append 0/1 for all out, discard dummy
     get formal+called rule+cnt+type,incr+cnt,
       (type=Iformal out,(BUFFER[ptr]=Dnoarg,print char+/0/;print char+/1/);+),
       (type=Iformal repeat;next affix+ptr,:nxt)).
-'a'pidgin repeat block+>ptr-size-cnt:
+'a'pidgin repeat block+>ptr-size-cnt-rep:
    $ BUFFER[ptr]=Dstar
    incr+ptr,BUFFER[ptr]->size,next affix+ptr,print int+size,
    (size<0,subtr+0+size+cnt;size->cnt),
+   get repeat count+called rule+rep,mult+cnt+rep+cnt,
    (nxt:cnt=0;
     print char+/,/,T affix+ptr,decr+cnt,next affix+ptr,:nxt),
    (size>0;T+",a_C,a_V").
@@ -716,15 +716,14 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    $ ptr   affixes start at BUFFER[ptr+1], linked
    $       description is in rule.ale
    $         Dstar is followed by <n>
-   $           n>0   number of repeat affixes, (integer multiple
-   $                   of repeat block size), star=0
-   $           n<=0  star=1, -n affixes follow
+   $           n>0   number of repeat blocks
+   $           n<=0  star=1, -n blocks follow plus the star
    tag->called rule,incr+ptr, $ BUFFER[ptr] is the first affix $
    (is builtin rule+tag+x,
         (x=2,gen shiftaffix+fnext+tnext;
          x=3,gen getaffixno+n+ptr+tnext;
          gen assignment+rep+star+ptr+tnext);
-    is pidgin rule+tag,(is pidgin discarded+ptr;
+    is pidgin rule+tag,(is pidgin discarded+ptr,print char+/;/;
         regular call d1+fnext+tnext+type,
         pidgin rule call+ptr,
         regular call d2+type+fnext,

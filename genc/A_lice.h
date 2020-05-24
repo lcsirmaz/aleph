@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>	// abs
+#include <string.h>
 
 /********************************************************************
 *  Basic ALEPH data structures

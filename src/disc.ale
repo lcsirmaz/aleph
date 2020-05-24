@@ -216,7 +216,7 @@ $ these rules assume that everything is correct;
   (* v->QBUFFER *)QBUFFER,(shift affix block+*,:putQ;+).
 
 'a'copy QBUFFER affix+>ptr>:
-  $ ptr points to an an affix; copy to the enf of QBUFFER
+  $ ptr points to an an affix; copy to the end of QBUFFER
   $ until Dplus or Dend
   =QBUFFER[ptr]= [Dplus;Dend],incr+ptr,putQ+Dend;
    [Dconst],incr+ptr,putQ+Dconst+QBUFFER[ptr],incr+ptr,:copy QBUFFER affix;
@@ -295,13 +295,13 @@ $ - - - - - - - - - - - - $
   (-aformal-qptr:block=0,QBUFFER->aformal,
       $ no repeat block; the actual affix * is in the top of QBUFFER, 
       $  it belongs to the very first rule
-      (nxt:formal=0; $ then aformal=0
+      (nxt:formal=0,(aformal=0;internal error+fatal+_line_); $ then aformal=0
         (* >>QBUFFER->repr,formal->tag,Imacro->type,0->flag->calibre->ssel *)LLOC,
         get type+formal+ftype,handle formal list+formal+ftype,
         putQ+repr*LADM[aformal]+Dend,
         get adm+formal+formal,get adm+aformal+aformal,:nxt);
     $second case, lrep is the * affix in LLOC
-    repr*LLOC[lrep]->qptr,incr+qptr, $ qptr looks at the replacement text of *
+    putQ+Dend,repr*LLOC[lrep]->qptr,incr+qptr, $ qptr looks at the replacement text of *
       (nxt:formal=0;
        next+LLOC+lrep,(type*LLOC[lrep]=Imacro,>>QBUFFER->repr*LLOC[lrep];+),
        copy QBUFFER affix+qptr,get adm+formal+formal,:nxt)).

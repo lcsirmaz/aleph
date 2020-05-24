@@ -4,6 +4,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% grammar is typeset in \sf font.
 %% the {grammar} environment uses lines with \tem
+% add extra sapce around []
 {\catcode`\[=\active\catcode`\]=\active%
 \gdef\mkoptions{\catcode`\[\active\def[{\kern0.05em\char91\kern0.12em\relax}%
 \catcode`\]\active\def]{\kern0.1em\char93\kern0.05em\relax}%
@@ -19,8 +20,7 @@
 \setlength\itemsep{1pt plus0.2ex}%
 \setlength\parsep{0pt plus 2pt}%
 \setlength\labelsep{-5pt}%
-}\sf%\def\[##1]{{\kern.1em[\kern.1em ##1\kern.05em]\kern.05em\relax}}%
-\mkoptions%
+}\sf\mkoptions%
 }{\end{list}}
 \renewenvironment{itemize}{\begin{list}{}{%
 \advance\leftmargin by -8pt%
@@ -103,12 +103,6 @@
 \catcode`\#=12\catcode`\^=12%
 \tt
 }%
-%\gdef\H#1#2{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{ #1\hfil}
-%\qquad\hbox to 0.3\linewidth{#2\hfil}\par}
-%\gdef\Y#1#2{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{\sf #1\hfil}
-%\qquad\hbox to 0.3\linewidth{\pp|#2|\hfil}\par}
-%\gdef\W#1#2#3{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{\sf #1\hfil}
-%\qquad\hbox to 0.3\linewidth{\pp|#2| or \pp|#3|\hfil}\par}
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % subsubsubsection
@@ -307,9 +301,6 @@ This rule, while it is still correct \A, does no data handling and,
 consequently, will not yield a result; it could for example be used to skip
 an \g{expression} in the input. 
 
-%Note that comments may be added between
-%\pp|$| and \pp|$|.
-
 We now direct our attention back to the \A{} rule \pp|expression| and consider
 what happens when it is ``executed''. First, \pp|term| is executed and
 will yield a result in \pp|res|: it does so because we shall define
@@ -320,7 +311,6 @@ symbol+/+/|. This is a question (because we shall define it so) which is
 answered positively if indeed the next symbol is a \pp|+| (in which case the
 \pp|+| will be discarded after reading) or negatively if the next symbol is
 something else.
-% Again it does so because we shall define it that way.
 
 If \pp|is symbol+/+/| ``succeeds'' %(is answered positively) 
 the remainder of the
@@ -355,7 +345,6 @@ equality of two values and the extension of a stack by a fixed number of
 given values. Often, however, these two primitives are not
 sufficient to express the action needed; the rule is then subdivided into
 other rules.
-%Normally the rule is then decomposed into other rules; however, 
 There are, however, cases where this is not desirable (or
 not possible). In such cases the rule is declared \pp|'external'| and
 its actions must be specified in a different way, often 
@@ -391,9 +380,7 @@ As said before, the
 stand-alone \pp|+| denotes the dummy action that always succeeds. The period
 ends the rule.
 
-%For the reader who is familiar with \g{ALGOL}-like languages 
-The following
-approximate translation to \g{ALGOL 68} might be helpful:
+The following approximate translation to \g{ALGOL 68} might be helpful:
 \begin{program}
 {\bf{}proc }expression = ({\bf ref int }res) {\bf{}void}:
 {\bf{}begin int }r;
@@ -404,19 +391,6 @@ approximate translation to \g{ALGOL 68} might be helpful:
   {\bf{}fi}
 {\bf{}end}
 \end{program}
-%\noindent
-%An approximate PL/I version runs as follows:
-%\begin{program}
-%EXPRESSION:
-%   PROCEDURE(RES) RECURSIVE;
-%      DECLARE(RES,R) FIXED BINARY;
-%      CALL TERM(RES);
-%      IF IS\underline{ }SYMBOL(\char39+\char39) THEN
-%      DO; CALL EXPRESSION(R);
-%          CALL PLUS(RES,R,RES);
-%      END; ELSE;
-%   END;
-%\end{program}
 
 \subsection{Further rules}\label{1.3}
 In view of the above the rule for \g{term} should not surprise the
@@ -485,10 +459,6 @@ so, a new result is calculated from the previous one and the digit \pp|d| by
 making \pp|res| equal to \pp|res*10+d| and \pp|integer1| is called again (to
 see if there are more digits to come). If there was no digit, we have
 processed the whole integer and \pp|res| contains its value.
-
-%The rule \pp|integer1| is recursive; this should not worry the reader since
-%the compiler will discover that this is a case of trivial right-recursion
-%and will optimize it into a simple jump.
 
 The right arrow-head in front of \pp|res| means that the calling rule will have
 assigned a value to this affix just before calling \pp|integer1|, i.e.
@@ -623,9 +593,6 @@ of \pp|put integer|. Subsequently, the last digit is printed through a call
 or \pp|put char|.
 This is a simple but inefficient way of printing a
 number.
-% here the recursion is essential and will not be optimized out by the
-%compiler.
-%
 A more convenient way of printing an integer is provided by the (standard)
 external rule \pp|put int|.
 
@@ -771,8 +738,6 @@ string 2|). This means that we could as well explicitly have written it there.
 We now replace the call of \pp|next2| in \pp|put string 2| by the definition
 of \pp|next2|: we parenthesize the rule, substitute for each formal affix
 its corresponding actual affix and the remove the formal affixes:
-%
-%The final version is then:
 \begin{program}
 'action'put string+""file+table[]+>string-count:
    0->count,
@@ -807,7 +772,7 @@ which, according to the above recipe, would yield:
 \end{program}
 
 In a sense this is a more appropriate form than the one given in 
-\ref{1.2}:%\footnote{The manuscript says 2.2 here and at the next reference}:
+\ref{1.2}:
 now the \pp|r| occurs where it belongs, that is, in the position of a local
 affix of the parenthesized part only. To obtain the version in \ref{1.2}
 exactly one must start from:
@@ -821,19 +786,6 @@ and
 'action'expression tail 3+>res>+r>:
    is+symbol+/+/,expression 3+r,plus+res+r+res;+.
 \end{program}
-
-%%%%%%%%%%%%
-
-%\subsection{References}
-%\begin{thebibliography}{9}
-%\bibitem{1}
-%C.~H.~A.~Koster, \emph{A Compiler Compiler}, MR 127/71, Mathematical Centre,
-%Amsterdam (1971)
-%
-%\bibitem{2}
-%C.~H.~A.~Koster, \emph{Affix-grammars} in: ALGOL 68 implementation, ed.
-%J.~E.~L.~Peck, North-Holland Publ. Co., Amsterdam (1971)
-%\end{thebibliography}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction to the manual}\label{sec:2}
@@ -1143,12 +1095,6 @@ applies. Otherwise the key of the second \g{alternative} is
 executed: if it succeeds, the second \g{alternative} applies, etc. If none
 of the keys succeeds, the \g{alternative-series} fails.
 
-%If the first \g{member} is a \g{terminator} (and then it is the only
-%member), the \g{alternative} at hand applies; if the \g{terminator}
-%succeeds, the \g{alternative series} succeeds; if it fails the
-%\g{alternative series} fails and if it does neither, the question whether the
-%\g{alternative series} succeeds of fails will not arise.
-
 The \g{alternative} found applicable is then elaborated further. Its key 
 has already been executed. Now the rest of its \g{member}s and
 \g{last-member} are
@@ -1318,7 +1264,6 @@ Example of a \g{local-affix-sequence}:
 \begin{program}
   -count
 \end{program}
-%\noindent
 A \g{local-variable} describes a variable. Space for
 this \g{variable} is reserved on the run-time stack upon entry of the
 \g{actual-rule} or \g{compound-member} of which it is part. On exit from
@@ -1431,53 +1376,28 @@ $S$..
 \item
 If the \g{source} is a \g{limit}, its value is described in \ref{4.1.7}.
 \item if the \g{source} is a \g{dummy-symbol}, there is an error.
-%the tag of the \g{limit} must be the
-%\g{tag} of a (global or formal) stack or table. The value of the \g{min
-%limit} (\g{max limit}, \g{calibre}) is the value of the \pp|min limit|
-%(\pp|max limit|, \pp|calibre|) of the corresponding actual stack or table.
-%For these values see \ref{4.1.7}.
 \end{trivlist}
 
 The value of the \g{source} is called $V$. Now the 
 \g{variable-directive}s of the \g{transport} are executed in textual order. 
 A \g{variable-directive} is executed as follows.
 
-% is determined and $V$ is put in the
-%location indicated. Next its second \g{destination}, if present, is
-%determined and $V$ is put in the location indicated, and so forth.
-%
-%\medskip\noindent
-%A \g{destination} is determined as follows.
 \begin{trivlist}
 \item
 If its \g{variable} is a \g{variable-tag}, $V$ 
-%the \g{destination} is a \g{tag}, this \g{tag} must identify a global,
-%formal or local variable. In this case the value
 is put in the location of the variable identified. If a formal or local
 variable is identified, this variable has the attribute \emph{initialized}
 int he rest of the \g{alternative} in this the \g{transport} appears.
-%the \g{destination} is the \g{tag} of a formal or local
-%variable, this variable has the attribute \emph{initialized} in the rest of
-%the \g{member}s in the \g{alternative} in which the \g{transport} appears.
-%\item
-%If the \g{destination} is an \g{element}, the \g{source} between the 
 \item
 If its \g{variable} is a \g{stack-element}, the \g{source} between the
 \g{sub-symbol} and \g{bus-symbol} is evaluated and its value is called $P$.
 We call the stack identified by the \g{stack-tag} $L$.
-%The
-%\g{tag} in front of the \g{sub symbol} must be the tag of a global or formal
-%stack. 
 We now consider the block in $L$ that has an address equal to
 $P$ (if no such block exists, there is an error); it is called $B$.
 Subsequently a selector $S$ is determined: if the \g{of-symbol} is present, the
 $S$ is the \g{selector} in front of it; if the \g{of-symbol} is absent, $S$
 is the \g{stack-tag}. $S$ must be a selector of $L$.
-%. Otherwise it is the \g{tag} in front
-%of the \g{sub symbol}. (As an example, \pp|list[p]| is equivalent to
-%\pp|list*list[p]|.) The value is now 
 Now $v$ is put in the location in block $B$ identified by the selector $S$.
-%that is identified by the selector.
 \item
 if the \g{variable} is a \g{dummy-symbol}, the \g{variable-directive} is a
 dummy action.
@@ -1528,10 +1448,6 @@ appear in the \g{field-transport-list} must be selectors of $S$.
 
 Firs the \g{source}s in the \g{field transport}s are evaluated as described
 in \ref{3.4.1} and their values remembered.
-%The \g{tag} after the second \g{of symbol}
-%must be that of a (global or formal) stack, and the \g{tag}s that appear as
-%\g{selector destination} in the \g{field transport list} must be selectors
-%of that stack.
 Subsequently the stack is extended to the right with one block $B$
  of empty locations
 (whence the name \emph{extension}); the number of locations in this block is
@@ -1539,12 +1455,6 @@ equal to the calibre of $S$. Net the
 \g{field transport}s are executed; a \g{field-transport} is executed by
 putting the value remembered for its \g{source} in the location(s) in $B$
 identified by its \g{selector}s.
-%evaluated as described in \ref{3.4.1}. Its value is put in the location in
-%the block just added that is identified by the first selector in the
-%\g{selector destination sequence}, then that value is put in the location
-%identified by the second selector (if present), and so on. Next, the
-%second \g{source} is evaluated (if present) and its value put in the
-%location(s) indicated by its \g{selector destination sequence}, and so on.
 
 No more than one value may be put in a given location in $B$; at the end of the
 \g{extension} all locations in $B$ must have given a value;
@@ -1586,11 +1496,9 @@ The \g{actual} corresponding to a \g{formal-table} must be a \g{list-tag}
 identifying a (global or formal) stack or a (global or formal) table. All actions
 performed on the \g{formal} are executed directly on the \g{actual}. If the
 \g{formal} has a \g{field-list} the calibres
-%\g{actual} calibre larger than $1$ the calibre
 of the \g{formal} and
 \g{actual} must be equal; the selectors may differ. If the \g{formal}
 has no \g{field-list}, no calibre
-%calibre of the \g{formal} is $1$, no 
 match is required. Regardless of
 mismatches, the value delivered by the \g{calibre} (\pp|<>list|) is the
 calibre of the global list to which the \g{formal table}
@@ -1925,8 +1833,6 @@ takes precedence.
 
 The exact size and location of all \g{zone}s is known at compile time; this
 information can be utilized by the compiler.
-% A warning is issued if the total of the \g{area}s do not
-%cover the complete range from \pp|min int|to \pp|max int|.
 
 A \g{classification} can fail if at least on of its \g{alternative}s can
 fail, it has side-effects if at least one of its \g{alternative}s has
@@ -2177,16 +2083,9 @@ The user has no direct control over the way in which the address space is
 divided and addresses are assigned. This is done as follows:
 \begin{itemize}
 \item[a.] \emph{Deleted}; see \ref{5.2.4} for \pp|nil| and \pp|nil table|.
-%One address is set aside and the \g{external constant} \pp|nil| is
-%given its value. Consequently \pp|nil| will never address any user item.
 \item[b.] For each table of stack without \g{size-estimate} $L$ the size of
 the actual address space is calculated from its \g{filling-list} and $L$ is
 given a virtual address space of exactly the same size.
-%\item[b.] For each table $T$ the size of its actual address space is
-%calculated from its \g{filling list} and $T$ is given a virtual address
-%space of exactly the same size. The right-most address is called the
-%{\tt max limit} of $T$, the left-most address minus one plus the
-%{\tt calibre} of $T$ is called the {\tt min limit} of $T$.
 \item[c.] For each stack with an \g{absolute size} a virtual address space
 of that size is reserved.
 \item[d.] The remainder of the virtual address space is distributed over the
@@ -2203,7 +2102,6 @@ equal to the right-most address in the actual address space; the
 
 If the actual address space has length zero, the {\tt max limit} of $L$ is
 equal to the {\tt min limit} minus the {\tt calibre} of $L$.
-%\end{itemize}
 
 The virtual and actual address space of a table are fixed (and equal) for
 the duration of the program.
@@ -2223,7 +2121,10 @@ $-16$ to $15$. If the following declarations (see \ref{4.1.5} and
                 ((365,113):pi, (191,71):e).
 \end{program}
 \noindent
-the virtual address space could have the following layout:
+the virtual address space could have the layout in Table \ref{4.1.4}.
+(For the notation used see \ref{4.1.5} through \ref{4.1.7}).
+
+\begin{table}[htb]%
 \begin{center}%
 \small
 \def\K#1{\hbox to 3em{\hss\tt#1~~}}%
@@ -2266,8 +2167,14 @@ address & contents & belongs to & selector & pointer \\[2pt]
 \K{14}& ---       & \ditto    &\tt num~~   &               \\[-1pt]
 \K{15}& ---       & \ditto    &\tt denom  &              \\[-1pt]
 \end{tabular}
-\end{center}
-(For the notation used see \ref{4.1.5} through \ref{4.1.7}).
+
+\bigskip
+
+\textbf{Table} \ref{4.1.4}
+
+\kern -14pt
+\end{center}%
+\end{table}
 
 \A{} allows the user to extend a stack toward the right (raising the \pp|max
 limit|) through an \g{extension} (\ref{3.4.3}); to remove items from the right
@@ -2284,28 +2191,11 @@ the left end}). Queue-operation consumes virtual
 address space but in most implementations virtual address space will be
 virtually unlimited.
 
-%The virtual and actual address space of a table are fixed (and equal) for
-%the duration of the program.
-
 Usually an actual address space correspond to a physical space that is in
 the physical memory of the computer used. The physical space is completely
 invisible to the user except perhaps in efficiency considerations. Parts of
 it may be in main memory, managed by some re-allotment scheme, part of it
 may be on background memory.
-
-%If the \g{tag} of a table is not used in other constructs than \g{limit} and
-%\g{zone}, the values in the table will never be accessed, and no physical
-%space needs to be assigned to this table.
-%
-%\noindent
-%Example: the \g{table declaration}:
-%\begin{program}
-%'table'dummy=(0:nil1, 0:nil2, 0:nil3).
-%\end{program}
-%\noindent
-%where the tag \pp|dummy| does not occur anywhere else in the program,
-%declares 3 more nil-like constants and no physical space needs to be
-%reserved.
 
 \subsubsection{Tables}\label{4.1.5}
 
@@ -2412,7 +2302,6 @@ The values in the list are specified in the \g{filling-list-pack}. Each
 \g{filling} in the \g{filling-list-pack} corresponds to one or more blocks
 in the list: the first block produced by the \g{filling-list-pack}
 corresponds to the left-most block in the list,
-% (the most primitive block ifthe list is a stack),
 and so on.
 
 If the \g{filling} is a \g{single-block}, the calibre of the list must be 1.
@@ -2435,9 +2324,6 @@ largest address in the generated list of blocks.
 The string denoted by a \g{string-denotation} consists of the characters
 which are the representation of its \g{string-item}s, if any, except that for
 each \g{quote-image} the representation of the \g{quote-symbol} is taken.
-%\g{string item sequence}
-%in which each \g{quote image} is replaced by a \g{quote symbol}. A \g{non
-%quote item} is any symbol with the exception of \g{quote symbol}.
 Spaces are considered \g{string item}s, new-line control characters are not, 
 since the dividing into
 lines is done through the charfile-handling externals (see \ref{5.2.5}).
@@ -2446,10 +2332,9 @@ lines is done through the charfile-handling externals (see \ref{5.2.5}).
 Example 1:
 The \g{table-declaration} for \pp|for winds| (example 3 above) gives rise to
 the following list:
-\begin{center}%\small\let\tt\tft
+\begin{center}%
 \def\K#1{\hbox to 6em{\tt~~#1\hss}}%
 \def\L#1{\hbox to 4.5em{\tt~~#1\hss}}%
-%\def\ditto{\raisebox{-1pt}{\tt "}}%
 \begin{tabular}{ccc}
 address & selector & value \\[2pt]
           & \tt wind & \K{north wind}\\[-1pt]
@@ -2472,7 +2357,7 @@ Example 2: the \g{table-declaration}
 \end{program}
 \noindent
 could in some version on some computer generate:
-\begin{center}%\small\let\tt\tft
+\begin{center}%
 \def\K#1{\hbox to 6em{\tt~~#1\hss}}%
 \def\ditto{\raisebox{-1pt}{\tt "}}%
 \begin{tabular}{ccc}
@@ -2627,9 +2512,7 @@ belong in the given \g{area}. If no \g{area} is supplied, the \g{area}
 \pp|[:]| is assumed.
 
 Files are read and written sequentially. The can be reset to the beginning
-of the file and be reread or rewritten.
-% Some files allow \emph{back-spacing}, \emph{back-lining} or \emph{back-data-ing}.
-The file
+of the file and be reread or rewritten. The file
 ends after the last item written or else after the last item produced by the
 preprocessing.
 
@@ -2697,10 +2580,7 @@ data-item then consists of the value of \pp|item| and the indication
 
 If the \pp|type| is \pp|pointer|, the value of \pp|item| must be an address
 in the virtual address space of a list whose \g{list-tag} is a \g{zone} in
-the \g{area}.
-%point into a list
-%that is a \g{zone} in the area.
-The data-item then consists of the offset
+the \g{area}. The data-item then consists of the offset
 from the left end of that list and the name of the list.
 
 A data-item is read from a datafile by a call of \pp|'predicate' get data +
@@ -2796,8 +2676,7 @@ external table description,
 \item external table description:
 
 table head, equals symbol, string denotation.
-%
-%(field list pack), tag, equals symbol, string denotation.
+
 \smallskip
 \item external constant declaration:
 
@@ -2827,8 +2706,6 @@ shown by the \g{formal-affix-sequence}. A call to such a rule will result in
 implementation-dependent actions; it is the implementer's responsibility to
 see to it that these actions are in accordance with the type of the rule and
 that no-sideeffect will occur when a call of the rule fails.
-% (see \A{} Implementation, to be published by
-%the Mathematical Centre, Amsterdam).
 
 An \g{external-table-description} defines a table to be known internally
 under the name given by the \g{table-tag} and externally by the
@@ -2845,15 +2722,11 @@ implementation-dependent actions.
 
 Standard externals can be used in all programs without further notice. Their
 name can be redeclared by the user.
-% The workings of rules marked by \pp|P|
-%are affected by pragmats (see chapter \ref{sec:6}), whereas rules marked with a
-%$\bullet$ are not.
 
 \subsubsection{Integers}\label{5.2.1}
 
 
 \newcommand\X{\smallskip\noindent\hbox to 15pt{\hss$\bullet$}\space}
-%\ifx#1@\relax{\tt P}\else$\bullet\,$\fi\space}}
 \newcommand\Y{\par\hangindent=15pt\hangafter=0\noindent}
 
 
@@ -3264,9 +3137,6 @@ The file \pp|file| must be a datafile. A data-item is written on the file,
 consisting of the value \pp|data| and the type \pp|type|. For a more
 detailed description see \ref{4.2.2}.
 
-%\smallskip
-%The following four externals are recommended.
-
 \X\pp|'predicate'back file+""file.|\Y
 If there is not yet a last item read, \pp|back file| fails. Otherwise it
 succeeds and the file is repositioned to
@@ -3328,16 +3198,7 @@ This the \g{pragmat-item}
 \pp|background=(numb adm,history)|
 has the same meaning as
 \pp|background=number adm, background=history|.
-%\begin{program}
-%algol=apl=list, algol=apl=2,
-%algol=apl=pl=1, algol=snobol.
-%\end{program}
 
-%All \g{pragmat item}s are now of the form \g{tag, equals symbol, pragmat
-%item or int or string}. They are divided into three groups according to the
-%\g{tag}: compiler-pragmats, affecting the compiler; external-pragmats,
-%affecting the standard externals; and user-pragmats.
-%
 \subsection{Compiler-pragmats}\label{6.1}
 
 The \g{tag}s \pp|background|, \pp|compile|,
@@ -3348,27 +3209,6 @@ The \g{tag}s \pp|background|, \pp|compile|,
 The identified list will be kept on
 background memory if possible and necessary. The position of this
 \g{pragmat} is immaterial.
-
-%\X\pp|bounds=|\g{tag1}\pp|=|\g{tag2}\Y
-%The \g{tag1} must identify a list. The \g{tag2} can be:
-%\begin{witemize}
-%\item[\tt on] subsequent \g{element}s of \g{tag1} will be compiled with a
-%dynamic bound check (if necessary).
-%\item[\tt off] no such check is made.
-%\end{witemize}
-%The standard option is \pp|on|. An \g{element} of a formal table or stack
-%will be compiled with a bound check, unless at that point int he program no
-%bound checks would be compiled for any \g{element}.
-%
-%\X\pp|class=|\g{tag}\Y
-%The \g{tag} can be:
-%\begin{witemize}
-%\item[\tt on] subsequent \g{classification}s are compiled with a dynamic
-%check that determines if the value of its \g{classifier} belongs in any area
-%(if necessary).
-%\item[\tt off] no such check is compiled.
-%\end{witemize}
-%The standard option is \pp|on|.
 
 \X\pp|compile=|\g{tag}\Y
 The \g{tag} can be:
@@ -3474,7 +3314,6 @@ sharp-sign (\pp|\#|) followed by zero or more letters, digits and spaces.
 In the program thus obtained all symbols are expanded into characters
 as described in \ref{7.2}
 (e.g., \g{root-symbol} turns into \pp|'root'|).
-%\g{variable symbol} turns into \pp|'var'|). 
 The program text is then divided
 into lines in such a way that no comment is spread over two or more lines.
 If a line ends with a dollar-sign from a long comment, this dollar-sign may
@@ -3504,7 +3343,6 @@ The representations of the other terminal symbols can found in the following
 table.
 
 \begin{keywords}
-% title
 \G{\kern -1ex\rm}	representation	\\[3pt]
 \G{absolute}		\pp|/|		\\
 \G{action}		\pp|'action'| or \pp|'act'|	\\
@@ -3554,34 +3392,19 @@ table.
 \section{Examples}\label{sec:8}
 
 \subsection{Towers of Hanoi}\label{8.1}
-%\nopagebreak
 \begin{program}\input{ex1.ale}\end{program}
 
 
 \subsection{Printing Towers of Hanoi}\label{8.2}
-%\nopagebreak
 \begin{program}\input{ex2.ale}\end{program}
 
 \subsection{Symbolic differentiation}\label{8.3}
-%\medskip\noindent
-%Example\footnote{The \g{last class} in the \g{classification} of the
-%\g{rule} {\tft derivative} cannot be the \g{success symbol} {\tft+} as this
-%alternative must also assign a value to the formal out affix {\tft de}.} 3:
-%\nopagebreak
 \begin{program}\input{ex3.ale}\end{program}
 
 \subsection{Quicksort}\label{8.4}
-%\medskip\noindent
-%Example\footnote{As the comment says, the \g{formal affix} {\tft a} must be
-%a \g{formal stack}, and not a \g{formal table} as its elements are
-%\g{destination}s in \g{transport}s.} 4:
-%\nopagebreak
 \begin{program}\input{ex4.ale}\end{program}
 
 \subsection{Permutations}\label{8.5}
-%\medskip\noindent
-%Example 5:
-%\nopagebreak
 \begin{program}\input{ex6.ale}\end{program}
 
 \section{References in the manual}
@@ -3617,453 +3440,6 @@ How to call procedures, or second thoughts on Ackermann's function,
 \emph{Software -- Practica \& Experience}, {\bf 7} pp 317--329 (1977)
 
 \end{thebibliography}
-
-\end{document}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% page 81
-
-
-\section{The grammar}\label{sec:9}
-
-\subsubsection*{\ref{7.2} Symbols}
-
-\begin{keywords}
-\G{open}		\pp|(| \\
-\G{close}		\pp|)| \\
-\G{absolute}		\pp|/| \\
-\G{plus}		\pp|+| \\
-\G{minus}		\pp|-| \\
-\G{times}		\pp|*| \\
-\G{by}			\pp|/| \\
-\G{left}		\pp|<| \\
-\G{right}		\pp|>| \\
-\G{equals}		\pp|=| \\
-\G{point}		\pp|.| \\
-\G{colon}		\pp|:| \\
-\G{semicolon}		\pp|;| \\
-\G{comma}		\pp|,| \\
-\G{sub}			\pp|[| \\
-\G{bus}			\pp|]| \\
-\G{quote}		\pp|"| \\
-\G{formal affix}	\pp|+| \\
-\G{local affix}		\pp|-| \\
-\G{repeat}		\pp|:| \\
-\G{success}		\pp|+| \\
-\G{failure}		\pp|-| \\
-\G{box}			\pp|=| \\
-\G{up to}		\pp|:| \\
-\G{actual affix}	\pp|+| \\
-\G{of}			\pp|*| \\
-\end{keywords}
-
-\subsubsection*{Bold face symbols}
-\begin{keywords}
-\G{constant}		\pp|'constant'|, \pp|'cst'| \\
-\G{variable}		\pp|'variable'|, \pp|'var'| \\
-\G{stack}		\pp|'stack'| \\
-\G{table}		\pp|'table'| \\
-\G{charfile}		\pp|'charfile'| \\
-\G{datafile}		\pp|'datafile'| \\
-\G{predicate}		\pp|'predicate'|, \pp|'pred'|	\\
-\G{question}		\pp|'question'|, \pp|'qu'|	\\
-\G{action}		\pp|'action'|, \pp|'act'|	\\
-\G{function}		\pp|'function'|, \pp|'fct'|	\\
-\G{external}		\pp|'external'| \\
-\G{pragmat}		\pp|'pragmat'| \\
-\G{exit}		\pp|'exit'|	\\
-\G{root}		\pp|'root'|	\\
-\G{end}			\pp|'end'|	\\
-\end{keywords}
-
-\subsubsection*{Other primitives}
-\begin{keywords}
-\K{tag}		\\
-\K{digit}	\\
-\K{character}	\\
-\K{non quote item}\\
-\end{keywords}
-
-\subsubsection*{\ref{3.1} The program}
-\begin{grammar}
-\item program:\\
-  (information sequence), root, (information sequence), end symbol.
-\item information sequence:\\
-  information, (information sequence).
-\item information:\\
-  declaration; pragmat [6].
-\item root:\\
-  root symbol, affix form [3.5], point symbol.
-\item declaration:\\
-  rule declaration [3.2.1];\\
-  data declaration [4];\\
-  external declaration [5.1].
-\end{grammar}
-
-\subsubsection*{\ref{3.2.1} Rule declarations}
-\begin{grammar}
-\item rule declaration:\\
-  typer, rule tag, (formal affix sequence),\\
-  actual rule [3.2.2], point symbol.
-\item typer:\\
-  action symbol; function symbol, predicate symbol; question symbol.
-\item rule tag:\\
-  tag.
-\item formal affix sequence:\\
-  formal affix, (formal affix sequence).
-\item formal affix:\\
-  formal affix symbol, formal.
-\item formal:\\
-  formal variable; formal stack; formal table; formal file.
-\item formal variable:\\
-  (right symbol), variable tag[4.1.3], (right symbol).
-\item formal table:\\
-  (field list pack [4.1.5]), table tag [4.1.5], sub bus.
-\item formal stack:\\
-  sub bus, (field list pack [4.1.5]), stack tag [4.1.6], sub bus.
-\item sub bus:\\
-  sub symbol, bus symbol.
-\item formal file:\\
-  quote image [4.1.5], file tag [4.2].
-\end{grammar}
-
-\subsubsection*{\ref{3.2.2} Actual rules}
-\begin{grammar}
-\item actual rule:\\
-  (local affix sequence), colon symbol, rule body.
-\item local affix sequence:\\
-  (local affix, (local affix sequence).
-\item local affix:\\
-  local affix symbol, local variable.
-\item local variable:\\
-  variable tag.
-\item rule body:\\
-  alternative series; classification [3.8].
-\item alternative series:\\
-  alternative, (semicolon symbol, alternative series).
-\item alternative:\\
-  last member[3.2.3]; member[3.2.3], comma symbol, alternative.
-\end{grammar}
-
-\subsubsection*{\ref{3.2.3} Members}
-\begin{grammar}
-\item last member:\\
-  member; terminator[3.6].
-\item member:\\
-  affix form[3.5]; operation[3.4]; compound member[3.7].
-\end{grammar}
-
-\subsubsection*{\ref{3.4} Operations}
-\begin{grammar}
-\item operation:\\
-  transport; identity; extension.
-\item transport:\\
-  source[3.5], destination sequence.
-\item destination sequence:\\
-  destination, (destination sequence).
-\item destination:\\
-  to token, variable[3.5].
-\item to token:\\{}
-  minus symbol, right symbol.
-\item identity:\\
-  source[3.5], equals symbol, source[3.5].
-\item extension:\\
-  of symbol, field transport list, of symbol, stack tag[4.1.6].
-\item field transport list:\\
-  field transport, (comma symbol, field transport list).
-\item field transport:\\
-  source[3.5], selector destination sequence.
-\item selector destination sequence:\\
-  selector destination, (selector destination sequence).
-\item selector destination:\\
-  to token, selector[4.1.5].
-\end{grammar}
-
-\subsubsection*{\ref{3.5} Affix form}
-\begin{grammar}
-\item affix form:\\
-  rule tag[3.2.1], (actual affix sequence).
-\item actual affix sequence:\\
-  actual affix, (actual affix sequence).
-\item actual affix:\\
-  actual affix symbol, actual.
-\item actual:\\
-  source; list tag[4.1.7]; file tag[4.2].
-\item source:\\
-  constant; variable.
-\item constant:\\
-  plain value[4.1.1]; table element.
-\item variable:\\
-  variable tag[4.1.3]; stack element.
-\item table element:\\
-  (selector[4.1.5], of symbol), table tag[4.1.5],\\
-  sub symbol, source, bus symbol.
-\item stack element:\\
-  (selector[4.1.5], of symbol), stack tag[4.1.6], 
-
-  sub symbol, source, bus symbol.
-\end{grammar}
-
-\subsubsection*{\ref{3.6} Terminators}
-\begin{grammar}
-\item terminator:\\
-  jump; exit; success symbol; failure symbol.
-\item jump:\\
-  repeat symbol; rule tag[3.2.1].
-\item exit:\\
-  exit symbol, expression[4.1.1].
-\end{grammar}
-
-\subsubsection*{\ref{3.7} Compound members}
-\begin{grammar}
-\item compound member\\
-  open symbol,(local part, colon symbol), rule body[3.2.2], close symbol.
-\item local part:\\
-  rule tag[3.2.1], (local affix sequence[3.2.2]); local affix
-sequence[3.2.2].
-\end{grammar}
-
-\subsubsection*{\ref{3.8} Classifications}
-\begin{grammar}
-\item classification:\\
-  classifier box, class chain.
-\item classifier box:\\
-  box symbol, classifier, box symbol.
-\item classifier:\\
-  source[3.5].
-\item class chain:\\
-  class, semicolon symbol, class chain; last class.
-\item class:\\
-  area, comma symbol, alternative[3.2.2].
-\item area:\\
-  sub symbol, zone series, bus symbol.
-\item zone series:\\
-  zone, (semicolon symbol, zone series).
-\item zone:\\
-  (expression[4.1.1]), up to symbol, (expression[4.1.1]);\\
-  expression[4.1.1]; list tag[4.1.7].
-\item last class:\\
-  class; alternative[3.2.2].
-\end{grammar}
-
-\subsubsection*{\ref{sec:4} Data declarations}
-\begin{grammar}
-\item data declaration:\\
-  constant declaration[4.1.2];\\
-  variable declaration[4.1.3];\\
-  stack declaration[4.1.6];\\
-  table declaration[4.1.5];\\
-  file declaration[4.2].
-\end{grammar}
-
-\subsubsection*{\ref{4.1.1} Expressions}
-\begin{grammar}
-\item expression:\\
-  (plus minus), term; expression, plus minus, term.
-\item term:\\
-  (term, times by), base.
-\item base:\\
-  plain value; expression pack.
-\item plain value:\\
-  integral denotation; character denotation; constant tag[4.1.2];
-limit[4.1.7].
-\item integral denotation:\\
-  (integral denotation), digit.
-\item character denotation:\\
-  absolute symbol, character, absolute symbol.
-\item expression pack:\\
-  open symbol, expression, close symbol.
-\item plus minus:\\{}
-  plus symbol; minus symbol.
-\item times by:\\
-  times symbol; by symbol.
-\end{grammar}
-
-\subsubsection*{\ref{4.1.2} Constant declarations}
-\begin{grammar}
-\item constant declaration:\\
-  constant symbol, constant description list, point symbol.
-\item constant description list:\\
-  constant description, (comma symbol, constant description list).
-\item constant description:\\
-  constant tag, equals symbol, expression[4.1.1].
-\item constant tag:\\
-  tag.
-\end{grammar}
-
-\subsubsection*{\ref{4.1.3} Variable declarations}
-\begin{grammar}
-\item variable declaration:\\
-  variable symbol, variable description list, point symbol.
-\item variable description list:\\
-  variable description, (comma symbol, variable description list).
-\item variable description:\\
-  variable tag, equals symbol, expression[4.1.1].
-\item variable tag:\\
-  tag.
-\end{grammar}
-
-\subsubsection*{\ref{4.1.5} Table declarations}
-\begin{grammar}
-\item table declaration:\\
-  table symbol, table description list, point symbol.
-\item table description list:\\
-  table description, (comma symbol, table description list).
-\item table description:\\
-  table head, equals symbol, filling list pack.
-\item table head:\\
-  (field list pack), table tag.
-\item table tag:\\
-  tag.
-\item field list pack:\\
-  open symbol, field list, close symbol.
-\item field list:\\
-  field, (comma symbol, field list).
-\item field:\\
-  selector chain.
-\item selector chain:\\
-  selector, (equals symbol, selector chain).
-\item selector:\\
- tag.
-\smallskip
-\item filling list pack:\\
-  open symbol, filling list, close symbol.
-\item filling list:\\
-  filling, (comma symbol, filling list).
-\item filling:\\
-  single block; compound block; string filling.
-\item single block:\\
-  expression[4.1.1], (pointer initialization).
-\item compound block:\\
-  expression list proper pack, (pointer initialization).
-\item pointer initialization:\\
-  colon symbol, constant tag[4.1.2].
-\smallskip
-\item expression list proper pack:\\
-  open symbol, expression list proper, close symbol.
-\item expression list proper:\\
-  expression[4.1.1], comma symbol, expression list.
-\item expression list:\\
-  expression[4.1.1], (comma symbol, expression list).
-\smallskip
-\item string filling:\\
-  string denotation, (pointer initialization).
-\item string denotation:\\
-  quote symbol, (string item sequence), quote symbol.
-\item string item sequence:\\
-  string item, (string item sequence).
-\item string item:\\
-  not quote item; quote image.
-\item quote image:\\
-  quote symbol, quote symbol.
-\end{grammar}
-
-\subsubsection*{\ref{4.1.6} Stack declarations}
-\begin{grammar}
-\item stack declaration:\\
-  stack symbol, stack description list, point symbol.
-\item stack description list:\\
-  stack description, (comma symbol, stack description list).
-\item stack description:\\
-  stack head, (equals symbol, filling list pack[4.1.5]).
-\item stack head:\\
-  size estimate, (field list pack[4.1.5]), stack tag.
-\item size estimate:\\
-  relative size; absolute size.
-\item relative size:\\
-  sub symbol, expression[4.1.1], bus symbol.
-\item absolute size:\\
-  sub symbol, box symbol, expression[4.1.1], box symbol, bus symbol.
-\item stack tag:\\
-  tag.
-\end{grammar}
-
-\subsubsection*{\ref{4.1.7} Limits}
-\begin{grammar}
-\item limit:\\
-  min limit; max limit; calibre.
-\item min limit:\\
-  min token, list tag.
-\item max limit:\\
-  max token, list tag.
-\item calibre:\\
-  calibre token, list tag.
-\item list tag:\\
-  stack tag[4.1.6]; table tag[4.1.5].
-\item min token:\\
-  left symbol, left symbol.
-\item max toke:\\
-  right symbol, right symbol.
-\item calibre token:
-  left symbol, right symbol.
-\end{grammar}
-
-\subsubsection*{\ref{4.2} File declarations}
-\begin{grammar}
-\item file declaration:\\
-  file typer, file description list, point symbol.
-\item file typer:\\
-  charfile symbol; datafile symbol.
-\item file description list:\\
-  file description, (comma symbol, file description list).
-\item file description:\\
-  file tag, (area[3.8]),\\
-  equals symbol, (right symbol), string denotation[4.1.5], (right
-symbol).
-\item file tag:\\
-  tag.
-\end{grammar}
-
-\subsubsection*{\ref{5.1} External declaration}
-\begin{grammar}
-\item external declaration:\\
-  external rule declaration;\\
-  external table declaration;\\
-  external constant declaration.
-\item external rule declaration:\\
-  external symbol, typer[3.2.1], external rule description list, point symbol.
-\item external rule description list:\\
-  external rule description, (comma symbol, external rule description list).
-\item external rule description:\\
-  rule tag[3.2.1], (formal affix sequence[3.2.1]),\\
-  equals symbol, string denotation[4.1.5].
-\smallskip
-\item external table declaration:\\
-  external symbol, table symbol,\\
-  external table description list, point symbol.
-\item external table description list:\\
-  external table description,\\
-  (comma symbol, external table description list),
-\item external table description:\\
-  (filed list pack[4.1.5]), table tag[4.1.5],\\
-   equals symbol, string denotation[4.1.5].
-\smallskip
-\item external constant declaration:\\
-  external symbol, constant symbol,\\
-   external constant description list, point symbol.
-\item external constant description list:\\
-  external constant description,\\
-  (comma symbol, external constant description list).
-\item external constant description:\\
-  constant tag[4.1.2], equals symbol, string denotation[4.1.5].
-\end{grammar}
-
-\subsubsection*{\ref{sec:6} Pragmats}
-\begin{grammar}
-\item pragmat:\\
-  pragmat symbol, pragmat item list, point symbol.
-\item pragmat item list:\\
-  pragmat item, (comma symbol, pragmat item list).
-\item pragmat item:\\
-  tag, equals symbol, integral denotation[4.1.1];\\
-  tag, equals symbol, string denotation[4.1.5];\\
-  tag, equals symbol pragmat item;\\
-  pragmat item list pack.
-\item pragmat item list pack:\\
-  open symbol, pragmat item list, close symbol.
-\end{grammar}
-
 
 \end{document}
 
