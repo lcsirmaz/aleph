@@ -82,6 +82,7 @@ $  items:
 $     a_%d      with the repr number of the item
 
 $ print to TARGET file ==================================== $
+'pragmat'macro=(print char,print str,print prefix).
 'a'print char+>ch: put char+TARGET+ch.
 
 'a'print int+>n:
@@ -330,10 +331,16 @@ $ trace and profiling
      T+" static a_PROFILE a_profile={0ul,NULL,NULL};%n"
        " a_PROFILING(a_profile,a_rulename);%n";
    +.
-'a'add tracing-n-cnt:
+'a'add tracing-n-m-cnt-type:
    is item flag+this rule+rtrace,get number of formals+this rule+n,
-     0->cnt,T+" a_trace_rule(a_rulename,%d"+n,
-     (nxt:cnt<n,print char+/,/,incr+cnt,formal argument+cnt,:nxt;+),
+     0->cnt->m,
+     (nxt:cnt>=n;
+          get formal+this rule+cnt+type,incr+cnt,
+          (type=Iformal out;incr+m),:nxt),
+     T+" a_trace_rule(a_rulename,%d"+m,0->cnt,
+     (nxt:cnt>=n;
+          get formal+this rule+cnt+type,incr+cnt,
+          (type=Iformal out;print char+/,/,formal argument+cnt),:nxt),
      T+");%n";
    +.
 'a'rule declaration head+>rule+>C1+>C2+>C3+>rn+>minloc+>maxloc+>locptr:
@@ -508,14 +515,19 @@ $ BUFFER[ptr] starts an affix; generate code for it
    [Dcolon],incr+ptr,T affix inner+ptr;
    [Dnoarg],+;
    T affix inner+ptr.
+'a'T index+>ptr>-x:
+   is item flag+this rule+rbounds, $ indexing with bound checking $
+      T+"to_LIST(%p)->offset[a_listelem(%p,"+ptr+ptr,incr+ptr,
+      incr+ptr,T affix inner+ptr,incr+ptr,
+      subtr+BUFFER[ptr]+1+x,incr+ptr,T+",%d,a_rulename)]"+x;
+   T+"to_LIST(%p)->offset["+ptr,incr+ptr,incr+ptr,T affix inner+ptr,
+      $ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
+      incr+ptr,(x=0,T+"]";T+"-%d]"+x).
 'a'T affix inner+>ptr>-x:
    $ generate an affix from BUFFER[ptr]
    =BUFFER[ptr]=
    [Tformal;Tlocal;Titem;Tconst],T+"%p"+ptr,incr+ptr,incr+ptr;
-$ TODO: list with bound checks $
-   [Dsub],incr+ptr,T+"to_LIST(%p)->offset["+ptr,incr+ptr,incr+ptr,
-      T affix inner+ptr,$ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
-      incr+ptr,(x=0,T+"]";T+"-%d]"+x);
+   [Dsub],incr+ptr,T index+ptr;
    T limit tail+BUFFER[ptr]+x,incr+ptr,
       T+"to_LIST(%p)->%p"+ptr+x,incr+ptr,incr+ptr.
 

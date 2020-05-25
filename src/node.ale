@@ -384,8 +384,9 @@ $ flags for formal/local stored variables
   addmult+off+<>RULE+base+base,bool or+flag*RULE[base]+v+flag*RULE[base].
 'a'clear RULE flag+>base+>off+>v:
   addmult+off+<>RULE+base+base,bool invert+v+v,bool and+flag*RULE[base]+v+flag*RULE[base].  
+'pragmat'macro=is RULE flag.
 'q'is RULE flag+>base+>off+>v-x:
-  addmult+off+<>RULE+base+base,bool and+flag*RULE[base]+v+x,x!=0.
+  addmult+off+<>RULE+base+x,bool and+flag*RULE[x]+v+x,x!=0.
 
 'a'copy Uf1 to Uf2+>base+>Uf1+>Uf2-off:
   $ at the end of an alternative copy UT to Uflag
@@ -433,12 +434,14 @@ $ flags for formal/local stored variables
      get adm+formal+formal,:nxt).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'variable' Uptr=0.
+'pragmat'macro=B.
 'p'B+>x: flag*RULE[Uptr]=x,previous+RULE+Uptr.
 'p'Bdata+>x+d>: flag*RULE[Uptr]=x,data*RULE[Uptr]->d,previous+RULE+Uptr.
 'a'Bset flag+>new-ptr:Uptr->ptr,next+RULE+ptr,new->flag*RULE[ptr].
 'a'Bset data+>new-ptr:Uptr->ptr,next+RULE+ptr,new->data*RULE[ptr].
 'a'Bback: previous+RULE+Uptr.
 'f'Bget ptr+n>:Uptr->n,next+RULE+n.
+
 
 $ Uptr is just before Uclose; UT,UF flags are set
 'a'Uregion+>base:

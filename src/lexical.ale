@@ -165,6 +165,7 @@ $ local variables and constants
    tabchar=9,	$ tabular character
    end char=0x1234567. $ large number representing eof
 
+'pragmat'macro=read char.
 'p'read char+char>:
   $ return the next character from either LEXT or SOURCE
   LEXTptr>0,

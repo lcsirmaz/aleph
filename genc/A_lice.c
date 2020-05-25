@@ -60,11 +60,13 @@ void a_extension(int ID,int n){
   #define st	to_LIST(ID)
      st->top=st->offset+st->aupb;
      return;
-#undef st
+  #undef st
   }
-  a_fatal("extension failed",
-    to_LIST(ID)->aupb+n>to_LIST(ID)->vupb ? "out of virtual space"
-                                          : "out of memory");
+  fprintf(stderr,"in an extension of list %d by %d words, "
+                 "out of %s\n",ID,n,
+                 to_LIST(ID)->aupb+n>to_LIST(ID)->vupb ?
+                       "virtual space" : "memory");
+  a_fatal(a_FATAL_memory);
 }
 /* auxiliary functions */
 
@@ -78,23 +80,13 @@ int a_extstrcmp(int ID,int off,const char *str){
   return strcmp((char*)(ptr+1-*ptr),str);
   #undef  st
 }
-/* void a_fatal(*m1,*m2)
- *     send both messages to stderr and the abort
- */
-void a_fatal(const char*m1,const char *m2){
-  fputs(m1,stderr);fputc(' ',stderr);fputs(m2,stderr);
-  fputs("\nFatal error, aborting\n",stderr);
-  exit(256);
-}
 /* a_area_failed(int v)
- * go over the last area in a classification 
+ *   last area in a classification failed
  */
 void a_area_failed(const char *rule,int v){
-  char buff[11];int i;
-  buff[10]=0;buff[0]='0';buff[1]='x';
-  for(i=9;i>=2;i--){buff[i]=(v&0xf)<10?'0'+(v&0xf):'a'-10+(v&0xf);v>>=4;}
-  if(rule){fputs(rule,stderr);fputc(':',stderr);}
-  a_fatal("last area failed with value",buff);
+  fprintf(stderr,"classification in rule %s failed for value %d\n",
+     rule,v);
+  a_fatal(a_FATAL_area);
 }
 /*******************************************************************
 *  Data structure initialization
@@ -172,22 +164,22 @@ static int a_push_string_to(int F1,const char *ptr){
   #define st	to_LIST(F1)
   n=strlen(ptr);if(a_requestspace(F1,3+(n/4))==0){ return 0; }
   n=0;goal=&(st->offset[1+st->aupb]);to=(char*)goal;
-  while(*ptr){ if((*ptr & 0x80)==0){ *to++=*ptr++;n++; }
+  while(*ptr){ if((*ptr & 0x80)==0){ *to++=*ptr++;n++;}
       else if((*ptr&0xC0)!=0xC0){ ptr++; } // ignore
       else if((*ptr&0xE0)==0xC0){ /* two byte */
         *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
-        else{*to++=*ptr++;n++;}}
+        else{*to++=*ptr++;}}
       else if((*ptr&0xF0)==0xE0){ /* three byte */
         *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
-        else{*to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n-=2;to-=2;}
-        else{*to++=*ptr++;n++;}}}
+        else{*to++=*ptr++;if((*ptr&0xC0)!=0x80){to-=2;}
+        else{*to++=*ptr++;}}}
       else if((*ptr&0xF8)==0xF0){ /* four byte */
         *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
-        else{*to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n-=2;to-=2;}
-        else{*to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n-=3;to-=3;}
-        else{*to++=*ptr++;n++;}}}}
+        else{*to++=*ptr++;if((*ptr&0xC0)!=0x80){to-=2;}
+        else{*to++=*ptr++;if((*ptr&0xC0)!=0x80){to-=3;}
+        else{*to++=*ptr++;}}}}
       else{ptr++;}}
-  *to=0;w=1+(n/4);goal[w]=n;goal[w+1]=w+2;st->aupb+=w+2;
+  *to=0;w=1+(to-((char*)goal))/4;goal[w]=n;goal[w+1]=w+2;st->aupb+=w+2;
   return 1;
 }
 
@@ -207,7 +199,8 @@ void a_setup_stdarg(int F1,int F2){
   st->alwb=st->vlwb;st->aupb=st->alwb-st->calibre;
   for(i=a_argc-1;i>0;i--){ /* add string a_argv[i] */
     if(a_push_string_to(F1,a_argv[i])==0){
-      a_fatal("a_setup_stdarg","out of memory");}
+      fprintf(stderr,"out of memory for command line arguments\n");
+      a_fatal(a_FATAL_memory);}
   }
   #undef st
 }
@@ -379,13 +372,21 @@ void a_unpackstring(int F1,int F2,int F3){
    int *ptr=to_LIST(F1)->offset+F2;
    int n=ptr[-1]; // number of characters
    //some sanity check
-   if(n<0 || n>99000 || ptr[0]<0 || n>4*ptr[0])
-      a_fatal("unpack string","called with no string");
+   if(n<0 || n>99000 || ptr[0]<3 || n>4*ptr[0] ||
+     F2-ptr[0]<to_LIST(F1)->alwb-to_LIST(F1)->calibre){
+      fprintf(stderr,"unpackstring: list %d, index %d, not a string\n",
+                      F1,F2);
+      a_fatal(a_FATAL_string);
+   }
    a_extension(F3,n);
    unsigned *goal=(unsigned*)(to_LIST(F3)->offset+1+to_LIST(F3)->aupb);
    char *chr=(char*)(ptr+1-*ptr);
    for(i=0;i<n;i++,goal++){
-     *goal=*chr;chr++;if(*goal==0) a_fatal("unpack string","wrong encoding");
+     *goal=*chr;chr++;if(*goal==0){
+       fprintf(stderr,"unpackstring: list %d, index %d, wrong encoding\n",
+                       F1,F2);
+       a_fatal(a_FATAL_string);
+     }
      if((*goal&0x80)==0) continue;
      if((*goal&0xE0)==0xC0){ // two byte
        *goal &=0x1F; goto out1; }
@@ -411,7 +412,12 @@ void a_copystring(int F1,int F2,int F3){
    int i;
    int *ptr=to_LIST(F1)->offset+F2; int n=ptr[0]; // width
    // some sanity check
-   if(n<0 || n>25000 || ptr[-1]>4*n) a_fatal("copy string","wrong string");
+   if(n<3 || n>25000 || ptr[-1]>4*n ||
+       F2-n<to_LIST(F1)->alwb-to_LIST(F1)->calibre){
+       fprintf(stderr,"copy string: list %d, index %d, not a string\n",
+                      F1,F2);
+       a_fatal(a_FATAL_string);
+   }
    a_extension(F3,n);
    int *goal=to_LIST(F3)->offset+n+to_LIST(F3)->aupb;
    for(i=0;i<n;i++) goal[-i]=ptr[-i];
@@ -513,7 +519,10 @@ void a_setup_dfile(int ID,int dir, int dd, int off,int cnt){
   setfl_data(df,1); // this is a datafile
   if(dir&1){setfl_in(df,1);}
   if(dir&3){setfl_out(df,1);}
-  if(cnt>=a_MAXIMAL_AREA){a_fatal("datafile area number","error");}
+  if(cnt>=a_MAXIMAL_AREA){
+    fprintf(stderr,"setup datafile: too many file areas\n");
+    a_fatal(a_FATAL_datafile);
+  }
   #undef df
 }
 /* a_add_fileared(ID,list,hash)
@@ -527,7 +536,10 @@ void a_add_filearea(int ID,int list,int hash){
   int i,tmp;
   #define df	to_DFILE(ID)
   i=df->outarea;
-  if(i>=a_MAXIMAL_AREA){a_fatal("add filearea number","error");}
+  if(i>=a_MAXIMAL_AREA){
+    fprintf(stderr,"setup datafile: too many file areas\n");
+    a_fatal(a_FATAL_datafile);
+  }
   df->out[i].lwb=to_LIST(list)->vlwb-to_LIST(list)->calibre+1;
   df->out[i].upb=to_LIST(list)->vupb;
   df->out[i].data=hash;
@@ -826,11 +838,19 @@ int a_closefilep(int F1){
 }
 /* 'a'put data+""f+>data+>flag. */
 void a_putdata(int F1,int F2,int F3){
-   if(!a_putdatap(F1,F2,F3)){a_fatal("put data","error");}
+   if(!a_putdatap(F1,F2,F3)){
+     fprintf(stderr,"put data to file %d failed with code %d\n",
+        F1,to_DFILE(F1)->fileError);
+     a_fatal(a_FATAL_datafile);
+   }
 }
 /* 'a'close file+"". */
 void a_closefile(int F1){
-   if(!a_closefilep(F1)){a_fatal("close file","error");}
+   if(!a_closefilep(F1)){
+     fprintf(stderr,"close file for file %d failed widh code %d\n",
+       F1,to_DFILE(F1)->fileError);
+     a_fatal(a_FATAL_datafile);
+   }
 }
 
 /* 'a' unlink file+t[]+>ptr */
@@ -989,13 +1009,17 @@ void a_blockhash(int F1,int F2,int A[1]){
 *   it is printed.
 *
 *******************************************************************/
-
 a_PROFILE *a_profiles;
+#define TRACE_SIZE	30
+const char *a_traced_rules[TRACE_SIZE];
+static int a_traced_index=-1;
 
 #include <stdarg.h>
 static int do_trace=0;
 void a_trace_rule(const char *name,int affixno,...){
   va_list args; int affix;
+  if(a_traced_index<=0){a_traced_index=TRACE_SIZE;}
+  a_traced_rules[--a_traced_index]=name;
   if(do_trace==0){return;}
   printf(" %s(",name);
   va_start(args,affixno);
@@ -1006,6 +1030,43 @@ void a_trace_rule(const char *name,int affixno,...){
   printf(")\n");  
 }
 
+/* a_sort_profiles()
+*    sort profiles by the count number
+*/
+static void a_sort_profiles(void){
+a_PROFILE **p,*q; int done=1;
+   while(done){
+     done=0;p=&a_profiles;
+     while(*p && (q=(*p)->link)){
+       if((*p)->count < q->count){
+          done=1; (*p)->link=q->link;q->link=*p;*p=q;p=&(q->link);
+       }else{ p=&((*p)->link);}
+     }
+   }
+}
+
+/* void a_fatal(code)
+*    abort the program; print trace information, if any
+*/
+void a_fatal(int code){
+   int i;
+   fprintf(stderr,"FATAL error %d\n",code);
+   if(a_traced_index>=0){
+     i=a_traced_index;
+     fprintf(stderr,"Rules with trace on called:\n%s\n",a_traced_rules[i]);
+     i++;if(i==TRACE_SIZE){i=0;}
+     while(i!=a_traced_index){
+        if(a_traced_rules[i]){fprintf(stderr,"%s\n",a_traced_rules[i]);}
+        i++;if(i==TRACE_SIZE){i=0;}
+     }
+   }
+   if(a_profiles){ fprintf(stderr,"Profiling:\n");}
+   while(a_profiles){
+     fprintf(stderr,"%s => %lu\n",a_profiles->rulename,a_profiles->count);
+     a_profiles=a_profiles->link;
+   }
+   exit(256+code);
+}
 /*******************************************************************
 * the main() routine
 *
@@ -1018,10 +1079,22 @@ extern void a_ROOT(void);
 int main(int argc,char *argv[]){
    if(argc>1 && *argv[1]=='D'){do_trace=1;argc--,argv++;}
    a_argc=argc;a_argv=argv;a_extlist_virtual=0x7f800000;
+   memset(a_traced_rules,0,sizeof(const char *)*TRACE_SIZE);
+   a_traced_index=-1;a_profiles=NULL;
    a_ROOT();
+   a_sort_profiles();
    while(a_profiles){
-     printf("%s => %lu\n",a_profiles->rulename,a_profiles->count);
+     printf("%-20s => %7lu\n",a_profiles->rulename,a_profiles->count);
      a_profiles=a_profiles->link;
+   }
+   if(a_traced_index>=0){
+     int i=a_traced_index;
+     fprintf(stderr,"Rules with trace on called:\n%s\n",a_traced_rules[i]);
+     i++;if(i==TRACE_SIZE){i=0;}
+     while(i!=a_traced_index){
+        if(a_traced_rules[i]){fprintf(stderr,"%s\n",a_traced_rules[i]);}
+        i++;if(i==TRACE_SIZE){i=0;}
+     }
    }
    return 0;
 }

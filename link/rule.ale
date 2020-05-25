@@ -141,6 +141,7 @@ $   adm:  pointer to the affixes if hashes are equal
    bool or+flag+flag*NODE[this node]+flag*NODE[this node].
 'a'put node flag+>node+>flag:
    bool or+flag+flag*NODE[node]+flag*NODE[node].
+'pragmat'macro=(is node flag,has node flag).
 $'a'clear node flag+>flag:
 $  bool invert+flag+flag,bool and+flag+flag*NODE[this node]+flag*NODE[this node].
 

@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>	// abs
-#include <string.h>
+#include <string.h>	// memcpy
 
 /********************************************************************
 *  Basic ALEPH data structures
@@ -144,17 +144,25 @@ void a_list_fill(int *fill);
 *    str      a C string
 *  return value: 1 - equal, 0 - not equal
 *
-* abort the ALEPH program
-*  void a_fatal(char *mess1, char *mess2)
-*    messages to be printed to stderr before aborting the program
+* abort the ALEPH program after an error
+*  void a_fatal(int code)
 *
 * none of the cases in a classification succeeded
 *  void a_area_failed(char *rule,int v)
 *    rule     the rule, or NULL if the rule name is not avaialable
 *    v        the offending value
 ********************************************************************/
+/* fatal error return values */
+#define a_FATAL_waitfor		1 /* circular wait for call */
+#define a_FATAL_string		2 /* string manipulating error */
+#define a_FATAL_area		3 /* classification area */
+#define a_FATAL_charfile	4 /* character file problem */
+#define a_FATAL_datafile	5 /* datafile problem */
+#define a_FATAL_memory		6 /* memory problem */
+#define a_FATAL_index		7 /* index error */
+
 int a_extstrcmp(int table,int off,const char *str);
-void a_fatal(const char *m1,const char* m2);
+void a_fatal(int code);
 void a_area_failed(const char *rule,int v);
 
 /********************************************************************
@@ -174,7 +182,9 @@ int a_R##x(int table,int off){				\
  static int working=0;					\
  if(off!=0 && a_extstrcmp(table,off,y)!=0){ return 0;}	\
  if(working==0){working=2; x(); working=1;}		\
- else if(working!=1){a_fatal("recursive call",y);}	\
+ else if(working!=1){fprintf(				\
+   stderr,"waitfor: circular call for module %s\n",y);	\
+   a_fatal(a_FATAL_waitfor);}				\
  return 1;						\
 }
 
@@ -200,7 +210,24 @@ extern a_PROFILE *a_profiles;
   if(0ul==x.count++){x.link=a_profiles;			\
             x.rulename=y;a_profiles=&x;}
 
-void a_trace_rule(const char*name,int affixno,...);
+void a_trace_rule(const char*rname,int affixno,...);
+
+/********************************************************************
+* list access with bound check
+*
+*  With bound checking enabled, list access is translated to
+*    a_listelem(<list>, <index>, <selector offset>,<rule name>)
+*  which is defined here to be an inlined routine
+********************************************************************/
+inline static int a_listelem(int L,register int idx,int off,
+             const char *rname)
+{   if(idx-off<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
+       idx > to_LIST(L)->aupb){fprintf(stderr,"in rule %s: index "
+         "%d of list %d is out of bounds (%d,%d)\n",
+         rname,idx,L,to_LIST(L)->alwb,to_LIST(L)->aupb);
+       a_fatal(a_FATAL_index);}
+    return idx-off;
+}
 
 /********************************************************************
 * include standard external head files

@@ -98,6 +98,8 @@ $ other characters: ()[] .*;:> +-/~|^
 $ RE-READ INPUT ******************************************* $
 $ rules are read more than once; a single position can be
 $  saved and restored
+'pragmat'macro=(bold letter,digit,read index,read minus,read zero).
+
 'variable'
   last filepos=0,
   last char=0,last inpt=0,last inpt value=0.
