@@ -24,7 +24,8 @@ $ pragmats
 $   include ="string"     add to the included list
 $   require ="string"     add to the required list
 $   title  = "string"     zero or LEXT ptr; only if compile=on
-$   library = on/off      allow library wextensions
+$   module = "string"     module title, switch to module compilation
+$   library = on/off      allow library extensions
 $   prototype = public/import/none  how prototypes behave, 2, 1, 0
 $   list    = on/off      source listing
 $   tab width = 8         tabular width
@@ -32,7 +33,6 @@ $   macro = rule          replace textually
 $   inline    = rule      same as macro
 $   dictionary= on/off    store / print occurence of tags, mark definition
 $   compile = on/off      flag, affects other pragmats
-$   module = on/off       flag, not used
 $   std library=off       don't include standard library; only if compile=on
 $   public/export = tag   tag is global, (cannot be external)
 $  these are passed to round II

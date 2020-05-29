@@ -65,7 +65,7 @@
 #define __istrue(x)		(x!=0)
 #define __isfalse(x)		(x==0)
 #define __leftclear(x,n)	x<<=n
-#define __rightclear(x,n)	x>>=n
+#define __rightclear(x,n)	*(unsigned*)&(x)>>=n
 
 #define __was(t,x)		(to_LIST(t)->alwb<=x&&x<=to_LIST(t)->aupb)
 #define __next(t,p)		p+=to_LIST(t)->calibre

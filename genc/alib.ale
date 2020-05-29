@@ -63,7 +63,7 @@ $ standard argument,stdin,stdout
 ?STDARG   'x''table'STDARG="a_setup_stdarg".
 ?STDIN    'charfile'STDIN=>"stdin".
 ?STDOUT   'charfile'STDOUT="stdout">.
-$ module syncronization
+$ module synchronization
 ?wait for 'x''q'wait for+t[]+>p="a_waitfor".
 $ arithmetic functions
 ?add    'x''f'add+>x+>y+z>	 ="__add".         $ x+y -> z
@@ -105,7 +105,6 @@ $stack and tables
 ?scratch      'x''a'scratch+[]st[]       ="__scratch".
 ?release      'x''a'release+[]st[]       ="a_release".
 ?request space'x''p'request space+[]st[]+>n="a_requestspace".
-?expand stack 'x''a'expand stack+[]st[]+*+>v="a_expandstack".
 
 $ strings
 ?string length   'x''f'string length+t[]+>p+n> ="__stringlength".
