@@ -1,0 +1,29 @@
+$ "next perm" considers the right-mods "n" elements of "st"
+$ as a permutation and replaces them by the elements of the next
+$ permutation in lexicographic order. If there is no next
+$ permutation, "next perm" fails.
+'predicate'next perm+>n+[]st[]-br-item-p-q:
+   $ find break point or fail:\no$
+   min int->item, >>st->br,subtr+>>st+n+p,
+  (breakpoint:
+    br<=p,-;
+    st[br]<item;
+    st[br]->item,decr+br,:breakpoint),
+   $ invert part after break point:
+   add+br+1+p,>>st->q,
+  (invert:
+   q<=p;
+   st[p]->item,st[q]->st[p],item->st[q],
+     incr+p,decr+q,:invert),
+   $ find the value of the first element which is
+   $ larger than that at the breakpoint:
+   st[br]->item, br->p,
+  (first: incr+p,(st[p]>item;:first)),
+   $ and swap them
+   st[p]->st[br],item->st[p].
+
+'stack'V=(/a/,/b/,/c/,/d/,/e/).
+'root'(rep:put line+STDOUT+V+newline,
+         (next perm+5+V,:rep;+)
+      ).
+'end'

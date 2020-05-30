@@ -1,0 +1,15 @@
+$ variable number of affixes
+
+'variable'a1=8,a2=4,a3=2,a4=1.
+
+'a'sum+result>+*+>a>-h:
+  a->result,
+  (-len:get affix blockno+len+*,put int+STDOUT+len,put char+STDOUT+newline),
+    (nxt:a=0,(shift affix block+*,add+result+a+result,:nxt;+);
+         decr+a,sum+h+a+*,add+result+h+result,:nxt).
+
+'root'-h: sum+h+a1+a2+a3+a4,put int+STDOUT+h,put char+STDOUT+newline.
+
+'end'
+
+

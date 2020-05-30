@@ -3,25 +3,9 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% grammar is typeset in \sf font.
-%% the {grammar} environment uses lines with \tem
-% add extra sapce around []
-{\catcode`\[=\active\catcode`\]=\active%
-\gdef\mkoptions{\catcode`\[\active\def[{\kern0.05em\char91\kern0.12em\relax}%
-\catcode`\]\active\def]{\kern0.1em\char93\kern0.05em\relax}%
-}}%
 \newcommand\g[1]{{\sf #1}}
-\newcommand\no[1]{}
 
-\newenvironment{grammar}{%
-\begin{list}{}{%
-\setlength\leftmargin{18pt}%
-\setlength\rightmargin{-5pt}%
-\setlength\listparindent{20pt}%
-\setlength\itemsep{1pt plus0.2ex}%
-\setlength\parsep{0pt plus 2pt}%
-\setlength\labelsep{-5pt}%
-}\sf\mkoptions%
-}{\end{list}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \renewenvironment{itemize}{\begin{list}{}{%
 \advance\leftmargin by -8pt%
 \setlength\itemsep{0ex plus 0.2ex}%
@@ -29,35 +13,8 @@
 \setlength\topsep{2pt plus 2pt}%
 \setlength\parsep{0pt plus 2pt}%
 }}{\end{list}}
-\newenvironment{witemize}{\begin{list}{}{%
-\advance\leftmargin by 16pt%
-\setlength\itemsep{0ex plus 0.2ex}%
-\setlength\partopsep{3pt}%
-\setlength\topsep{2pt plus 2pt}%
-\setlength\parsep{0pt plus 2pt}%
-}}{\end{list}}
-\def\square{\raisebox{0.7ex}{\setlength\fboxsep{2pt}\framebox[4pt]{}}}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% bibliography is a subsection, demoving the section head
 \makeatletter
-\renewenvironment{thebibliography}[1]
-     {\list{\@biblabel{\@arabic\c@enumiv}}%
-           {\settowidth\labelwidth{\@biblabel{#1}}%
-            \leftmargin\labelwidth
-            \advance\leftmargin\labelsep
-            \@openbib@code
-            \usecounter{enumiv}%
-            \let\p@enumiv\@empty
-            \renewcommand\theenumiv{\@arabic\c@enumiv}}%
-      \sloppy
-      \clubpenalty4000
-      \@clubpenalty \clubpenalty
-      \widowpenalty4000%
-      \sfcode`\.\@m}
-     {\def\@noitemerr
-       {\@latex@warning{Empty `thebibliography' environment}}%
-      \endlist}
 \renewcommand\labelenumi{\theenumi)}
 \makeatother
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,7 +25,7 @@
 \DeclareFixedFont{\tft}{T1}{lmtt}{m}{n}{8pt}
 \DeclareFixedFont{\bt}{T1}{lmtt}{b}{n}{10pt}
 %% \mkbold sets space, comma, apostrophy active
-%%   and defined words between '' to be typeset in bold
+%%   and words between '' to be typeset in bold
 %% \pp|text| is an inline program
 %% \begin{program} ... \end{program} is a displayed program
 {\catcode`\'=\active\catcode`\ =\active\catcode`\,=\active%
@@ -106,34 +63,13 @@
 }%
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% subsubsubsection
+% subsection title font
 \makeatletter
 \renewcommand\subsection{%
 \@startsection{subsection}{2}{\z@}%
    {-3.25ex\@plus -1ex \@minus -.2ex}% {3.25ex \@plus1ex \@minus.2ex}
    {1ex \@plus .5ex}%             {-1em}
    {\normalfont\normalsize\bfseries}}
-\setcounter{secnumdepth}{4}
-\newcounter{subsubsubsection}[subsubsection]
-\renewcommand\thesubsubsubsection{\thesubsubsection.\@arabic\c@subsubsubsection}
-\newcommand\subsubsubsectionmark[1]{}
-\newcommand\subsubsubsection{%
-\@startsection{subsubsubsection}{4}{\z@}%
-   {-3.25ex\@plus -1ex \@minus -.2ex}% {3.25ex \@plus1ex \@minus.2ex}
-   {1ex \@plus .5ex}%             {-1em}
-   {\normalfont\normalsize\bfseries}}
-\makeatother
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% keywords in two columns (7.2)
-\makeatletter
-\newenvironment{keywords}{%
-\gdef\\{\@ifnextchar[{\@finishline}{\@finishline[0pt]}}%
-\gdef\@finishline[##1]{\par\vskip ##1}%
-\gdef\G##1{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{\g{ ##1 symbol}\hfil}
-   \qquad }%
-\gdef\K##1{\noindent\rule{30pt}{0pt}\hbox to 0.25\linewidth{\g{ ##1}\hfil}
-   \qquad }%
-}{}
 \makeatother
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -147,65 +83,66 @@
 \section{Preface}
 
 In the early 1980's computer languages appeared in large numbers. Only a few
-of them survived and is in use even today. \A, an acronym for 
+of them survived and are in use even today. \A, an acronym for 
 ``\underline{\sf A} \underline{\sf L}anguage
 \underline{\sf E}ncouraging \underline{\sf P}rogram \underline{\sf
-H}ierarcy'', almost completely disappeared, and this work is an attempt to
+H}ierarcy,'' almost completely disappeared, and this work is an attempt to
 resurrect it.
 
 As a programming language, \A{} has an interesting structure, unusual
 parameter passing mechanism, and a limited range of constructs. \A{} compilers
 have been constructed for a wide range of computer architectures (which had
-a much larger variety at that time than it has today), these compilers
+a much larger variety at that time than it has today), and these compilers
 generated efficient and
 succinct code (an important requirement those days). Designed by D.~Grune,
 R.~Bosch and L.G.L.T.~Meertens in the Mathematisch Centrum, Amsterdam in the
 late seventies, it was ``suitable for any problem that suggests top-down
 analysis (parsers, search algorithms, combinatorial problems, artificial
 intelligence problems, etc)''. It is no wonder, that an early \A{} compiler
-has been written in \A{} itself.
+was written in \A{} itself.
 
 
 \section{Language features}
 
 \A{} has some interesting features which cannot be found in today's
-mainstream languages. This section discusses some of them: calling
+mainstream languages. This section discusses some of them: its calling
 mechanism, virtual memory, and datafiles.
 
 \subsection{Call-then-store calling mechanism}\label{subsec:calling}
 
-The first, and probably the most prominent distinguished feature of \A{}
+Probably the most prominent distinguishing feature of \A{}
 is its parameter passing mechanism. Arguments -- called \g{affix}es -- 
-of \A{} routines -- called \g{rules} -- fall into two main category:
+of \A{} routines -- called \g{rules} -- fall into two main categories:
 \emph{incoming} and \emph{outgoing} ones (some of the arguments can be both).
 Inside the routine arguments behave like
-local variables, and it is the caller's responsible to store the outgoing
-parameters' value in their final destination, and it is done only if the
+local variables, and it is the caller's responsibility to store the values
+of the outgoing
+parameters in their final destination, which is done only if the
 called routine reports success.
 
 This feature handles routines with several return values naturally without
 the need of introducing compound structures tailored for each such routine.
-If not needed, the caller can discard any of the out values. The basic
-example is the \pp|divrem| function with two in and two out arguments: the
-first out argument is the result of the integer division, and the second one
+If not needed, the caller can discard any of the outgoing values. The basic
+example is the \pp|divrem| function with two in(coming) and two out(going) arguments: the
+first out argument is the result of integer division, and the second one
 is the remainder. This function is typically implemented as a single machine
 instruction, leaving the two results in two different registers.
 
 \A's \emph{call then store} calling mechanism automatically controls the
-side effects through parameters. When a parameter is passed by reference,
-any change in the parameter's value takes effect immediately; and changing
-the value of the global variable which has been passed as argument, changes
-the parameter's value as well -- sometimes creating a bug impossible to
-find. In \A{} a parameter's value changes only when it is changed explicitly;
-and that change does not escalate (thus revocable) until the routine
+side effects through parameters. Usually, when a parameter is passed by reference,
+any change to the parameter's value takes effect immediately, and changing
+the value of the global variable which has been passed as argument changes
+the parameter's value as well -- sometimes creating a bug rather difficult to
+find. In contrast, in \A{} the value of a parameter changes only when it is changed explicitly;
+and this change does not escalate (thus revocable) until the routine
 returns.
 
 \subsection{Tractable data flow}\label{subsec:flow}
 
 Data flow in \A{} is quite restricted: a simple case selection -- reminiscent
 of LL$(1)$ parsing --, and a jump which is an abbreviation for tail recursion.
-No repetitive statements are in \A; iteration is handled by recursion. It means
-that the data flow inside a routine is tractable: liveliness and
+There are no repetitive statements in \A; iteration is handled by recursion. It means
+that data flow inside a routine is tractable: liveliness and
 reachability properties can be checked statically during compilation. 
 In particular, an \A{} compiler can check that
 \begin{itemize}
@@ -213,9 +150,9 @@ In particular, an \A{} compiler can check that
 \item[$\cdot$] the flow can reach a return point;
 \item[$\cdot$] when a local variable or parameter is used it has a value assigned to it
  (it is not ``uninitialized'');
-\item[$\cdot$] out parameters got values when the routine reaches any of
+\item[$\cdot$] out parameters have been assigned values when the routine reaches any of
 its return points;
-\item[$\cdot$] if a local variable (or parameter) got a value, it is actually used.
+\item[$\cdot$] if a local variable (or parameter) has been assigned a value, it is actually used.
 \end{itemize}
 
 There are no uninitialized global values in an \A{} program. Variables and
@@ -224,27 +161,27 @@ extended only by supplying values for the extension.
 
 \subsection{\A{} data types}\label{subsec:blocks}
 
-The basic data type in \A{} is \emph{integer}, which is a synonym for the
-target machine's \emph{word}. An integer can be considered as a \emph{bit
+The basic data type in \A{} is \emph{integer}, which is a synonym for a
+\emph{word} in the target machine. An integer can be considered a \emph{bit
 string} (which has a positive, zero, or negative value), or as a
-\emph{pointer} to some location inside a \g{table} or a \g{stack} which,
-again, contains an integer (see Section \ref{subsec:virt-mem} how pointers
+\emph{pointer} to some location inside a \g{table} or \g{stack} which,
+again, contains an integer (see Section \ref{subsec:virt-mem} on how pointers
 are handled). Consecutive memory locations in a \g{table} or \g{stack} can
-be grouped to a data block, or to a string. Such a group is pointed by its
+be grouped to become a data block or a string. Such a group is pointed to by its
 last (topmost or rightmost) element. Block elements are identified relative
-to the block's address by a \g{selector}. Strings, on the other hand, behave
-like a black box, and can be manipulated by built-in routines
+to the address of the  block by a \g{selector}. Strings, on the other hand, behave
+like black boxes, and can be manipulated using built-in routines
 (\g{external}s) only. This way string elements are not restricted to bytes
 (or wide characters), and can contain elements of an arbitrary character set.
-This implementation uses the Unicode character set, strings are
-stored using utf-8 encoding. (It also means that extracting string
+Our implementation uses the Unicode character set, strings are
+stored using the UTF-8 encoding. (It also means that extracting string
 elements is an expensive operation.) Changing the character set (or the
 encoding) is completely transparent to the \A{} program.
 
-A \g{stack}, or integer array can be extended by adding a block (specifying
-the value of each block element), or by a string (specifying characters in
+A \g{stack} or integer array can be extended by adding a block (specifying
+the value of each block element) or a string (specifying characters in
 the string in some way). Composite objects are referred to by pointers to
-their last element. There are no special data type for such pointers.
+their last elements. There are no special data type for such pointers.
 
 As mentioned above, \A{} has \g{table}s and \g{stack}s as fixed and
 extendable array of integer values. For communicating with the outside world
@@ -255,108 +192,110 @@ it has \g{charfile}s and \g{datafile}s.
 \A{} pointers can only refer to elements in \g{table}s and \g{stack}s. The
 complete \emph{virtual memory space} -- the allowed range of indices -- is
 distributed among the arrays of the program. Virtual limits are fixed
-and do not change during the program run, and pointers refer to a list
+and do not change during runtime, and pointers refer to a list
 element using its virtual address. The virtual address space of different lists
 are disjoint, thus a pointer uniquely identifies the list it points into.
 
-A \g{stack} does not necessarily occupies completely its virtual space.
+A \g{stack} does not necessarily occupies its virtual space
+completely.
 Existing locations (which correspond to locations in the machine memory)
 form a presumably much smaller continuous subrange, the \emph{actual memory
 range}. \g{Stack}s can be extended to the right (upwards) until the end of
-its virtual memory part, or until there is enough physical memory available.
-They can shrink from the right when their actual upper limit is lowered; the
+their virtual memory parts, or until there is enough physical memory available.
+They can shrink from the right when their actual upper limits are lowered; the
 released virtual memory can be reclaimed again. \g{Stack}s can also shrink
 from the left (behaving like queues), but in this case the released virtual
 space is lost (for the rest of the program run) and cannot be reclaimed
 again.
 
 Virtual addresses refer to list elements (i.e., integers), and not directly
-to the memory. It means that to get a pointer to the next (previous) list element,
+to the memory. It means that to get a pointer to the next (or previous) list element,
 the given pointer should be increased (decreased) by 1. Using
-32 bit word size, the virtual address space is limited to $2^{32}$ words
-(not bytes). This implementation assumes 32 bit word size. The
+a 32-bit word size, the virtual address space is limited to $2^{32}$ words
+(not bytes). This implementation assumes 32-bit word size. The
 virtual address space consists of the positive integers between $M$ and
 $2^{32}-M$ where $M$ is around one million. This has been chosen so that
-pointers and small values (e.g., characters) are different; a typical
+pointers and small values (e.g., characters) would be different; a typical
 non-pointer value will not be accepted as a pointer. The actual memory an
-\A{} program can access at the same time is around 8 Gbyte.
+\A{} program can access at the same time is around 8 Gbytes.
 
 \subsection{Datafiles}\label{subsec:datafile}
 
-An \A{} programs communicate with the outside world through \emph{files}. 
-\A{} distinguishes two file types: character and data. Character files 
+\A{} programs communicate with the outside world through \emph{files}. 
+\A{} distinguishes between two file types: character and data. Character files 
 accept and read
-characters from the used character set; in this version Unicode characters.
+characters from the character set used; in our version, Unicode characters.
 Datafiles can be used to communicate between different \A{} programs.
 Data files are written and read one item a time, where an item is either an
 integer or a pointer. As the programmer does not have direct control over
 how virtual addresses are distributed, the datafile should not store the
-pointer's value but the \emph{list} the pointer points to and the {\emph 
-relative address} of the pointed item in that list. From these information
+values of the pointers but the \emph{list} the pointer points to and the {\emph 
+relative address} of the pointed item in that list. From this information
 the pointer can be restored independently of the virtual address
 distribution.
 
-In a \g{datafile} declaration all lists must be specified to which this
+In a \g{datafile} declaration, all lists must be specified to which the
 datafile can have pointers. By storing the lists in the datafile first, 
 each additional item
-requires a single extra bit only, which tells whether this item is a
-pointer or not. When opening an \A{} datafile, stored lists are be paired
+requires a single extra bit only, which specifies whether the item is a
+pointer or not. When opening an \A{} datafile, stored lists are paired
 with the specified ones so that the appropriate pointer transformation could
-be made. How the pairing should be done is not specified by \A{} Manual. One
-possibility is match them by position, another one is match them by name.
-This implementation uses the second possibility. Actually, not the list
-name, but a 32 bit hash value of the name is stored in the file. When
+be made. How the pairing should be done is not specified by the \A{} Manual. One
+possibility is to match them by position; another one is to match them by name.
+This implementation uses the second possibility, but instead of the list
+name it uses a 32-bit hash value of the name stored in the file. When
 opening a datafile, each specified list is matched to the one with the same
 hash. It is an error if a pointer in the file has no matching list.
 
 \section{Syntax}
 
-The \A{} programming language is defined in \emph{Manual} which has been
+The \A{} programming language is defined in the \emph{Manual} which was
 published several times by the Mathematisch Centrum, Amsterdam, from 1974
 until 1982. Implementations of any computer language frequently add new
-features, restrict or left out others. This happened with \A{} as well;
+features, restrict or leave out others. This happened with \A{} as well;
 these changes are also reflected in the different printings of the Manual.
 The \A{} language implemented -- and used -- by the present compiler is no
-exception. To enable modular programming -- as opposed to the monolith
-program idea at the time of the creation of \A{} -- required some new
-features. Other extensions and restrictions come up naturally; some of them
+exception. Making modular programming possible -- as opposed to using monolith
+programs prevalent at the time of the creation of \A{} -- required some new
+features. Other extensions and restrictions came up naturally; some of them
 date back to the time of the first \A{} compilers in the early 80's. Changes
-introduced by here respect the original design ideas and philosophy as much
+introduced here respect the original design ideas and philosophy as much
 as possible.
 
 \subsection{Program text representation}
 
 \A{} is an Algol-like language in which key words are distinguished by a
 different typeface. In practice coding is typically done using
-a single (monospace) typeface. There are several approaches to distinguish
+a single (monospace) typeface. There are several approaches to
+distinguishing
 keywords from the surrounding text, but
 none of them
-is perfect. In this implementation bold face keywords are enclosed between
-apostrophe characters, such as
+is perfect. In this implementation, bold face keywords are enclosed between
+apostrophe characters, e.g.
 \begin{program}
 'variable'x=0.
 'root'print int+STDOUT+x.
 'end'
 \end{program}
 \noindent
-Other approaches are using \pp|CAPITAL| letters for keywords (as it happens
+Other approaches are using \pp|CAPITAL| letters for keywords (as
 in several {\sf PASCAL} implementations); restricting keywords (as in {\sf
 C} and related languages); using an initial escape character only and
-whitespace at the end (e.g., forget about the closing apostrophe); etc.
+whitespace at the end (i.e., leave out the closing apostrophe); etc.
 
 Characters in \A{} are not restricted to eight bits, and character strings
-cannot be indexed. In this implementation any utf-8 character can be a
+cannot be indexed. In this implementation any UTF-8 character can be a
 string character. According to the \A{} Manual \pp|newline| and \pp|newpage|
-are not characters. This implementation relaxes this restriction, the
+are not characters. This implementation relaxes this restriction, and the
 newline characters can be part of a string, but not of a \g{string
 denotation} (strings in the program text). All strings should be closed in
-the same line they started. Two separate consecutive strings (even if they
-are in different lines) are concatenated, thus strings can be continued on
+the same line they start in. Two separate consecutive strings (even if they
+are on different lines) are concatenated, thus strings can be continued on
 the next line.
 
 \subsection{Hexadecimal constants}
 
-Whenever integers are accepted, constants in hexadecimal notation are
+Whereever integers are accepted, constants in hexadecimal notation are
 recognized and accepted as well. An example is \pp|0x1234abcd|. A 
 minus sign \pp|-| can also appear before a hexadecimal constant.
 
@@ -366,7 +305,7 @@ minus sign \pp|-| can also appear before a hexadecimal constant.
 \def\HE{\hss\egroup}
 The external rule \pp|equal+x+y| tests the equality of \pp|x| and \pp|y|.
 The same test can be done by using the \g{identity} \pp|x=y|.
-Similar shorthand were added (not present in the original language)
+Similar shorthands were added (that were not present in the original language)
 for the other comparison operators:
 
 \smallskip
@@ -387,7 +326,7 @@ for the other comparison operators:
 In an affix position where a single integer is required, a list \pp|L|
 (a  \g{table} or \g{stack}) can appear with the meaning that the value is
 that of its topmost 
-(rightmost) element. namely \pp|L[>>L]|. Similar abbreviation exists for 
+(rightmost) element, namely, \pp|L[>>L]|. Similar abbreviation exists for 
 lists with selectors. Thus the rule call
 \begin{program}
 add + a*L + b*L + L
@@ -398,9 +337,9 @@ is equivalent to
 add + a*L[>>L] + b*L[>>L] + L*L[>>L]
 \end{program}
 \noindent
-This extension means that occasionally a \g{stack} visually looks -- and
-behaves -- like a variable, making stack operations write and comprehend
-more easily.
+This extension means that occasionally a \g{stack} looks -- and
+behaves -- like a variable, making writing and comprehending stack operations
+easier.
 
 This extension come naturally, and was really handy in cases when the
 content of a newly added block on the top of a \g{stack} had to be
@@ -1435,7 +1374,7 @@ The datafile structure stored in \pp|a\_DATABLOCK| has the following fields:
 
 While datafiles use direct file input and output, character files use
 streams, namely the \pp|fgetc()| and \pp|fputc()| library procedures without the
-backchar facility. Input is assumed to be proper utf-8 encoded, incorrect codes are
+backchar facility. Input is assumed to be proper UTF-8 encoded, incorrect codes are
 silently ignored. A single \pp|get char| \A{} rule may consume
 up to four bytes from the input stream. There is no \pp|newpage| character,
 and writing \pp|newline| sends the newline character (code 10) to the
@@ -1460,7 +1399,7 @@ The charfile structure in \pp|a\_DATABLOCK| has the following fields:
 
 \subsection{Strings}
 
-\A{} uses Unicode characters, and they are stored as utf-8 encoded {\sf C}
+\A{} uses Unicode characters, and they are stored as UTF-8 encoded {\sf C}
 strings whose last byte is \pp|{\char92}0|.
 If the string is in list \pp|L| is pointed by the index \pp|si|, then the
 content of the list block is
@@ -1470,7 +1409,7 @@ content of the list block is
 
 \HH\pp|L[si]|\HE \pp|width| (calibre) of this block
 
-\HH\pp|L[si-1]|\HE number of utf-8 encoded characters in the string
+\HH\pp|L[si-1]|\HE number of UTF-8 encoded characters in the string
 
 \HH\pp|L[s+1-width]|\HE start of the {\sf C} string
 

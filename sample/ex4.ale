@@ -1,0 +1,38 @@
+$ quicksort
+'a'quicksort + >from +>to +[]a[]-left-middle-right-amiddle:
+$ this rule sorts all element is "a" from "from" to
+$ "tp" in ascending order. The algorith used is a 
+$ variation of "quicksort"
+$
+   from >= to;
+   $ the area to be sorted is not empty
+   $ split three parts: left,middle,right
+   $ middle contains one or more equal elements
+   from->left,random+from+to+middle,to->right,
+     a[middle]->amiddle,
+   (split:
+      (push right:
+         left>to;
+         a[left]>amiddle;
+         incr+left,:push right),
+      (push left:
+         from>right;
+         amiddle>a[right];
+         decr+right,:push left),
+      (left<right,(-elem:
+          a[left]->elem,a[right]->a[left],elem->a[right]),
+          incr+left,decr+right, :split;
+       middle<right,
+         a[right]->a[middle],amiddle->a[right],decr+right;
+       middle>left,
+         a[left]->a[middle],amiddle->a[left],incr+left;
+       +)
+      ),
+    quicksort+from+right+a,quicksort+left+to+a.
+
+
+'f'random+>lb+>up+v>: add+lb+up+v,div+v+2+v.
+
+'stack'A=(/3/,/1/,/4/,/7/,/5/,/3/,/2/).
+'root'quicksort+<<A+>>A+A,put line+STDOUT+A+newline.
+
