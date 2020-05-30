@@ -28,6 +28,7 @@
 %%   and words between '' to be typeset in bold
 %% \pp|text| is an inline program
 %% \begin{program} ... \end{program} is a displayed program
+\newdimen\programindent\programindent=8pt
 {\catcode`\'=\active\catcode`\ =\active\catcode`\,=\active%
 \catcode`\$=12\catcode`\<\active\catcode`\>\active%
 \gdef\mkbold{\catcode`\'\active\def'##1'{\char39\relax{\bt##1}\char39\relax}%
@@ -39,12 +40,11 @@
 \newenvironment{program}{%
 \ignorespaces
 \par\vskip 2pt plus 2pt minus 2pt
-\leftmargin=20pt
 \parindent=0pt\tt
 \catcode`\$=12\catcode`\^=12
 \mkbold
 \obeylines
-\leftskip 8pt
+\leftskip \programindent
 \baselineskip=0.9\baselineskip
 \everypar\expandafter{\the\everypar\unpenalty}%
 }{\vskip 2pt plus 2pt minus 1pt}
@@ -1099,6 +1099,7 @@ different semantics. The following examples illustrate these cases and
 explain the additional restrictions a macro rule must satisfy.
 
 \begin{enumerate}\def\HH{\noindent\hbox to 0.33\linewidth\bgroup~}%
+\programindent=4pt%
 \setlength\parskip{1pt plus 1pt minus 1pt}%
 \item In a macro \g{formal in affix}es cannot be assigned to.
 Suppose the rule \pp|macro| is defined as
@@ -1116,14 +1117,27 @@ Using the same \pp|macro| rule as above, the result has wrong syntax:
 \HH \pp|macro+u+\#| \HE becomes \pp|(u->\#->u, u->\#)|
 
 \item While a macro can have variable number of affixes, neither \pp|shift
-affix block|, nor \pp|get affix blockno| is allowed.
-If \pp|macro| is defined as
+affix block|, nor \pp|get affix blockno| is allowed. Rule \pp|is zero|
+below checks if it has an argument with zero value; rule \pp|math| computes
+the product of its arguments if none is zero, otherwise it computes their
+sum:
+\begin{program}
+'question'is zero+*+>x: x=0; shift affix block+*,:is zero.
+\smallskip
+'function'math+y>+*+>x:
+  is zero+*,0->y,(nxt:add+x+y+y,shift affix block+*,:nxt;+);
+  1->y,(nxt:mult+x+y+y,shift affix block+*,:nxt;+).
+\end{program}
+If \pp|is zero| were substituted verbatim, it would shifts out all affixes
+and the computation in \pp|math| cannot be carried over. 
+If the rule \pp|macro| is defined as
 \begin{program}
 'function'macro+>a+*+>q: q->b, call+a+b+*.
 \end{program}
 \noindent
 where \pp|b| is some global variable, then after substitution the repeat
-block may completely vanish:
+block can completely vanish so calls of \pp|shift affix block| and \pp|get
+affix blockno| would give syntax error:
 
 \HH\pp|macro+1+2+T+rep2| \HE becomes 
    \pp|(2->b,call+1+b+2+T+rep2)|
@@ -1494,7 +1508,7 @@ be used in expressions or any other place where a constant tag is required.
 In the {\sf C} code every occurrence of these tags is replaced by the
 string.
 
-\subsection{External table and stack}
+\subsubsection{External table and stack}
 
 A list structure is reserved in the global integer array \pp|a\_DATABLOCK|
 as explained in Section \ref{subsec:tables-stacks}. The string in the
@@ -1509,7 +1523,7 @@ The routine should update this value to reflect its reservation. The routine
 is also responsible to allocate memory and initialize the content of
 external tables.
 
-\subsection{External files}
+\subsubsection{External files}
 
 The corresponding charfile or datafile structure is reserved in the global
 array \pp|a\_DATABLOCK|. For the description see Sections
@@ -1518,7 +1532,7 @@ external declaration is used as a {\sf C} procedure which is responsible to
 initialize the structure. The procedure is called with a single argument:
 the index of the structure.
 
-\subsection{External rules}
+\subsubsection{External rules}
 
 How an external rule is handled depends on the \g{string denotation}. If the
 it starts with a letter (either lower or upper case), then the external rule
