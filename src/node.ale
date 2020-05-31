@@ -305,7 +305,7 @@ $ actual rule --------------------------------------- $
   [Iformal in],    g simple affix+Uin+repeat;
   [Iformal out],   g simple affix+Uout+repeat;
   [Iformal inout], g simple affix+Uinout+repeat;
-  internal error+_line_.
+  internal error+_rule_+_line_.
 
 'a'g actual rule+>tag-oldBUFF-formal-ftype-repeat-frep:
   $ collect which formal/local this rule uses and sets
@@ -448,7 +448,7 @@ $ Uptr is just before Uclose; UT,UF flags are set
   copy Uf1 to Uf2+base+UFused+Ualt,
   (nxt:Ualternative+base,copy Uf1 to Uf2+base+Uflag+Ualt,
     (B+Usemicolon,:nxt;
-     B+Ubox,(U actual rule+base+UFused;internal error+_line_);
+     B+Ubox,(U actual rule+base+UFused;internal error+_rule_+_line_);
      +)),
   $ skip the storeage area $
   (nxt:B+Uopen;Bback,:nxt),
@@ -469,7 +469,7 @@ $ Uptr is just before Uclose; UT,UF flags are set
          B+Umark,:nxt; $ skip it over
          B+Ufalse, merge Uf1 to Uf2+base+Uf+Uflag,:nxt;
          B+Unode;
-         internal error+_line_).
+         internal error+_rule_+_line_).
 'p'U member+>base+>Uf-ptr:
   Bdata+Ujump+ptr, $ptr points to Uopen; copy Uflags from there
      copy jump Uf+ptr+base;
@@ -481,12 +481,12 @@ $ Uptr is just before Uclose; UT,UF flags are set
      Uregion+ptr,recover flags from region+base+ptr.
 'a'Ualternative+>base:
   copy Uf1 to Uf2+base+UTused+Uflag,(nxt:
-    B+Uhead,(Umember+base+Ualt;internal error+_line_);
+    B+Uhead,(Umember+base+Ualt;internal error+_rule_+_line_);
     Umember+base+UFused,:nxt;
     +).
 'a'traverse RULE+>tag-ptr:
   set flags for rule+tag,
-  (nxt: >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_line_),
+  (nxt: >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_rule_+_line_),
         0->Ufinal changed,Uregion+ptr,(Ufinal changed=0;:nxt)).
 $ --------------------------------------------------- $
 $ find labels; at the end true/false should refer to nodes
@@ -514,7 +514,7 @@ $   No loop should occur, as they have been filtered out
    data*RULE[ptr]->data,
      (data=Ltrue label;
       data=Lfalse label;
-      data=0,internal error+_line_;
+      data=0,internal error+_rule_+_line_;
       flag*RULE[data]=Unode;
       0->data*RULE[ptr],Lunroll+data,data*RULE[data]->data*RULE[ptr]).
 'a'Lscan ii-ptr:
@@ -522,7 +522,7 @@ $   No loop should occur, as they have been filtered out
     ((flag*RULE[ptr]=Utrue;flag*RULE[ptr]=Ufalse),Lunroll+ptr;+),
     next+RULE+ptr,:nxt).
 'a'Lfind labels:
-  >>RULE->Uptr,(B+Uclose;internal error+_line_),
+  >>RULE->Uptr,(B+Uclose;internal error+_rule_+_line_),
   Lscan i+Ltrue label+Lfalse label+#,
   Lscan ii.
 $ --------------------------------------------------- $
@@ -558,7 +558,7 @@ $ diagnostics: compute mentioned/used flags
   $ skip storage region $
   (nxt:B+Uopen;previous+RULE+Uptr,:nxt).
 'a'compute DU flags-ptr:
-  >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_line_),
+  >>RULE->Uptr,(Bdata+Uclose+ptr;internal error+_rule_+_line_),
   DU region+ptr.
 $ for a formal/local
 $  UDuse:   the variable has been used somewhere
@@ -748,7 +748,7 @@ $ replacement for L*L[>>L], figure out the standard selector
   [Iformal in],    w simple affix+Uin+repeat;
   [Iformal out],   w simple affix+Uout+repeat;
   [Iformal inout], w simple affix+Uinout+repeat;
-  internal error+_line_.
+  internal error+_rule_+_line_.
 
 'a'w copy affix from BUFFER+>b>:
   $ BUFFER contains an affix; no Dminus symbol is there

@@ -51,7 +51,7 @@ $ is parsed as >= if no space is between > and =
 
 $ ============================================================== $
 'a'must tag+x>:
-   is tag+x;internal error+97 $,'exit'33$ .
+   is tag+x;internal error+_rule_+_line_.
 
 $ -------------------------------------------------------------- $
 $ formal lists $

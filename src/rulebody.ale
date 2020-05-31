@@ -302,7 +302,7 @@ $ classification: we are after =
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'get rule tag+string>:
    $ get rule tag as a string; built-in string _rule_
-   is+rule tag,rule tag->string,previous+TTAG+string,
+   is+rule tag,get tag+rule tag+string,previous+TTAG+string,
         copy string+TTAG+string+LEXT,>>LEXT->string;
    Squote image->string.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $

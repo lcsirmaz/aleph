@@ -88,16 +88,14 @@ $ temporary file(s)
 
 'table'MESSAGE=(
    "cannot create temp file %p, error code=%d, aborting"
-          :cannot open disc file,
-   $ internal error $
-   "FATAL (disc), line=%d" : fatal
+          :cannot open disc file
 ).
 
 'a'open disc+>mode-err:
    open file+DISC+mode+LEXT+disc file,
      (mode=/r/,0->Qbuffer ptr->Qshift,0->linenum,next disc symbol;+);
    get file error+DISC+err,
-     Xerror+0+cannot open disc file+disc file+err,internal error+fatal+_line_.
+     Xerror+0+cannot open disc file+disc file+err,exit+4.
 'a'close disc:
    close file+DISC.
 'a'delete disc:
@@ -115,7 +113,7 @@ $ temporary file(s)
 'a'D tag+>tag: $ x is a pointer to LADM or LLOC
    was+LADM+tag,(has formal type+tag,repr*LADM[tag]->tag,:D tag;D+tag);
    was+LLOC+tag,D+tag;
-   internal error+fatal+_line_. $ D+tag $
+   internal error+_rule_+_line_. $ D+tag $
 
 $ reading with text substitution ----------------------------- $
 $ if LLshift>0 and the disc symbol is a pointer to LLOC,
@@ -171,24 +169,24 @@ $   values are correct.)
      Dend->Qsymbol,1->Qtype)).
 
 'f'save disc position+pos>+lnum>:
-   is+Qbuffer ptr,internal error+fatal+_line_;
+   is+Qbuffer ptr,internal error+_rule_+_line_;
    Qposition->pos,Qlinenum->lnum.
 'a'restore disc position+>pos+>lnum:
-   is+Qbuffer ptr,internal error+fatal+_line_;
+   is+Qbuffer ptr,internal error+_rule_+_line_;
    set file pos+DISC+pos,lnum->linenum,next disc symbol.
 
 'p'Q+>x: x=Qsymbol,is+Qtype,next disc symbol.
 'q'Qahead+>x: x=Qsymbol,is+Qtype.
-'a'must Q+>x: Q+x; internal error+fatal+_line_.
+'a'must Q+>x: Q+x; internal error+_rule_+_line_.
 'p'Qcons+x>: Qtype=0,Qsymbol->x,next disc symbol.
-'a'must Qcons+x>: is+Qtype,internal error+fatal+_line_;
+'a'must Qcons+x>: is+Qtype,internal error+_rule_+_line_;
              Qsymbol->x,next disc symbol.
 'p'Qtag+x>: is+Qtype,(=Qsymbol=[LADM;LLOC],Qsymbol->x,next disc symbol;
                       -).
 'p'Qstring+x>:
   is+Qtype,was+LEXT+Qsymbol,Qsymbol->x,next disc symbol.
 
-'a'must Qtag+x>: Qtag+x;internal error+fatal+_line_.
+'a'must Qtag+x>: Qtag+x;internal error+_rule_+_line_.
 'a'must Qlist+tag>+local>:
    $ they should come in this order as Qtag destroys Qlocal
    Qlocal->local,must Qtag+tag.
@@ -256,7 +254,7 @@ $ - - - - - - - - - - - - $
      $ T ==> T*T[>>T] $
      final ssel+tag+loc+x,putQ+Dsub+tag+Dupb+tag+Dbus+Dconst+x;
     [Iformal repeat],putQ+tag,Iformal repeat->atype;
-    internal error+fatal+_line_).
+    internal error+_rule_+_line_).
 
 'a'match formal actual+>ftype+atype>-tag:
   $ the actual affix can be * while we are expecting something else
@@ -265,7 +263,7 @@ $ - - - - - - - - - - - - $
   [Iformal file;Iformal table;Iformal stack],
     must Qtag+tag,putQ+tag,get type+tag+atype;
   [Iformal in;Iformal out;Iformal inout],fsimple affix+atype;
-  internal error+fatal+_line_.
+  internal error+_rule_+_line_.
 
 'a'handle formal list+>formal+>type:
   $ if this is a formal list, supply list data
@@ -295,7 +293,7 @@ $ - - - - - - - - - - - - $
   (-aformal-qptr:block=0,QBUFFER->aformal,
       $ no repeat block; the actual affix * is in the top of QBUFFER, 
       $  it belongs to the very first rule
-      (nxt:formal=0,(aformal=0;internal error+fatal+_line_); $ then aformal=0
+      (nxt:formal=0,(aformal=0;internal error+_rule_+_line_); $ then aformal=0
         (* >>QBUFFER->repr,formal->tag,Imacro->type,0->flag->calibre->ssel *)LLOC,
         get type+formal+ftype,handle formal list+formal+ftype,
         putQ+repr*LADM[aformal]+Dend,

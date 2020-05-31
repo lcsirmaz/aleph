@@ -142,8 +142,7 @@ $ error messages $
 "unknown key word '%p'"       :unrecognized bold,
 "wrong built-in %p"           :unrecognized builtin,
 "missing ' after '%p'"        :missing bold delimiter,
-"illegal character: %c"       :illegal character,
-"fatal: no source %d"         :no source name
+"illegal character: %c"       :illegal character
 ).
 
 $ ****************** BASIC INPUT-OUTPUT ****************** $
@@ -292,7 +291,7 @@ $  separated by :
    $ use the -o argument; otherwise the name of the first source
    >>BUFFER->oldp,get pragmat value+pgt ice+ptr,
      (is+ptr,0->ext;get first source+ptr,1->ext;
-        internal error+no source name+_line_),
+        internal error+_rule_+_line_),
      unpack string+LEXT+ptr+BUFFER,>>BUFFER->nn,
           $ does it have an extension; if yes strip it
      (nxt:nn<=oldp; $ no extension found $

@@ -93,9 +93,7 @@ $ ======================================================== $
  "syntax error in size estimator"     :wrong size estimator,
  "mixing declaration and prototype in %p declaration" :mixing proto,
 $ warning $
- "size estimator ""%d"" out of allowed range" :size estimator range,
-$ internal error $
- "FATAL: selector list, missing tag": selector tag error
+ "size estimator ""%d"" out of allowed range" :size estimator range
 ).
 
 'a'tag redefined+>tag+>newtype-l-type:
@@ -156,7 +154,7 @@ $ -------------------------------------------------------- $
           put type+sel+Iselector, $ defined right now
             put defline+sel+lin,set tag flag+sel+tdefined,
             put repr+sel+n,put adm+sel+tag);
-       internal error+selector tag error),    $ should not happen $   
+       internal error+_rule_+_line_),    $ should not happen $   
       (R+Scomma,decr+n,:nxt;
        R+Sequals,:nxt;
        +)),

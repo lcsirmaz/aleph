@@ -137,14 +137,8 @@ $      if not "do restore", decrease restore count
 
 'table'MESSAGE=(
  "symbol %p is inserted"         :inserted,
- "program text skipped "
-      "until the next point"     :text skipped, $ info
-$ internal error $
- "FATAL: init restore called repeatedly":init restore error,
- "FATAL: make restore without init"     :make restore error,
- "FATAL: restore size exceeded (%d)"    :too large backtrack,
- "FATAL: save to restore inconsistent"  :save to restore error,
- "FARAL: read from restore inconsistent":read from restore error
+ "program text skipped until the next point":text skipped, $ info
+ "FATAL: maximal restore size exceeded (%d)":too large backtrack
 ).
 
 'variable'restore count=0,old restore=0,
@@ -155,13 +149,14 @@ $ internal error $
 'a'init restore:
    $ start remembmering symbols, take care of linenum
    $ we might be serving symbols from RESTORE (restore count!=0)
-   is+do restore,internal error+init restore error;
+   is+do restore,internal error+_rule_+_line_;
    outrestore->old restore,inpt->old inpt,linenum->old linenum,
    T->do restore.
 'a'make restore:
    $ reset to the saved position
-   do restore=F,internal error+make restore error;
-   restore count>restore size,internal error+too large backtrack+restore size;
+   do restore=F,internal error+_rule_+_line_;
+   restore count>restore size,error+too large backtrack+restore size,
+          delete disc,exit+3;
    old restore->outrestore,
    old inpt->inpt,old linenum->linenum,
    F->do restore.
@@ -172,7 +167,7 @@ $ internal error $
 'a'save to restore:
    $ save inpt to stack RESTORE
    do restore=F; $ do nothing
-   outrestore!=inrestore,internal error+save to restore error;
+   outrestore!=inrestore,internal error+_rule_+_line_;
    incr+restore count,count restore+inrestore,inrestore->outrestore,
      inpt->RESTORE[inrestore].
 'p'read from restore:
@@ -180,7 +175,7 @@ $ internal error $
    inrestore=outrestore,-;
    count restore+outrestore,RESTORE[outrestore]->inpt,
    (is+do restore; decr+restore count),
-   (restore count>=0;internal error+read from restore error).
+   (restore count>=0;internal error+_rule_+_line_).
 'f'count restore+>x>:
    x>=>>RESTORE,<<RESTORE->x;incr+x.
 $ ---------------------------------------------- $

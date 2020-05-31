@@ -113,12 +113,7 @@ $ messages ---------------------------------------------------- $
 $ warning 
   "filling %p: block size %d is bigger than calibre (%d)" :large block size,
   "filling %p: block size %d is smaller than calibre (%d)":small block size,
-$ internal error
-  "FATAL cannot open ice file %p, error code: %p":opening ICE,
-  "FATAL Wtag: wrong argument %p" :wrong Wtag argument,
-  "FATAL Wstring: wrong argument %p" :wrong Wstring argument,
-  "FATAL W: wring argement type %p" :wrong W argument,
-  "FATAL define ice tag: wrong type %p":wrong ice tag type
+  "cannot open ice file %p, error code: %d, aborting":opening ICE
 ).
 $ stacks ------------------------------------------------------ $
 
@@ -131,8 +126,7 @@ $ ice file ==================================================== $
 'a'open ice file-err:
    create ice name, $ creates the name on >>LEXT $
    (open file+ICE+/w/+LEXT+>>LEXT,forget string+>>LEXT;
-    get file error+ICE+err,
-     internal error+opening ICE+>>LEXT+err).
+    get file error+ICE+err,error+opening ICE+>>LEXT+err).
 'a'close ice file:
    close file+ICE.
 'a'delete ice file:
@@ -155,7 +149,7 @@ $ writing to the ICE file
    [DSYMB],put string+ICE+DSYMB+x,(x=Dpoint,put char+ICE+newline;+);
    [ITEM], put char+ICE+/I/,subtr+x+<ITEM+x,div+x+<>ITEM+x,incr+x,print int+x,separator;
    [NODE], put char+ICE+/N/,subtr+x+<NODE+x,div+x+<>NODE+x,incr+x,print int+x,separator;
-   internal error+wrong W argument+x.
+   internal error+_rule_+_line_.
 'a'Wcons+>x:print int+x,separator.
 'a'Wline+>x:adjust linenum+x,print int+x,separator.
 'a'Wtag+>tag-repr:
@@ -165,19 +159,19 @@ $ writing to the ICE file
      (type*LLOC[tag]=Ilocal,put char+ICE+/L/,print int+repr*LLOC[tag],separator;
       put char+ICE+/F/,subtr+tag+<<LLOC+repr,div+repr+<>LLOC+repr,
                               incr+repr,print int+repr,separator);
-   internal error+wrong Wtag argument+tag. $ this should not happen $
+   internal error+_rule_+_line_. $ this should not happen $
 $ these are local to ICE header
 'a'Wstring+>str: $ str is either LEXT string or TTAG block
    (=str=
     [LEXT], put as string+ICE+LEXT+str,nlcr;
     [TTAG], previous+TTAG+str,put as string+ICE+TTAG+str,nlcr;
-    internal error+wrong Wstring argument+str).
+    internal error+_rule_+_line_).
 'a'Wtype+>type: $ type is a pointer in INDICATOR
    put char+ICE+/</,put string+ICE+INDICATOR+type,put char+ICE+/>/,separator.
 
 $ ICE header ================================================== $
 'variable'baseline=0.
-'f'adjust linenum+>x>-base:
+'f'adjust linenum+>x>:
   x<=0;subtr+x+baseline+x.
 'a'create ice header-title-ptr-n-str:
   $ header
@@ -242,7 +236,7 @@ $  next free ITEM. External tags have LEXT string in "repr".
                Icharfile;Idatafile],+;
       [Itable;Istack;Istatic stack],list data+tag;
       [Irule],                      formal affixes+tag;
-      internal error+wrong ice tag type+type),
+      internal error+_rule_+_line_),
      Wstring+raw;
     $ error if public and not defined;
     $ if has no definition, clear the type to get error messages when used.

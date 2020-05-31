@@ -446,9 +446,7 @@ $   inout         E       E     E      .    .M     .M
 
  "rule %p: the last actual affix must be *" :missing repeat affix,
  "rule %p: cannot modify in affix %p in a macro rule":cannot modify read only macro,
- "rule %p: cannot modify in affix %p in variable block":cannot modify read only vararg,
-$ ---------------- $
- "FATAL: match formal actual: wrong formal type %p":wrong formal type
+ "rule %p: cannot modify in affix %p in variable block":cannot modify read only vararg
 ).
 $ rtag: actual rule
 $ cnt:  affix number
@@ -512,7 +510,7 @@ $ formal: stack
     affix type error+rtag+cnt+atag);
   affix type error+rtag+cnt+0,skip source.
 $ formal: shift
-'a'fshift affix+>rtag+>cnt-atag-atype:
+'a'fshift affix+>rtag-atag-atype:
    Ltag+atag,get type+atag+atype,
      (atype=Iformal repeat;error+missing repeat affix+rtag);
    error+missing repeat affix+rtag,skip source.
@@ -615,11 +613,11 @@ $ -------------------------------------------- $
   [Iformal file],     ffile affix+rtag+cnt,0->mod;
   [Iformal table],    ftable affix+rtag+cnt+formal,0->mod;
   [Iformal stack],    fstack affix+rtag+cnt+formal,1->mod;
-  [Iformal shift],    fshift affix+rtag+cnt,0->mod;
+  [Iformal shift],    fshift affix+rtag,0->mod;
   [Iformal in],       fsimple affix+rtag+cnt+Uin+mod;
   [Iformal out],      fsimple affix+rtag+cnt+Uout+mod;
   [Iformal inout],    fsimple affix+rtag+cnt+Uinout+mod;
-  internal error+wrong formal type+ftype).
+  internal error+_rule_+_line_).
 $ ================================================================ $
 'table'MESSAGE=(
  "rule %p: repeat block size mismatch (%l)":repeat block size mismatch,
@@ -733,9 +731,7 @@ $ EXTENSION ------------------------------------------ $
  "extension %p: must be a stack (%p)":stack expected,
  "extension %p: field #%d defined twice":field doubly filled,
  "extension %p: wrong field list" :wrong extension block,
- "extension %p: field list is (%d) shorter than calibre (%d)":short extension block,
-$ internal error
- "Fatal: transport dest, calibre=%d < selector=%d":wrong selector in transport
+ "extension %p: field list is (%d) shorter than calibre (%d)":short extension block
 ).
 
 'a'check extension block+>tag+>calibre-ptr-cnt1-cnt:
@@ -755,7 +751,7 @@ $ internal error
 'a'transport dest+>tag+>calibre-x-ptr:
    Q+Dto,read selector+tag+0+x,
     (x<=0;
-     calibre<x,internal error+wrong selector in transport+calibre+x;
+     calibre<x,internal error+_rule_+_line_;
       $ go back x blocks and mark it
      subtr+>>BUFFER+x+ptr,incr+ptr,
        (BUFFER[ptr]=0;error+field doubly filled+tag+x),

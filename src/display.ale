@@ -48,7 +48,7 @@ $
 $'a'warning+>level+*(>mess).
 $'a'Xwarning+>level+line+*+>mess.
    $ warning with current/given line number
-'e'internal error+*+>mess.
+'e'internal error+t[]+>rule+>line.
    $ exit routine for internal error
 'a'message+*+>mess.
    $ a message
@@ -184,7 +184,8 @@ $    was expr pointer+ptr+BUFFER),
                     [/p/], (shift affix block+*,print pointer+fmt; print+"[?]"),incr+ptr,:nxt;
                     [/m/], (shift affix block+*,incr+ptr,push BUFFER+ptr,
                                 push BUFFER+optr,incr+level,:again;
-                            print+"[f?]",incr+ptr,:nxt);
+                            print+"[m?]",incr+ptr,:nxt);
+                    [/n/], print char+newline,:nxt;
                     [/*/], (shift affix block+*; +),incr+ptr,:nxt;
                     print char+BUFFER[ptr],incr+ptr,:nxt)))),
    (shift affix block+*,print+"[...]";+),
@@ -216,7 +217,9 @@ $ dictionary printing $
 $ --------------------------------------------------------------- $
 $ MESSAGES $
 'table'MESSAGE=(
-  "internal error: "	:internal error message
+  "internal error in rule " :internal error head,
+  " line %d%nPlease report the offending program and the error.%n"
+                            :internal error tail
 ).
 
 'variable'
@@ -262,9 +265,10 @@ $ error messages
    message header+line+level,format print+*,nlcr.
 'a'message+*+>mess:
    message header+-1+-1,format print+*,nlcr.
-'e'internal error+*+>mess:
-   message header+0+10,print+MESSAGE+internal error message,
-   format print+*,nlcr,exit+8.
+'e'internal error+t[]+>rule+>line:
+   message header+0+10,
+     print+MESSAGE+internal error head,print+t+rule,
+     format print+internal error tail+line,exit+256.
 
 'root'+.
 'pragmat'endif=compile.

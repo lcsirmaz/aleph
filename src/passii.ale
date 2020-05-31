@@ -35,10 +35,7 @@ $ BODY ********************************************************* $
   "%p %p: cannot be a macro (%l)" : cannot be a macro,
   "external rule ":extrule,
   "imported rule ":imprule,
-  "pragmat macro=%p: ignored":macro ignored,
-$ internal error
-  "pass II, unknown disc symbol" : unknown disc symbol,
-  "d read pragmat: unknown pragmat number %d": wrong pragmat value
+  "pragmat macro=%p: ignored":macro ignored
 ).
 
 'a'pass II-rtag:
@@ -50,7 +47,7 @@ $ internal error
    Q+Dfill,d list filling,:pass II;
    Q+Dlist,d list size,:pass II;
    Q+Dend;  $ last symbol
-   internal error+unknown disc symbol.
+   internal error+_rule_+_line_.
 
 'a'pass III-rtag:
    Q+Drule,must Qtag+rtag,generate rule+rtag,:passIII;
@@ -61,7 +58,7 @@ $ internal error
    Q+Dfill,Qskip+Dpoint,:passIII;
    Q+Dlist,Qskip+Dpoint,:passIII;
    Q+Dend;
-   internal error+unknown disc symbol.
+   internal error+_rule_+_line_.
 
 $ ===================================================== $
 $ macro rule
@@ -98,7 +95,7 @@ $  pgt warning level <cons>
      (pgt=pgt warning level,must Qcons+x,set pragmat value+pgt+x;
       pgt=pgt macro,must Qtag+x,check tag for macro+x;
       pgt=pgt public,must Qtag+x,check tag for public+x;
-      internal error+wrong pragmat value+pgt).
+      internal error+_rule_+_line_).
 
 'root'+.
 'pragmat'endif=compile.

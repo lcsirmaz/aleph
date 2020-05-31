@@ -19,7 +19,7 @@ $
 $ ************************************************************* 
 
 $ HEADER *********************************************** $
-'e'internal error+T[]+>file+>lineno.
+'e'internal error+T[]+>rule+>lineno.
 'e'corrupted ice file+T[]+>file+>lineno.
 'e'Ferror+*+>msg. $ fatal error $
 'a'error+*+>msg.
@@ -33,8 +33,8 @@ $ BODY ************************************************* $
 
 'table'MESSAGE=(
   "too many errors, quitting" :too many errors,
-  "internal error at %f/" :fatal head,
-  ", program aborted" :fatal tail,
+  "internal error at rule " :fatal head,
+  " line %d, program aborted" :fatal tail,
   ".ice file is corrupt; found at %f/" :corrupted head
 ).
 $ messages go here $
@@ -76,14 +76,14 @@ $ formatted printing $
    was+MESSAGE+ptr,print+MESSAGE+ptr;
    was+STDARG+ptr,print+STDARG+ptr;
    was+LEXT+ptr,get tag image+ptr+ptr,print+LEXT+ptr;
-   internal error+_title_+_line_.
+   internal error+_rule_+_line_.
 'a'print base+>str-obuff-ptr:
    >>BUFFER->obuff,
    (was+LEXT+str,get tag image+str+str,
         unpack string+LEXT+str+BUFFER;
     was+STDARG+str,
         unpack string+STDARG+str+BUFFER;
-    internal error+_title_+_line_),
+    internal error+_rule_+_line_),
    >>BUFFER->ptr,
    $ go back until / or \
    (nxt: ptr<=obuff;
@@ -145,9 +145,9 @@ $ error handling ******************************************** $
    message head+/F/,format print+*,nlcr,
    clean up,exit+1.
 
-'e'internal error+T[]+>source+>line:
-   message head+/F/,format print+fatal head+line,print+T+source,
-   format print+fatal tail,nlcr,clean up,exit+2.
+'e'internal error+T[]+>rule+>line:
+   message head+/F/,format print+fatal head,print+T+rule,
+   format print+fatal tail+line,nlcr,clean up,exit+2.
 'e'corrupted ice file+T[]+>source+>line:
    message head+/F/,format print+corrupted head+line,
    print+T+source,format print+fatal tail,nlcr,clean up,exit+1.

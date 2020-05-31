@@ -341,11 +341,11 @@ This extension means that occasionally a \g{stack} looks -- and
 behaves -- like a variable, making writing and comprehending stack operations
 easier.
 
-This extension come naturally, and was really handy in cases when the
-content of a newly added block on the top of a \g{stack} had to be
+This extension comes naturally, and is really handy in cases when the
+content of a newly added block on the top of a \g{stack} has to be
 manipulated. In cases when the list was entered by mistake, the extension
-prevents the compiler from complaining about affix type mismatch. The
-implicit reference to the topmost list block came, unexpectedly, as an extra
+prevents the compiler from complaining about an affix type mismatch. The
+implicit reference to the topmost list block comes, unexpectedly, with an extra
 complication during macro substitution.
 
 \subsection{Actual and virtual limits}
@@ -361,18 +361,19 @@ To get the \emph{virtual} limits of the same list, one can use \pp|<L| and
 expressions only virtual limits can be used (as the actual limit can change
 during program run).
 
-For \g{table}s the actual and virtual limits are always equal. In case of
-\g{stack}s actual limits are always within the virtual limits. Fixed stacks
-(i.e. stacks without size estimate) have equal actual and virtual limits.
+For \g{table}s, the actual and virtual limits are always equal. In case of
+\g{stack}s, actual limits are always within the virtual limits. Fixed stacks
+(i.e. stacks without size estimates) have equal actual and virtual limits.
 
 \subsection{Dummy affix}
 
-When the value of an out formal affix is not needed (the value can be thrown
+When the value of an out formal affix is not needed (the value is thrown
 away), rather than forcing the programmer to invent some dummy variable,
 the \g{dummy symbol}
-can be used. This symbol has representation \pp|?| by the Manual, this
-implementation also accepts the sharp-sign \pp|\#|. Visually it looks
-better, not indicating any uncertainty. Compare the two lines below:
+can be used. This symbol has representation \pp|?| in the Manual, but our
+implementation also accepts the sharp-sign \pp|\#|. We consider the
+latter more appropriate as it does not indicate
+any uncertainty. Compare the two lines below:
 \begin{program}
  divrem+a+5+\#+rem,  
  divrem+x+10+?+q.
@@ -382,11 +383,11 @@ better, not indicating any uncertainty. Compare the two lines below:
 \subsection{String as actual affix}
 
 A \g{string denotation} can be used as an actual affix. This extension
-simplified to write some program texts, and, hopefully, made it more
-transparent by bringing the string definition and usage closer.
+simplifies writing some program texts, and, hopefully, makes them more
+transparent by bringing the string definition closer to its usage.
 Without this feature strings are typically put into a \g{table} with a
-pointer constant pointing to the string, and then use the table name 
-and the string pointer:
+pointer constant pointing to them, and then the table name 
+and the string pointer are used:
 \begin{program}
 'table'MESSAGE=("unknown identifier":unknown tag).
 \smallskip
@@ -398,16 +399,16 @@ With this extension the string can appear as an argument:
 'action'tag error:error+"unknown identifier".
 \end{program}
 \noindent
-Actually, as an actual affix a string translates to two affixes: first a 
-special table and second a pointer which points to the string in that table. 
-The specified string is automatically added as a filling
-to that table. The compiler might (or might not) merge identical strings.
+Actually, as an actual affix a string translates into two affixes: first, a 
+special table, and second, a pointer which points to the string in that table. 
+The specified string is automatically added
+to the special table. The compiler might (or might not) merge identical strings.
 
 \subsection{Root rule}
 
 The \g{root} of an \A{} program (the only directly executable instruction)
 can have local affixes and a \g{rule body}. As it is executed only
-once, thus there is no need to designate a separate rule for this purpose.
+once, there is no need to designate a separate rule for this purpose.
 An example is:
 \begin{program}
 'root'(rep:put line+STDOUT+V+newline,
@@ -430,9 +431,11 @@ three elements with selectors \pp|tag|, \pp|left|, and \pp|right|, where
 \pp|right| is the rightmost element of the block. Also, the list \pp|tags| has no
 \emph{standard selector}, namely a selector with the name of the list.
 
-Neither in a formal definition nor in a declaration the list's \g{selector list
-pack} can be the empty \pp|()| (the \A{} Manual allows this in formal list
-definition). The \g{selector list pack}, however, can be missing completely.
+The \g{selector list
+pack} of a list cannot be the empty \pp|()|
+either in a formal definition or in a declaration
+(while the \A{} Manual allows this in formal list
+definitions). The \g{selector list pack}, however, can be missing completely.
 The blocks of the formal and of the actual lists are compared as follows.
 \begin{itemize}
 \item[$\cdot$] the formal list has no \g{selector list pack}:
@@ -477,14 +480,14 @@ more appealing visually, parentheses can be inserted \emph{before} and
 \noindent
 This change destroys the $LL(1)$ property of the \A{} syntax, as a \pp|(*|
 sequence can be either the start of an \g{extension}, or that of a \g{compound
-block} which has an \g{extension} as its first \g{member}. Nevertheless the
+block} which has an \g{extension} as its first \g{member}. Nevertheless, the
 improved readability of \A{} programs justifies the additional parser work.
 
 \subsection{Expressions}\label{subsec:expression}
 
 In \A{} an \g{expression} must have a value which can be determined during
-compilation. Originally \g{expression}s can be used at several places; this
-implementation restricts them to \g{constant} and \g{variable declaration}s
+compilation. Originally \g{expression}s could be used at several places; this
+implementation restricts them to \g{constant}s and \g{variable declaration}s
 only. It is not an essential restriction as new constant tags can be declared
 with the desired values. 
 
@@ -504,7 +507,7 @@ coding), while
 \noindent
 is not, and gives an error message.
 
-Next to the usual arithmetic operators \pp|+|, \pp|-|, \pp|*| and  \pp|/|,
+In addition to the usual arithmetic operators \pp|+|, \pp|-|, \pp|*| and  \pp|/|,
 the following Boolean operators can be used:
 \begin{itemize}
 \item[$\cdot$] \pp|~x| for the (binary) complement of \pp|x|;
@@ -513,9 +516,9 @@ the following Boolean operators can be used:
 \end{itemize}
 They have lower priorities than the arithmetic operators.
 
-In expressions integer denotations (both decimal and hexadecimal),
+In expressions, integer denotations (both decimal and hexadecimal),
 constant tags, pointer constants (defined in fillings), virtual bounds and
-list block size (caliber) can be used.  List size estimates and repeat
+the list block size (caliber) can be used.  List size estimates and repeat
 numbers (see Section \ref{subsec:filling}) are evaluated before the virtual
 bounds are determined, thus these values cannot depend on these bounds.
 
@@ -524,25 +527,26 @@ bounds are determined, thus these values cannot depend on these bounds.
 A \g{stack declaration} specifies the virtual address space size this stack
 requires. This \g{size estimate} can either be \emph{fixed} or
 \emph{relative}. In both cases it must be an integer denotation or a
-constant tag; no expression is allowed.
+constant tag; no expressions are allowed.
 
 The \emph{fixed size} is specified between \pp|=| symbols; its value
 cannot be larger than 1,000,000 (and, of course, must be positive). The
-compiler reserves at least as much virtual space for the stack. (The final
+compiler reserves at least this much virtual space for the stack. (The final
 virtual space can be larger if the stack has fillings which totals to a
 larger amount.)
 
 The \emph{relative size} estimate should give a positive integer not bigger
 than 100. After reserving virtual addresses for \g{table}s and fixed size
-\g{stack}s, the remaining space is distributed proportional to the requested
+\g{stack}s, the remaining space is distributed proportionally to the requested
 relative amount.
 
 
 \subsection{Filling}\label{subsec:filling}
 
-Next to selectors and block size, a
-\g{table} and \g{stack} declarations may specify the initial content of the
-list. This \g{filling} is a sequence of integer denotations, constant tags
+\g{Table} and \g{stack} declarations may specify the initial content of the
+list
+in addition to selectors and the block size.
+This \g{filling} is a sequence of integer denotations, constant tags
 (including pointers), strings, and
 blocks. Each one can be followed by the \g{repeat symbol} \pp|*|, followed by
 either an integer or by a constant tag specifying how many times this item
@@ -573,7 +577,7 @@ selector where it must be stored. Example:
 which adds three blocks of size two to the stack \pp|optor|.
 
 The original block syntax is also accepted: the \g{compound block} of the
-\g{filling} contains, in the left to right order, the values which should be
+\g{filling} contains, in left to right order, the values which should be
 added to the list. One of the integer values can be followed by the
 \g{repeat symbol} \pp|*| with the meaning that this element will be repeated
 as many times as necessary to fill the whole list block. Example:
@@ -592,7 +596,7 @@ program. Fillings specified this way are accumulated. Their order is
 unspecified, but within a single filling the order of the added elements is
 kept intact.
 
-If a \g{stack} has no declaration, namely a list head with a size estimate,
+If a \g{stack} has no declaration, namely, it is a list head with a size estimate,
 then its virtual size will be equal to the total size of the fillings. The
 stack can still shrink, but cannot expand beyond its virtual upper limit.
 

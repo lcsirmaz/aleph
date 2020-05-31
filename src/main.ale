@@ -28,10 +28,12 @@ $ *************************************************************
    print dictionary.
 'a'second pass:
    was error;
-   open ice file,create ice header,
-   open disc+/r/,passII,
-   (was error;check macro rules),
-   (was error,delete disc,delete ice file;+).
+   open ice file,
+     (was error, delete disc;
+      create ice header,
+        open disc+/r/,passII,
+        (was error;check macro rules),
+        (was error,delete disc,delete ice file;+)).
 'a'third pass:
    was error;
    rewind disc, $ and prepare for macro substitution $

@@ -79,7 +79,7 @@ $  actual parameters:
 $     a_P[]     for out/inout, fixed size repeat block
 $    *a_D       dynamic size repeat block
 $  items:
-$     a_%d      with the repr number of the item
+$     a_nnnn    with the repr number of the item
 
 $ print to TARGET file ==================================== $
 'pragmat'macro=(print char,print str,print prefix).
@@ -145,7 +145,7 @@ $ prefix, formal, local, actual arguments
    $ -1: success return, -2: fail return; otherwise jump
    =label=
    [0], (is item flag+called rule+rexit,-1->label,:print goto;
-         internal error+_title_+_line_);
+         internal error+_rule_+_line_);
    [-1],(is item flag+this rule+rcan fail,print str+" return 1;";print str+"return;");
    [-2],print str+" return 0;";
    print str+" goto ",print local label+label,print char+/;/.
@@ -162,13 +162,13 @@ $   prints a double item from BUFFER
   [Tconst],incr+ptr,print int+BUFFER[ptr];
   [Tlocal],incr+ptr,local argument+BUFFER[ptr];
   [Tformal],incr+ptr,formal argument+BUFFER[ptr];
-  internal error+_title_+_line_.
+  internal error+_rule_+_line_.
 'a'print ptr+>p:
   was+ITEM+p,tag*ITEM[p]->p,:print ptr;
   was+LEXT+p,get tag image+p+p,print str+LEXT+p;
   was+MESSAGE+p,print str+MESSAGE+p;
   was+BUFFER+p,print BUFFER+p;
-  internal error+_title_+_line_.
+  internal error+_rule_+_line_.
 
 'a'T+t[]+*+>fmt-ptr-optr:
 $ formal characters:
@@ -432,7 +432,7 @@ $     n<0: repeat the previous block -n times
   must+Titem+v,(get item def+v+v;+),
   (=type*ITEM[v]=
    [Iconstant;Ipointer constant],repr*ITEM[v]->v;
-   internal error+_title_+_line_).
+   internal error+_rule_+_line_).
 'a'fill item+size>-v:
   R+Dopen,0->size,(nxt:R+Dclose;
         incr+size,const item+v,push BUFFER+v,:nxt);
@@ -560,16 +560,16 @@ $ built-in rules: @@make, shift affix block, get affix blockno
      (is+star,T+",%p"+r2;+),print char+/;/,1->block.
 
 'a'gen assignment+>rep+>star+>ptr+>tnext-source-v-block-n-cnt:
-   $ rep: one more than affixes after * (including star)
+   $ rep: one more than blocks after * (star is an extra)
    $ star: the last actual affix is the formal *
    $    X->b->c->d->*   (rep=5,star=1)
    $    X->b->c->d      (rep=4,star=0)
    $ ALEPH semantic requires evaluating assignment from left to
    $  right. The C double assignment a[i]=(i=3) is undefined;
-   $  thus ALEPH assignment is split into separate C assignments:
+   $  thus an ALEPH assignment is split into separate C assignments:
    $       b=X;c=X;d=X;for(i=0;i<a_C;i++)a_V[i]=X;
    $  if X is a slice, then it is assigned to a dummy int first
-   $  is the index could change as in L[x]->x->y,
+   $  as the index could change, example: L[x]->x->y,
    ptr->source,next affix+ptr, $ BUFFER[ptr]=Dstar $
    $ number of valid destinations goes to n
    0->n,1->cnt,(nxt:cnt>=rep;
@@ -589,9 +589,9 @@ $ built-in rules: @@make, shift affix block, get affix blockno
 
 $ regular call interface *********************************** $
 $   may fail: <pre> if(<call>){ <post> GOTO <texit> }
-$                  <pre> if(!<call>){ GOTO <fexit> } <post>
+$             <pre> if(!<call>){ GOTO <fexit> } <post>
 $   cannot fail: <pre> <call> <post> GOTO <texit>
-$      for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
+$   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
 
 'a'repeat block preload+>ptr+>n+>rep+>out-size-bsz-cnt-type-dn:
    $ BUFFER[ptr]=Dstar,BUFFER[ptr+1]=size,

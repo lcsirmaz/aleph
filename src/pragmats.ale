@@ -126,7 +126,7 @@ $ default title if none is given
   [pgt path],      include path->to;  $ 0 or ptr to LEXT
   [pgt ice],       ice name->to;
   [pgt margin],    right margin->to;
-  internal error+get pragmat error+what.
+  internal error+_rule_+_line_.
 'q'is pragmat value+>what:
   =what=
   [pgt library],in library=1;
@@ -157,7 +157,7 @@ $ default title if none is given
   [pgt title],     to->program title;
   [pgt path],      to->include path;
   [pgt ice],       to->ice name;
-  internal error+set pragmat error+what.
+  internal error+_rule_+_line_.
 $ ===================================================================== $
 $ default warning levels 
 'constant'
@@ -216,10 +216,7 @@ $ error and warning messaged
  "pragmat %p=%p has no matching part"   :misplaced if pragmat,
  "pragmat %p has no effect (compile=off)":pragmat has no effect,
 $ warning $
- "pragmat macro=%p is ignored"          :macro ignored,
-$ internal error $
- "FATAL: get pragmat+%d, unknown"       :get pragmat error,
- "FATA: set pragmat+%d, unknown"        :set pragmat error
+ "pragmat macro=%p is ignored"          :macro ignored
 ).
 
 $

@@ -190,7 +190,7 @@ $   of this tag (global definitons are unique).
    >>LEXT->ptr,(nxt:ptr<<<LEXT; $ done $
    enter string+ptr+block,
      (block=ptr,previous+LEXT+ptr,previous string+LEXT+ptr,:nxt;
-      internal error+_title_+_line_)).
+      internal error+_rule_+_line_)).
 
 'a'read string+x>-n-obuff:
   >>BUFFER->obuff,0->n,

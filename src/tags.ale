@@ -334,7 +334,8 @@ $ initialize TTAG and LADM
   (notag from<=tag,tag<=notag to);
   first tag->y,
    (nxt: add+y+<>TTAG+x,compare string+TTAG+y+TTAG+tag+n,
-     (n=0,next+TTAG+tag,Xerror+0+preamble doubly defined+tag,internal error+99;
+     (n=0,next+TTAG+tag,Xerror+0+preamble doubly defined+tag,
+         internal error+_rule_+_line_;
       n>0,left*TTAG[x]->y,(y>0,:nxt;tag->left*TTAG[x]);
       right*TTAG[x]->y,(y>0,:nxt;tag->right*TTAG[x]))
    ).
@@ -573,9 +574,6 @@ $ ICE header and Xstring table filling
      Xstring table item+adm*LADM[str]+repr*LADM[str],link*LADM[str]->str,:nxt).
 $ ************************************************************ $
 $ store and retrieve macro
-'table'MESSAGE=(
- "FATAL: search macro: %p not store":macro not stored
-).
 
 'variable'macro ptr=0.
 'a'link macro rule+>tag+>dpos+>dnum:
@@ -583,7 +581,7 @@ $ store and retrieve macro
    >>LADM->macro ptr.
 'f'search macro rule+>tag+dpos>+dnum>-link:
    macro ptr->link,
-   (nxt: link=0,internal error+macro not stored+tag;
+   (nxt: link=0,internal error+_rule_+_line_;
     tag*LADM[link]=tag,dpos*LADM[link]->dpos,dnum*LADM[link]->dnum;
     get adm+link+link,:nxt).
 'q'next macro rule+>tag>-link:
