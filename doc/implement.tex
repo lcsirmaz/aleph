@@ -221,31 +221,30 @@ non-pointer value will not be accepted as a pointer. The actual memory an
 
 \subsection{Datafiles}\label{subsec:datafile}
 
-\A{} programs communicate with the outside world through \emph{files}. 
-\A{} distinguishes between two file types: character and data. Character files 
-accept and read
-characters from the character set used; in our version, Unicode characters.
-Datafiles can be used to communicate between different \A{} programs.
-Data files are written and read one item a time, where an item is either an
-integer or a pointer. As the programmer does not have direct control over
-how virtual addresses are distributed, the datafile should not store the
-values of the pointers but the \emph{list} the pointer points to and the {\emph 
-relative address} of the pointed item in that list. From this information
-the pointer can be restored independently of the virtual address
-distribution.
+\A{} programs communicate with the outside world through \emph{files}. \A{}
+distinguishes between two file types: character and data. Character files
+accept and read characters from the character set used; in our version,
+Unicode characters. Datafiles can be used to communicate between different
+\A{} programs. Data files are written and read one item a time, where an
+item is either an integer or a pointer. As the programmer does not have
+direct control over how virtual addresses are distributed, the datafile
+should not store the values of the pointers but the \emph{list} the pointer
+points to and the \emph{relative address} of the pointed item in that list.
+From this information the pointer can be restored independently of the
+virtual address distribution.
 
 In a \g{datafile} declaration, all lists must be specified to which the
-datafile can have pointers. By storing the lists in the datafile first, 
-each additional item
-requires a single extra bit only, which specifies whether the item is a
-pointer or not. When opening an \A{} datafile, stored lists are paired
-with the specified ones so that the appropriate pointer transformation could
-be made. How the pairing should be done is not specified by the \A{} Manual. One
-possibility is to match them by position; another one is to match them by name.
-This implementation uses the second possibility, but instead of the list
-name it uses a 32-bit hash value of the name stored in the file. When
-opening a datafile, each specified list is matched to the one with the same
-hash. It is an error if a pointer in the file has no matching list.
+datafile can have pointers. By storing the list names in the datafile first,
+each additional item requires a single extra bit only, which specifies
+whether the item is a pointer or not. When opening an \A{} datafile, stored
+list names are paired with the names of the specified ones so that the
+appropriate pointer[B transformation could be made. How the pairing should
+be done is not specified by the \A{} Manual. One possibility is to match
+them by position; another one is to match them by name. This implementation
+uses the second possibility, but instead of the list name it uses a 32-bit
+hash value of the name stored in the file. When opening a datafile, each
+specified list is matched to the one with the same hash. It is an error if a
+pointer in the file has no matching list.
 
 \section{Syntax}
 
@@ -255,12 +254,12 @@ until 1982. Implementations of any computer language frequently add new
 features, restrict or leave out others. This happened with \A{} as well;
 these changes are also reflected in the different printings of the Manual.
 The \A{} language implemented -- and used -- by the present compiler is no
-exception. Making modular programming possible -- as opposed to using monolith
-programs prevalent at the time of the creation of \A{} -- required some new
-features. Other extensions and restrictions came up naturally; some of them
-date back to the time of the first \A{} compilers in the early 80's. Changes
-introduced here respect the original design ideas and philosophy as much
-as possible.
+exception. Making modular programming possible -- as opposed to using
+monolith programs prevalent at the time of the creation of \A{} -- required
+some new features. Other extensions and restrictions came up naturally; some
+of them date back to the time of the first \A{} compilers in the early 80's.
+The changes respect the original design ideas and philosophy as much as
+possible.
 
 \subsection{Program text representation}
 
@@ -286,7 +285,7 @@ whitespace at the end (i.e., leave out the closing apostrophe); etc.
 Characters in \A{} are not restricted to eight bits, and character strings
 cannot be indexed. In this implementation any UTF-8 character can be a
 string character. According to the \A{} Manual \pp|newline| and \pp|newpage|
-are not characters. This implementation relaxes this restriction, and the
+are not characters. This implementation relaxes this restriction, and
 newline characters can be part of a string, but not of a \g{string
 denotation} (strings in the program text). All strings should be closed in
 the same line they start in. Two separate consecutive strings (even if they
@@ -334,7 +333,7 @@ add + a*L + b*L + L
 \noindent
 is equivalent to
 \begin{program}
-add + a*L[>>L] + b*L[>>L] + L*L[>>L]
+add + a*L[>>L] + b*L[>>L] + L[>>L]
 \end{program}
 \noindent
 This extension means that occasionally a \g{stack} looks -- and
@@ -343,10 +342,10 @@ easier.
 
 This extension comes naturally, and is really handy in cases when the
 content of a newly added block on the top of a \g{stack} has to be
-manipulated. In cases when the list was entered by mistake, the extension
+manipulated. In cases when the list, as an affix, was added by mistake, the extension
 prevents the compiler from complaining about an affix type mismatch. The
 implicit reference to the topmost list block comes, unexpectedly, with an extra
-complication during macro substitution.
+complication during macro substitution, see Section \ref{sec:macro}.
 
 \subsection{Actual and virtual limits}
 
@@ -487,7 +486,7 @@ improved readability of \A{} programs justifies the additional parser work.
 
 In \A{} an \g{expression} must have a value which can be determined during
 compilation. Originally \g{expression}s could be used at several places; this
-implementation restricts them to \g{constant}s and \g{variable declaration}s
+implementation restricts them to \g{constant} and \g{variable declaration}s
 only. It is not an essential restriction as new constant tags can be declared
 with the desired values. 
 
@@ -561,7 +560,8 @@ of the last defined list item. Example:
 adds ten zeroes, ten ones, followed by the internal representation of the
 string \pp|string|. It also declares \pp|tzero| to be the (virtual) address of the
 lastly added \pp|0|, and \pp|tstring| to be the (virtual) address of the last 
-element of \pp|T| (which, if no further filling is added, is the same as \pp|>>T|). 
+element of the representation of \pp|string| (which, if no further filling is 
+added, is the same as \pp|>>T|).
 
 In the \g{filling} a \g{compound block} defines the content of a list block.
 The \g{compound block} must have exactly as many elements as the list block has
@@ -570,7 +570,7 @@ an integer or a constant tag (possibly a pointer constant). In the block the
 constant value is followed by an \g{arrow symbol} \pp|->| and the
 selector where it must be stored. Example:
 \begin{program}
-'stack'(ch,prio)optor=(
+'stack'(ch,p)optor=(
  (/+/->ch,3->p), (3->p,/-/->ch),(5->p,/^/->ch)).
 \end{program}
 \noindent
@@ -1095,7 +1095,7 @@ low level warning messages with a code similar to the one below:
    format print+T+*.
 \end{program}
 
-\section{Macro substitution}
+\section{Macro substitution}\label{sec:macro}
 
 Calls of a macro rule are implemented by textual substitution. Such a
 replacement can result in a syntactically wrong text, or in a completely
