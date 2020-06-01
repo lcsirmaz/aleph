@@ -1199,7 +1199,8 @@ is transformed internally to the rule call
 \end{program}
 \noindent
 (recall that the character \pp|@| is a letter in library mode, see Section 
-\ref{subsec:library}), and \pp|@make| is declared in the standard library as a
+\ref{subsec:library}), and \pp|@make| is declared in the standard library as
+an
 \begin{program}
 'external''function'@make+>from+*+to>.
 \end{program}
@@ -1273,7 +1274,7 @@ Table and stack structures have the following fields.
 
 \smallskip
 \noindent
-The \A{} list element affix \pp|L[i]| is translated to \pp|to\_LIST(L)->offset[i]|
+The \A{} list element \pp|L[i]| is translated to \pp|to\_LIST(L)->offset[i]|
 in {\sf C}. List limits (actual and virtual limits and calibre) are
 retrieved from this structure. There are no direct pointers to list elements
 in the program, thus the whole list can be freely moved in the memory, only the
@@ -1392,14 +1393,14 @@ The datafile structure stored in \pp|a\_DATABLOCK| has the following fields:
 
 While datafiles use direct file input and output, character files use
 streams, namely the \pp|fgetc()| and \pp|fputc()| library procedures without the
-backchar facility. Input is assumed to be proper UTF-8 encoded, incorrect codes are
-silently ignored. A single \pp|get char| \A{} rule may consume
+\pp|ungetc()| facility. Input is assumed to be proper UTF-8 encoded, incorrect codes are
+silently ignored. The \A{} rule \pp|get char| may consume
 up to four bytes from the input stream. There is no \pp|newpage| character,
 and writing \pp|newline| sends the newline character (code 10) to the
 stream.
 
-Input character files can be positioned, they use the \pp|ftell| to retrieve
-the current file position, and \pp|fseek| to set the file position.
+Input character files can be positioned, they use \pp|ftell()| to retrieve
+the current file position, and \pp|fseek()| to set the file position.
 
 The charfile structure in \pp|a\_DATABLOCK| has the following fields:
 \medskip
@@ -1418,9 +1419,9 @@ The charfile structure in \pp|a\_DATABLOCK| has the following fields:
 \subsection{Strings}
 
 \A{} uses Unicode characters, and they are stored as UTF-8 encoded {\sf C}
-strings whose last byte is \pp|{\char92}0|.
-If the string is in list \pp|L| is pointed by the index \pp|si|, then the
-content of the list block is
+strings whose last byte is \pp|{\char92}0|.  If the string is in list \pp|L|
+pointed by the (virtual) index \pp|si|, then the content of the list block
+is
 
 \def\HH{\noindent\hbox to 0.25\linewidth\bgroup~~~~}%
 \smallskip
@@ -1433,8 +1434,8 @@ content of the list block is
 
 \smallskip
 \noindent
-Each (integer) location contains four bytes. Thus a string with 6 Unicode characters,
-encoded length 8 is stored in 4 words as follows: (from larger indices to lower
+Each (integer) location contains four bytes. Thus a string with 6 Unicode characters
+and encoded length 8 is stored in 4 words as follows: (from larger indices to lower
 ones):
 \smallskip
 
@@ -1444,30 +1445,30 @@ ones):
 
 \HH\pp|{\char92}0  -  -  -| \HE third word with the closing zero byte
 
-\HH\pp|c5 c6 c7 c8|\HE   second word, characters \pp|c5|--\pp|c8|
+\HH\pp|c5 c6 c7 c8|\HE   second word, bytess \pp|c5|--\pp|c8|
 
-\HH\pp|c1 c2 c3 c4|\HE   first word, characters \pp|c1|--\pp|c4|
+\HH\pp|c1 c2 c3 c4|\HE   first word, bytes \pp|c1|--\pp|c4|
 
 \smallskip
 \noindent
 The empty string is stored as a block of three zeros.
 
 
-\subsection{Rules in {\sf C}}
+\subsection{Rules in {\sf C}}\label{subsec:c-rules}
 
 Each rule declaration is translated to a {\sf C} procedure declaration. If
 the rule is of type \emph{function}, \emph{action}, or \emph{exit}, then the
-procedure is \pp|void|, if it is \emph{question} or \emph{predicate}, then
-it is \pp|int|. The compiled {\sf C} routines return \pp|0| for failure and
+procedure is \pp|void|, if it is a \emph{question} or \emph{predicate}, then
+it is \pp|int|. The compiled {\sf C} routine returns \pp|0| for failure and
 \pp|1| for success, but when checking the returned value, any non-zero
 return value is taken for success.
 
 In \A{} it is the caller's responsibility to store the output value to its
 destination, and do it only if the called routine reports success. According
-to this requirement, \g{formal affix}es are transformed to {\sf c}
-parameters as follows. First assume that the called rule has no variable
+to this requirement, \g{formal affix}es are transformed to {\sf C}
+parameters as follows. First, assume that the called rule has no variable
 affix block. Affixes, which are neither \g{out}, not \g{inout} ones
-(that is, \g{file}, \g{stack}, \g{table}, or \g{in} affix), are
+(that is, \g{actual file}, \g{stack}, \g{table}, or \g{in} affix), are
 passed as integers in their original order. A local integer array is
 declared for the \g{out} and \g{inout} affixes, and this array. containing
 these affixes in their original order, is passed as the last parameter.
@@ -1477,81 +1478,84 @@ array, which values will then be stored by the caller.
 Rules with a variable affix block have two additional parameters: an
 integer containing the number of blocks (with value
 at least one), and an integer array containing all affixes in the variable
-block regardless of their type. The \pp|shift affix block| rule is
+block regardless of their types. The \pp|shift affix block| rule is
 implemented by decreasing the block counter by one, and adding the block
-length to this parameter. The following list shows some \g{formal affix
-sequence} and the corresponding {\sf C} parameter declaration:
+length to the last parameter. The following table shows some \g{formal affix
+sequence}s and the corresponding {\sf C} parameter declarations:
 
 \smallskip
 
 \begin{tabular}{ll}
 \pp|+t[]+>i|   & \pp|(int t,int i)|              \\
 \pp|+""f+o>|   & \pp|(int f,int A[1])|\\
-\pp|+>i>+o>|   & \pp|(int A[2])|\\
+\pp|+>io>+o>|   & \pp|(int A[2])|\\
 \pp|+>io>+*+>i| & \pp|(int A[1],int Cnt,int *V)|\\
 \end{tabular}
 
 \smallskip
 \noindent
 The called routine must set all out affixes in the output parameter
-\pp|A[]|, and otherwise it is free to change (and use) these values
-if the routine fails. Values corresponding to not out or inout affixes
-in the variable block \pp|V[]| should never change, and the value 
-of an inout affix should be changed only if the routine returns with success.
+\pp|A[]|, otherwise it is free to change (and use) these values
+if the routine fails. In the variable block \pp|V[]|, however,
+values corresponding to not out or inout affixes
+cannot be changed, and the value 
+of an inout affix should change only if the routine returns with success.
 
 \subsection{Externals}\label{subsec:externals}
 
-External declarations are allowed in library mode only (Section
+External declarations are allowed in library mode only (see Section
 \ref{subsec:library}). How the \g{string denotation} in the external declaration
 is interpreted depends on the type of the defined tag.
 
 \subsubsection{External constant and variable}
 
-Both external constants and variables can be used. External constants cannot
+Both constants and variables can be declared \g{external}. External constants cannot
 be used in expressions or any other place where a constant tag is required.
 In the {\sf C} code every occurrence of these tags is replaced by the
-string.
+string specified in the \g{exernal declaration}.
 
 \subsubsection{External table and stack}
 
 A list structure is reserved in the global integer array \pp|a\_DATABLOCK|
 as explained in Section \ref{subsec:tables-stacks}. The string in the
-external declaration is used as a {\sf C} procedure which is responsible to
-initialize this structure. It will be called with two arguments: the index
-of the associated structure and the calibre of the list. The routine must
-fill the actual and virtual limits. There is a (small) virtual address 
-space put apart
-for external lists. The first free address is in 
-\pp|a\_extlist\_virtual|, and can use addresses up to \pp|max int|.
-The routine should update this value to reflect its reservation. The routine
-is also responsible to allocate memory and initialize the content of
-external tables.
+external declaration is used as the name of a {\sf C} procedure which is
+responsible to initialize this structure. The routine is called with two
+arguments: the index of the associated structure and the calibre of the
+list. The routine must fill the actual and virtual limits and the calibre.
+There is a (relatively small) virtual address space put apart for external
+lists. The first free virtual address is in \pp|a\_extlist\_virtual|; the
+address can go up to \pp|max int|. The routine should update this value to
+reflect its reservation. The routine is also responsible to allocate memory
+and initialize the content of external tables.
 
 \subsubsection{External files}
 
 The corresponding charfile or datafile structure is reserved in the global
 array \pp|a\_DATABLOCK|. For the description see Sections
 \ref{subsec:datafile-implement} and \ref{subsec:charfile}. The string in the
-external declaration is used as a {\sf C} procedure which is responsible to
+external declaration is used as the name of a {\sf C} procedure which is
+responsible to
 initialize the structure. The procedure is called with a single argument:
 the index of the structure.
 
 \subsubsection{External rules}
 
-How an external rule is handled depends on the \g{string denotation}. If the
-it starts with a letter (either lower or upper case), then the external rule
-is assumed to be a {\sf C} procedure with exactly the same  parameter
-passing mechanism as the compiled rules. The compiler generates a
-prototype with the correct parameter setting; the {\sf C} routine
-implementing the external rule can be compiled and linked independently.
-Several standard library rules are implemented this way.
+How an external rule is handled depends on the \g{string denotation}. If it
+starts with a (lower or upper case) letter, then the external rule is
+assumed to be a {\sf C} procedure with exactly the same parameter passing
+mechanism as the compiled rules, see Section \ref{subsec:c-rules}. The
+compiler even generates prototypes with the corresponding parameter
+settings; the {\sf C} routine implementing the external rule can be compiled
+and linked independently. Several standard library rules are implemented
+this way.
 
 If the first character in the external rule's \g{string denotation} is not a
-letter, then a simpler calling mechanism is used: all affixes, independently
-of their types, are given as parameters. These external rules are typically
+letter, then another calling mechanism is used: all affixes, independently
+of their types, are passed as parameters. Such external rules are typically
+defined as
 {\sf C} macros; an example is the \pp|incr+>x>| external rule whose
 \g{string denotation} is \pp|\_\_incr|, thus the \A{} rule call \pp|incr+ptr|
-translates to \pp|\_\_incr(ptr)|. The standard header file contains the
+translates to \pp|\_\_incr(ptr)|. The {\sf C} header file contains the
 {\sf C} macro definition
 \begin{program}
  \#define \_\_incr(x)   x++
@@ -1559,25 +1563,27 @@ translates to \pp|\_\_incr(ptr)|. The standard header file contains the
 \noindent
 which makes the final translation.
 
-The \g{dummy affix} translates to nothing, thus leaves an empty parameter
+The \g{dummy affix} \pp|\#| translates to nothing, thus leaves an empty parameter
 location. Using some {\sf C} preprocessor tricks these empty arguments can
 be transformed to different {\sf C} procedure calls. To ease this work, 
 the \A{} compiler makes some additional work.
 
 If the external rule is a \emph{function} and all of its out arguments are
-discarded, then this external rule is not called at all.
+discarded, then this external rule is not called at all. The same
+optimization is not applied to non-external rules (only a warning is given),
+as such a rule can check whether some condition holds and abort the program
+if the condition does not hold.
 
-If the \g{string denotation} of the external rule starts with \pp|@|, then
-this character is replaced by an underscore. For each out
-argument either a \pp|0| or a \pp|1| character is appended to the rule
-string depending on whether the out argument is the {\g dummy symbol} or
-not. Finally, from the argument list all \g{dummy symbol}s are discarded.
-In the standard library 
-the \pp|divrem| external rule has two out affixes, and \pp|@divrem| as its
-\g{string denotation}. Accordingly, four {\sf C} calls are generated:
+If the \g{string denotation} of the external rule starts with a \pp|@|, then
+this character is replaced by an underscore. For each out argument,
+depending on whether it is the \g{dummy symbol} or not, a \pp|0| or a \pp|1|
+character is appended to the rule string. Finally, \g{dummy symbol}s are
+discarded from the argument list. In the standard library the external rule
+\pp|divrem| has two out affixes, and its \g{string denotation} is
+\pp|@divrem|. Accordingly, four {\sf C} calls could be generated:
 \pp|\_divrem11| with four parameters when both the quotient and remainder is
 used, the three parameter \pp|\_divrem01| and \pp|\_divrem10| when the
 quotient (remainder) is discarded; and the two parameter \pp|\_divrem00|
-when no result are requested at all.
+when no result is requested at all.
 
 \end{document}
