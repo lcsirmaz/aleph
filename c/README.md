@@ -1,8 +1,11 @@
 ## Compiler and linker
 
-The result of compiling the aleph [compiler](../comp) and the [linker](../link) to C is here.
+The result of compiling the aleph [compiler](../comp) and the [linker](../link) to C 
+are the C programs [comp.c](comp.c) and [link.c](link.c).
 
-These programs can be compiled to machine code by a C compiler, and then
-they can be used to *recompile* the compiler again. The result should be the same.
+These programs can be compiled by a C compiler, and then
+they can be used to *recompile* the compiler again. Results 
+should be the C programs here.
 
-The first version was compiled by hand; those programs are in [bootstrap](../bootstrap).
+This bootstrap process was started by making the compilations 
+by hand; those hand-written programs are in [bootstrap](../bootstrap).
