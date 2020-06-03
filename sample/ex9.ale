@@ -2,9 +2,11 @@ $ variable number of affixes
 
 'variable'a1=8,a2=4,a3=2,a4=1.
 
+'pragmat'trace=on.
+
 'a'sum+result>+*+>a>-h:
   a->result,
-  (-len:get affix blockno+len+*,put int+STDOUT+len,put char+STDOUT+newline),
+$  (-len:get affix blockno+len+*,put int+STDOUT+len,put char+STDOUT+newline),
     (nxt:a=0,(shift affix block+*,add+result+a+result,:nxt;+);
          decr+a,sum+h+a+*,add+result+h+result,:nxt).
 

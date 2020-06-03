@@ -1095,9 +1095,10 @@ int main(int argc,char *argv[]){
      printf("%-20s => %7lu\n",a_profiles->rulename,a_profiles->count);
      a_profiles=a_profiles->link;
    }
-   if(a_traced_index>=0){
+   if(a_traced_index>=0 && do_trace==0){
      int i=a_traced_index;
-     fprintf(stderr,"Rules with trace on called:\n%s\n",a_traced_rules[i]);
+     fprintf(stderr,"Last %d rules with trace on called:\n%s\n",
+             TRACE_SIZE,a_traced_rules[i]);
      i++;if(i==TRACE_SIZE){i=0;}
      while(i!=a_traced_index){
         if(a_traced_rules[i]){fprintf(stderr,"%s\n",a_traced_rules[i]);}
