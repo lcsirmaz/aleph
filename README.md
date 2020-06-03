@@ -7,12 +7,12 @@ This is an Aleph complier written in Aleph.
 
 Files with extension *.ale* are Aleph source files.
 
-* [doc](doc) Aleph Manual and some implementation details
-* [src](src) Module compiler
-* [link](link) Linker producing the C target file
-* [genc](genc) Aleph standard library file and C headers
-* [sample](sample) Sample Aleph programs
 * [c](c) The C code of the compiler and the linker
+* [comp](comp) Module compiler Aleph source
+* [doc](doc) Aleph Manual and some implementation details
+* [genc](genc) Aleph standard library file and C headers
+* [link](link) Linker producing the C target file, Aleph source
+* [sample](sample) Sample Aleph programs
 
 
 
