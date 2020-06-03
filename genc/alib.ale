@@ -159,5 +159,9 @@ $ relations
 $ exit
 ?exit 'x''e'exit+>x = "exit".
 
+$ virtual address range
+?min virtual address 'x''constant'min virtual address="a_MIN_VIRTUAL_ADDRESS".
+?max virtual address 'x''constant'max virtual address="a_MAX_VIRTUAL_ADDRESS".
+
 'end'
 

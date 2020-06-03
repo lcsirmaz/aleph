@@ -398,7 +398,7 @@ $  variable, but not a #define value.
   0->prev->sf,<<ITEM->ptr,(nxt:ptr>>>ITEM;
   (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
   (=type*ITEM[ptr]=
-   [Iconstant],(external plain declaration+ptr;+);
+   [Iconstant],+;$ (external plain declaration+ptr;+); $
    [Ivariable;Istatic var],var declaration+ptr;
    [Istack;Itable;Istatic stack],
        block declaration+ptr+prev+sf,ptr->prev,sizeof list->sf;

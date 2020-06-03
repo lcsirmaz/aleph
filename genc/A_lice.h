@@ -231,6 +231,15 @@ inline static int a_listelem(int L,register int idx,int off,
 }
 
 /********************************************************************
+* virtual address range
+*
+*  both the minimal and maximal values should be positive;
+*  leave some space at the top for external lists
+********************************************************************/
+#define a_MIN_VIRTUAL_ADDRESS	0x01000000
+#define a_MAX_VIRTUAL_ADDRESS	0x7f000000
+
+/********************************************************************
 * include the standard external head files
 ********************************************************************/
 #include "A_xternal.h"

@@ -746,7 +746,7 @@ a_G14:__add(a_L5,a_A[1],a_A[1]); goto a_G13;
 } /* collectlistsizeclaims */
 static void a_1092(int a_F1){ /* setlistbounds+>a */
 int a_L2;int a_L3;int a_L4;int a_L5;int a_L6;int a_P[1];
-a_L2=16777216;
+a_L2=a_MIN_VIRTUAL_ADDRESS;
 a_L3=a_1062;
 a_G3:if(__equal(a_L3,0)){return;}
 if(!a_1053(a_L3,a_P)){ goto a_G6;}
@@ -769,7 +769,7 @@ int a_L1;int a_L2;int a_L3;int a_P[2];
 a_1029(a_P);a_L1=a_P[0];a_L2=a_P[1];
 if(__more(a_L2,0)){ goto a_G4;}
 a_L2=1;
-a_G4:__subtr(2130706432,16777216,a_L3);
+a_G4:__subtr(a_MAX_VIRTUAL_ADDRESS,a_MIN_VIRTUAL_ADDRESS,a_L3);
 if(__less(a_L1,0)){ goto a_G10;}
 if(__less(a_L3,a_L1)){ goto a_G10;}
 __subtr(a_L3,a_L1,a_L3);
@@ -793,7 +793,7 @@ a_L1=to_LIST(a_1015)->alwb;
 a_G2:if(__more(a_L1,to_LIST(a_1015)->aupb)){return;}
 if(!__equal(to_LIST(a_1015)->offset[a_L1-4],344288268)){ goto a_G7;}
 if(!a_1053(a_L1,a_P)){ goto a_G6;}
-a_1030(a_1001,16777244,229);return;
+a_1030(a_1001,16777244,230);return;
 a_G6:a_1093(a_L1);
 a_G7:__next(a_1015,a_L1); goto a_G2;
 } /* finalizepointerconstants */
@@ -806,7 +806,7 @@ a_G4:a_1030(a_1001,16777220,44);return;
 a_G5:{register int a_r1=to_LIST(a_1015)->offset[a_L1-4];
  if(a_r1==344288237||a_r1==344288242||a_r1==344288247){  goto a_G7;}
 }
-a_1030(a_1001,16777240,241);return;
+a_1030(a_1001,16777240,242);return;
 a_G7:a_1080(a_L1);
 a_L2=to_LIST(a_1012)->aupb;
 a_1080(a_1061);
@@ -832,7 +832,7 @@ a_1078();
 a_1080(a_L1);
 a_1026(a_L1); goto a_G12;
 a_G29:a_1080(a_1058); goto a_G17;
-a_G31:a_1030(a_1001,16777236,251);return;
+a_G31:a_1030(a_1001,16777236,252);return;
 } /* readexpression */
 static void a_1031(void){ /* datasection */
 
@@ -969,7 +969,7 @@ a_L3=a_1035;
 a_1035=to_LIST(a_1015)->offset[a_L2-1];
 __incr(a_1035);
 if(__was(a_1012,a_1035)){ goto a_G13;}
-a_1030(a_1001,16777232,324);return;
+a_1030(a_1001,16777232,325);return;
 a_G13:if(!a_1068(0,a_P)){ goto a_G15;}a_L4=a_P[0];
 a_1090(a_L4,a_L2,a_F1); goto a_G16;
 a_G15:a_1027(a_L2,64);
@@ -1015,7 +1015,7 @@ a_1051(344288224,to_LIST(a_1012)->offset[a_1035],a_P);a_A[0]=a_P[0]; goto a_G6;
 a_G23:if(!a_1013(a_P)){ goto a_G26;}a_A[0]=a_P[0];
 a_1043(a_A[0]);
 a_A[0]=to_LIST(a_1015)->offset[a_A[0]];return;
-a_G26:a_1030(a_1001,16777228,349);return;
+a_G26:a_1030(a_1001,16777228,350);return;
 } /* finalbase */
 static void a_1045(int a_F1,int a_A[1]){ /* finalexpr+>a+a> */
 int a_L3;int a_L4;int a_L5;int a_P[2];
@@ -1040,7 +1040,7 @@ a_L4=a_1035;
 a_1035=to_LIST(a_1015)->offset[a_L2-1];
 __incr(a_1035);
 if(__was(a_1012,a_1035)){ goto a_G16;}
-a_1030(a_1001,16777224,361);return;
+a_1030(a_1001,16777224,362);return;
 a_G16:a_1045(0,a_P);a_L3=a_P[0];
 a_1035=a_L4;
 a_1090(a_L3,a_L2,a_F1);return;
@@ -3717,34 +3717,33 @@ static void a_1242(void){ /* datadeclaration */
 int a_L1;int a_L2;int a_L3;int a_L4;int a_P[4];
 a_L3=0;a_L4=0;
 a_L1=to_LIST(a_1015)->alwb;
-a_G3:if(__more(a_L1,to_LIST(a_1015)->aupb)){ goto a_G21;}
+a_G3:if(__more(a_L1,to_LIST(a_1015)->aupb)){ goto a_G20;}
 if(!a_1053(a_L1,a_P)){ goto a_G7;}a_L2=a_P[0];
 if(!__noteq(a_L1,a_L2)){ goto a_G7;}
 a_G6:__next(a_1015,a_L1); goto a_G3;
 a_G7:{register int a_r1=to_LIST(a_1015)->offset[a_L1-4];
- if(a_r1==344288237){ goto a_G8;}
- if(a_r1==344288242||a_r1==344288247){ goto a_G9;}
- if(a_r1==344288255||a_r1==344288251||a_r1==344288261){ goto a_G10;}
- if(a_r1==344288273){ goto a_G13;}
- if(a_r1==344288278){ goto a_G16;}
- if(a_r1==344288282){  goto a_G19;}
+ if(a_r1==344288237){ goto a_G6;}
+ if(a_r1==344288242||a_r1==344288247){ goto a_G8;}
+ if(a_r1==344288255||a_r1==344288251||a_r1==344288261){ goto a_G9;}
+ if(a_r1==344288273){ goto a_G12;}
+ if(a_r1==344288278){ goto a_G15;}
+ if(a_r1==344288282){  goto a_G18;}
   goto a_G6;}
-a_G8:if(a_1354(a_L1)){ goto a_G6;} goto a_G6;
-a_G9:a_1413(a_L1); goto a_G6;
-a_G10:a_1344(a_L1,a_L3,a_L4);
+a_G8:a_1413(a_L1); goto a_G6;
+a_G9:a_1344(a_L1,a_L3,a_L4);
 a_L3=a_L1;
 a_L4=1922290899; goto a_G6;
-a_G13:a_1344(a_L1,a_L3,a_L4);
+a_G12:a_1344(a_L1,a_L3,a_L4);
 a_L3=a_L1;
 a_L4=1922290905; goto a_G6;
-a_G16:a_1344(a_L1,a_L3,a_L4);
+a_G15:a_1344(a_L1,a_L3,a_L4);
 a_L3=a_L1;
 a_L4=1922290911; goto a_G6;
-a_G19:a_1405(a_L1); goto a_G6;
-a_G21:if(!__equal(a_L3,0)){ goto a_G23;}
-a_P[0]=16777927;a_P[1]=1922290916;a_1330(a_1001,2,a_P+0); goto a_G24;
-a_G23:a_P[0]=16777921;a_P[1]=1922290916;a_P[2]=a_L3;a_P[3]=a_L4;a_1330(a_1001,4,a_P+0);
-a_G24:a_P[0]=16777913;a_P[1]=1922290916;a_1330(a_1001,2,a_P+0);return;
+a_G18:a_1405(a_L1); goto a_G6;
+a_G20:if(!__equal(a_L3,0)){ goto a_G22;}
+a_P[0]=16777927;a_P[1]=1922290916;a_1330(a_1001,2,a_P+0); goto a_G23;
+a_G22:a_P[0]=16777921;a_P[1]=1922290916;a_P[2]=a_L3;a_P[3]=a_L4;a_1330(a_1001,4,a_P+0);
+a_G23:a_P[0]=16777913;a_P[1]=1922290916;a_1330(a_1001,2,a_P+0);return;
 } /* datadeclaration */
 static void a_1393(int a_F1){ /* pushBUFFER+>a */
 
