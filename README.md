@@ -17,6 +17,7 @@ Files with extension *.ale* are Aleph source files.
 ## Creating the Aleph compiler
 
 Compile the ''comp.c'' and ''link.c'' files from the [c](c) directory:
+
    gcc -O2 -I ../genc -o comp comp.c ../genc/A_lice.c
    gcc -O2 -I ../genc -o link link.c ../genc/A_lice.c
 
