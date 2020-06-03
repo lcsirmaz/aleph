@@ -216,8 +216,9 @@ void a_trace_rule(const char*rname,int affixno,...);
 * list access with bound check
 *
 *  With bound checking enabled, list access is translated to
-*    a_listelem(<list>, <index>, <selector offset>,<rule name>)
-*  which is defined here to be an inlined routine
+*    to_LIST(L)->offset[a_listelem(L,idx,selector,rulename)]
+*  the procedure a_listelem() is defined here to be inlined
+*
 ********************************************************************/
 inline static int a_listelem(int L,register int idx,int off,
              const char *rname)
@@ -230,7 +231,7 @@ inline static int a_listelem(int L,register int idx,int off,
 }
 
 /********************************************************************
-* include standard external head files
+* include the standard external head files
 ********************************************************************/
 #include "A_xternal.h"
 

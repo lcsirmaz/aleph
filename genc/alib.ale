@@ -22,8 +22,9 @@ $ LIBRARY **************************************************** $
 
 $ programs
 ?put line'a'put line+""f+T[]+>n-i:
-    (n=rest line;put char+f+n),<<T->i,previous+T+i,incr+i,
-    (nxt:i<=>>T,put char+f+T[i],incr+i,:nxt;+).
+    <<T->i,previous+T+i,incr+i,
+    (nxt:i<=>>T,put char+f+T[i],incr+i,:nxt;+),
+    (n=rest line;put char+f+n).
 ?put string'a'put string+""f+T[]+>x-y-z:
     0->y,
     (nxt:string elem+T+x+y+z,incr+y,put char+f+z,:nxt;+).
@@ -141,13 +142,19 @@ $ file input/output
 ?ahead char     'x''a'ahead char+""f+char>     ="a_aheadchar".
 
 $ relations
-?@make  'x''f'@make+>f+*+to>    ="@@make".
-?@equal 'x''q'@equal+>x+>y      ="__equal".
-?@noteq 'x''q'@noteq+>x+>y      ="__noteq".
-?@more  'x''q'@more+>x+>y       ="__more".
-?@lseq  'x''q'@lseq+>x+>y       ="__lseq".
-?@less  'x''q'@less+>x+>y       ="__less".
-?@mreq  'x''q'@mreq+>x+>y       ="__mreq".
+?equal  'x''q'equal+>x+>y	="__equal".
+?notequal'x''q'+notequal+>x+>y	="__noteq".
+?less   'x''q'less+>x+>y	="__less".
+?more   'x''q'more+>x+>y	="__more".
+?mreq   'x''q'mreq+>x+>y	="__mreq".
+?lseq	'x''q'lseq+>x+>y	="__lseq".
+?@make  'x''f'@make+>f+*+to>	="@@make".
+?@equal 'x''q'@equal+>x+>y	="__equal".
+?@noteq 'x''q'@noteq+>x+>y	="__noteq".
+?@more  'x''q'@more+>x+>y	="__more".
+?@lseq  'x''q'@lseq+>x+>y	="__lseq".
+?@less  'x''q'@less+>x+>y	="__less".
+?@mreq  'x''q'@mreq+>x+>y	="__mreq".
 
 $ exit
 ?exit 'x''e'exit+>x = "exit".

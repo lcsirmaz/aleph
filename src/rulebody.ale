@@ -21,15 +21,16 @@ $ *************************************************************
 $ HEADER ******************************************************* $
 $
 'a'rule body+>tag+>repaffix.
+   $ write rule body to DISC; rule tag, repeat affix block 
 'a'root body.
+   $ write root body to DISC
 'a'get rule tag+string>.
+   $ _rule_ constant: return a LEXT pointer with the rule tag
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.
 'pragmat'require=("symbols","tags","types","lexical","disc",
     "display","pragmats").
-'pragmat'public=(rule body,root body).
-
 
 'table'MESSAGE=(
   "symbol %p is expected here"     :expected,
@@ -51,13 +52,19 @@ $ BODY ********************************************************* $
   
 ).
 
-$ rule body and root body
+$ ------------------------------------------------------ $
+$ dont'give cumulative error messages
+'variable'suppress messages=0.
 
-$ conditional error message
-$  give the message only if no messages were given earlier
-'a'Eerror+>err>+*+>msg:
-  is+err;
-  1->err,error+*.
+'a'Eerror+*+>msg:
+  is+suppress messages;
+  1->suppress messages,error+*.
+'a'clear errors:
+   0->suppress messages.
+'q'had errors:
+   is+suppress messages.
+'pragmat'macro=(Eerror,clear errors,had errors).
+$ ------------------------------------------------------ $
 $ the rule tag and the formal repeat affix, if any
 'variable'rule tag=0,formal repeat affix=0.
 $ ------------------------------------------------------ $
@@ -109,50 +116,49 @@ $   (* 0->s1->s2 *) STACK
 $   ( * 0->s1->s2 *STACK, ... )
 
 $ skip over an index [a*b[32]]
-'a'skip over an index+>err>:
-   R+Ssub,skip over source+#+err,
-     (R+Sbus;Eerror+err+expected+Sbus);
+'a'skip over an index:
+   R+Ssub,skip over source+#,
+     (R+Sbus;Eerror+expected+Sbus);
    +.
 $ skip over a source; single=1 if this is a single tag
-'a'skip over source+single>+>err>-symb:
+'a'skip over source+single>-symb:
    0->single,inpt->symb,
     (is cons+#;
-     is tag+#,(R+Sasterisk,(is tag+#,skip over an index+err;
-                  Eerror+err+tag expected after+Sasterisk);
-               ahead+Ssub,skip over an index+err;
+     is tag+#,(R+Sasterisk,(is tag+#,skip over an index;
+                  Eerror+tag expected after+Sasterisk);
+               ahead+Ssub,skip over an index;
                1->single);
      (R+Slwb;R+Supb;R+Svlwb;R+Svupb;R+Scalibre),
-                  (is tag+#;Eerror+err+tag expected after+symb);
-     Eerror+err+source or tag expected).
+                  (is tag+#;Eerror+tag expected after+symb);
+     Eerror+source or tag expected).
 $ skip over target selectors (there must be at least one)
-'a'skip over destination+>err>:
+'a'skip over destination:
    R+Sarrow,(nxt:is tag+#,(R+Sarrow,:nxt;+);
-     Eerror+err+selector tag expected);
-   Eerror+err+expected+Sarrow.
+     Eerror+selector tag expected);
+   Eerror+expected+Sarrow.
 $ skip over an extension
 $  >ex     : if set, allow "*) STACK" extended syntax
 $  tag>    : the STACK
 $  simple> : set if the extended syntax was used
-$  err>    : there was an error meanwhile
-'a'skip over extension+>ex+tag>+simple>+err>:
-   0->tag->simple->err,init restore,
-   (R+Sasterisk;1->err),
-   (nxt:skip over source+#+err,skip over destination+err,
+'a'skip over extension+>ex+tag>+simple>:
+   clear errors,0->tag->simple,init restore,
+   Rskip+Sasterisk,
+   (nxt:skip over source+#,skip over destination,
          (R+Scomma,:nxt;+)),
    $ * STACK or *) STACK
    must+Sasterisk,
    ((is+ex,R+Sclose),1->simple;+),
-   (is tag+tag;Eerror+err+stack tag expected),
-   (is+err,forget restore,skip all;make restore).
+   (is tag+tag;Eerror+stack tag expected),
+   (had errors,forget restore,skip all;make restore).
 $ check whether this is an affix form, tranport or relation
 $  tag is zero if affix form, Xarrow for ->, and other
 $  LADM entry for other relation
-'a'peek after source+tag>+err>-single tag:
-   init restore,0->err->tag,skip over source+single tag+err,
+'a'peek after source+tag>-single tag:
+   clear errors,init restore,0->tag,skip over source+single tag,
      (is special rule+inpt+tag;
       is+single tag;
-      Eerror+err+wrong affix form),
-   (is+err,forget restore,skip all;make restore).
+      Eerror+wrong affix form),
+   (had errors,forget restore,skip all;make restore).
 $ ----------------------------------------------------- $
 
 $ search "tag" as a label; complain if not found
@@ -165,14 +171,14 @@ $ search "tag" as a label; complain if not found
   R+Splus,D+Dplus;
   R+Sminus,D+Dminus;
   R+Sexit,Dtag+Xexit,use tag+Xexit,
-     D+Dplus,0->x,source+Xexit+x;
+     D+Dplus,clear errors,source+Xexit;
   R+Scolon,(is tag+x,search jump+x;error+tag expected after+Scolon).
 
 $ SEL*LIST [ index ] ==>
 $  Dsub Dtag(LIST) <index> Dbus Dtag/Dcons
-'a'index source+>tag+>err>:
-   R+Ssub,D+Dsub,Dtag+tag,source+tag+err,D+Dbus,
-      (R+Sbus;Eerror+err+expected after+Sbus+tag);
+'a'index source+>tag:
+   R+Ssub,D+Dsub,Dtag+tag,source+tag,D+Dbus,
+      (R+Sbus;Eerror+expected after+Sbus+tag);
    D+Dsub,Dtag+tag,D+Dupb,Dtag+tag,D+Dbus.
 $ emit the selector after the index value
 'a'selector+>sel+>tag-type-repr:
@@ -185,51 +191,51 @@ $ emit the selector after the index value
       Dtag+sel).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 $ a list tag is expected after <L, <<L, <>L, >L, >>L
-'a'list tag+>x+>err>-tag:
+'a'list tag+>x-tag:
    is tag+tag,use tag+tag,Dtag+tag;
-   Eerror+err+tag expected after+x.
-'a'source+>tag+>err>-x-y:
+   Eerror+tag expected after+x.
+'a'source+>tag-x-y:
    is cons+x,Dcons+x;
    is tag+x,(R+Sasterisk,
-                (is tag+y,index source+y+err,use tag+y,selector+x+y;
-                 Eerror+err+tag expected after+Sasterisk);     
-             ahead+Ssub,index source+x+err,use tag+x,selector+x+x;
+                (is tag+y,index source+y,use tag+y,selector+x+y;
+                 Eerror+tag expected after+Sasterisk);     
+             ahead+Ssub,index source+x,use tag+x,selector+x+x;
              use tag+x,Dtag+x);
-   R+Slwb,D+Dlwb,list tag+Slwb+err;
-   R+Supb,D+Dupb,list tag+Supb+err;
-   R+Svlwb,D+Dvlwb,list tag+Svlwb+err;
-   R+Svupb,D+Dvupb,list tag+Svupb+err;
-   R+Scalibre,D+Dcalibre,list tag+Scalibre+err;
-   Eerror+err+source expected+tag,skip all.
+   R+Slwb,D+Dlwb,list tag+Slwb;
+   R+Supb,D+Dupb,list tag+Supb;
+   R+Svlwb,D+Dvlwb,list tag+Svlwb;
+   R+Svupb,D+Dvupb,list tag+Svupb;
+   R+Scalibre,D+Dcalibre,list tag+Scalibre;
+   Eerror+source expected+tag,skip all.
 $ actual affix can be a string, dummy argument # or ?, or a source
-'a'source or string+>tag+>err>-x-c:
+'a'source or string+>tag-x-c:
    is string+x,new stdstring+x+c,$ c and Xstring table are used
       D+Dplus,Dtag+Xstring table,D+Dplus,Dtag+c;
    R+Snoarg,D+Dplus,D+Dnoarg;
    R+Senquiry,D+Dplus,D+Dnoarg; $ +? is the same as +# 
-   D+Dplus,source+tag+err.
+   D+Dplus,source+tag.
 'p'repeat affix:
    R+Sasterisk,(is+formal repeat affix,D+Dplus,Dtag+formal repeat affix;
       error+no formal repeat affix+rule tag).
-'a'affix form-tag-err:
+'a'affix form-tag:
    is tag+tag,(has formal type+tag,error+formal as rule+tag,skip all;
-       Dtag+tag,use tag+tag,0->err,
+       Dtag+tag,use tag+tag,clear errors,
           (nxt:R+Splus,(repeat affix; $this must be the last affix $
-                        source or string+tag+err,:nxt);+));
+                        source or string+tag,:nxt);+));
    error+tag expected,skip all.
-'a'special affix form+>tag-err:
-   Dtag+tag,use tag+tag,D+Dplus,0->err,source+tag+err,
-     (is+err;next symbol), $ skip -> or the relation
-     D+Dplus,source+tag+err,
-     (tag=Xarrow,(nxt:R+Sarrow,D+Dplus,source+tag+err,:nxt;+);+).
+'a'special affix form+>tag:
+   Dtag+tag,use tag+tag,D+Dplus,clear errors,source+tag,
+     (had errors;next symbol), $ skip -> or the relation
+     D+Dplus,source+tag,
+     (tag=Xarrow,(nxt:R+Sarrow,D+Dplus,source+tag,:nxt;+);+).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
-'a'to selectors+>tag+>err>-sel:
+'a'to selectors+>tag-sel:
    R+Sarrow,(nxt:is tag+sel,D+Dto,selector+sel+tag,(R+Sarrow,:nxt;+);
-                 Eerror+err+tag expected after+Sarrow,skip all);
-   Eerror+err+expected+Sarrow.
-'a'extension+>tag-err:
-   D+Dextension,use tag+tag,Dtag+tag,Rskip+Sasterisk,0->err,
-   (nxt:source+tag+err,to selectors+tag+err,(R+Scomma,:nxt;+)),
+                 Eerror+tag expected after+Sarrow,skip all);
+   Eerror+expected+Sarrow.
+'a'extension+>tag:
+   D+Dextension,use tag+tag,Dtag+tag,Rskip+Sasterisk,clear errors,
+   (nxt:source+tag,to selectors+tag,(R+Scomma,:nxt;+)),
    D+Dextension,Rskip+Sasterisk,Rskip+Sclose,Rskip+tag.
 
 'q'looking at a member:
@@ -240,17 +246,17 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
     CONST;TTAG               $ constant or tag $
    ],+;
    -.
-'a'member-err-tag-simple:
+'a'member-tag-simple:
    R+Sopen,(ahead+Sasterisk, $ check for (* ... *)STACK
-               skip over extension+1+tag+simple+err,
-               (is+err; $ error
+               skip over extension+1+tag+simple,
+               (had errors; $ error
                 is+simple,extension+tag;
                 compound member);
             compound member);
-   ahead+Sasterisk,skip over extension+0+tag+#+err,
-          (is+err;extension+tag);
-   peek after source+tag+err,
-          (is+err;is+tag,special affix form+tag;affix form).
+   ahead+Sasterisk,skip over extension+0+tag+#,
+          (had errors;extension+tag);
+   peek after source+tag,
+          (had errors;is+tag,special affix form+tag;affix form).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'peek label+label>:
    init restore,0->label,
@@ -288,17 +294,17 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    (is+empty, error+wrong zone+rule tag;+),
    (R+Ssemicolon,D+Dsemicolon,:classifier;
     must+Sbus).
-'a'area+>err>+last>:
+'a'area+last>:
    R+Ssub,0->last,D+Darea,classifier,D+Darea,D+Dcomma,
-     (R+Scomma;Eerror+err+expected+Scomma),
+     (R+Scomma;Eerror+expected+Scomma),
      alternative;
    1->last,D+Darea,D+Dcolon,D+Darea,D+Dcomma,alternative.
 $ classification: we are after =
-'a'classification-err-last-cnt:
-  D+Dbox,0->err->cnt,source+Sbox+err,D+Dbox,
-    (R+Sbox;Eerror+err+expected+Sbox),
-    (nxt:area+err+last,(is+last;R+Ssemicolon,D+Dsemicolon,incr+cnt,:nxt;+)),
-    (is+err,skip all;last=0;cnt=0,error+empty classification;+).
+'a'classification-last-cnt:
+  D+Dbox,clear errors,0->cnt,source+Sbox,D+Dbox,
+    (R+Sbox;Eerror+expected+Sbox),
+    (nxt:area+last,(is+last;R+Ssemicolon,D+Dsemicolon,incr+cnt,:nxt;+)),
+    (had errors,skip all;last=0;cnt=0,error+empty classification;+).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'get rule tag+string>:
    $ get rule tag as a string; built-in string _rule_

@@ -287,12 +287,20 @@ void a_comparestring(int F1,int F2,int F3,int F4,int A[1]){
   A[0]=strcmp((char*)(ptr1+1-*ptr1),(char*)(ptr2+1-*ptr2));
 }
 /* 'f'compare string n+t1[]+>p1+t2[]+>p2+>n+res>
- *    compare first n bytes of two strings
+ *    compare first n characters of two strings
  */
 void a_comparestringn(int F1,int F2,int F3,int F4,int F5,int A[1]){
   int *ptr1=to_LIST(F1)->offset+F2,
       *ptr2=to_LIST(F3)->offset+F4;
-  A[0]=strncmp((char*)(ptr1+1-*ptr1),(char*)(ptr2+1-*ptr2),F5);
+  const unsigned char*chr1=(unsigned char*)(ptr1+1-*ptr1),
+                     *chr2=(unsigned char*)(ptr2+1-*ptr2);
+  while(F5>0){
+    A[0]=*chr1-*chr2;if(A[0]!=0){ return; }
+    if(*chr1==0){ return; }
+    if((*chr1&0xC0)!=0x80){F5--;}
+    chr1++; chr2++;
+  }
+  A[0]=0; return;
 }
 /* 'q' string elem+t[]+>p+>n+c> 
  *    find the n-th element of the string; do an utf-8 encoding on
@@ -1000,13 +1008,13 @@ void a_blockhash(int F1,int F2,int A[1]){
 * profile and trace
 *
 *  rules with count=on have a static a_PROFILE structure, and the
-*   procedure a_PROFILING() is called at the end. This procedure
-*   links and counts the how many times it has been called.
+*   procedure a_PROFILING() is called. This procedure
+*   links and counts how many times the rule has been called.
 *  rules with trace=on start with an
 *          a_trace_rule("rule",cnt,F1,F2,...)
 *   call with the rule name, number of incoming arguments, and the
 *   values of the arguments. Depending on the value of "do_trace",
-*   it is printed.
+*   it is printed on stderr
 *
 *******************************************************************/
 a_PROFILE *a_profiles;
@@ -1021,17 +1029,17 @@ void a_trace_rule(const char *name,int affixno,...){
   if(a_traced_index<=0){a_traced_index=TRACE_SIZE;}
   a_traced_rules[--a_traced_index]=name;
   if(do_trace==0){return;}
-  printf(" %s(",name);
+  fprintf(stderr," %s(",name);
   va_start(args,affixno);
   while(affixno>0){
-     affix=va_arg(args,int);printf("%d ",affix);
+     affix=va_arg(args,int);fprintf(stderr,"%d ",affix);
      affixno--;}
   va_end(args);
-  printf(")\n");  
+  fprintf(stderr,")\n");  
 }
 
 /* a_sort_profiles()
-*    sort profiles by the count number
+*    sort profiles by their count
 */
 static void a_sort_profiles(void){
 a_PROFILE **p,*q; int done=1;
@@ -1077,8 +1085,8 @@ int a_argc;char **a_argv;int a_extlist_virtual;
 extern void a_ROOT(void);
 
 int main(int argc,char *argv[]){
-   if(argc>1 && *argv[1]=='D'){do_trace=1;argc--,argv++;}
-   a_argc=argc;a_argv=argv;a_extlist_virtual=0x7f800000;
+   if(argc>1 && strcmp(argv[1],"-T")==0){do_trace=1;argc--,argv++;}
+   a_argc=argc;a_argv=argv;a_extlist_virtual=0x7f000000+16;
    memset(a_traced_rules,0,sizeof(const char *)*TRACE_SIZE);
    a_traced_index=-1;a_profiles=NULL;
    a_ROOT();
