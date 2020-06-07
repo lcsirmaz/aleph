@@ -831,13 +831,13 @@ The \pp|prototype| pragmat has three possible values: \pp|import|, \pp|public|,
 and \pp|none|. In the first case a \g{prototype} indicates that the tag has a
 declaration outside this module (and then it cannot be defined, but can
 have other prototypes). In the second case every tag appearing in a
-\g{prototype} gets automatically
+\g{prototype} automatically gets
 the \emph{public} flag, and must be defined in this module (consequently
 cannot be external, or imported). When \pp|prototype=none|, prototypes are
-only for checking purposes and do not imply any specific behavior.
+used for checking purposes only and do not imply any specific behavior.
 
 The \pp|module| pragmat, if not skipped (i.e., if \pp|compile=on| is in
-effect), then defines the module name, and also sets \pp|prototype=public|.
+effect), defines the module name, and also sets \pp|prototype=public|.
 
 \subsection{Conditional pragmats}\label{conditional}
 
@@ -864,12 +864,12 @@ of the source file. They have the syntax
 \noindent
 where \pp|TAG| is one of \pp|compile|, \pp|list|, \pp|dictionary|,
 \pp|module|, \pp|library|, etc. The program text between the \pp|if| and
-\pp|else| pragmats is processed if \pp|TAG| is in effect (it is not in
-effect), otherwise it is skipped; and just the opposite for the text between
+\pp|else| pragmats is processed if \pp|TAG| is (or is not) in effect;
+otherwise, it is skipped; and just the opposite for the text between
 \pp|else| and \pp|endif|. The \pp|else| part may be missing.
-The \pp|TAG| in \pp|ifdef| (\pp|ifndef|)
-pragmats can be any identifier (tag), and it is checked if this identifier 
-has (has not) been defined until this points.
+The \pp|TAG| in the \pp|ifdef| (\pp|ifndef|)
+pragmats can be any identifier (tag), and the compiler checks if this identifier 
+has (has not) been defined until this point.
 As an example, the \g{pragmat}
 \begin{program}
 'pragmat'if=module,include="private",else=module,
@@ -877,7 +877,7 @@ As an example, the \g{pragmat}
 \end{program}
 \noindent
 adds the source file \pp|private| among those to be processed if the
-\pp|module| pragmat has been executed previously; otherwise it adds the
+\pp|module| pragmat has been executed previously; otherwise, it adds the
 \pp|public| source file.
 
 The \pp|if| \dots \pp|endif| pragmats must be nested properly, and the
@@ -888,10 +888,10 @@ extend over the end of the current file.
 
 \subsection{\A{} modules}\label{subsec:module}
 
-An \A{} module starts with a \pp|module| pragmat which defines the module's
-name (title). After this the module header follows which contains the prototype 
-of all exported (public) tags. The module's
-body, which defines the exported tags together
+An \A{} module starts with a \pp|module| pragmat which defines the
+name (title) of the module. After this, the module header follows, which contains the prototype 
+of all exported (public) tags. The
+body of the module, which defines the exported tags together
 with private items, is enclosed between \pp|ifdef=compile| and
 \pp|endif=compile| pragmats. A small module exporting the rule \pp|do
 something| and the stack \pp|LEXT| can be defined as follows.
@@ -929,8 +929,8 @@ module \pp|a| requires some public item from module \pp|b|, and module
 As in the sample module above, all modules must have a
 \pp|'root'|. All module \g{root}s are executed before the main \g{root} is
 called (which must be in the only non-module source file). The module 
-root can make the necessary initialization. If no such initialization 
-is necessary, the module can use an empty \g{root} as it happened in the 
+root can make any necessary initialization. If no initialization 
+is necessary, the module can use an empty \g{root} as in the 
 example. To control the order of the initialization, a module
 can call the rule
 \begin{program}
@@ -941,7 +941,7 @@ This rule checks if there is a module with the supplied title.  If not, it
 fails and returns immediately.  Otherwise, before returning success, it
 makes sure that the referred module has finished initialization.  The
 \pp|wait for| rule aborts the program run with an error message if two
-modules would wait for each other, thus use this rule with care.
+modules would wait for each other, so use this rule with care.
 
 \subsection{Library mode}\label{subsec:library}
 
@@ -952,9 +952,9 @@ library, if not disabled by \pp|'pragmat'stdlib=off|, will be read as the
 last source.
 
 %\noindent~~$\cdot$~~~%
-In library mode the \pp|@| character is considered to be a letter. This 
+In library mode, the \pp|@| character is considered to be a letter. This 
 way private tags
-can be created which are not available outside the library. Dictionary
+can be created which are not available outside a library. Dictionary
 listing ignores tags starting with \pp|@|.
 
 %\noindent~~$\cdot$~~~%
@@ -988,6 +988,7 @@ accepted.
 
 \def\HH{\noindent\hbox to 0.2\linewidth\bgroup~~~~~}
 \HH \pp|\_line\_|\HE integer, the source line number this constant appears
+in
 
 \HH\pp|\_file\_|\HE string, name of the the source file
 
@@ -1002,10 +1003,11 @@ accepted.
 \section{Variable number of affixes}
 
 Allowing -- and handling -- variable number of affixes in rules is the main
-novelty of this \A{} compiler. Variable number of affixes raise several
-problems, and pose a main obstacle keeping the tractability of the rule
-properties. The approach used here meets two main requirements: on one hand it
+novelty of this \A{} compiler. Allowing a variable number of affixes raises several
+problems, and poses a main obstacle to keeping the tractability of the rule
+properties. The approach used here meets two main requirements: on the one hand it
 provides a flexible and usable variable argument mechanism, and on the other
+hand
 it keeps all tractability properties of \A{} programs. This is achieved by
 restricting how the ``invisible'' affixes in the variable block can be accessed.
 
@@ -1026,14 +1028,14 @@ affixes are matched against the formal affixes \pp|a|, \pp|b|, and \pp|c|.
 The rule execution starts by setting \pp|a| to zero, then adding \pp|b| and
 \pp|c| to \pp|a|. The library routine \pp|shift affix block| shifts out the
 affix block and moves the next block into its place, assuming there is still
-a pending, not seen block. If there is none, \pp|shift affix block| fails;
-and then the rule \pp|sum| ends. Otherwise the execution continues, and a
+a pending, unseen block. If there is none, \pp|shift affix block| fails,
+and the rule \pp|sum| ends. Otherwise, the execution continues, and a
 jump is made to the label \pp|nxt|, where the next two input affixes are 
 added to \pp|a|. Finally, \pp|sum| adds up all of its input arguments 
 and return their sum in \pp|a|.
 
 The main point which guarantees tractability data flow is that the shifted
-out blocks are lost to this rule, there is no way to reach or modify their
+out blocks are lost to this rule, and there is no way to reach or modify their
 elements.
 
 The \g{repeat affix symbol} \pp|*| can appear as the last actual affix in a 
@@ -1045,14 +1047,14 @@ blocks of this rule are passed as arguments. The rule \pp|negate| declared as
 \end{program}
 \noindent
 adds up its first two in affixes \pp|b| and \pp|c|; if there are no more 
-affixes then this sum is
-the result. Otherwise it calls \pp|sum| to add up the rest, and then subtract
+affixes, then this sum is
+the result. Otherwise, it calls \pp|sum| to add up the rest, and then subtract
 it from the sum of the first two. Thus the calls
 \begin{program}
  negate+x+3+4, negate+y+3+4+0+1, negate+z+3+4+0+1+x+y
 \end{program}
 \noindent
-put 7 to \pp|x|, 6 to \pp|y|, and $-7$ to \pp|z|.
+put 7 in \pp|x|, 6 in \pp|y|, and $-7$ in \pp|z|.
 
 The library routine \pp|get affix blockno+n>+*| returns the number of
 pending affix blocks. This number is always positive, and it is exactly
@@ -1060,10 +1062,10 @@ pending affix blocks. This number is always positive, and it is exactly
 
 The main application of variable number of arguments is formatted printing,
 which, in the \A{} compiler, has mainly been used to report error messages,
-but it also turned out to be useful in code generation. A rudimentary
+but it also turned out to be useful in code generation. Rudimentary
 formatted printing can start with the format string -- so
-it is two affixes: the table and the string pointer. Each format character
-starting with \pp|\%| should have 
+it has two affixes: the table and the string pointer. Each format character
+starting with \pp|\%| requires 
 a corresponding affix. When encountering a format char, the affix list
 is shifted and the next argument, together with the format char, is passed
 to the rule \pp|handle format char|.
@@ -1078,7 +1080,7 @@ to the rule \pp|handle format char|.
        put char+STDOUT+newline).
 \end{program}
 \noindent
-Another application can be pushing and popping unspecified number of elements
+Another application can be pushing and popping an unspecified number of elements
 to a stack:
 \begin{program}
 'action'push+*>x:
@@ -1088,7 +1090,7 @@ to a stack:
 \end{program}
 \noindent
 Passing all remaining affixes in the variable block was used to suppress
-low level warning messages with a code similar to the one below:
+low-level warning messages with a code similar to the one below:
 \begin{program}
 'action'warning+>level+T[]+*+>msg:
    level<min level;
@@ -1097,8 +1099,8 @@ low level warning messages with a code similar to the one below:
 
 \section{Macro substitution}\label{sec:macro}
 
-Calls of a macro rule are implemented by textual substitution. Such a
-replacement can result in a syntactically wrong text, or in a completely
+Calls to macro rules are processed by textual substitution. Such a
+replacement can result in a syntactically incorrect text, or in completely
 different semantics. The following examples illustrate these cases and
 explain the additional restrictions a macro rule must satisfy.
 
@@ -1116,11 +1118,11 @@ then after substitution the replacement is syntactically wrong:
 \HH \pp|macro+1+z|\HE becomes \pp|(1->z->1,1->z)|
 
 \item There is a problem with the \g{dummy affix}.
-Using the same \pp|macro| rule as above, the result has wrong syntax:
+Using the same \pp|macro| rule as above, the result has incorrect syntax:
 
 \HH \pp|macro+u+\#| \HE becomes \pp|(u->\#->u, u->\#)|
 
-\item While a macro can have variable number of affixes, neither \pp|shift
+\item While a macro can have a variable number of affixes, neither \pp|shift
 affix block|, nor \pp|get affix blockno| is allowed. Rule \pp|is zero|
 below checks if it has an argument with zero value; rule \pp|math| computes
 the product of its arguments if none is zero, otherwise it computes their
@@ -1132,16 +1134,16 @@ sum:
   is zero+*,0->y,(nxt:add+x+y+y,shift affix block+*,:nxt;+);
   1->y,(nxt:mult+x+y+y,shift affix block+*,:nxt;+).
 \end{program}
-If \pp|is zero| were substituted verbatim, it would shifts out all affixes
-and the computation in \pp|math| cannot be carried over. 
+If \pp|is zero| were substituted verbatim, it would shift out all affixes
+and the computation in \pp|math| would not be carried over. 
 If the rule \pp|macro| is defined as
 \begin{program}
 'function'macro+>a+*+>q: q->b, call+a+b+*.
 \end{program}
 \noindent
 where \pp|b| is some global variable, then after substitution the repeat
-block can completely vanish so calls of \pp|shift affix block| and \pp|get
-affix blockno| would give syntax error:
+block can completely vanish, so calls of \pp|shift affix block| and \pp|get
+affix blockno| would give syntax errors:
 
 \HH\pp|macro+1+2+T+rep2| \HE becomes 
    \pp|(2->b,call+1+b+2+T+rep2)|
@@ -1150,7 +1152,7 @@ affix blockno| would give syntax error:
 
 If a rule head is \pp|XXXX+*+>u| and the same \pp|macro| is called inside this
 rule, then the \g{formal affix} \pp|u| might appear in the substitution text
-while it has not been passed to the macro explicitly:
+without it being passed to the macro explicitly:
 
 \HH\pp|macro+1+*|\HE becomes \pp|(u->b,call+1+b+*)|
 
@@ -1167,7 +1169,7 @@ where \pp|ptr| is some global variable. After substitution
 
 while \pp|S| might not have a standard selector.
 
-\item Out affixes get their values only after returning from the call.
+\item Out affixes get their values only after returning from a call.
 The rule call \pp|swap+x+y+x| swaps the value of \pp|x| and \pp|y| if it is
 defined as
 \begin{program}
@@ -1178,22 +1180,22 @@ but as a macro it does \pp|y->x,x->y|.
 \end{enumerate}
 Items 1) and 3) are checked during compilation, and error messages are issued
 if the conditions are violated. For 2), if the actual is a \g{dummy affix}, the
-formal out affix in the macro is turned into a local variable (which, later
-on, could be optimized out). For 4) the macro substitution mechanism remembers the
+formal out affix in the macro is turned into a local variable (which may be
+removed during optimization). For 4) the macro substitution mechanism remembers the
 last substituted formal affix, which gives the correct standard selector.
-For 5) and other side effect, no warning is, or can be, given, but it
-changes the semantics. So use macros at your own risk.
+For 5) and other side effects, no warning is, or can be, given, but it
+changes the semantics. So use macros with care.
 
 \section{Redefining assignments and relations}
 
 Assignments (\g{transport}s) and relations (of which \g{identity} is an
 example, see Section \ref{subsec:relations}) are handled as a syntactically
-different way to write a rule call. The assignment
+different way of writing a rule call. Internally, the assignment
 \begin{program}
 a->b[c]->c
 \end{program}
 \noindent
-is transformed internally to the rule call
+is transformed into the rule call
 \begin{program}
 @make+a+b[c]+c
 \end{program}
@@ -1207,8 +1209,8 @@ an
 \noindent
 Similarly, relations are transformed to calls of rules \pp|@equal|,
 \pp|@noteq|, \pp|@more|, \pp|@less|, \pp|@mreq|, and \pp|@lseq|,
-respectively; all of them is
-a \emph{question} with two input affixes, also defined in the standard
+respectively; all of them are
+\emph{question}s with two input affixes, also defined in the standard
 library. Any of these rules can be redefined (in library mode) to do
 something different. As an example, 
 suppose the list \pp|STR| contains strings, and two pointers to
@@ -1233,19 +1235,19 @@ handle this case:
 \noindent
 Actually, the test \pp|eq=0| should be \pp|real eq+eq+0|, as this way the
 rule \pp|@equal| calls itself. In the module where this definition appears
-all equality tests use this rule. You might consider to declare \pp|@equal|
-to be a \pp|macro|; it also should be done in library mode.
+all equality tests use this rule. You might consider declaring \pp|@equal|
+to be a \pp|macro|, which could also be done in library mode.
 
 \section{Implementation details}
 
 The target code of this \A{} compiler is {\sf C}. It is assumed that the
-basic \A{} data type, which translates to \pp|int| in {\sf C}, is 32 bit long,
+basic \A{} data type, which translates to \pp|int| in {\sf C}, is 32 bits long,
 and that the compiler and the target code runs on the same
 architecture\footnote{The compiler must know how strings are packed in the
-target machine to generate list fillings. Also, in a datafile declarations the
+target machine to generate list fillings. Also, in datafile declarations the
 hash of the list identifiers are computed at compile
 time, and are used when the \A{} program runs.}. There is no assumption on
-the pointer's size.
+the size of pointers.
 
 \subsection{Tables, stacks}\label{subsec:tables-stacks}
 
@@ -1274,16 +1276,17 @@ Table and stack structures have the following fields.
 
 \smallskip
 \noindent
-The \A{} list element \pp|L[i]| is translated to \pp|to\_LIST(L)->offset[i]|
+The \A{} list element \pp|L[i]| is translated into \pp|to\_LIST(L)->offset[i]|
 in {\sf C}. List limits (actual and virtual limits and calibre) are
 retrieved from this structure. There are no direct pointers to list elements
-in the program, thus the whole list can be freely moved in the memory, only the
-pointers \pp|offset| and \pp|p| should be adjusted.
+in the program, thus whole lists can be moved freely in the memory, as long
+as the
+pointers \pp|offset| and \pp|p| are adjusted.
 
 When a stack is to be extended and no more allocated space is available,
 additional memory is requested (which may move the whole list to somewhere
 else in the memory). The elements of the new list block are initialized
-and the list's actual upper bound is increased. The \pp|unstack| and
+and the actual upper bound of the list is increased. The \pp|unstack| and
 \pp|unstack to| externals adjust the actual upper bound only. The
 \pp|release| external actually releases the allocated memory, while
 \pp|scratch| only sets the actual upper bound to its lowest possible value
@@ -1313,7 +1316,7 @@ is arranged as follows.
 \noindent
 In the bitmap part the indicator bit for the word at position $32\le \mbox{\tt i} <
 1024$ is at word location \pp|B[int(i/32)]|, and at bit position
-\pp|(i\&31)| where zero is the most significant bit, and 31 is the least
+\pp|(i\&31)|, where zero is the most significant bit and 31 is the least
 significant bit. The \pp|nil| pointer is a pointer with value zero; the
 \pp|eof| (end of file) indicator is a pointer with value $-1$; all other
 pointer values must be positive and belong to one of the datafile zones.
@@ -1337,27 +1340,27 @@ Input \A{} datafiles can be positioned. The last 10 bits in the file
 position identify the index, which must be between 32 and 1023. Other bits
 identify the block in which the value is. The actual position is stored
 internally, thus there is no overhead in determining it. File position
-can be retrieved for both input and output datafiles, but can only set the
+can be retrieved for both input and output datafiles, but one can only set the
 position for an opened input datafile. No check is made to make sure that
-the position is valid (can be set after the \pp|eof| indicator).
+the position is valid (so it can be set after the \pp|eof| indicator).
 
 When opening a datafile for output, the first block with the number of zones
 and the corresponding values are created; the file pointer is set just
 before the very first empty space.
 
-Appending to and existing \A{} datafile is not done as it raises problems. 
-Read the first block, check if it has the same metainformation as we have
+Appending to an existing \A{} datafile is not done as it raises problems.
+The steps are: read the first block, check if it has the same metainformation as we have
 right now, read the last block, find the \pp|eof| mark, then set the file
 position just at the \pp|eof| mark.
 
 Opening a datafile for input requires the following operations: read the 
-first block, compare the zones
+first block, and compare the zones
 in the input file to the ones supplied by the file declaration. Comparison is
 made by the hash values: two lists are the same if they have the same hash
 value. Lists not found in the declaration are skipped; others are copied into a
-local structure with the difference between the stored and requested pointer
+local structure with the differences between the stored and requested pointer
 values. When the next input is requested, it is checked whether it is a
-pointer or not. If numerical, pass it. If it's a pointer, check which list
+pointer or not. If it is numerical, pass it. If it is a pointer, check which list
 it is in, add the difference and pass it as a pointer. Handle \pp|nil|
 and \pp|eof| separately. If the zone is not found (the corresponding list
 was not supplied when opening the datafile), then fail and skip this input. 
@@ -1392,15 +1395,15 @@ The datafile structure stored in \pp|a\_DATABLOCK| has the following fields:
 \subsection{Character files}\label{subsec:charfile}
 
 While datafiles use direct file input and output, character files use
-streams, namely the \pp|fgetc()| and \pp|fputc()| library procedures without the
+streams, namely, the \pp|fgetc()| and \pp|fputc()| library procedures without the
 \pp|ungetc()| facility. Input is assumed to be proper UTF-8 encoded, incorrect codes are
 silently ignored. The \A{} rule \pp|get char| may consume
 up to four bytes from the input stream. There is no \pp|newpage| character,
 and writing \pp|newline| sends the newline character (code 10) to the
 stream.
 
-Input character files can be positioned, they use \pp|ftell()| to retrieve
-the current file position, and \pp|fseek()| to set the file position.
+Input character files can be positioned; they use \pp|ftell()| to retrieve
+the current file position and \pp|fseek()| to set the file position.
 
 The charfile structure in \pp|a\_DATABLOCK| has the following fields:
 \medskip
@@ -1418,7 +1421,8 @@ The charfile structure in \pp|a\_DATABLOCK| has the following fields:
 
 \subsection{Strings}
 
-\A{} uses Unicode characters, and they are stored as UTF-8 encoded {\sf C}
+\A{} strings use Unicode characters, and they are stored using UTF-8
+encoding as {\sf C}
 strings whose last byte is \pp|{\char92}0|.  If the string is in list \pp|L|
 pointed by the (virtual) index \pp|si|, then the content of the list block
 is
@@ -1445,7 +1449,7 @@ ones):
 
 \HH\pp|{\char92}0  -  -  -| \HE third word with the closing zero byte
 
-\HH\pp|c5 c6 c7 c8|\HE   second word, bytess \pp|c5|--\pp|c8|
+\HH\pp|c5 c6 c7 c8|\HE   second word, bytes \pp|c5|--\pp|c8|
 
 \HH\pp|c1 c2 c3 c4|\HE   first word, bytes \pp|c1|--\pp|c4|
 
@@ -1456,27 +1460,27 @@ The empty string is stored as a block of three zeros.
 
 \subsection{Rules in {\sf C}}\label{subsec:c-rules}
 
-Each rule declaration is translated to a {\sf C} procedure declaration. If
+Each rule declaration is translated into a {\sf C} procedure declaration. If
 the rule is of type \emph{function}, \emph{action}, or \emph{exit}, then the
-procedure is \pp|void|, if it is a \emph{question} or \emph{predicate}, then
+procedure is \pp|void|; if it is a \emph{question} or \emph{predicate}, then
 it is \pp|int|. The compiled {\sf C} routine returns \pp|0| for failure and
 \pp|1| for success, but when checking the returned value, any non-zero
 return value is taken for success.
 
-In \A{} it is the caller's responsibility to store the output value to its
+In \A{} it is the caller's responsibility to store the output value in its
 destination, and do it only if the called routine reports success. According
-to this requirement, \g{formal affix}es are transformed to {\sf C}
+to this requirement, \g{formal affix}es are transformed into {\sf C}
 parameters as follows. First, assume that the called rule has no variable
-affix block. Affixes, which are neither \g{out}, not \g{inout} ones
-(that is, \g{actual file}, \g{stack}, \g{table}, or \g{in} affix), are
+affix block. Affixes which are neither \g{out} nor \g{inout} ones
+(that is, \g{actual file}, \g{stack}, \g{table}, or \g{in} affix) are
 passed as integers in their original order. A local integer array is
-declared for the \g{out} and \g{inout} affixes, and this array. containing
+declared for the \g{out} and \g{inout} affixes, and this array, containing
 these affixes in their original order, is passed as the last parameter.
 Before returning, the called routine should supply the output values in this
 array, which values will then be stored by the caller.
 
 Rules with a variable affix block have two additional parameters: an
-integer containing the number of blocks (with value
+integer containing the number of blocks (with a value of
 at least one), and an integer array containing all affixes in the variable
 block regardless of their types. The \pp|shift affix block| rule is
 implemented by decreasing the block counter by one, and adding the block
@@ -1512,21 +1516,21 @@ is interpreted depends on the type of the defined tag.
 Both constants and variables can be declared \g{external}. External constants cannot
 be used in expressions or any other place where a constant tag is required.
 In the {\sf C} code every occurrence of these tags is replaced by the
-string specified in the \g{exernal declaration}.
+string specified in the \g{external declaration}.
 
 \subsubsection{External table and stack}
 
 A list structure is reserved in the global integer array \pp|a\_DATABLOCK|
 as explained in Section \ref{subsec:tables-stacks}. The string in the
 external declaration is used as the name of a {\sf C} procedure which is
-responsible to initialize this structure. The routine is called with two
+responsible for initializing this structure. The routine is called with two
 arguments: the index of the associated structure and the calibre of the
 list. The routine must fill the actual and virtual limits and the calibre.
-There is a (relatively small) virtual address space put apart for external
+There is a (relatively small) virtual address space set aside for external
 lists. The first free virtual address is in \pp|a\_extlist\_virtual|; the
 address can go up to \pp|max int|. The routine should update this value to
-reflect its reservation. The routine is also responsible to allocate memory
-and initialize the content of external tables.
+reflect its reservation. The routine is also responsible for allocating memory
+and initializing the content of external tables.
 
 \subsubsection{External files}
 
@@ -1534,8 +1538,8 @@ The corresponding charfile or datafile structure is reserved in the global
 array \pp|a\_DATABLOCK|. For the description see Sections
 \ref{subsec:datafile-implement} and \ref{subsec:charfile}. The string in the
 external declaration is used as the name of a {\sf C} procedure which is
-responsible to
-initialize the structure. The procedure is called with a single argument:
+responsible for
+initializing the structure. The procedure is called with a single argument:
 the index of the structure.
 
 \subsubsection{External rules}
@@ -1549,7 +1553,8 @@ settings; the {\sf C} routine implementing the external rule can be compiled
 and linked independently. Several standard library rules are implemented
 this way.
 
-If the first character in the external rule's \g{string denotation} is not a
+If the first character in the \g{string denotation} of the
+external rule is not a
 letter, then another calling mechanism is used: all affixes, independently
 of their types, are passed as parameters. Such external rules are typically
 defined as
@@ -1563,7 +1568,7 @@ translates to \pp|\_\_incr(ptr)|. The {\sf C} header file contains the
 \noindent
 which makes the final translation.
 
-The \g{dummy affix} \pp|\#| translates to nothing, thus leaves an empty parameter
+The \g{dummy affix} \pp|\#| translates to nothing, thus it leaves an empty parameter
 location. Using some {\sf C} preprocessor tricks these empty arguments can
 be transformed to different {\sf C} procedure calls. To ease this work, 
 the \A{} compiler makes some additional work.
@@ -1572,7 +1577,7 @@ If the external rule is a \emph{function} and all of its out arguments are
 discarded, then this external rule is not called at all. The same
 optimization is not applied to non-external rules (only a warning is given),
 as such a rule can check whether some condition holds and abort the program
-if the condition does not hold.
+depending on the outcome.
 
 If the \g{string denotation} of the external rule starts with a \pp|@|, then
 this character is replaced by an underscore. For each out argument,
@@ -1583,7 +1588,7 @@ discarded from the argument list. In the standard library the external rule
 \pp|@divrem|. Accordingly, four {\sf C} calls could be generated:
 \pp|\_divrem11| with four parameters when both the quotient and remainder is
 used, the three parameter \pp|\_divrem01| and \pp|\_divrem10| when the
-quotient (remainder) is discarded; and the two parameter \pp|\_divrem00|
+quotient or remainder is discarded; and the two parameter \pp|\_divrem00|
 when no result is requested at all.
 
 \end{document}
