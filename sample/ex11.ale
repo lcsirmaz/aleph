@@ -1,0 +1,29 @@
+$ side effect:
+$  an indexed inout affix can have different source and destination
+$  In the first example the index is an out affix; in the second one
+$  it is a global variable changed by the called rule.
+'variable'ptr=0.
+
+'f'incr both+>i>+>j>:
+   incr+i,incr+j.
+
+'a'decr global+>x>:
+   decr+x,decr+ptr.
+
+'stack'st=(0,10,20,30,40).
+'a'print stack+st[]-x:
+  <<st->x,(nxt:x>>>st;put int+STDOUT+st[x],incr+x,:nxt),put char+STDOUT+newline.
+
+'root'(-x:
+   print stack+st, $    0   10   20   30   40
+     <<st->x,incr both+x+st[x],
+     $ the second out value is stored at the
+     $ location determined by the new value of x
+   print stack+st, $    0    1   20   30   40
+     >>st->ptr,decr global+st[ptr],
+     $ the out value is stored at a different location
+   print stack+st  $    0    1   20   39   40
+   ).
+
+'end'
+
