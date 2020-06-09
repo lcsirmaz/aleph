@@ -13,7 +13,7 @@ Files with extension `.ale` are Aleph source files.
 * [genc](genc) Aleph standard library file and C headers
 * [doc](doc) Aleph Manual and some implementation details
 * [sample](sample) Sample Aleph programs
-* [bootstrap](bootstrap) C code of an early version of the compiler and linker; translated from Aleph to C by hand for bootrapping.
+* [bootstrap](bootstrap) C code of an early version of the compiler and linker; translated from Aleph to C by hand for bootstrap.
 
 ## Compiling the Aleph - C compiler
 
