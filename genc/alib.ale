@@ -47,10 +47,10 @@ $ programs
        [/+/],1->sign,0->n;
        [/-/],-1->sign,0->n;
        [/0/:/9/],1->sign,subtr+ch+/0/+n;
-       0->sign,0->n);
+       -);
      -),
     (nxt:ahead char+f+ch,(=ch=
-     [/0/:/9/],addmult+n+10+ch+n,(get char+f+#,:nxt;+);
+     [/0/:/9/],addmult+n+10+ch+n,subtr+n+/0/+n,(get char+f+#,:nxt;+);
      +)),
     (=sign=[0],0->n;[0:],+;subtr+0+n+n).
 ?get line'p'get line+""f+[]T[]+n>-ch:
@@ -158,10 +158,6 @@ $ relations
 
 $ exit
 ?exit 'x''e'exit+>x = "exit".
-
-$ virtual address range
-?min virtual address 'x''constant'min virtual address="a_MIN_VIRTUAL_ADDRESS".
-?max virtual address 'x''constant'max virtual address="a_MAX_VIRTUAL_ADDRESS".
 
 'end'
 

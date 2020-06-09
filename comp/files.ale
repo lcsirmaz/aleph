@@ -24,9 +24,6 @@ $
 'a'datafile declaration+>ext.
 $ BODY ********************************************************* $
 'pragmat'if=compile.
-'pragmat'public=(
-  charfile declaration,datafile declaration
-).
 'pragmat'require=("lexical","display","symbols","tags","types",
      "pragmats","disc").
 

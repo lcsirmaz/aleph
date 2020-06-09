@@ -28,9 +28,6 @@ $
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.
-'pragmat'public=(
-  constant declaration,variable declaration,static variable declaration
-).
 'pragmat'require=("display","lexical","symbols","tags","pragmats","types","disc").
 $
 $ constant and variable declaration:

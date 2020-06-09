@@ -45,8 +45,6 @@ $
    $ error with current/given line number
 'a'warning+>level+*+>mess.
 'a'Xwarning+>level+>line+*+>mess.
-$'a'warning+>level+*(>mess).
-$'a'Xwarning+>level+line+*+>mess.
    $ warning with current/given line number
 'e'internal error+t[]+>rule+>line.
    $ exit routine for internal error

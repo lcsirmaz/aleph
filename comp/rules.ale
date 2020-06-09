@@ -26,7 +26,6 @@ $ BODY ********************************************************* $
 'pragmat'if=compile.
 'pragmat'require=("symbols","tags","types","lexical","disc",
     "display","pragmats","rulebody").
-'pragmat'public=(rule declaration).
 
 $ ************************************************************** $
 $ A rule has type Irule, its typer is stored in the flags, and can

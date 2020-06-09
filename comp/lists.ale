@@ -29,10 +29,6 @@ $ HEADER ************************************************* $
 $ BODY *************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("display","lexical","tags","symbols","types","disc","pragmats").
-
-'pragmat'public=(
-  static stack declaration,stack declaration,table declaration
-).
 $
 $ table and list declaration
 $ 'table'<field list> tag = <filler>

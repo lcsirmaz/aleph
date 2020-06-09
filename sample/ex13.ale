@@ -1,0 +1,14 @@
+$ printing a list in reverse order;
+$  save the list as affixes
+
+'a'read int+*+>a-b:
+   get int+STDIN+b,read int+b+*;
+   print int+*.
+'a'print int+*+>a-b:
+   a->b,(shift affix block+*,put int+STDOUT+b,:print int;+).
+
+
+'root' read int+0,put char+STDOUT+newline.
+
+'end'
+

@@ -82,14 +82,9 @@ $ pragmat ID
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-
 'pragmat'require=("input","lexical","display","disc",
    "symbols","tags","passi","types").
 
-'pragmat'public=(
-  get pragmat value, is pragmat value, set pragmat value,
-  reset pragmats, cmdline pragmat, program pragmat
-).
 $ default title if none is given
 'stack'LEXT=("aleph":def program title).
 
