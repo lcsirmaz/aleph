@@ -2,7 +2,7 @@
 The ALEPH programming language
 
 Aleph is a historical programming language; its name is an abbreviation for
-*A* *L*anguage *E*ncouraging *P*rogram *H*iearachy.
+**A** **L**anguage **E**ncouraging **P**rogram **H**iearachy.
 This is an Aleph to C complier written in Aleph.
 
 Files with extension `.ale` are Aleph source files.
@@ -13,7 +13,7 @@ Files with extension `.ale` are Aleph source files.
 * [genc](genc) Aleph standard library file and C headers
 * [doc](doc) Aleph Manual and some implementation details
 * [sample](sample) Sample Aleph programs
-* [bootstrap](bootstrap) Hand-translations of an early version of the compiler and linker for bootrapping.
+* [bootstrap](bootstrap) C code of an early version of the compiler and linker; translated from Aleph to C by hand for bootrapping.
 
 ## Compiling the Aleph - C compiler
 
@@ -33,8 +33,8 @@ argument. The following commands, given in the main directory, compile, link,
 and run the `ex2.ale` sample program
 
     c/comp -I genc -W ex/ex2  # generates ex2.ice
-    c/link ex2.ice            # generates aleph.c
+    c/link ex2.ice            # generates aleph.c which should be compiled
     gcc -I genc -o ex2 aleph.c genc/A_lice.c
-    ./ex2                     # and run it
-
+    ./ex2                     # run it
+    ./ex2 -T                  # run with trace sent to stderr
 
