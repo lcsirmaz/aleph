@@ -33,10 +33,10 @@ $ programs
     (nxt:string elem+T+x+y+z,incr+y,(z=/"/,put char+f+z;+),
             put char+f+z,:nxt;put char+f+/"/).
 ?put int'a'put int+""f+>n: $ min int: -2147483648, max int=2147483647
-    n=min int,@put int+f+147483648+/-/+10,put char+f+/2/;
-    n>0,@put int+f+n+/ /+10;
-    n=0,@put int+f+n+/0/+10;
-    get abs+n+n,@put int+f+n+/-/+10.
+    n=min int,@put int+f+214748364+/-/+10,put char+f+/8/;
+    n>0,@put int+f+n+/ /+11;
+    n=0,@put int+f+n+/0/+11;
+    get abs+n+n,@put int+f+n+/-/+11.
 ?@put int'a'@put int+""f+>n+>ch+>m-q-r:
     m=0;
     n=0,decr+m,@put int+f+0+/ /+m,put char+f+ch;
@@ -80,9 +80,9 @@ $ arithmetic functions
 ?min    'x''f'min+>x+>y>	 ="__min".         $ min(x,y)->y
 ?false    'cons'false=0.
 ?true     'cons'true=1.
-?min int  'cons'min int=0x80000000.
+?min int  'cons'min int=-max int -1.
 ?max int  'cons'max int=0x7fffffff.
-?int size 'cons'int size=10.
+?int size 'cons'int size=11.
 
 ?is           'x''q'is+>x                ="__is".
 ?bool invert  'x''f'bool invert+>x+y>    ="__boolinvert".

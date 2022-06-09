@@ -78,6 +78,7 @@ $   dictionary is turned off while look ahead is in effect
    $ skip up to including the next point
 'a'skip all.
    $ skip up to the next point looking at a point
+'pragmat'macro=(ahead,R).
 
 'p'is raw tag+tag>.
    $ if the next symbol is a tag, return pointer to TTAG

@@ -22,7 +22,6 @@ Compile the `comp.c` and `link.c` files from the [c](c) directory:
     gcc -O2 -I ../genc -o comp comp.c ../genc/A_lice.c
     gcc -O2 -I ../genc -o link link.c ../genc/A_lice.c
    
-
 ## Compiling, linking and running aleph files
 
 The `comp` program produces `.ice` files from Aleph modules and the main Aleph file.

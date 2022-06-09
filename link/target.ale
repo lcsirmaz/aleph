@@ -398,7 +398,7 @@ $  variable, but not a #define value.
   0->prev->sf,<<ITEM->ptr,(nxt:ptr>>>ITEM;
   (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
   (=type*ITEM[ptr]=
-   [Iconstant],+;$ (external plain declaration+ptr;+); $
+   [Iconstant],+; $(external plain declaration+ptr;+); $
    [Ivariable;Istatic var],var declaration+ptr;
    [Istack;Itable;Istatic stack],
        block declaration+ptr+prev+sf,ptr->prev,sizeof list->sf;
@@ -628,6 +628,7 @@ $   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
    incr+ptr,BUFFER[ptr]->size,arg sep+sep,
    (size=0,T+"a_C,a_V)";
     size<0,subtr+0+size+size,T+"a_C+%d,a_D)"+size;
+    out=0,T+"%d,a_P)"+size;
     T+"%d,a_P+%d)"+size+out).
 'a'regular rule call+>ptr-n-cnt-out-sep-type:
    get number of formals+called rule+n,

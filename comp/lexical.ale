@@ -136,6 +136,7 @@ $ put the character representation of ptr into []st[]
 $ ********************************************************* $
 $ error messages $
 'table'MESSAGE=(
+"too large number"            :number overflow,
 "hex digit expected after 0x" :hex digit expected,
 "wrong character denotation"  :wrong character denotation,
 "unterminated string"         :unterminated string,
@@ -339,18 +340,28 @@ $ constants
   [/0/:/9/], read const+sign+x; $ a constant
   [/x/;/X/], next char, read hex+sign+x;
   const zero->x.
-'a'read const+>sign+x>-v:
+'f'decimal overflow+>of>+>sign+>v:
+  v>=0;
+  (is+sign,v=min int);
+  1->of.
+'a'read const+>sign+x>-v-of:
   $ a digit; this works for minint and maxint
-  subtr+char+/0/+v, next char,
-    (nxt-d: digit+d, addmult+v+10+d+v,:nxt;
+  subtr+char+/0/+v,0->of,next char,
+    (nxt-d: digit+d, addmult+v+10+d+v,decimal overflow+of+sign+v,:nxt;
+            is+of,error+number overflow;
             is+sign,subtr+0+v+v;
             +),
     enter const+v+x.
-'a'read hex+>sign+x>-d-v:
+'f'hex overflow+>of>+>v-v1:
+  $ the topmost four bits of v should be zero
+  v->v1,left clear+v1+4,right clear+v1+4,
+   (v=v1;1->of).
+'a'read hex+>sign+x>-d-v-of:
   $ after 0x
-  hex digit+v,
-    (nxt: hex digit+d, left clear+v+4,
+  hex digit+v,0->of,
+    (nxt: hex digit+d, hex overflow+of+v, left clear+v+4,
             bool or+v+d+v, :nxt;
+          is+of,error+number overflow;
           is+sign,subtr+0+v+v;+),
     enter const+v+x;
   error+hex digit expected, const zero->x.
