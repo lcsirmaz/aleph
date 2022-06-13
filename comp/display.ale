@@ -7,7 +7,7 @@ $
 $  (C) 2020, L.Csirmaz, Hungary
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -49,6 +49,7 @@ $
 'e'internal error+t[]+>rule+>line.
    $ exit routine for internal error
 'a'message+*+>mess.
+'a'Xmessage+*+>mess.
    $ a message
 'a'display char+>char+>show.
 'a'reset pr line.
@@ -153,12 +154,11 @@ $ formated printing $
    $ print out some pointer
    ptr=0, print+"[NULL]";
    was+MESSAGE+ptr,print+MESSAGE+ptr;
+   was+BUFFER+ptr,print+BUFFER+ptr;
    (was lexical pointer+ptr+BUFFER;
     was tag pointer+ptr+BUFFER;
     was type pointer+ptr+BUFFER),
-$ this might came later when checking for circular definition
-$    was expr pointer+ptr+BUFFER),
-   print+BUFFER+>>BUFFER, unstack string+BUFFER;
+      print+BUFFER+>>BUFFER, unstack string+BUFFER;
    was lexical integer+ptr+v,print int+v;
    print +"[?", print int+ptr, print+"]".
 'a'push BUFFER+>x: (* x->BUFFER *)BUFFER.
@@ -183,7 +183,7 @@ $    was expr pointer+ptr+BUFFER),
                     [/m/], (shift affix block+*,incr+ptr,push BUFFER+ptr,
                                 push BUFFER+optr,incr+level,:again;
                             print+"[m?]",incr+ptr,:nxt);
-                    [/n/], print char+newline,:nxt;
+                    [/n/], print char+newline,incr+ptr,:nxt;
                     [/*/], (shift affix block+*; +),incr+ptr,:nxt;
                     print char+BUFFER[ptr],incr+ptr,:nxt)))),
    (shift affix block+*,print+"[...]";+),
@@ -215,9 +215,9 @@ $ dictionary printing $
 $ --------------------------------------------------------------- $
 $ MESSAGES $
 'table'MESSAGE=(
-  "internal error in rule " :internal error head,
-  " line %d%nPlease report the offending program and the error.%n"
-                            :internal error tail
+  "internal error in rule %p, line %d%n"
+  "   ***** Please report the offending program and the error. *****%n"
+                            :internal error msg
 ).
 
 'variable'
@@ -263,10 +263,11 @@ $ error messages
    message header+line+level,format print+*,nlcr.
 'a'message+*+>mess:
    message header+-1+-1,format print+*,nlcr.
+'a'Xmessage+*+>mess:
+   incr+error no, nlcr,format print+*,nlcr.
 'e'internal error+t[]+>rule+>line:
-   message header+0+10,
-     print+MESSAGE+internal error head,print+t+rule,
-     format print+internal error tail+line,exit+256.
+   message header+0+10,copy string+t+rule+BUFFER,
+     format print+internal error msg+>>BUFFER+line,exit+64.
 
 'root'+.
 'pragmat'endif=compile.

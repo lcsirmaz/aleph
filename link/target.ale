@@ -4,10 +4,10 @@ $ target.ale
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2022, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -44,27 +44,31 @@ $ generating code $
 'a'rule declaration tail.
 $ BODY **************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("item","data","lexical","error","rule").
+'pragmat'require=("item","input","data","lexical","error","rule","version").
 
 $ manipulate target file ********************************** $
 'charfile'TARGET="aleph.c">.
 'table'MESSAGE=(
- "aleph.c"  :target file name,
- "cannot create target file %p" :cannot open target
+ "cannot create target file %p, error code: %d" :cannot open target
 ).
 
-$ seme externals 
+$ seme external identifiers
 'stack'(next,def)LEXT=(
    "@root"    ,(0,0):Sroot,
    "a_waitfor",(0,0):ext waitfor ).
 
-'a'open target:
-  open file+TARGET+/w/+MESSAGE+target file name;
-  Ferror+cannot open target+target file name.
+'variable'target opened=0.
+
+'a'open target-d:
+  get target file, 
+  (open file+TARGET+/w/+LEXT+>>LEXT,unstack string+LEXT,1->target opened;
+   get file error+TARGET+d,error+cannot open target+>>LEXT+d).
 'a'close target:
   close file+TARGET.
 'a'delete target:
-  close target,unlink file+MESSAGE+target file name.  
+  target opened=0;
+  close target,get target file,unlink file+LEXT+>>LEXT,unstack string+LEXT,
+     0->target opened.
 $ naming convention *************************************** $
 $  formal parameters: 
 $     a_F%d     if not out/inout (serial number)
@@ -849,6 +853,7 @@ $
 
 'a'data initialization-ptr-def:
    T+"static void a_data_setup(void){%n",
+   T+" a_virtual_min=%d;a_virtual_max=%d;%n"+min virtual address+max virtual address,
    <<ITEM->ptr,(nxt:ptr>>>ITEM;
     (get item def+ptr+def,ptr!=def),next+ITEM+ptr,:nxt;
      (=type*ITEM[ptr]=

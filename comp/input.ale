@@ -4,10 +4,10 @@ $ INPUT source files for ALEPH $
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2022, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -19,6 +19,8 @@ $
 $ ************************************************************* 
 
 $ HEADER ****************************************************** $
+'a' read arguments.
+   $ intialilzes program arguments
 'a'read sources.
    $ add all arguments to be processed
 'a'read stdlib.
@@ -38,18 +40,14 @@ $ HEADER ****************************************************** $
 $ BODY ******************************************************** $
 
 'pragmat'if=compile.
-'pragmat'require=("lexical","display","pragmats","symbols","disc","passi").
+'pragmat'require=("lexical","display","pragmats","symbols","disc","passi","version").
 
 'table'MESSAGE=(
- "missing argument for cmdline pragmat ""-o""": missing argument for pragmat,
+ "missing argument for cmdline option": missing argument for pragmat,
  "source file ""%p"" is in command line, ignored": added as cmdline source,
  "source file ""%p"" included/required differently": source included differently,
- "no input file was specified"  :no input file,
+ "no input file specified, use --help for a short help"  : no input file,
  "error opening file ""%p""": error opening source
-).
-
-'stack'LEXT=(
- "alib" : stdlib file
 ).
 
 $ values for flag*INPUT
@@ -77,9 +75,9 @@ $  source flags = cmp flag|2. $ $ source:   compile=on, proto=2
          string*INPUT[ptr]->str);
       nptr->ptr,:nxt)).
 'a'add command line arg+>ptr+>twoarg>-flag:
-   $ don't check multiple submission, leave it to the user
+   $ don't check multiple submissions, leave it to the user
    (is cmdline pragmat+ptr+twoarg+#+#,cpragmat->flag;csource->flag),
-      (* flag->flag, -1->n, ptr->string *)INPUT.
+   (* flag->flag, -1->n, ptr->string *)INPUT.
 'q'get first source+ptr>-inpt:
    <<INPUT->inpt,(nxt:inpt>>>INPUT,-;
      flag*INPUT[inpt]=csource,string*INPUT[inpt]->ptr;
@@ -157,6 +155,27 @@ $ ===================================================================== $
           copy string+STDARG+ptr+LEXT,add command line arg+>>LEXT+twoarg,
             string width+STDARG+ptr+x,subtr+ptr+x+ptr,:nxt).
 
+'p'is help argument+>ptr-eq:
+   flag*INPUT[ptr]=cpragmat,compare string+LEXT+string*INPUT[ptr]+"--help"+eq,eq=0,
+      Xmessage+help message.
+
+'p'is version argument+>ptr-eq:
+   flag*INPUT[ptr]=cpragmat,compare string+LEXT+string*INPUT[ptr]+"--version"+eq,eq=0,
+      Xmessage+version message+version major+version minor.
+
+'a'read arguments-ptr-cnt-twoarg:
+   init program args, $ copy arguments to INPUT $
+   (was error;
+    0->cnt,<<INPUT->ptr,(nxt:
+       ptr> >>INPUT;
+       flag*INPUT[ptr]=csource,incr+cnt,next+INPUT+ptr,:nxt;
+       0->twoarg,(is cmdline pragmat+string*INPUT[ptr]+twoarg+#+#;+),
+          (is+twoarg,next+INPUT+ptr,next+INPUT+ptr,:nxt;
+           is help argument+ptr,incr+cnt;
+           is version argument+ptr,incr+cnt;
+           next+INPUT+ptr,:nxt)),
+    (cnt>0;Xerror+0+no input file)).
+
 'p'next input+>ptr>-twoarg-pid-value-flag-use path:
    $ execute pragmats and a source
    ptr > >>INPUT,-;
@@ -170,9 +189,8 @@ $ ===================================================================== $
                  cmdline pragmat,close source;+),next+INPUT+ptr,:next input;
          twoarg!=0, $ pragmat with string argument
                 next+INPUT+ptr,
-                 (ptr>>>INPUT,Xerror+0+missing argument for pragmat,-;
-                  get linenum+n*INPUT[ptr],set pragmat value+pid+string*INPUT[ptr],
-                      next+INPUT+ptr,:next input);
+                get linenum+n*INPUT[ptr],set pragmat value+pid+string*INPUT[ptr],
+                next+INPUT+ptr,:next input;
          set pragmat value+pid+value,next+INPUT+ptr,:next input);
      next source+use path+string*INPUT[ptr],next+INPUT+ptr,
      $ source file, set pragmat flags; defaults are: proto=2,compile=1
@@ -184,7 +202,7 @@ $ ===================================================================== $
 
 'a'read sources-ptr-cnt:
    $ go over all source files; complain if no source file was supplied
-   init program args,<<INPUT->ptr,0->cnt,
+   <<INPUT->ptr,0->cnt,
      set pragmat value+pgt library+0, $ not in library
      reset pragmats,
      (nxt:next input+ptr,next symbol,pass I,close source,

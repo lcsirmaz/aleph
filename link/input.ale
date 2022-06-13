@@ -1,13 +1,13 @@
-$ input.ale
+$ source input
 'pragmat'module="input".
 
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2022, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -19,28 +19,34 @@ $
 $ ************************************************************* 
 
 $ HEADER ********************************************** $
+'a'check arguments.
+   $ check arguments, set errno in case of error
 'p'next source+>how+ext>.
    $ if there is a next source, open it
    $   how=0: guess extension
    $   how=1: no extension
    $   how=2: with extension
    $ if fails, the next call repeats the same sequence
+'a'get target file.
+   $ return the target file as >>LEXT, should be released
 'f'get ice file+ptr>. $ an STDARG entry $
-'a'clean up.          $ for fatal errors $
 
 $ BODY ************************************************ $
 'pragmat'if=compile.
 
-'pragmat'require=("lexical","error").
+'pragmat'require=("lexical","error","version").
 
 'table'MESSAGE=(
-   "no input file was specified":no input,
-   "error opening file %p"      :opening source
+   "no input file specified, use --help for a short help":no input,
+   "missing target after -o":missing target,
+   "error opening .ice file %p, aborted":opening source
 ).
 
 'variable'
+  arg top=0,       $ first input argument
   arg ptr=0,       $ pointer to the next argument $
-  with extension=0.$ 1: no extension, 2: extension added
+  with extension=0,$ 1: no extension, 2: extension added
+  target file=0.   $ STDARG pointer if -o argument
 
 'a'extend BUFFER+>x: (*x->BUFFER*)BUFFER.
 
@@ -50,7 +56,7 @@ $ BODY ************************************************ $
   list length+BUFFER+n,pack string+BUFFER+n+LEXT,scratch+BUFFER.
 
 'p'next argument:
-  arg ptr=0,>>STDARG->arg ptr;
+  arg ptr=0,arg top->arg ptr;
   arg ptr>=<<STDARG,previous string+STDARG+arg ptr,arg ptr>=<<STDARG.
 
 'a'open as it is+res>:
@@ -63,17 +69,36 @@ $ BODY ************************************************ $
    (how=1,open as it is+res;
     how=2,open with extension+res;
     open as it is+res,(res!=1;open with extension+res)),
-   (res=0;Ferror+opening source+arg ptr).
+   (res=0;fatal error+opening source+arg ptr).
+
+'q'is first arg+T[]+>str-eq:
+   compare string+STDARG+>>STDARG+T+str+eq,eq=0.
+'a'check arguments:
+   >>STDARG < <<STDARG,error+no input;
+   is first arg+"--help",message+help message+default target name;
+   is first arg+"--version",message+version message+version major+version minor;
+   is first arg+"-o",>>STDARG->arg top,previous string+STDARG+arg top,
+        (arg top < <<STDARG,error+missing target;
+         arg top->target file,previous string+STDARG+arg top,
+           (arg top< <<STDARG,error+no input;+));
+   >>STDARG->arg top.
+
+'a'get target file-n-op:
+   is+target file,string length+STDARG+target file+n,
+    ((-i-c:n>2,subtr+n+1+i,string elem+STDARG+target file+i+c,c=/c/,
+             decr+i,string elem+STDARG+target file+i+c,c=/./),
+       copy string+STDARG+target file+LEXT; $ it has the .c extension
+     >>BUFFER->op,unpack string+STDARG+target file+BUFFER,
+       extend BUFFER+/./,extend BUFFER+/c/,add+n+2+n,pack string+BUFFER+n+LEXT,
+       unstack to+BUFFER+op);
+   copy string+LEXT+default target name+LEXT.
 
 'p'next source+>how+ext>:
-   >>STDARG<<<STDARG,Ferror+no input;
    next argument,close source,open argument+how,with extension->ext;
    close source,0->arg ptr,-.
 
 'f'get ice file+ptr>:arg ptr->ptr.
    $ to report the source file $
-'a'clean up:
-   close source.
 
 'root'+.
 'pragmat'endif=compile.

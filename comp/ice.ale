@@ -4,10 +4,10 @@ $ create the ice file
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2022, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -32,8 +32,10 @@ $      the same list can have several Fill)
 $   followed by (RULE definition)*
 
 $ ICE header:
-$     Dtitle/Dmodule <title string> <lineno block> Dpoint
-$   lineno block: ( <end lineno const> <source string> )*
+$  Dtitle/Dmodule <title string> 
+$         <target word size> <max stack> <max repeat>
+$         <lineno block> Dpoint
+$   <lineno block>: ( <end lineno const> <source string> )*
 $ for each source file the last number for messages
 
 $ ITEM list:
@@ -96,7 +98,7 @@ $    expression
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("display","lexical","pragmats","disc","input",
-    "tags","types","lists","buffer","symbols").
+    "tags","types","lists","buffer","symbols","version").
 
 $ messages ---------------------------------------------------- $
 'table'MESSAGE=(
@@ -177,6 +179,7 @@ $ ICE header ================================================== $
   $ header
   (is pragmat value+pgt module,W+Dmodule;W+Dtitle),
   get pragmat value+pgt title+title,Wstring+title,
+  Wcons+target word size,Wcons+max stack size,Wcons+max repeat size,nlcr,
   first line offset+baseline,decr+baseline,
   0->ptr,(nxt:next input entry+ptr+n+str,Wline+n,Wstring+str,:nxt;W+Dpoint),
   $ item list, including pointers in Xstring table

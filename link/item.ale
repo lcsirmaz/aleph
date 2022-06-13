@@ -4,10 +4,10 @@ $ item.ale
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2022, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -91,7 +91,7 @@ $ rule types
 $ BODY *************************************************** $
 'pragmat'if=compile.
 
-'pragmat'require=("lexical","error").
+'pragmat'require=("lexical","error","version").
 
 $ ITEM stack --------------------------------------------- $
 'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
@@ -354,7 +354,8 @@ $ each module has an ITEM entry linked through the repr field
 'table'MESSAGE=(
   "module with the same title %p" :same title,
   "two main modules: %p and %p":two main modules,
-  "no main module":no main module
+  "no main module":no main module,
+  "incompatible .ice format": incompatible format
 ).
 
 'a'check module title-ptr:
@@ -363,7 +364,16 @@ $ each module has an ITEM entry linked through the repr field
      (type*ITEM=Dtitle,type*ITEM[ptr]=Dtitle),
         error+two main modules+tag*ITEM+tag*ITEM[ptr];
      repr*ITEM[ptr]->ptr,:nxt).
-
+'a'check ice compat-n:
+   must+Tconst+n,
+     (n=target word size;
+      error+incompatible format,corrupted ice file+_title_+_line_),
+   must+Tconst+n,
+     (n=max stack size;
+      error+incompatible format,corrupted ice file+_title_+_line_),
+   must+Tconst+n,
+     (n=max repeat size;
+      error+incompatible format,corrupted ice file+_title_+_line_).
 'a'read definition list-n-str:
    must+Tconst+n,
      (n>=max lineno,n->max lineno;
@@ -379,6 +389,7 @@ $ each module has an ITEM entry linked through the repr field
    R+Dtitle,Dtitle->type*ITEM;
    corrupted ice file+_title_+_line_),
   must+Tstring+tag*ITEM, check module title, $ warn for the same title 
+  check ice compat, $target word size, stack sizes
   0->max lineno,read definition list,max lineno->lineno*ITEM,
   $ finally link them $
   (base item=0,>>ITEM->first item;>>ITEM->repr*ITEM[base item]),

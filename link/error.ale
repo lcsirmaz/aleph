@@ -1,13 +1,13 @@
-$ error.ale, erro handling rules
+$ error handling rules
 'pragmat'module="error".
 
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2022, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -19,23 +19,25 @@ $
 $ ************************************************************* 
 
 $ HEADER *********************************************** $
-'e'internal error+T[]+>rule+>lineno.
-'e'corrupted ice file+T[]+>file+>lineno.
-'e'Ferror+*+>msg. $ fatal error $
 'a'error+*+>msg.
 'a'warning+*+>msg.
+'a'message+*+>msg. $ --help and --version
+'e'fatal error+*+>msg.
+'e'internal error+T[]+>rule+>lineno.
+'e'corrupted ice file+T[]+>file+>lineno.
 'q'was error.
 'table'MESSAGE.
 
 $ BODY ************************************************* $
 'pragmat'if=compile.
-'pragmat'require=("input","lexical","item").
+'pragmat'require=("input","lexical","item","target").
 
 'table'MESSAGE=(
-  "too many errors, quitting" :too many errors,
-  "internal error at rule " :fatal head,
-  " line %d, program aborted" :fatal tail,
-  ".ice file is corrupt; found at %f/" :corrupted head
+  "too many errors, further messages are suppressed" :too many errors,
+  "internal error at rule "   :fatal head,
+  " line %d, aborted"         :fatal tail,
+  ".ice file %p corrupt (%d/" :corrupted head,
+  "), aborted"                :corrupted tail
 ).
 $ messages go here $
 'charfile' PRINTFILE="stdout">.
@@ -114,9 +116,10 @@ $ formatted printing $
                     (=BUFFER[ptr]=
                      [/p/],(shift affix block+*,print pointer+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/i/],(shift affix block+*,print item+fmt;print+"[?]"),incr+ptr,:nxt;
-                     [/f/],(shift affix block+*,print form+fmt;print+"[?]"),incr+ptr,:nxt;
+$                     [/f/],(shift affix block+*,print form+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/l/],(shift affix block+*,print line+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/d/],(shift affix block+*,print int+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/n/],print char+newline,incr+ptr,:nxt;
                      print char+BUFFER[ptr],incr+ptr,:nxt))),
    (shift affix block+*,print+"[...]";+),
    unstack to+BUFFER+optr.
@@ -135,22 +138,24 @@ $ error handling ******************************************** $
   print char+/ /,tab line+message col.
 
 'a'error+*+>mess:
-   message head+/E/,format print+*,nlcr,
-   incr+error no,(error no<maximal errors;
-                  Ferror+too many errors).
+   error no>=maximal errors;
+   message head+/E/,format print+*,nlcr,incr+error no,
+    (error no<maximal errors;
+     message head+/F/,format print+too many errors,nlcr).
 'a'warning+*+>mess:
+   error no>=maximal errors;
    message head+/W/,format print+*,nlcr.
+'a'message+*+>mess:
+   format print+*,nlcr,incr+error no.
 
-'e'Ferror+*+>mess:
-   message head+/F/,format print+*,nlcr,
-   clean up,exit+1.
-
+'e'fatal error+*+>mess:
+   message head+/F/,format print+*,nlcr,delete target,exit+3.
+'e'corrupted ice file+T[]+>source+>line-ice:
+   message head+/F/,get ice file+ice,format print+corrupted head+ice+line,
+   print+T+source,format print+corrupted tail,nlcr,delete target,exit+3.
 'e'internal error+T[]+>rule+>line:
    message head+/F/,format print+fatal head,print+T+rule,
-   format print+fatal tail+line,nlcr,clean up,exit+2.
-'e'corrupted ice file+T[]+>source+>line:
-   message head+/F/,format print+corrupted head+line,
-   print+T+source,format print+fatal tail,nlcr,clean up,exit+1.
+   format print+fatal tail+line,nlcr,delete target,exit+64.
 
 'root'+.
 

@@ -7,7 +7,7 @@ $
 $  (C) 2020, L.Csirmaz, Hungary
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -987,7 +987,7 @@ $  check it, but don't generate code later
             (is local flag+>>LLOC+Lused;
              type*LLOC=Iformal out;
              type*LLOC=Iformal inout,warning+2+formal not used+rtag+tag;
-             warning+4+formal not used+rtag+tag),
+             warning+5+formal not used+rtag+tag),
             (=type*LLOC=
              [Iformal repeat],0->check,
                 (is local flag+>>LLOC+LTset; $ * as actual affix, all set $

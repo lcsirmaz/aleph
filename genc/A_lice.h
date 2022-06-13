@@ -3,7 +3,7 @@
 /********************************************************************
 *  This code is part of ALEPH-M (Modular ALEPH)
 * 
-*  (C) 2020, L.Csirmaz, Hungary.
+*  (C) 2020-2022, L.Csirmaz
 *
 *  ALEPH-M is free software: you can redistribute and/or modify it
 *  under the terms of the GNU General Public License as published by
@@ -129,6 +129,7 @@ extern int a_DATABLOCK[];
 *    hash     the hash of the list name, to identify lists
 *
 ********************************************************************/
+extern int a_virtual_min,a_virtual_max;
 void a_setup_list(int kind,int ID,int cal,int lb,int up,int fill);
 void a_setup_charfile(int ID,int dir,int sID,int soff);
 void a_setup_dfile(int ID,int dir,int sID,int soff,int narea);
@@ -229,15 +230,6 @@ inline static int a_listelem(int L,register int idx,int off,
        a_fatal(a_FATAL_index);}
     return idx-off;
 }
-
-/********************************************************************
-* virtual address range
-*
-*  both the minimal and maximal values should be positive;
-*  leave some space at the top for external lists
-********************************************************************/
-#define a_MIN_VIRTUAL_ADDRESS	0x01000000
-#define a_MAX_VIRTUAL_ADDRESS	0x7f000000
 
 /********************************************************************
 * include the standard external head files

@@ -1,0 +1,67 @@
+$ version, general information
+'pragmat'module="version".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH)
+$
+$  (C) 2020-2022, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ***************************************************** $
+'constant' version major = 1,
+           version minor = 0.
+'constant' target word size = 32.
+
+'constant' disc file, stdlib file,        $disc, input $ 
+           help message, version message. $input $
+
+'constant' restore size=500,         $ bactrack buffer size
+           max stack size=1 000 000, $lists: maximal fixed stack size
+           max repeat size=10 000.   $lists: maximal repeat size       
+
+$ BODY ******************************************************* $
+'pragmat'if=compile.
+'pragmat'require=("display","lexical").
+
+'stack'LEXT=( $temporary disc file location, standard library
+   "/tmp/aleph.tmp" :disc file,
+   "alib"           :stdlib file
+).
+
+'table'MESSAGE=( $ --help, --version
+ "Usage: acomp [--help |--version]%n"
+ "   or: acomp [options] file ... [options] file%n"
+ "Translate the concatenation of ALEPH-M source files to .ice.%n%n"
+ "Global options (overwrite the previous one):%n"
+ "  -o <file>        output .ice file%n"
+ "  -I <dir:dir>     colon spearated list of search directories%n"
+ "Local options (reset after each source file):%n"
+ "  -W               warning level=3%n"
+ "  -Wall            warning level=0%n"
+ "  -l               list=on%n"
+ "  -d               dictionary=on%n"
+ "  --XXXXX=YYY      parsed as 'pragmat'XXXXX=YYY.%n%n"
+ "If no output is specified, the name of the .ice file is derived from%n"
+ "the first source file, and generated in the current directory."
+ : help message,
+ "ALEPH-M to ICE complier version %d.%d%n"
+ "Copyright (C) 2020 Laszlo Csirmaz%n"
+ "This is a free software, see the source for copyright information. There is%n"
+ "NO WARRANTY; not even merchantibility or fitness for a particular purpose." 
+ : version message
+).
+
+'root'+.
+'pragmat'endif=compile.
+'end'

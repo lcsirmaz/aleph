@@ -7,7 +7,7 @@ $
 $  (C) 2020, L.Csirmaz, Hungary
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -78,13 +78,9 @@ $ BODY ************************************************* $
   "^":Dxor
 ).
 
-'pragmat'require=("lexical","display","ice","tags","types","symbols").
+'pragmat'require=("lexical","display","ice","tags","types","symbols","version").
 $ ------------------------------------------------------------ $
 'datafile' DISC[DSYMB;LADM;LLOC;LEXT] = "/tmp/aleph.tmp">.
-$ temporary file(s)
-'stack'LEXT=(
-  "/tmp/aleph.tmp" :disc file
-).
 
 'table'MESSAGE=(
    "cannot create temp file %p, error code=%d, aborting"
@@ -95,7 +91,7 @@ $ temporary file(s)
    open file+DISC+mode+LEXT+disc file,
      (mode=/r/,0->Qbuffer ptr->Qshift,0->linenum,next disc symbol;+);
    get file error+DISC+err,
-     Xerror+0+cannot open disc file+disc file+err,exit+4.
+     Xerror+0+cannot open disc file+disc file+err.
 'a'close disc:
    close file+DISC.
 'a'delete disc:

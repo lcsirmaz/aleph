@@ -1,9 +1,9 @@
-/* A_list.c */
+/* A_lice.c */
 
 /********************************************************************
 *  This code is part of ALEPH-M (Modular ALEPH)
 * 
-*  (C) 2020, L.Csirmaz, Hungary
+*  (C) 2020-2022, L.Csirmaz
 *
 *  ALEPH-M is free software: you can redistribute and/or modify it
 *  under the terms of the GNU General Public License as published by
@@ -148,7 +148,7 @@ void a_list_fill(int *fill){
 *       clb   calibre
 *  the rountine must set the calibre, virtual and actual bounds; for
 *  tables it should also set the content. Virtual address space starts
-*  at a_extlist_virtual, and cannot exceed max int; a_exlist_virtual
+*  at a_virtual_max, and cannot exceed max int; a_virtual_max
 *  should be adjusted.
 *
 *******************************************************************/
@@ -184,7 +184,7 @@ static int a_push_string_to(int F1,const char *ptr){
 }
 
 extern int a_argc; extern char **a_argv;
-extern int a_extlist_virtual;
+extern int a_virtual_max,a_virtual_min;
 
 /* a_setup_stdarg(ID,calibre)
  *    setup routine for the standard external table STDARG, fills the
@@ -194,8 +194,12 @@ void a_setup_stdarg(int F1,int F2){
   int i;
   #define st	to_LIST(F1)
   st->offset=0;st->p=0;st->length=0;
-  st->vlwb=a_extlist_virtual+1;a_extlist_virtual+=64536; 
-  st->vupb=a_extlist_virtual-1;st->calibre=F2;
+  st->vlwb=a_virtual_max+16;a_virtual_max+=64536;
+  if(a_virtual_max<=0){
+      fprintf(stderr,"our of virtual space of command line arguments\n");
+      a_fatal(a_FATAL_memory); 
+  }
+  st->vupb=a_virtual_max-1;st->calibre=F2;
   st->alwb=st->vlwb;st->aupb=st->alwb-st->calibre;
   for(i=a_argc-1;i>0;i--){ /* add string a_argv[i] */
     if(a_push_string_to(F1,a_argv[i])==0){
@@ -1073,20 +1077,21 @@ void a_fatal(int code){
      fprintf(stderr,"%s => %lu\n",a_profiles->rulename,a_profiles->count);
      a_profiles=a_profiles->link;
    }
-   exit(256+code);
+   exit(64+code);
 }
 /*******************************************************************
 * the main() routine
 *
-* set up the whole program; if the command line argument is 'D' then
-*  enable tracing.
+* set up the whole program; if the first command line argument 
+* is '-T' then enable tracing.
 *******************************************************************/
-int a_argc;char **a_argv;int a_extlist_virtual;
+int a_argc;char **a_argv;
+int a_virtual_min=0x01000000,a_virtual_max=0x7f000000;
 extern void a_ROOT(void);
 
 int main(int argc,char *argv[]){
    if(argc>1 && strcmp(argv[1],"-T")==0){do_trace=1;argc--,argv++;}
-   a_argc=argc;a_argv=argv;a_extlist_virtual=0x7f000000+16;
+   a_argc=argc;a_argv=argv;
    memset(a_traced_rules,0,sizeof(const char *)*TRACE_SIZE);
    a_traced_index=-1;a_profiles=NULL;
    a_ROOT();

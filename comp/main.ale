@@ -4,10 +4,10 @@ $ ALEPH compiler main module
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2022, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -22,26 +22,33 @@ $ *************************************************************
      "mcheck","tags").
 
 'a'first pass:
-   open disc+/w/, $ give error messages if cannot open $
-   read sources,was root scanned,(was error;read stdlib),
+   read sources,(was error;was root scanned),(was error;read stdlib),
    close disc,(was error,delete disc;+),
    print dictionary.
 'a'second pass:
-   was error;
-   open ice file,
-     (was error, delete disc;
-      create ice header,
-        open disc+/r/,passII,
-        (was error;check macro rules),
-        (was error,delete disc,delete ice file;+)).
+   create ice header,
+   open disc+/r/,passII,
+   (was error;check macro rules),
+   (was error,delete disc,delete ice file;+).
 'a'third pass:
-   was error;
    rewind disc, $ and prepare for macro substitution $
    pass III,
    delete disc,close ice file.
 
+$ exit values:
+$   0: .ice file generated
+$   1: no source file
+$   2: there was an error in the program
+$   3: too large backtract (symbol)
+$   4: cannot create temporary file or the out file
+$ 64+: internal error
 'root'
-   first pass,second pass,third pass.
+   read arguments,(was error,exit+1;+),
+   open disc+/w/, (was error,exit+4;+),
+   first pass,    (was error,exit+2;+),
+   open ice file, (was error,delete disc,exit+4;+),
+   second pass,   (was error,exit+2;+),
+   third pass,    (was error,exit+2;+).
 
 'end'
 

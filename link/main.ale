@@ -4,10 +4,10 @@ $ ALEPH link main module
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2022, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
-$  modify it under the terms of the GNU Generatl Public License
+$  modify it under the terms of the GNU General Public License
 $  as published by the Free Software Foundation, either version
 $  3 of the License, or (at your option) any later version.
 $
@@ -39,9 +39,8 @@ $ *************************************************************
    assign repr numbers.
 
 'a'pass iii:
-   was error;
-   $ open the target; generate data and fill section
-   open target,target prelude,data declaration,fill table head,
+   $ generate data and fill section
+   target prelude,data declaration,fill table head,
    (nxt:(-ext: advance base item+ext,next source+ext+#),
         skip head section,skip item section,data section iii,:nxt;
     +),
@@ -54,8 +53,16 @@ $ *************************************************************
       skip head section,skip item section,data section iv,:pass iv;
    close target.
    
-'root'pass i,pass ii,pass iii,pass iv,
-      (was error,delete target;+).
+$ exit values:
+$   0:  output is generated
+$   1:  no argument, --help or --version
+$   2:  error
+$   3:  missing or corrupted .ice file
+$ 64+:  internal error
+'root'check arguments, (was error,exit+1;+),
+      pass i,pass ii,  (was error,exit+2;+),
+      open target,     (was error,exit+4;+),
+      pass iii,pass iv,(was error,delete target,exit+2;+).
 
 'end'
 

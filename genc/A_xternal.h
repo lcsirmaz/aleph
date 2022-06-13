@@ -3,7 +3,7 @@
 /********************************************************************
 *  This code is part of ALEPH-M (Modular ALEPH)
 * 
-*  (C) 2020, L.Csirmaz, Hungary.
+*  (C) 2020-2022, L.Csirmaz
 *
 *  ALEPH-M is free software: you can redistribute and/or modify it
 *  under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@
 
 /********************************************************************
 * External rules starting with a letter
-*  are called as other ALEPH rules: out and input affixes are added
+*  are called as other ALEPH rules: out and inout affixes are added
 *  as int * at the end
 ********************************************************************/
 
