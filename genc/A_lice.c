@@ -1029,15 +1029,15 @@ static int a_traced_index=-1;
 #include <stdarg.h>
 static int do_trace=0;
 void a_trace_rule(const char *name,int affixno,...){
-  va_list args; int affix;
+  va_list args; int affix; char *sep="";
   if(a_traced_index<=0){a_traced_index=TRACE_SIZE;}
   a_traced_rules[--a_traced_index]=name;
   if(do_trace==0){return;}
   fprintf(stderr," %s(",name);
   va_start(args,affixno);
   while(affixno>0){
-     affix=va_arg(args,int);fprintf(stderr,"%d ",affix);
-     affixno--;}
+     affix=va_arg(args,int);fprintf(stderr,"%s%d",sep,affix);
+     sep=",";affixno--;}
   va_end(args);
   fprintf(stderr,")\n");  
 }
