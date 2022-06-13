@@ -40,10 +40,10 @@ $
    $ check if there were errors between these calls;
    $    can be called nested
    $ check for local errors; restore old value.
-'a'error+*+>mess.
+'a'error+*+>mess:Xerror+-1+*.
 'a'Xerror+>line+*+>mess.
    $ error with current/given line number
-'a'warning+>level+*+>mess.
+'a'warning+>level+*+>mess:Xwarning+level+-1+*.
 'a'Xwarning+>level+>line+*+>mess.
    $ warning with current/given line number
 'e'internal error+t[]+>rule+>line.
@@ -51,6 +51,7 @@ $
 'a'message+*+>mess.
 'a'Xmessage+*+>mess.
    $ a message
+'pragmat'macro=(error,warning).
 'a'display char+>char+>show.
 'a'reset pr line.
    $ print the next character of the source
@@ -215,6 +216,7 @@ $ dictionary printing $
 $ --------------------------------------------------------------- $
 $ MESSAGES $
 'table'MESSAGE=(
+  "too many errors, further messages are suppressed": too many errors,
   "internal error in rule %p, line %d%n"
   "   ***** Please report the offending program and the error. *****%n"
                             :internal error msg
@@ -223,6 +225,7 @@ $ MESSAGES $
 'variable'
    error no=0,		$ number of error messages
    local error no=0.	$ number of local errors
+'constant'maximal errors=51.
 
 'q'was error: error no>0.
    $ yes if there was an error
@@ -230,7 +233,7 @@ $ MESSAGES $
    $ count errors local to this compound block
    local error no->old, 0->local error no.
 'p'was local error+>old-x:
-   $ discount error numbers; the same error might occur severl times
+   $ discount error numbers; the same error might occur several times
    local error no->x, add+old+x+local error no, x>0.
 
 $ error messages
@@ -249,19 +252,22 @@ $ error messages
     tab line+line col,print source line+line),
    tab line+mess col.
 
-'a'error+*+>mess:
-   incr+error no, incr+local error no,
-   message header+-1+10,format print+*,nlcr.
+$'a'error+*+>mess:
+$   Xerror+-1+*.
 'a'Xerror+>line+*+>mess:
    incr+error no, incr+local error no,
-   message header+line+10,format print+*, nlcr.
-'a'warning+>level+*+>mess:
-   (-n:get pragmat value+pgt warning level+n,level<n);
-   message header+-1+level,format print+*,nlcr.
+   (error no>maximal errors;
+    error no=maximal errors,
+       message header+line+10,format print+too many errors,nlcr;
+    message header+line+10,format print+*, nlcr).
+$'a'warning+>level+*+>mess:
+$   Xwarning+level+-1+*.
 'a'Xwarning+>level+>line+*+>mess:
+   error no>maximal errors;
    (-n:get pragmat value+pgt warning level+n,level<n);
    message header+line+level,format print+*,nlcr.
 'a'message+*+>mess:
+   error no>maximal errors;
    message header+-1+-1,format print+*,nlcr.
 'a'Xmessage+*+>mess:
    incr+error no, nlcr,format print+*,nlcr.

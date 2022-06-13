@@ -27,8 +27,9 @@ $ HEADER ********************************************** $
    $   how=1: no extension
    $   how=2: with extension
    $ if fails, the next call repeats the same sequence
-'a'get target file.
-   $ return the target file as >>LEXT, should be released
+'a'set target file,get target file.
+   $ set the target file name;
+   $ return the target name as >>LEXT, should be released
 'f'get ice file+ptr>. $ an STDARG entry $
 
 $ BODY ************************************************ $
@@ -46,6 +47,7 @@ $ BODY ************************************************ $
   arg top=0,       $ first input argument
   arg ptr=0,       $ pointer to the next argument $
   with extension=0,$ 1: no extension, 2: extension added
+  main file=0,     $ STDARF pointer of the main program
   target file=0.   $ STDARG pointer if -o argument
 
 'a'extend BUFFER+>x: (*x->BUFFER*)BUFFER.
@@ -75,7 +77,7 @@ $ BODY ************************************************ $
    compare string+STDARG+>>STDARG+T+str+eq,eq=0.
 'a'check arguments:
    >>STDARG < <<STDARG,error+no input;
-   is first arg+"--help",message+help message+default target name;
+   is first arg+"--help",message+help message;
    is first arg+"--version",message+version message+version major+version minor;
    is first arg+"-o",>>STDARG->arg top,previous string+STDARG+arg top,
         (arg top < <<STDARG,error+missing target;
@@ -83,15 +85,21 @@ $ BODY ************************************************ $
            (arg top< <<STDARG,error+no input;+));
    >>STDARG->arg top.
 
-'a'get target file-n-op:
-   is+target file,string length+STDARG+target file+n,
-    ((-i-c:n>2,subtr+n+1+i,string elem+STDARG+target file+i+c,c=/c/,
-             decr+i,string elem+STDARG+target file+i+c,c=/./),
-       copy string+STDARG+target file+LEXT; $ it has the .c extension
-     >>BUFFER->op,unpack string+STDARG+target file+BUFFER,
-       extend BUFFER+/./,extend BUFFER+/c/,add+n+2+n,pack string+BUFFER+n+LEXT,
-       unstack to+BUFFER+op);
-   copy string+LEXT+default target name+LEXT.
+'a'set target file:
+   arg ptr->main file.
+'a'get target file-oldp-ptr-n-nn-ext:
+   $ use the -o argument; otherwise the name of the main module
+   (is+target file,0->ext,target file->ptr;1->ext,main file->ptr),
+     >>BUFFER->oldp,unpack string+STDARG+ptr+BUFFER,>>BUFFER->nn,
+        $ does it have an extension; if yes strip it
+     (nxt:nn<=oldp; $ at the beginning
+          (=BUFFER[nn]=
+           [/./],(ext=0,2->ext,oldp->nn;  $ -o arg has extension
+                  decr+nn,unstack to+BUFFER+nn,:nxt);
+           [///;/\/;/:/],(ext=1;oldp->nn);
+           decr+nn,:nxt)),
+     (ext=2;extend BUFFER+/./,extend BUFFER+/c/),
+     subtr+>>BUFFER+nn+n,pack string+BUFFER+n+LEXT,unstack to+BUFFER+oldp.
 
 'p'next source+>how+ext>:
    next argument,close source,open argument+how,with extension->ext;

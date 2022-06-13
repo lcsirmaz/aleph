@@ -20,8 +20,8 @@ Files with extension `.ale` are Aleph source files.
 
 Compile the `acomp.c` and `alink.c` files in the [c](c) directory:
 
-    gcc -O3 -I ../genc -o acomp comp.c ../genc/A_lice.c
-    gcc -O3 -I ../genc -o alink link.c ../genc/A_lice.c
+    gcc -O3 -I ../genc -o acomp acomp.c ../genc/A_lice.c
+    gcc -O3 -I ../genc -o alink alink.c ../genc/A_lice.c
    
 ## Compiling, linking and running aleph files
 

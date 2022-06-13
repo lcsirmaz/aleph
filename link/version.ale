@@ -27,24 +27,20 @@ $ HEADER ***************************************************** $
 'constant' min virtual address=0x0100 0000,
            max virtual address=0x7f00 0000.
 
-'constant' default target name,help message,version message.
+'constant' help message,version message.
 
 $ BODY ******************************************************* $
 'pragmat'if=compile.
-'pragmat'require=("error","lexical").
-
-'stack'(next,def)LEXT=( $ default output
-   "alice.c",(0,0):default target name
-).
+'pragmat'require=("error").
 
 'table'MESSAGE=( $ --help, --version
  "Usage: alink [--help |--version]%n"
  "   or: alink [-o target] file ...%n"
- "Link .ice sources to a .c program.%n"
+ "Link ALEPH-M .ice files to a C program.%n"
  "Options:%n"
  "  --help           this help%n"
  "  --version        version info%n"
- "  -o <target>      output .c file (default: %p)"
+ "  -o <target>      the output .c file"
  : help message,
  "ALEPH-M linker version %d.%d%n"
  "Copyright (C) 2020-2022 Laszlo Csirmaz%n"

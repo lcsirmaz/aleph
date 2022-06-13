@@ -91,7 +91,7 @@ $ rule types
 $ BODY *************************************************** $
 'pragmat'if=compile.
 
-'pragmat'require=("lexical","error","version").
+'pragmat'require=("lexical","input","error","version").
 
 $ ITEM stack --------------------------------------------- $
 'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
@@ -352,17 +352,17 @@ $ each module has an ITEM entry linked through the repr field
    first item=0.   $ the first module starts here
 
 'table'MESSAGE=(
-  "module with the same title %p" :same title,
-  "two main modules: %p and %p":two main modules,
+  "module with the same title ""%p""" :same title,
+  "two main modules: ""%p"" and ""%p""":two main modules,
   "no main module":no main module,
   "incompatible .ice format": incompatible format
 ).
 
 'a'check module title-ptr:
    first item->ptr,(nxt:ptr=0;
-     tag*ITEM=tag*ITEM[ptr],warning+same title+tag*ITEM;
      (type*ITEM=Dtitle,type*ITEM[ptr]=Dtitle),
         error+two main modules+tag*ITEM+tag*ITEM[ptr];
+     tag*ITEM=tag*ITEM[ptr],warning+same title+tag*ITEM;
      repr*ITEM[ptr]->ptr,:nxt).
 'a'check ice compat-n:
    must+Tconst+n,
@@ -386,7 +386,7 @@ $ each module has an ITEM entry linked through the repr field
 'a'head section+>flag:
   expand ITEM, flag->flag*ITEM,
   (R+Dmodule,Dmodule->type*ITEM;
-   R+Dtitle,Dtitle->type*ITEM;
+   R+Dtitle,Dtitle->type*ITEM,set target file;
    corrupted ice file+_title_+_line_),
   must+Tstring+tag*ITEM, check module title, $ warn for the same title 
   check ice compat, $target word size, stack sizes
