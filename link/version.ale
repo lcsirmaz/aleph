@@ -41,6 +41,8 @@ $ BODY ******************************************************* $
  "  --help           this help%n"
  "  --version        version info%n"
  "  -o <target>      the output .c file"
+ "If no output is specified, the name of the main .ice file is used"
+ "with .c extension, and generated in the current directory."
  : help message,
  "ALEPH-M linker version %d.%d%n"
  "Copyright (C) 2020-2022 Laszlo Csirmaz%n"

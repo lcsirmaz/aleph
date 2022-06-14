@@ -42,8 +42,8 @@ $ BODY ******************************************************* $
 'table'MESSAGE=( $ --help, --version
  "Usage: acomp [--help |--version]%n"
  "   or: acomp [options] file ... [options] file%n"
- "Translate the concatenation of ALEPH-M source files to .ice.%n%n"
- "Global options (overwrite the previous one):%n"
+ "Translate the concatenation of ALEPH-M source files to .ice.%n"
+ "Global options (replace previous similar option):%n"
  "  -o <file>        output .ice file%n"
  "  -I <dir:dir>     colon spearated list of search directories%n"
  "Local options (reset after each source file):%n"
@@ -51,7 +51,7 @@ $ BODY ******************************************************* $
  "  -Wall            warning level=0%n"
  "  -l               list=on%n"
  "  -d               dictionary=on%n"
- "  --XXXXX=YYY      parsed as 'pragmat'XXXXX=YYY.%n%n"
+ "  --XXXXX=YYY      parsed as 'pragmat'XXXXX=YYY.%n"
  "If no output is specified, the name of the .ice file is derived from%n"
  "the first source file, and generated in the current directory."
  : help message,

@@ -174,18 +174,18 @@ $ local variables and constants
               (char=newline,:nxt;+));
   LEXTptr=0,get char+SOURCE+char.
 
-'a'next char-show:
+'a'next char:
   $ get next character to "char", handle tab,
   $    newline chars. When reaching eof, add two
   $    newline chars, then emit "end char".
-   ((is+give text, exhausted<-2), 1->show; 0->show),
-   display char+char+show,
+   ((char=newline,exhausted<-2),get pragmat value+pgt text+give text,
+          get pragmat value+pgt tab width+tab width;+),
+   ((is+give text,exhausted<-2),display char+char+1;display char+char+0),
    (nxt-x:
     was tab>0, decr+was tab, / /->char, incr+pchar;
     read char+char, incr+pchar,
       (=char=
-       [newline], 0->pchar, get pragmat value+pgt text+give text,
-                  get pragmat value+pgt tab width+tab width;
+       [newline], 0->pchar;
        [tabchar], / /->char, subtr+pchar+1+x,
                   divrem+x+tab width+#+was tab,
                   subtr+tab width+was tab+was tab, decr+was tab;
@@ -286,7 +286,7 @@ $  separated by :
 'a'close source:
    $ close SOURCE of reading from there
    LEXTptr>0,-1->LEXTptr;
-   LEXTptr=0,close file+SOURCE,-1->LEXTptr;
+   LEXTptr=0,close file+SOURCE,reset pr line,-1->LEXTptr;
    +.
 'a'create ice name-oldp-ptr-n-nn-ext:
    $ use the -o argument; otherwise the name of the first source
