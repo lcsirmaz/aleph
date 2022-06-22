@@ -71,7 +71,7 @@ $ BODY ******************************************************** $
 'pragmat'if=compile.
 
 $ external stuff $
-'pragmat'require=("display","tags","pragmats","buffer","input","rulebody").
+'pragmat'require=("display","tags","pragmats","buffer","input","rulebody","version").
 
 $ ************************************************************** $
 'charfile' SOURCE="stdin">.	$ input file
@@ -240,10 +240,10 @@ $  separated by :
 
 'a'try next path+>ptr>+>str+>res>-n-nn-last:
    $ copy the string from ptr until the next ;
-   >>BUFFER->n,/:/->last,(nxt: BUFFER[ptr]=/:/;
+   >>BUFFER->n,path separator->last,(nxt: BUFFER[ptr]=path separator;
                BUFFER[ptr]->last,incr+ptr,extend BUFFER+last,:nxt),
-   (last=/:/; $ empty path, do nothing $
-    (last=///;extend BUFFER+///), $ add separating slash $
+   (last=path separator; $ empty path, do nothing $
+    (last=dir separator;extend BUFFER+dir separator), $ add separating slash $
     unpack string+LEXT+str+BUFFER,
     subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,
     try to open+>>LEXT+res,forget string+>>LEXT,
@@ -254,7 +254,7 @@ $  separated by :
 
 'a'try path+>str+>res>-path-ptr-end:
    get pragmat value+pgt path+path,(path=0;
-    scratch+BUFFER,unpack string+LEXT+path+BUFFER,extend BUFFER+/:/,
+    scratch+BUFFER,unpack string+LEXT+path+BUFFER,extend BUFFER+path separator,
     <<BUFFER->ptr,>>BUFFER->end,(nxt:ptr>=end;
       try next path+ptr+str+res,(res=1,incr+ptr,:nxt;+)),
     scratch+BUFFER).

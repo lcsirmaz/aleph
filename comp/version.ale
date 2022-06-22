@@ -20,15 +20,17 @@ $ *************************************************************
 
 $ HEADER ***************************************************** $
 'constant' version major = 1,
-           version minor = 0.
+           version minor = 1.
 'constant' target word size = 32.
+'constant' path separator=/:/,            $ or /;/ for MS 
+           dir separator=///.             $ or /\/ for MS
 
-'constant' disc file, stdlib file,        $disc, input $ 
-           help message, version message. $input $
+'constant' disc file, stdlib file,        $disc, input
+           help message, version message. $input
 
-'constant' restore size=500,         $ bactrack buffer size
-           max stack size=1 000 000, $lists: maximal fixed stack size
-           max repeat size=10 000.   $lists: maximal repeat size       
+'constant' restore size=500,              $ bactrack buffer size
+           max stack size=1 000 000,      $lists: maximal fixed stack size
+           max repeat size=10 000.        $lists: maximal repeat size       
 
 $ BODY ******************************************************* $
 'pragmat'if=compile.
@@ -45,7 +47,7 @@ $ BODY ******************************************************* $
  "Translate the concatenation of ALEPH-M source files to .ice.%n"
  "Global options (replace previous similar option):%n"
  "  -o <file>        output .ice file%n"
- "  -I <dir:dir>     colon spearated list of search directories%n"
+ "  -I <dir%cdir>     list of search directories separated by %c%n"
  "Local options (reset after each source file):%n"
  "  -W               warning level=3%n"
  "  -Wall            warning level=0%n"
