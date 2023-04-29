@@ -1,10 +1,10 @@
 $ rules
-'pragmat'module="rules".
+'pragmat'module=rules,title="rules v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -21,398 +21,260 @@ $ *************************************************************
 $ HEADER ******************************************************* $
 $ 
 'a'rule declaration+>rtype+>ext.
+   $ rule declaration, external rule declaration,
+   $ rule prototypes (import / export / proto )
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.
 'pragmat'require=("symbols","tags","types","lexical","disc",
-    "display","pragmats","rulebody").
+    "identifier","selector","display","pragmats","rulebody").
 
 $ ************************************************************** $
-$ A rule has type Irule, its typer is stored in the flags, and can
-$   be retrieved as "get tag flag+ruletag+rtype"
-$ Formal affixes are stored in a linked list. the flag "raffixes"
-$   set if after the formal affixes are processed (to distinguish
-$    unprocessed rule and a rule with no affixes). Formal list affixes have
-$   two more fields for fcalibre and fssel (calibre=-1 for no selector
-$   list). Formal tags and selectors are visible for rule declaration
-$   using "redefine tag+>formal+new". This should be canceled at the end
-$   of the declaration. using "restore tags"
+$ A rule has type Irule. The a/q/f/p/e type is stored in LADM
+$   flags, can be retrieved as "get tag flag+ruletag+rtype"
+$ Formal affixes are stored in consecutive elements of LLOC
+$   Formal list affixes store calibre and ssel; calibre=-1
+$   for no selector list, ssel=-1 for no standard selector. 
+$   Formal tags become visible by changing the adm*TTAG pointer
+$   to the corresponding LLOC entry.
+$ Formal selectors are stored in a temporary stack searched linearly.
 $
-$ External and prototype declarations emit nothing
-$ Rule declaration emits
-$    => Drule <tag> <rule body> Dpoint
-$ For <rule body> see the "rulebody" module.
-
+$ 'external''typer'XXX+affixes="string".
+$  => Dexternal, LADM, <string>, Dpoint.
+$ prototype:
+$  => Dimport, LADM, Dpoint
+$  => Dexport/Dproto, Drule, <ruletype>, <qtag>, <formals>, Dpoint.
+$  <formals>:: link to LADM storing affixes
+$ rule declarer:
+$  => Drule LADM <formal ttag>* <rule body> Dpoint.
+$    only the ttag for each formal affix is stored
 $
-$ the last out or inout affix in an external declaration:
+$ The last out or inout affix in an external declaration
 $      'x''a'rule+a>="@rule".
-$ is parsed as >= if no space is between > and =
+$ is parsed as >= (Smreq) if there is no space is between > and =
+$
+$ A 'function' cannot have 'formal stack' affixes. Instead of giving
+$   a warning here, we simply let the parser give warnings / errors
+$   ("formal stack affix %p can be a table")
+$ A 'function' without out affixes can be optimized out; such a 
+$   function is an error
 
 $ ============================================================== $
-'a'must tag+x>:
-   is tag+x;internal error+_rule_+_line_.
+'table'MESSAGE=(
+"rule %p: formal selector %p redefined" :formal selector offset,
+"rule %p: formal list with different calibre"
+                                        :different calibre,
+"rule %p: formal selector syntax"       :wrong formal selector,
+"rule $p: formal selector tag expected" :formal selector tag expected,
+"rule %p: formal affix syntax"          :formal tag expected,
+"rule %p: symbol %p is expected here"   :expected,
+"rule %p: error in rule head"           :in rule head,
+"rule %p: rule as formal affix"         :rule in affix,
+"rule %p: more than one @ affix"        :more anchor affix,
+"rule %p: anchor @ is the last affix"   :last anchor affix,
+"rule %p: exit rule with out affix %p"  :exit rule with out affix,
+"external rule %p: missing string"      :no external string,
+"function %p: has no effect"            :function without out affix,
+$ missing rule tag after 'a','p',etc.
+"rule tag expected"                     :rule tag expected
+).
 
 $ -------------------------------------------------------------- $
-$ formal lists $
+$ parsing the field lists of the formal affix at >>LLOC
+$  initially calibre*LLOC=0, otherwise all field lists must
+$  have the same calibre. If no selector list, then calibre=0,
+$  otherwise it is >=1.
+$  At most 2 error messages are emitted.
+'a'field lists+>ruletag-cal:
+   R+Sopen,field list+ruletag+calibre*LLOC,
+     (nxt:R+Sopen,field list+ruletag+cal,
+           (cal=calibre*LLOC;Error+different calibre+ruletag),:nxt;
+      +);
+   +.
+'a'field list+>ruletag+calibre>-tag:
+   1->calibre,(nxt:
+       (R+Snoarg;
+        is ttag+tag,(enter temp selector+tag+>>LLOC+calibre;
+                     Error+formal selector offset+ruletag+tag)),
+         (R+Scomma,incr+calibre,:nxt;
+          R+Sequals,:nxt;
+          R+Sclose;
+          Error+wrong formal selector+ruletag);
+       Error+formal selector tag expected+ruletag).
+$ find the standard selector, if any. 
+$   calibre=-1: no list, ssel=-1: no standard selector
+'a'find local ssel-offs:
+   calibre*LLOC=0, $ no selector list
+      -1->calibre*LLOC,1->ssel*LLOC,(enter temp selector+ttag*LLOC+>>LLOC+1;+);
+   find temp selector+ttag*LLOC+>>LLOC+offs, $ found
+      offs->ssel*LLOC;
+   -1->ssel*LLOC.  $ no standard selector
 
-'table'MESSAGE=(
- "formal selector syntax"        :wrong formal selector,
- "formal selector tag expected"  :formal selector tag expected,
- "formal list tag is missing"    :formal list tag missing
-).
+$ -------------------------------------------------------------- $
+$ a formal affix tag must follow
+'a'formal atag+>ruletag+ftag>:
+    is ttag+ftag,(ftag!=ruletag;Error+rule in affix+ruletag);
+    ruletag->ftag,Error+formal tag expected+ruletag.
+$ [] must follow
+'a'subbus+>ruletag:
+    R+Ssub,(R+Sbus;Error+expected+Sbus);
+    Error+expected+ruletag+Ssub.
 
-$ skip field list; goes over a field list first time.
-$   returns the calibre and whether there was any error with error message
-'a'skip field list+calibre>+>err>:
-   R+Sopen,1->calibre,(nxt:is tag+#,(R+Scomma,incr+calibre,:nxt;
-                          R+Sequals,:nxt;
-                          R+Sclose;
-                          error+wrong formal selector,1->err);
-                error+formal selector tag expected,1->err);
-   -1->calibre.
-'a'get list tag+tag>+calibre>+>err>:
-  init restore,skip field list+calibre+err,0->tag,
-    (is tag+tag;
-     is+err;
-     error+formal list tag missing,1->err),
-    (is+err,forget restore; make restore).
-$=====================================================================$
+$ next formal affix to top of LLOC; formal selectors to TMPSEL
+$    take care the +>A>="s" and +A>="s" cases
+'a'next formal affix+>ruletag-ftag:
+   ahead+Ssub, $ []T[] or [](sel)T[] formal stack
+       subbus+ruletag,create local affix+Iformal stack+0,
+       field lists+ruletag,formal atag+ruletag+ttag*LLOC,
+       subbus+ruletag,find local ssel;
+   ahead+Sopen, $ (sel)T[]   formal table
+       create local affix+Iformal table+0,
+       field lists+ruletag,formal atag+ruletag+ttag*LLOC,
+       subbus+ruletag,find local ssel;
+   R+Squote image, $ ""F  formal file
+       formal atag+ruletag+ftag,create local affix+Iformal file+ftag;
+   R+Sanchor,$  @    formal anchor
+       create local affix+Iformal anchor+Panchor;
+   R+Sright, $  >T or  >T>  in or inout
+       formal atag+ruletag+ftag,
+       (R+Sright,create local affix+Iformal inout+ftag;
+        ahead+Smreq,create local affix+Iformal inout+ftag;
+        create local affix+Iformal in+ftag);
+   formal atag+ruletag+ftag, $  T> or  T[]
+       (R+Sright,create local affix+Iformal out+ftag;
+        ahead+Smreq,create local affix+Iformal out+ftag;
+        subbus+ruletag,create local affix+Iformal table+ftag,
+             find local ssel).
 
-'table'MESSAGE=(
-   "rule %p: symbol %p is expected here" :expected,
-   "rule %p: rule as formal affix"       :rule in affix,
-   "rule %p: formal affix syntax"        :formal tag expected,
-   "rule %p: error in rule head"         :in rule head,
-   "rule tag expected"                   :rule tag expected,
-   "rule %p: redefined differenty at %l" :rule type different,
-   "rule %p: formal affix %p has wrong type (was %p at %l)"
-                                         :formal type mismatch,
-   "rule %p: formal list affix %p has different calibre (at %l)"
-                                         :formal list calibre mismatch,
-   "rule %p: formal list affix %p has different standard selector (at %l)"
-                                         :formal list ssel mismatch,
-   "rule %p: formal list affix %p selector %p doubly defined"
-                                         :double formal selector,
-   "rule %p: formal affix %p defined twice"  :formal affix redefined
-).
+$ read all formal affixes to LLOC, formal selectors to TMPSEL.
+$    kind: 0: error, 1: prototype, 2: external, 3: declaration
+'a'read formal affixes+>ruletag+kind>-err:
+    scratch+LLOC,reset temp selector stack,clear local error+err,
+    (nxt:was local error+err,0->kind,scratch+LLOC;
+         R+Splus,suspend Errors+1,next formal affix+ruletag,
+             suspend Errors+0,:nxt;
+         ahead+Spoint,  1->kind;  $ prototype
+         ahead+Scomma,  1->kind;  $ prototype
+         ahead+Sequals, 2->kind;  $ external
+         ahead+Smreq,   2->kind;  $ external
+         ahead+Sminus,  3->kind;  $ rule declaration
+         ahead+Scolon,  3->kind;  $ rule declaration
+         error+in rule head+ruletag,0->kind,scratch+LLOC).
 
-$ SKIP OVER FORMAL AFFIXES $
-$ check syntax, set 1->err and give an error message
-$ expected symbol after the sequence: = , - : .
-'a'subbus+>tag+>err>:
-  is+err,Rskip+Ssub,Rskip+Sbus;
-  R+Ssub,(R+Sbus;1->err,error+expected+tag+Sbus);
-  1->err,error+expected+tag+Ssub.
-'a'expect formal tag+>ruletag+>err>-tag:
-  is+err,(is raw tag+#;+);
-  is tag+tag,(tag=ruletag,1->err,error+rule in affix+tag;+);
-  1->err,error+formal tag expected+ruletag.
-'a'skip formal affix+>ruletag+>err>:
-   ahead+Ssub,subbus+ruletag+err,
-      skip field list+#+err,expect formal tag+ruletag+err,subbus+ruletag+err;
-   ahead+Sopen,skip field list+#+err,expect formal tag+ruletag+err,subbus+ruletag+err;
-   R+Squote image,expect formal tag+ruletag+err;
-   R+Sright,expect formal tag+ruletag+err,R skip+Sright;
-   R+Sasterisk;
-   expect formal tag+ruletag+err,(R+Sright;ahead+Ssub,subbus+ruletag+err;
-     ahead+Smreq;is+err;1->err,error+expected+ruletag+Sright).
-$ err=1: syntax error; fast=1/0 for prototype/declaration
-$ the rule head can end in >= encoded as Smreq (external declaration)
-'a'peek after formal affixes+>ruletag+fast>+>err>:
-  is+err,0->fast;
-  init restore,0->fast,
-   (nxt:R+Splus,skip formal affix+ruletag+err,:nxt;+),
-   (is+err;
-    ahead+Spoint,1->fast;  $ prototype
-    ahead+Scomma,1->fast;  $ prototype
-    ahead+Sequals,1->fast; $ external
-    ahead+Smreq,1->fast;   $ external
-    ahead+Sminus;ahead+Scolon;
-    error+in rule head+ruletag,1->err),
-   (is+err,forget restore;make restore).
-$======================================================================$
-$ FORMAL AFFIXES $
-
-$ formal affixes are linked through the adm*LADM field.
-$  when fast=1 check/create the linked list
-$  when fast=0 then use "redefine tag" to make the raw tag to
-$  point to the formal.
-
-$ formal is either =0 or is a formal affix entry
-$  if zero, create a new formal affix entry
-'a'check as formal+>rtag+>formal>+>tag+>type+>err>-otype-l:
-  is+err;
-  is+formal,get type+formal+otype,(otype=type;
-    get defline+rtag+l,
-    error+formal type mismatch+rtag+tag+otype+l,1->err);
-  new formal tag+type+tag+formal.
-$ this variable stores the * affix of the rule (if any)
-'variable'repeat formal affix=0.
-$ formal is either =0 or is a formal affix entry
-$  if zero, create a new formal affix entry. Make "tag"
-$  refer to that formal affix. For tag=Xstar, store 
-$  the formal affix globally
-'a'define as formal+>rtag+>formal>+>tag+>type+>err>:
-  is+err;
-  has formal type+tag,1->err,error+formal affix redefined+rtag+tag;
-  check as formal+rtag+formal+tag+type+err,
-     (is+err;
-      tag=Xstar,formal->repeat formal affix;
-      redefine tag+tag+formal).
-$ ---------------------------------------------------------- $
-$ formal list affix
-$ define all selectors for a formal list, including the standard one
-$ on entry type*tag is "formal stack" or "formal table" store calibre
-$ set err if the same selector is defined twice
-
-$ looking at the selector list, determine ssel.
-$  tag is the list's tag
-'a'check selector list+>tag+>n+ssel>-sel:
-   R+Sopen,-1->ssel,
-     (nxt:must tag+sel,(tag=sel,n->ssel;+),
-          (R+Scomma,decr+n,:nxt;
-           R+Sequals,:nxt;
-           must+Sclose));
-   $ no selector list
-   1->ssel.
-$ create a formal selector entry; complain if doubly defined
-'a'create formal selector+>rtag+>tag+>sel+>offset+>err>-fsel-formal:
-   is+err;
-   pack selector+sel+tag+fsel,
-    (has formal type+fsel,error+double formal selector+rtag+tag+sel,1->err;
-     new formal tag+Iformal selector+fsel+formal,
-     put repr+formal+offset,redefine tag+fsel+formal).
-
-$ looking at the formal selector list, define all selectors, give error
-$  messages for doubly defined selectors. Return calibre and ssel
-'a'define selector list+>rtag+>tag+>n+ssel>+>err>-sel:
-   R+Sopen,-1->ssel,
-     (nxt:must tag+sel,(tag=sel,n->ssel;+),
-        create formal selector+rtag+tag+sel+n+err,
-        (R+Scomma,decr+n,:nxt;
-         R+Sequals,:nxt;
-         must+Sclose)),
-     (ssel>0; $ standard selector has been defined $
-      create formal selector+rtag+tag+tag+-1+err);
-   $ no selector list
-   1->ssel,create formal selector+rtag+tag+tag+1+err.
-$ checking an existing formal list
-'a'check formal list data+>rtag+>formal+>tag+>ftype+>fcal+>fssel+>err>
-   -ocal-ossel-otype-ol:
-   get defline+rtag+ol,get type+formal+otype,
-   get formal calibre+formal+ocal,
-   get formal ssel+formal+ossel,
-    (ftype!=otype,error+formal type mismatch+rtag+tag+otype+ol,1->err;
-     fcal!=ocal,error+formal list calibre mismatch+rtag+tag+ol,1->err;
-     fssel!=ossel,error+formal list ssel mismatch+rtag+tag+ol,1->err;
-     +).
-$ formal is either=0 or is a formal list entry, If not zero,
-$  check if we get the same configuration.
-$ looking at  (selector)tag[]   or  tag[]  -- syntax is OK
-'a'check as formal list+>rtag+>formal>+>tag+>ftype+>fcal+>err>-fssel:
-   check selector list+tag+fcal+fssel,Rskip+tag,subbus+rtag+err,
-    (is+formal,check formal list data+rtag+formal+tag+ftype+fcal+fssel+err;
-     new formal tag+ftype+tag+formal,put formal calibre+formal+fcal,
-       put formal ssel+formal+fssel).
-$ formal is either=0 or is a formal list entry. It not zero, check
-$  against it. Redefine selectors and the formal affix
-$ looking at (selector)tag[]  or  tag[]   --  syntax is OK
-'a'define as formal list+>rtag+>formal>+>tag+>ftype+>fcal+>err>-fssel:
-   has formal type+tag,1->err,error+formal affix redefined+rtag+tag;
-   define selector list+rtag+tag+fcal+fssel+err,Rskip+tag,subbus+rtag+err,
-   (is+err;
-    is+formal,check formal list data+rtag+formal+tag+ftype+fcal+fssel+err;
-    new formal tag+ftype+tag+formal,put formal calibre+formal+fcal,
-      put formal ssel+formal+fssel),
-   (is+err;redefine tag+tag+formal).
-$ formal list affix:  (selector list) tag[]  or tag[]; syntax OK
-$ if "fast" is set, then this is a prototype (no selectors, no tags)
-$ if "formal" is not zero, stored type is checked,
-$  otherwise "formal" is created. If fast=0 it is attached
-'a'formal list affix+>rtag+>fast+>formal>+>ftype+>err>-tag-calibre:
-   get list tag+tag+calibre+err, $ peek after selector list $
-     (is+err;
-      is+fast,check as formal list+rtag+formal+tag+ftype+calibre+err;
-      define as formal list+rtag+formal+tag+ftype+calibre+err).
-$ formal affix tag[] (no selector list, after [] )
-'a'check as formal table affix+>rtag+>tag+>formal>+>err>:
-   is+formal,check formal list data+rtag+formal+tag+Iformal table+-1+1+err;
-   new formal tag+Iformal table+tag+formal,put formal calibre+formal+-1,
-     put formal ssel+formal+1.
-$ formal affix tag[] (no selector list, after [] )
-$   create the standard selector
-'a'define as formal table affix+>rtag+>tag+>formal>+>err>:
-   is+err;
-   has formal type+tag,1->err,error+formal affix redefined+rtag+tag;
-   check as formal table affix+rtag+tag+formal+err,
-     (is+err;
-      create formal selector+rtag+tag+tag+1+err,redefine tag+tag+formal).
-$ formal table affix: tag[] (no selectors, after [])
-$ if "fast" is set, this is a prototype only. If "formal" is
-$ not zero, check against the stored value; otherwise create
-'a'formal table affix+>rtag+>fast+>formal>+>tag+>err>:
-   is+fast,check as formal table affix+rtag+tag+formal+err;
-   define as formal table affix+rtag+tag+formal+err.
-$ ---------------------------------------------------------- $
-$ other formal affix; either check it or define it
-'a'formal flat affix+>rtag+>fast+>formal>+>tag+>ftype+>err>:
-   is+fast,check as formal+rtag+formal+tag+ftype+err;
-   define as formal+rtag+formal+tag+ftype+err.
-$ formal affix
-$   works only when err=0, looking at a valid formal affix.
-$   when fast=1, check/set type; when fast=0 make formal available
-$   globally. If formal=0 create new, if formal!=0: check against it.
-'a'formal affix+>rtag+>fast+>formal>+>err>-tag-type:
-   is+err;
-   R+Ssub,Rskip+Sbus,  $ [](selector list) tag[] or []tag[] $
-     formal list affix+rtag+fast+formal+Iformal stack+err;
-   ahead+Sopen,        $ (selector list) tag[] $
-     formal list affix+rtag+fast+formal+Iformal table+err;
-   R+Squote image,must tag+tag, $ ""f $
-     formal flat affix+rtag+fast+formal+tag+Iformal file+err;
-   R+Sright,must tag+tag, $ >tag or >tag> $
-     (R+Sright,Iformal inout->type;
-      ahead+Smore,Iformal inout->type; Iformal in->type),
-     formal flat affix+rtag+fast+formal+tag+type+err;
-   R+Sasterisk,
-     formal flat affix+rtag+fast+formal+Xstar+Iformal repeat+err;
-   must tag+tag,       $ tag> or tag[]
-     (R+Sright,formal flat affix+rtag+fast+formal+tag+Iformal out+err;
-      ahead+Smreq,formal flat affix+rtag+fast+formal+tag+Iformal out+err;
-      subbus+rtag+err,formal table affix+rtag+fast+formal+tag+err).
-
-$============================================================$
-'table'MESSAGE=(
-"tag %p redefined (was %p at %l)"       :tag redefined,
-"rule %p: extra formal affix (%l)"      :extra affix,
-"rule %p: missing formal affixes (%l)"  :missing formal affix,
-"rule %p: more than one repeat affix"   :more repeat affix,
-"rule %p: repeat affix * is the last one":last repeat affix,
-"rule %p: function without out affixes" :function without out affixes,
-"rule %p: exit rule with out affixes"   :exit rule with out affixes,
-"external rule %p: missing string"      :no external string
-).
-
-$ ruletype: r arction|r func | r que | r pred | r exit
-$  if type was not defined, then set, otherwise must agree
-$
-'a'check rule type+>ruletype+>ruletag+>dl+err>-otype:
-   0->err,get type+ruletag+otype,
-   (otype=Iempty,put type+ruletag+Irule,
-      set tag flag+ruletag+ruletype,add tag prototype+ruletag+dl;
-    otype=Irule,get tag flag+ruletag+rtype+otype,
-      (otype=ruletype;
-       get defline+ruletag+dl,error+rule type different+ruletag+dl,1->err);
-    get defline+ruletag+dl,error+tag redefined+ruletag+otype+dl,1->err).
-
-$ The rule "rtag" has formal affixes; the present list should be checked
-$   against it. When fast=1 this is just another prototype; otherwise
-$   set formals (and selectors) globally. Save * affix in "repeat formal affix"
-'a'check formal affixes+>fast+>rtag+err>-formal-line:
-   0->err,0->repeat formal affix,get defline+rtag+line, $ old definition $
-   get adm+rtag+formal, $ go over all defined formal affixes
-    (nxt:is+err; $ error meanwhile $
-         R+Splus,
-           (formal=0,error+extra affix+rtag+line,1->err;
-            formal affix+rtag+fast+formal+err,
-                                  get adm+formal+formal,:nxt);
-         +),
-    (is+err,skip all;
-     formal=0;
-     error+missing formal affix+rtag+line,1->err).
-
-$ check: a 'function' must have out affix; an 'exit' shouldn't $
-'a'check out affixes+>rtag+>flag-kind:
-    get tag flag+rtag+rtype+kind,
-    ((kind=rfunc,flag=0),warning+5+function without out affixes+rtag;
-     (kind=rexit,flag!=0),error+exit rule with out affixes+rtag;
-     +).
-$ This is the first time we see rule "rtag". fast=1 if this is
-$   a prototype (formal affixes should not be set). If fast=0
-$   set formal affixes (and selectors) globally.
-$ When fast=0 and has * affix, save it in "repeat formal affix".
-$ Rule flags: 
-$     raffixes   affixes have been processed
-$     rvararg    (it has a * affix)
-$     routvararg (has out affix in the repeat block)
-$ Warn if it is a 'function' and has no out affixes
-$ Give error if 'exit' and has out affixes
-$ 
-'a'create formal affixes+>fast+>rtag+err>-link-formal-ftype-flag1-flag2:
-   0->err->flag1->flag2,0->repeat formal affix,rtag->link,
-    (nxt:is+err;
-         R+Splus,0->formal,formal affix+rtag+fast+formal+err,
-           (is+err;
-            get type+formal+ftype,
-             (=ftype=
- [Iformal repeat],(is+flag1,1->err,error+more repeat affix+rtag;
-                   1->flag1,set tag flag+rtag+rvararg);
- [Iformal out],   1->flag2,
-                       (is+flag1,set tag flag+rtag+routvararg;+);
- [Iformal inout], 1->flag2;
-             +),
-            put adm+link+formal,formal->link,:nxt);
-         flag1=0; $ no repeat affix
-         (-type:get type+link+type,type=Iformal repeat),
-             1->err,error+last repeat affix+rtag;
-     +),
-    (is+err,put adm+rtag+0,skip all; $ redo all assignments $
-     set tag flag+rtag+raffixes,check out affixes+rtag+flag2).
+'variable'has vararg=0, has outvararg=0.
+$ sanity check of formal affixes, set kind=0 if error
+$   error if 'function' and no out affixes
+$   error if 'exit' and has out affixes
+$   error if has more than one @ affix, and it is the last one
+$   warning if function and stack affix, converting to table
+$ compute 'has vararg' and 'has outvararg' flags.
+'a'check formal affixes+>ruletag+>ruletype+>kind>-ptr-vararg-flag:
+    $ vararg=0: no @, =1: at @, =2: after @
+    $ flag: has out / inout affix
+    <<LLOC->ptr,0->vararg,0->has vararg->has outvararg,
+    (nxt: ptr>>>LLOC;
+          ftype*LLOC[ptr]=Iformal anchor,
+                   (vararg=0,1->vararg,1->has vararg;
+                    0->kind,error+more anchor affix+ruletag),
+                    next+LLOC+ptr,:nxt;
+          ftype*LLOC[ptr]=Iformal out,(vararg=0;
+                    2->vararg,1->has outvararg),next+LLOC+ptr,:nxt;
+          vararg=1,2->vararg,next+LLOC+ptr,:nxt;
+          next+LLOC+ptr,:nxt),
+    (vararg=1,0->kind,error+last anchor affix+ruletag;+),
+    <<LLOC->ptr,0->flag,
+    (nxt: ptr>>>LLOC;
+           (=ftype*LLOC[ptr]=
+  [Iformal out;Iformal inout],
+             (ruletype!=rexit,1->flag,next+LLOC+ptr,:nxt;
+              0->kind,error+exit rule with out affix+ruletag+ptr);
+$ a function cannot have stack affix;
+$   ignore this case here; it will be handled later
+$ [Iformal stack],(ruletype!=rfunc;
+$             Iformal table->ftype*LLOC[ptr],
+$                   warning+8+function with stack+ruletag+ptr);
+  next+LLOC+ptr,:nxt)),
+$ a function must have an out affix; if not issue an error
+    (kind=0;is+flag;ruletype!=rfunc;0->kind,
+          error+function without out affix+ruletag).
 $------------------------------------------------------------------$
-$ 'external''action'ruletag+affixes="string".
-'a'rule external declarer+>tag+>dl-str-err:
-   (R+Smreq;must+Sequals),0->err,
-   (is string+str;0->str,1->err,error+no external string+tag),
-   add tag external+tag+dl+err,
-   (is+err;put repr+tag+str).
-$ prototype: 'action'ruletag+affixes.
-'a'rule prototype+>tag+>dl-proto-err:
-   0->err,get pragmat value+pgt proto+proto, $ 1: import, 2: public, 0: none $
-   (proto=1,add tag import+tag+dl+err;
-    proto=2,add tag public+tag+dl+err;
-    add tag prototype+tag+dl).
-$ external or prototype, no rule body
-'a'rule definition+>rtag+>ext+>dl-err:
-   (is tag flag+rtag+raffixes, $ have formal affixes, check them
-      check formal affixes+1+rtag+err;
-    create formal affixes+1+rtag+err),
-   (is+err,skip all;
-    is+ext,rule external declarer+rtag+dl;
-    rule prototype+rtag+dl).
-$ external or prototype; after the comma; no rule body
-'a'rule definition sequence+>ruletype+>ext-tag-err-dl:
-   R+Scomma,(is tagdl+tag+dl,
-       check rule type+ruletype+tag+dl+err,
-       peek after formal affixes+tag+#+err,
-       $ check formal affix syntax only
-       (is+err,skip all;rule definition+tag+ext+dl),
-       :rule definition sequence;
-      error+rule tag expected,skip all,:rule definition sequence);
-   R+Spoint;
-   must+Spoint,skip to point.
+'a'rule prototype+>qf+>rtag+>ruletype+>dl:
+    $ rule+affixes,  rule+affixes, rule+affixes.
+    simple rule prototype+qf+rtag+ruletype+dl,
+    (R+Scomma,(-kind:is qtag+qf+rtag,get linenum+dl,
+               read formal affixes+rtag+kind,
+               check formal affixes+rtag+ruletype+kind,
+               (kind=1,:rule prototype;
+                kind=0,skip to point;
+                error+in rule head+rtag,skip to point);
+              error+rule tag expected,skip to point);
+     R+Spoint;
+     must+Spoint,skip to point).
+
+'a'simple rule prototype+>qf+>rtag+>ruletype+>dl-proto-tag:
+     $ handle a single prototype request
+     get pragmat value+pgt proto+proto, $1: import, 2: export, 0: none
+     (proto=1,create rule definition+qf+rtag+ruletype+dl+tag,
+              set tag flag+tag+timported,
+              check tag definition+tag, $ multiple definition changes tag
+              D+Dimport,Dtag+tag,D+Dpoint;
+      (proto=2,D+Dexport;D+Dproto),D+Drule, Dcons+ruletype,
+              Dqtag+qf+rtag,enter formal affixes+tag,Dtag+tag,D+Dpoint).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'external rule+>qf+>rtag+>ruletype+>dl:
+    $ rule+affixes="", rule+affixes="", rule+affixes="".
+    simple external rule+qf+rtag+ruletype+dl,
+    (R+Scomma,(-kind:is qtag+qf+rtag,get linenum+dl,
+               read formal affixes+rtag+kind,
+               check formal affixes+rtag+ruletype+kind,
+               (kind=2,:external rule;
+                kind=0,skip to point;
+                error+in rule head+rtag,skip to point);
+           error+rule tag expected,skip to point);
+     R+Spoint;
+     must+Spoint,skip to point).
+
+'a'simple external rule+>qf+>rtag+>ruletype+>dl-tag-str:
+    $ handle a single external rule
+    create rule definition+qf+rtag+ruletype+dl+tag,
+    set tag flag+tag+texternal,check tag definition+tag,
+    (R+Smreq;must+Sequals),
+    (is string+str;0->str,error+no external string+rtag),
+    D+Dexternal,Dtag+tag,Dstring+str,D+Dpoint.
+
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'create rule definition+>qf+>rtag+>ruletype+>dl+res>-formal:
+    $ create a LADM entry for this rule. Local affixes are in LLOC
+    create tag definition+qf+rtag+Irule+dl+res,
+    set tag flag+res+tdefined,set tag flag+res+ruletype,
+    (is+has vararg,set tag flag+res+rvararg;+),
+    (is+has outvararg,set tag flag+res+routvararg;+),
+    enter formal affixes+formal,put adm+res+formal.
+
 $ rule declarer: 
 $   <typer> ruletag+affixes-locals:<rule body>.
 $  the main work is done in "rule body+ruletag"
-'a'rule declarer+>rtag+>dl-err:
-   (is tag flag+rtag+raffixes, $ we have formal affixes, check them
-      check formal affixes+0+rtag+err;
-    create formal affixes+0+rtag+err),
-   add tag definition+rtag+dl+err, $ as it is defined here $
-   (is+err,skip to point;
-    rule body+rtag+repeat formal affix).
+'a'rule declarer+>qf+>rtag+>ruletype+>dl-tag-ptr:
+   create rule definition+qf+rtag+ruletype+dl+tag,
+   check tag definition+tag,
+   $ write rule head to DISC and call 'rule body'
+   D+Drule,Dtag+tag,<<LLOC->ptr,
+   (nxt: ptr>>>LLOC,rule body+tag;
+         Dttag+ttag*LLOC[ptr],next+LLOC+ptr,:nxt).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 $ after 'a','p','f','q','e' (external declaration included)
 $
-'a'rule declaration+>ruletype+>ext-tag-err-fast-dl:
-  is tag+tag,get linenum+dl,check rule type+ruletype+tag+dl+err,
-    peek after formal affixes+tag+fast+err,
-    $ fast=0: declarer
-    (is+err,skip to point; $ error in formal affixes
-     (is+ext;is+fast),
-       rule definition+tag+ext+dl,
-       rule definition sequence+ruletype+ext;
-     rule declarer+tag+dl,restore tags);
+'a'rule declaration+>ruletype+>ext-qf-tag-kind-dl:
+  is qtag+qf+tag,get linenum+dl,
+    read formal affixes+tag+kind,check formal affixes+tag+ruletype+kind,
+    (=kind= $ 1-prototype, 2-external,3-declarer,0-error
+     [1], (is+ext,error+in rule head+tag,skip to point;
+                  rule prototype+qf+tag+ruletype+dl);
+     [2], (is+ext,external rule+qf+tag+ruletype+dl;
+                  error+in rule head+tag,skip to point);
+     [3], (is+ext,error+in rule head+tag,skip to point;
+                  rule declarer+qf+tag+ruletype+dl);
+     skip to point); $ error
   error+rule tag expected,skip to point.
 
 'root'+.

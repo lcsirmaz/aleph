@@ -1,10 +1,10 @@
 $ INPUT source files for ALEPH $
-'pragmat'module="input".
+'pragmat'module=input,title="input, v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -19,209 +19,465 @@ $
 $ ************************************************************* 
 
 $ HEADER ****************************************************** $
-'a' read arguments.
-   $ intialilzes program arguments
+'a'read command line arguments.
+   $ intialize command line arguments, process args --help and --version
 'a'read sources.
-   $ add all arguments to be processed
-'a'read stdlib.
-   $ read standard library if not disabled
+   $ process all sources: either as pragmat or call pass1
+'a'read libraries.
+   $ read user libraries plus the standard library if not disabled
+'a'check source modules.
+   $ at the end of pass1 check if every required source has a module tag
+
+$ pragmats and command line arguments
 'a'add required source+>ptr.
-   $ add LEXT[ptr] as required source; complain if duplicate
+   $ add LEXT[ptr] as required source for require=, -M, or -L
 'a'add included source+>ptr.
-   $ add LEXT[ptr] as included source, complain if duplicate
-'q'get first source+ptr>.
-   $ return the LEXT name for the first source
+   $ add LEXT[ptr] as included source for include=
+'a'put module tag+>mtag.
+   $ each source has a BASE, which is xxxhead or has type crequire.
+   $ put TTAG ptr to module*[BASE] only if it is empty
+'f'get module tag+mtag>.
+   $ retrieve module tag (TTAG pointer) of this BASE, can be empty
+
+$ source file and line number for messages
 'f'find linenum+>n+line>+str>.
-   $ find LEXT module name and line number within
-'q'next input entry+>ptr>+n>+str>.
-   $ returns the next file and the next line number
-'f'first line offset+n>.
-   $ the start of line numbering
+   $ find LEXT source name and local line number for messages
+
+$ base hierarchy
+'a'set source from lineno+>n.
+   $ set current BASE from the given linenum.
+'f'get source base+base>.
+   $ return the current BASE (xxxhead or type crequire)
+'f'get base name+>base+ttag>.
+   $ ttag=0 if base has no name yet.
+'f'get base from lineno+>n+base>.
+   $ return the base which contains the given line number
+'f'find rank above+>appl+>def+rank>.
+   $ rank of def base above appl base
+
+'f'get first source+ptr>.
+   $ return the LEXT name for the first source for creating .ice filename
+'q'next input entry+>ptr>+nmin>+nmax>+str>.
+   $ returns the next source string and the next line number for .ice header
+
 $ BODY ******************************************************** $
 
 'pragmat'if=compile.
-'pragmat'require=("lexical","display","pragmats","symbols","disc","passi","version").
+
+$ include="file" is processed as many times as encountered;
+$ require="file" is processed only once for each "file"
+$ max input files: maximal number of input entries processed
+$   is to prevent infinite loops, when A includes B and B includes A
+$
+$ modules (required sources) form a directed graph: each source has a
+$   BASE which is either the source to be compiled, or the "required"
+$   module which contains or "includes" it. The current base determines
+$   the implicit qualifier
+
+'pragmat'require=("config","lexical","display","pragmats","pass1","symbols").
 
 'table'MESSAGE=(
- "missing argument for cmdline option": missing argument for pragmat,
- "source file ""%p"" is in command line, ignored": added as cmdline source,
- "source file ""%p"" included/required differently": source included differently,
- "no input file specified, use --help for a short help"  : no input file,
- "error opening file ""%p""": error opening source
+ "maximum number of sources (%d) exceeded":input size exceeded,
+ "missing argument for a cmdline option"  :missing argument for pragmat,
+ "no input is specified, use --help for a short help"  : no input file,
+ "error opening file ""%p"""              :error opening source
 ).
 
-$ values for flag*INPUT
-'constant'
-  cpragmat     = 0x1301,      $ command line pragmat
-  csource      = 0x1302,      $ source
-  required     = 0x1303,      $ required
-  library      = 0x1304,      $ std library
-  included     = 0x13f0,      $ included, should be the last one; flags added
-  cmp flag     = 0x0008,      $ compile mask
-  proto mask   = 0x0007,      $ proto mask
-  req flags    = 1.           $ required: compile=off, proto=1
-$  source flags = cmp flag|2. $ $ source:   compile=on, proto=2
+$ sources 
+'stack'[1](type,rank,parent,module=flag,nmin,nmax,string)INPUT=(
+  (csource ->type,srchead->parent,0->module->rank,-1->nmin->nmax,0->string):srchead,
+  (clibrary->type,libhead->parent,0->module->rank,-1->nmin->nmax,0->string):libhead,
+  (cstdlib ->type,stdhead->parent,0->module->rank,-1->nmin->nmax,0->string):stdhead
+).
+'variable'input size=3. $ starting number of blocks in INPUT
+$ type:      source type, see below
+$ rank:      linked list of positive ranks from Abase (application) to Dbase (definition)
+$ parent:    link to the base of the invoking source, can be a head
+$ flag:      flags for include source
+$ module:    TTAG pointer to module=<tag> for required (and library) modules
+$ nmin,nmax: line numbers, -1 if not processed yet
+$ string:    LEXT link of the file
 
-'stack'[1](flag,n,string)INPUT.
+'constant'                  $ source type
+  csource      = 0x01,      $ head, cmd line source,
+  clibrary     = 0x02,      $ head, -L "library"
+  cstdlib      = 0x03,      $ head, standard lirary
+  cpragmat     = 0x04,      $ cmd line pragmat, parent: srchead
+  cprarg       = 0x05,      $ cmdline pragmat argument, parent: 0
+  crequire     = 0x06,      $ added as "require", no flags, parent: parent base
+  cinclude     = 0x07,      $ added as "include" plus flags, parent: current base
+  cmissing     = 0x08.      $ file is missing
+'constant'                  $ flag values for cinclude only
+  cproto mask  = 0x03,      $ prototype   0/1/2
+  ccomp mask   = 0x04,      $ in compile  0/1
+  cpath mask   = 0x08,      $ don't use path 0/1
+  ccmd flag    = ccomp mask|cpath mask. $ command line argument flag
 
-'f'find linenum+>from+n>+str>-ptr-nptr:
-   $ for messages and dictionary find source and line number
-   (from>0;get linenum+from),
-   <<INPUT->ptr,(nxt:
-     add+ptr+<>INPUT+nptr,
-     ((>>INPUT<nptr;n*INPUT[nptr]<0;from<n*INPUT[nptr]),
-        subtr+from+n*INPUT[ptr]+n,incr+n,
-        (flag*INPUT[ptr]=cpragmat,Squote image->str,0->n;
-         string*INPUT[ptr]->str);
-      nptr->ptr,:nxt)).
-'a'add command line arg+>ptr+>twoarg>-flag:
-   $ don't check multiple submissions, leave it to the user
-   (is cmdline pragmat+ptr+twoarg+#+#,cpragmat->flag;csource->flag),
-   (* flag->flag, -1->n, ptr->string *)INPUT.
-'q'get first source+ptr>-inpt:
-   <<INPUT->inpt,(nxt:inpt>>>INPUT,-;
-     flag*INPUT[inpt]=csource,string*INPUT[inpt]->ptr;
-     next+INPUT+inpt,:nxt).
-'q'was source added+>ptr+inpt>-eq:
-   $ check if the same string appears in INPUT
-   >>INPUT->inpt,
-   (nxt: inpt<<<INPUT,-;
-    compare string+LEXT+string*INPUT[inpt]+LEXT+ptr+eq,
-      ((eq=0,flag*INPUT[inpt]!=cpragmat),+;
-       previous+INPUT+inpt,:nxt)).
-'a'add source+>ptr+>flag-inpt:
-   $ complain if it is there with different flags
-   was source added+ptr+inpt, $ it is there
-     (flag*INPUT[inpt]=csource,warning+8+added as cmdline source+ptr;
-      flag*INPUT[inpt]=flag; $ ignore
-      error+source included differently+ptr);
-   (* ptr->string, flag->flag, -1->n *)INPUT.
+'stack'[1](next,base,rank)RANK.
+$ The directed graph among all bases is defined as follows:
+$  B -> D if there is a require="D" pragmat in base B. 
+$  The rank is the length of the shortest directed path from B to D
+$  (zero if B=D). For each D the positive ranks to D  are held in a linked
+$  list with head in rank*INPUT[D]; if non-empty then type*INPUT[D]=crequire
 
-'a'add required source+>ptr:
-   $ require="source"  compile=no, prototype=external
-   add source+ptr+required.
+$ ------------------------------------------------------------- $
+'a'add input entry+>type+>parent+>string:
+   input size>max input files;
+   input size=max input files,incr+input size,error+input size exceeded+max input files;
+   incr+input size,(* type->type,parent->parent,string->string,
+       0->rank->module,-1->nmin->nmax *)INPUT.
 
-'a'add included source+>ptr-flag:
-   $ include="source"  compile=keep, prototype=keep
-   get pragmat value+pgt proto+flag, $ 0 / 1 / 2 $
-   (is pragmat value+pgt compile,add+flag+cmp flag+flag;+),
-   add+flag+included+flag,add source+ptr+flag.
-'a'set pragmats+>flag-x:
-   bool and+flag+proto mask+x,set pragmat value+pgt proto+x,
-   bool and+flag+cmp flag+x,(is+x,1->x;0->x),
-   set pragmat value+pgt compile+x.
+'q'is input type+>src+>type:
+    type*INPUT[src]=type.
 
-$ ===================================================================== $
-'variable'last linenum=0.
-'q'next input entry+>ptr>+n>+str>:
-   (ptr=0,<<INPUT->ptr;+),(nxt: ptr>>>INPUT,-;
-      flag*INPUT[ptr]=cpragmat,next+INPUT+ptr,:nxt;
-      string*INPUT[ptr]->str,last linenum->n,next+INPUT+ptr,
-        (nxt2: ptr>>>INPUT;
-               flag*INPUT[ptr]=cpragmat,next+INPUT+ptr,:nxt2;
-               n*INPUT[ptr]->n)).
+'f'find source from lineno+>n+src>:
+   $ return the source which includes the given line number
+    n<0,srchead->src; $ e.g., Xstring table pointer
+    <<INPUT->src,(nxt:src>>>INPUT,internal error+_rule_;
+    (nmin*INPUT[src]<=n,n<=nmax*INPUT[src]);
+    next+INPUT+src,:nxt).
+
+'f'find linenum+>from+n>+string>-src:
+   $ for messages and dictionary items find source and line number
+   (from>0;get linenum+from),find source from lineno+from+src,
+    (src>>>INPUT,0->n,Squote image->string;
+     subtr+from+nmin*INPUT[src]+n,incr+n,string*INPUT[src]->string).
+
+$ ------------------------------------------------------------- $
+$ data used in .ice files
+'f'get first source+str>-ptr:
+   $ return the first source string for creating .ice file name
+   <<INPUT->ptr,(nxt:ptr>>>INPUT,Squote image->str;
+      is input type+ptr+cinclude,string*INPUT[ptr]->str;
+      next+INPUT+ptr,:nxt).
 'f'first line offset+n>-ptr:
-   <<INPUT->ptr,(nxt:ptr>>INPUT,1->n;
-      flag*INPUT[ptr]=cpragmat,next+INPUT+ptr,:nxt;
-      n*INPUT[ptr]->n).
-$ ===================================================================== $
+   $ return the first src offset to adjust line numbers
+   <<INPUT->ptr,(nxt:ptr>>>INPUT,1->n;
+      is input type+ptr+cinclude,nmin*INPUT[ptr]->n;
+      next+INPUT+ptr,:nxt).
+'q'next input entry+>ptr>+nmin>+nmax>+str>:
+   $ go over INPUT sources in increasing line number order
+   (is+ptr;<<INPUT->ptr),(nxt:ptr>>>INPUT,-;
+    nmin*INPUT[ptr]<0,next+INPUT+ptr,:nxt; $ head and duplicate
+   is input type+ptr+cpragmat,next+INPUT+ptr,:nxt;
+    is input type+ptr+cprarg,next+INPUT+ptr,:nxt;
+    nmin*INPUT[ptr]->nmin,nmax*INPUT[ptr]->nmax,
+        string*INPUT[ptr]->str,next+INPUT+ptr).
 
-'q'is cmdline pragmat+>ptr+>twoarg>+pid>+value>-eq:
-  $ LEXT[ptr] is a pragmat
-  is+twoarg,0->twoarg,0->pid,0->value;
-  (compare string+LEXT+ptr+"-L"+eq,eq=0), $ library=on
-     pgt library->pid,1->value;
-  (compare string+LEXT+ptr+"-M"+eq,eq=0), $ module=on
-     pgt module->pid,1->value;
-  (compare string+LEXT+ptr+"-d"+eq,eq=0), $ dictionary=on
-     pgt dict->pid,1->value;
-  (compare string+LEXT+ptr+"-l"+eq,eq=0), $ list=on
-     pgt text->pid,1->value;
-  (compare string+LEXT+ptr+"-W"+eq,eq=0), $warning level=3
-     pgt warning level->pid,3->value;
-  (compare string+LEXT+ptr+"-Wall"+eq,eq=0), $warning level=0
-     pgt warning level->pid,0->value;
-  (compare string+LEXT+ptr+"-o"+eq,eq=0), $ title=
-     1->twoarg,pgt ice->pid,0->value;
-  (compare string+LEXT+ptr+"-I"+eq,eq=0), $ path=
-     1->twoarg,pgt path->pid,0->value;
-  (string elem+LEXT+ptr+0+eq,eq=/-/,string elem+LEXT+ptr+1+eq,eq=/-/), $ --
-     -1->pid,0->value.
-             
-'a'init program args-ptr-x-twoarg:
-   $ add STDARG to the INPUT list
+$ ------------------------------------------------------------- $
+'variable'
+   this source=0, $ the source in INPUT under execution
+   this base=0,   $ base of this source: a head or a crequire
+   this head=0.   $ head, one of src,lib,std
+
+'q'is input flag+>flag:
+    is input type+this source+cinclude,
+    bool and+flag+flag*INPUT[this source]+flag,is+flag.
+'f'get input base+>src+base>: $ get the base of this source
+    is input type+src+cinclude,parent*INPUT[src]->base;
+    is input type+src+cpragmat,parent*INPUT[src]->base;
+    src->base. $ crequire, head, pragmat arg
+'f'get input head+>base+head>:
+    $ the head of a base
+    is input type+base+crequire,parent*INPUT[base]->base,:get input head;
+    base->head.
+'a'prepare this source:
+    get input base+this source+this base,
+    get input head+this base+this head.
+'a'set source from lineno+>n:
+    find source from lineno+n+this source,prepare this source.
+'f'get base from lineno+>n+base>:
+    find source from lineno+n+base,get input base+base+base.
+'f'get base name+>base+mtag>:
+    module*INPUT[base]->mtag.
+$ ------------------------------------------------------------- $
+'f'get source base+base>:
+    $ return the base of this source; add to definition
+    this base->base.
+'f'get module tag+mtag>:
+    $ get the module tag for this source; empty or TTAG
+    module*INPUT[this base]->mtag.
+'a'put module tag+>mtag:
+    $ put the TTAG of this module if it was empty before
+    module*INPUT[this base]=0,mtag->module*INPUT[this base];
+    +.
+$ ------------------------------------------------------------- $
+'constant'lib rank=max input files+1.
+$ given D (definition) base, find out the rank to B (appl) base
+$   libraries are above non-libraries, stdlib is over everything
+
+'a'add edge+>B+>D-D1-r1:
+   $ B contains a require="D" pragmat; adding the B-->D extra edge to the
+   $   directed graph. Computing the new ranks.
+   $ Go over all D1, find the D1--D rank; add one, and then
+   $   go over all B--B1 ranks. The new rank is rank(D1-D)+1+rank(B-B1)
+   $   if this is smaller than the previous one, then replace it.
+   B=D;
+   <<INPUT->D1,(nxt:
+      D1>>>INPUT;
+      is input type+D1+crequire,find local rank+D1+D+r1,
+        (r1<0;incr+r1,correct ranks from+D1+B+r1),next+INPUT+D1,:nxt;
+      next+INPUT+D1,:nxt).
+'f'find local rank+>B+>D+rank>-link:
+    D=B,0->rank;
+    rank*INPUT[D]->link,(nxt:link=0,-1->rank;
+      base*RANK[link]=B,rank*RANK[link]->rank;
+      next*RANK[link]->link,:nxt).
+'a'correct ranks from+>D1+>B+>r-ptr-r2:
+   $ go over all B1 connected to B, and correct the ranks
+   correct rank+D1+B+r,rank*INPUT[B]->ptr,(nxt:ptr=0;
+      add+r+rank*RANK[ptr]+r2,correct rank+D1+base*RANK[ptr]+r2,
+      next*RANK[ptr]->ptr,:nxt).
+'a'correct rank+>D1+>B1+>new-old:
+   find local rank+B1+D1+old,
+      (old<0,add new rank+D1+B1+new;
+       new<old,add new rank+D1+B1+new;+).
+'a'add new rank+>D+>B1+>rank-ptr:
+   rank*INPUT[D]=0,(* 0->next,B1->base,rank->rank *)RANK, >>RANK->rank*INPUT[D];
+   rank*INPUT[D]->ptr,(nxt:
+      base*RANK[ptr]=B1,rank->rank*RANK[ptr]; $ found
+      next*RANK[ptr]=0, $not there, add a new record
+        (* 0->next,B1->base,rank->rank *)RANK,>>RANK->next*RANK[ptr];
+      next*RANK[ptr]->ptr,:nxt).
+'f'find rank above+>B+>D+rank>-headB-headD:
+   $ if B and D have different heads then they are not connected
+   $  this does not work when comparing B1-D and B2-D, but it never
+   $   used this way, see identifier::match qtag below/above
+   find local rank+B+D+rank,(rank>=0;
+     get input head+B+headB,get input head+D+headD,
+     (headD <= head B; $ not above, return -1
+      find local rank+headD+D+rank,
+        (nxt:add+rank+lib rank+rank,next+INPUT+headB,
+            (headD<=headB;:nxt)))).
+
+$ ------------------------------------------------------------- $
+$ adding a require="file", -M file, or -L file
+$   this base: xxxhead or has type crequire
+'a'add required source+>string-ptr:
+    $ check if this is a duplicate
+    <<INPUT->ptr,
+    (nxt:ptr>>>INPUT, $ not found
+              add input entry+crequire+this base+string,
+              add edge+this base+>>INPUT;
+       (-eq:is input type+ptr+crequire,
+           compare string+LEXT+string+LEXT+string*INPUT[ptr]+eq,eq=0),
+              forget string+string, $ found
+              add edge+this base+ptr;
+        next+INPUT+ptr,:nxt).
+
+$ add include="file". this source can be cpragmat,cinclude,crequire
+'a'add included source+>string-flag:  $ exported
+    $ this base is the base of this source, which is crequire or xxxhead
+    add input entry+cinclude+this base+string,
+    get pragmat value+pgt proto+flag, $ 0 / 1 / 2
+    (is pragmat value+pgt compile,add+flag+ccomp mask+flag;+),
+    flag->flag*INPUT.
+$ --------------------------------------------------------------- 
+'a'add command line arg+>string+>twoarg>-pid-base:
+   $ fill the INPUT stack with command line parameters
+   is+twoarg,0->twoarg,add input entry+cprarg+0+string;
+   is cmdline pragmat+string+twoarg+pid+#,get pragmat base+pid+base,
+       add input entry+cpragmat+base+string;
+   add input entry+cinclude+this base+string,ccmd flag->flag*INPUT.
+
+'a'add stdlib source+>string:
+   $ standard library source; use stdhead as parent
+   add input entry+crequire+stdhead+string.
+
+'a'set src pragmats+>type-flag-x:
+   $ pragmats for source; set just before reading the first symbol from source
+   type=crequire,
+       set pragmat value+pgt compile+0,set pragmat value+pgt proto+1;
+   $ type=cinclude: set compile and proto as stored
+   flag*INPUT[this source]->flag,
+        bool and+flag+cproto mask+x,set pragmat value+pgt proto+x,
+        bool and+flag+ccomp mask+x,set pragmat value+pgt compile+x.
+
+$ **********************************************************************
+$ Command line arguments
+'q'is cmdline pragmat+>string+twoarg>+pid>+value>-eq:
+  $ check if LEXT[ptr] is a pragmat
+  $ twoarg: it has a second argument
+  $ pid:    -1 if starting with --; otherwise pgt XXXX
+  $ value:  value of pragmat to set pgt XXXX
+  (compare string+LEXT+string+"-d"+eq,eq=0), $ dictionary=on
+     pgt dict->pid,0->twoarg,1->value;
+  (compare string+LEXT+string+"-l"+eq,eq=0), $ list=on
+     pgt text->pid,0->twoarg,1->value;
+  (compare string+LEXT+string+"-W"+eq,eq=0), $ warning level=3
+     pgt warning level->pid,0->twoarg,soft warning level->value;
+  (compare string+LEXT+string+"-Wall"+eq,eq=0), $warning level=0
+     pgt warning level->pid,0->twoarg,0->value;
+  (compare string+LEXT+string+"-D"+eq,eq=0), $ define=
+     pgt define->pid,1->twoarg,0->value;
+  (compare string+LEXT+string+"-m"+eq,eq=0), $ require=
+     pgt require->pid,1->twoarg,0->value;
+  (compare string+LEXT+string+"-y"+eq,eq=0), $ library=
+     pgt addlib->pid,1->twoarg,0->value;
+  (compare string+LEXT+string+"-o"+eq,eq=0), $ ice=
+     pgt ice->pid,1->twoarg,0->value;
+  (compare string+LEXT+string+"-I"+eq,eq=0), $ path=
+     pgt path->pid,1->twoarg,0->value;
+  (compare string+LEXT+string+"-L"+eq,eq=0), $ library path=
+     pgt libpath->pid,1->twoarg,0->value;
+  (string elem+LEXT+string+0+eq,eq=/-/,string elem+LEXT+string+1+eq,eq=/-/), $ --
+     -1->pid,0->twoarg,0->value.
+
+'f'get pragmat base+>pid+base>:   $ set the base of a pragmat
+    pid=pgt addlib,libhead->base; $ it is libhead for -L <file>
+    srchead->base.                $ and srchead otherwise
+
+'a'init program args-ptr-twoarg:
+   $ copy strings from STDARG to the INPUT list
    >>STDARG->ptr,0->twoarg,
      (nxt:ptr<<<STDARG,(twoarg=0; Xerror+0+missing argument for pragmat);
           copy string+STDARG+ptr+LEXT,add command line arg+>>LEXT+twoarg,
-            string width+STDARG+ptr+x,subtr+ptr+x+ptr,:nxt).
+            previous string+STDARG+ptr,:nxt).
 
-'p'is help argument+>ptr-eq:
-   flag*INPUT[ptr]=cpragmat,compare string+LEXT+string*INPUT[ptr]+"--help"+eq,eq=0,
-      Xmessage+help message.
+'p'is help argument+>ptr-eq:    $ --help
+   compare string+LEXT+string*INPUT[ptr]+"--help"+eq,eq=0,
+      Xmessage+help message+path separator+path separator+soft warning level.
 
-'p'is version argument+>ptr-eq:
-   flag*INPUT[ptr]=cpragmat,compare string+LEXT+string*INPUT[ptr]+"--version"+eq,eq=0,
+'p'is version argument+>ptr-eq: $ --version
+   compare string+LEXT+string*INPUT[ptr]+"--version"+eq,eq=0,
       Xmessage+version message+version major+version minor.
 
-'a'read arguments-ptr-cnt-twoarg:
-   init program args, $ copy arguments to INPUT $
-   (was error;
+'a'read command line arguments:
+   $ check command line arguments
+   $ if --help or --version is given, errno is set; no more processing
+   $ otherwise store them in INPUT and check for at least one source
+   srchead->this source,prepare this source,
+   init program args, $ copy command line arguments to INPUT
+   (-cnt-ptr:was error;        $ missing pragmat argument
     0->cnt,<<INPUT->ptr,(nxt:
        ptr> >>INPUT;
-       flag*INPUT[ptr]=csource,incr+cnt,next+INPUT+ptr,:nxt;
-       0->twoarg,(is cmdline pragmat+string*INPUT[ptr]+twoarg+#+#;+),
-          (is+twoarg,next+INPUT+ptr,next+INPUT+ptr,:nxt;
-           is help argument+ptr,incr+cnt;
-           is version argument+ptr,incr+cnt;
-           next+INPUT+ptr,:nxt)),
+       is input type+ptr+cinclude,incr+cnt,next+INPUT+ptr,:nxt;
+       is input type+ptr+cpragmat,
+          (is help argument+ptr,incr+cnt; $ done
+           is version argument+ptr,incr+cnt; $done
+           next+INPUT+ptr,:nxt);
+       next+INPUT+ptr,:nxt),
     (cnt>0;Xerror+0+no input file)).
 
-'p'next input+>ptr>-twoarg-pid-value-flag-use path:
-   $ execute pragmats and a source
-   ptr > >>INPUT,-;
-   0->twoarg,advance linenum,get linenum+n*INPUT[ptr],flag*INPUT[ptr]->flag,
-   (flag=csource,1->use path;2->use path),
-   $ usepath=2:  use "-I path1;path2;path3"; usepath=1: don't use $
-    ((flag=cpragmat,is cmdline pragmat+string*INPUT[ptr]+twoarg+pid+value),
-     $ cmdline pragmat,
-        (pid<0, $ read pragmat from the argument
-                (next source+0+string*INPUT[ptr],next symbol,
-                 cmdline pragmat,close source;+),next+INPUT+ptr,:next input;
-         twoarg!=0, $ pragmat with string argument
-                next+INPUT+ptr,
-                get linenum+n*INPUT[ptr],set pragmat value+pid+string*INPUT[ptr],
-                next+INPUT+ptr,:next input;
-         set pragmat value+pid+value,next+INPUT+ptr,:next input);
-     next source+use path+string*INPUT[ptr],next+INPUT+ptr,
-     $ source file, set pragmat flags; defaults are: proto=2,compile=1
-        (=flag=
-         [csource],+; $set pragmats+source flags;$
-         [required],set pragmats+req flags;
-         $ included $ set pragmats+flag);
-     Xwarning+9+0+error opening source+string*INPUT[ptr],next+INPUT+ptr,:next input).
+$ handle INPUT entries
+$  cpragmat  cmdline pragmat, might have argument
+$       leave out -L <file> arguments first
+$  crequire  require="...", can be added from command line
+$  cinclude  include="...", save/set prototype,library and namesapce
+$ field nmin indicates if an entry has been processed.
 
-'a'read sources-ptr-cnt:
-   $ go over all source files; complain if no source file was supplied
-   <<INPUT->ptr,0->cnt,
-     set pragmat value+pgt library+0, $ not in library
-     reset pragmats,
-     (nxt:next input+ptr,next symbol,pass I,close source,
-            reset pragmats,set pragmat value+pgt library+0,incr+cnt,:nxt;+),
-     (cnt>0;Xerror+0+no input file).
-'a'read stdlib-ptr:
-   $ read standard library and all included files
-   (-x:get pragmat value+pgt stdlib+x,x=0),get linenum+last linenum;
-   add source+stdlib file+library,>>INPUT->ptr,
-     reset pragmats,set pragmat value+pgt library+1,
-     (nxt:next input+ptr,next symbol,pass I,close source,
-           reset pragmats,set pragmat value+pgt library+1,:nxt;
-      get linenum+last linenum,reset pragmats).
+'a'startline:
+   $ set the first and last line number of the source, indicating that processed
+   get linenum+nmin*INPUT[this source],max int->nmax*INPUT[this source].
+'a'endline:
+   get linenum+nmax*INPUT[this source].
+
+'q'executable pragmat+>round+>pid:
+   round=1,pid!=pgt addlib; $ do not execute -L pragmats in first round
+   round=2,pid=pgt addlib.  $ but do so in second round
+
+'p'do pragmat+>round-twoarg-pid-value:
+   is input type+this source+cpragmat, $ this is a pragmat
+   nmin*INPUT[this source]<0,          $ has not been processed before
+   is cmdline pragmat+string*INPUT[this source]+twoarg+pid+value,
+   executable pragmat+round+pid,       $ is it executable in this round
+   advance linenum,startline,prepare this source,
+   (pid<0, $ execute pragmat at the argument starting with --, first round
+       (open source+0+string*INPUT[this source],next symbol,
+              cmdline pragmat,close source;+),endline;
+    is+twoarg, $ pragmat has a second argument
+       endline,next+INPUT+this source,startline,
+       set pragmat value+pid+string*INPUT[this source],endline;
+    set pragmat value+pid+value,endline).
+
+'p'do source+>type+>round-use path:
+   $ create token stream to DISC
+   is input type+this source+type,     $ this is as required
+   nmin*INPUT[this source]<0,          $ not processed yet
+   advance linenum,startline,prepare this source, set src pragmats+type,
+   $ set use path: 1: none, 2: -I, 3: standard library
+   (round=3,3->use path;is input flag+cpath mask,1->use path;2->use path),
+   (open source+use path+string*INPUT[this source],switch source,
+        next symbol,pass 1,close source;
+    Xerror+0+error opening source+string*INPUT[this source],
+        cmissing->type*INPUT[this source]),
+   endline,reset pragmats.   
+
+'a'process sources+>round:
+   <<INPUT->this source,reset pragmats,
+   (nxt: this source> >>INPUT; $ done
+         do source+crequire+round,next+INPUT+this source,:nxt;
+         do source+cinclude+round,next+INPUT+this source,:nxt;
+         do pragmat+round,next+INPUT+this source,:nxt;
+         next+INPUT+this source,:nxt).
+
+'variable'source warning=0, $ warning level after reading all sources
+          std lib offset=0. $ offset of the standard library
+'a'read sources:
+   $ set standard warning level
+   set pragmat value+pgt warning level+default warning level,
+   process sources+1, get pragmat value+pgt warning level+source warning.
+
+'a'read libraries:
+   $ set library warning level
+   set pragmat value+pgt warning level+lib default warning level,
+   process sources+2,            $ process libraries added by the user
+   >>INPUT->std lib offset,
+   (was error;                   $ skip if there was an error
+    is pragmat value+pgt stdlib, $ add standard library and process it
+       set pragmat value+pgt warning level+lib default warning level,
+       add stdlib source+stdlib file,process sources+3;
+    +),
+    set pragmat value+pgt warning level+source warning.
+
+$ **********************************************************************
+$ check if all required sources have a module=<TAG> pragmat somewhere
+$   warn if two required files define the same module tag
+$ 
+'table'MESSAGE=(
+ "file %p: missing module pragmat"            :missing module pragmat,
+ "files %p and %p define the same module '%p'":same module,
+ "module '%p' is also defined in file %p"     :module redefined
+).
+
+'a'module warning+>ptr+>mtag-n:
+    this source=<<INPUT, $ module redefined, figure out line number
+       first line offset+n,
+       Xwarning+2+n+module redefined+mtag+string*INPUT[ptr];
+    this source>=std lib offset; $ no warning for conflict in standard library
+    Xwarning+2+0+same module+string*INPUT[this source]+string*INPUT[ptr]+mtag.
+
+'a'check same module tag+>old-ptr:
+    this source->ptr,next+INPUT+ptr,
+    (nxt:ptr> >>INPUT;
+         is input type+ptr+crequire,
+           (old=module*INPUT[ptr],module warning+ptr+old;+),
+               next+INPUT+ptr,:nxt;
+         next+INPUT+ptr,:nxt).
+
+'a'check source modules-mtag:
+   $ set program title if none was given
+   (is pragmat value+pgt title;
+    set pragmat value+pgt title+def program title),
+   <<INPUT->this source,
+   $ if this is a module, does some other have the same name?
+   (is pragmat value+pgt module,
+           check same module tag+module*INPUT[srchead];
+    +),
+   (nxt:this source> >>INPUT;
+        is input type+this source+crequire,
+           prepare this source,get module tag+mtag,
+           (is+mtag,check same module tag+mtag;
+            Xerror+0+missing module pragmat+string*INPUT[this source]),
+           next+INPUT+this source,:nxt;
+        next+INPUT+this source,:nxt).
 
 'root'+.
 
 'pragmat'endif=compile.
 
 'end'
+
 
 
 

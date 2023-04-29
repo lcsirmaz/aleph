@@ -1,10 +1,10 @@
 $ disc output $
-'pragmat'module="disc".
+'pragmat'module=disc,title="disc v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -18,100 +18,181 @@ $  the GNU General Public License for more details.
 $
 $ ************************************************************* 
 
-$ HEADER *********************************************** $
-$ writing DISC
-'a'D+>x,D cons+>x,D string+>x,Dtag+>x.
-$ reading from DISC
-'p'Q+>x,Q cons+x>,Q string+x>,Qtag+x>.
-'q'Qahead+>x.
-'a'must Q+>x,must Qcons+x>,must Qtag+x>,Qskip+>x.
-'a'must Qlist+x>+y>.
+$ HEADER ****************************************************** $
+$ writing to DISCW
+'a'D+>x,Dcons+>x,Dstring+>x,Dtag+>x,Dttag+>x,Dqtag+>q+>x.
+   $ D        symbol, number, indicator (type)
+   $ Dcons    constant
+   $ Dstring  string LEXT
+   $ Dtag     LADM or LLOC
+   $ Dttag    TTAG
+   $ Dqtag    TTAG with a TTAG qualifier
+'a'Dnlcr.
+   $ advance linenum on the disc
 
+$ reading from DISCR
+'p'Q+>x,Qcons+x>,Qstring+x>,Qtag+x>,Qttag+x>,
+   Qnumber+x>,Qqtag+qf>+x>,Qltag+x>.
+   $ Q        check for the given symbol
+   $ Qcons    constant
+   $ Qstring  LEXT string
+   $ Qtag     LADM or LLOC
+   $ Qttag    TTAG
+   $ Qnumber  NUMBER
+   $ Qqtag    qualified TTAG
+   $ Qltag    LLOC (local)
+'a'mustQ+>x,must Qcons+x>,must Qtag+x>,must Qttag+x>,
+   must Qqtag+qf>+ttag>,must Qtype+x>,must Qlist+tag>+local>.
+   $ mustQ       requests this symbol
+   $ must Qcons  constant
+   $ must Qtag   LADM or LLOC
+   $ must Qttag  TTAG
+   $ must Qqtag  qualified tag
+   $ must Qtype  INDICATOR (type)
+   $ must Qlist  LADM or LLOC with formal affix it replaced in a macro
+'q'Qahead+>x.'a'Qskip+>to.
+   $ Qahead      check if it is the next symbol
+   $ Qskip       skip including the given symbol.
+
+$ save restore DISCR position
 'f'save disc position+pos>+lnum>.
 'a'restore disc position+>pos+>lnum.
 $ open / close
-'a'open disc+>mode,close disc,delete disc,rewind disc.
+'a'open disc+>no+>mode,close discs,delete discs,rewind disc.
 $ macro replacement
 'a'macro call head+>tag+Qa>+Qb>,
    macro call tail+>Qa+>Qb.
 
-$ exported disc symbols
+$ symbols
 'constant'
-  $ files
-  Dfile,
-  $ expression operators
-  Dor,Dand,Dxor,Dcompl,Ddiv,
-    $ Dplus,Dminus,Dcalibre,Dlwb,Dupb,Dopen,Dclose
-  $ other
-  Darea,  Dbox,   Dbus, Dcalibre, Dclose, Dcolon, Dconst,
-  Dcomma, Dend, Dexpression, Dextension, Dfill, Djump,
-  Dlabel, Dline, Dlist, Dlocal, Dlwb, Dminus, Dnoarg,
-  Dopen, Dplus, Dpoint, Dpragmat, Droot, Drule,
-  Dsemicolon, Dstar, Dsub, Dto, Dupb,
-  Dvlwb, Dvupb,
-  $ ice entries
-  Dtitle, Dmodule, Dout, Dnode.
+  Danchor,    Dand,       Darea,      Dbackm,     Dbox,   
+  Dbus,       Dcalibre,   Dcompl,     Dclose,     Dcolon,
+  Dconst,     Dcomma,     Ddiv,       Dend,       Dexport,
+  Dexpression,Dextension, Dexternal,  Dfile,      Dfill,
+  Dfrontm,    Dimport,    Djump,      Dlabel,     Dlist,
+  Dlocal,     Dlwb,       Dmain,      Dminus,     Dmodule,
+  Dnoarg,     Dnode,      Dopen,      Dor,        Dout,
+  Dplus,      Dpoint,     Dpragmat,   Dproto,     Droot,
+  Drule,      Dsemicolon, Dsource,    Dstar,      Dsub,
+  Dto,        Dupb,       Dvlwb,      Dvupb,      Dxor.
 
 'table'DSYMB.
 
-$ BODY ************************************************* $
+$ BODY ********************************************************
 'pragmat'if=compile.
 
-'table'DSYMB=( $ disk symbols
-  "&":Dand,  "'area'":Darea,
-  "'box'":Dbox,   "]":Dbus, 
-  "'calibre'":Dcalibre, ")":Dclose, ":":Dcolon, ",":Dcomma, "~":Dcompl, "'const'":Dconst,
-  "/":Ddiv,
-  "'end'":Dend, "'expression'":Dexpression, "'extension'":Dextension,
-  "'file'":Dfile, "'fill'":Dfill,
-  "'jump'":Djump,
-  "'label'":Dlabel, "\n":Dline, "'list'":Dlist, "'local'":Dlocal, "'lwb'":Dlwb, 
-  "'module'":Dmodule,"-":Dminus,
-  "# ":Dnoarg,"'node'":Dnode,
-  "(":Dopen, "|":Dor, ">":Dout,
-  "+":Dplus, ".":Dpoint, "'pragmat'":Dpragmat,
-  "'root'":Droot, "'rule'":Drule,
-  ";":Dsemicolon, "*":Dstar, "[":Dsub,
-  "'title'":Dtitle, "'to'":Dto,
-  "'upb'":Dupb,
-  "'vlwb'":Dvlwb, "'vupb'":Dvupb,
-  "^":Dxor
+'table'[]DSYMB=( $ disk symbols
+$ maintain proper line numbering
+  "%n"		:Dline,		"%n%n"        :Dlines, 
+  "@"		:Danchor,	"&"           :Dand,
+  "'area'"	:Darea,		"'back'"      :Dbackm, 
+  "'box'"	:Dbox,		"]"           :Dbus,
+  "'calibre'"	:Dcalibre,	"~"           :Dcompl, 
+  ")"		:Dclose,	":"           :Dcolon,
+  "'const'"	:Dconst,	","           :Dcomma,
+  "/"		:Ddiv,		"'end'"       :Dend, 
+  "'export'"	:Dexport,	"'expression'":Dexpression, 
+  "'extension'"	:Dextension,	"'external'"  :Dexternal,
+  "'file'"	:Dfile,		"'fill'"      :Dfill,
+  "'front'"	:Dfrontm,	"'import'"    :Dimport,
+  "'jump'"	:Djump,		"'label'"     :Dlabel,
+  "'list'"	:Dlist,		"'local'"     :Dlocal,
+  "'lwb'"	:Dlwb,		"'main'"      :Dmain,
+  "-"		:Dminus,	"'module'"    :Dmodule,
+  "# "		:Dnoarg,	"'node'"      :Dnode,
+  "("		:Dopen,		"|"           :Dor,
+  ">"		:Dout,		"+"           :Dplus,
+  "."		:Dpoint,	"'pragmat'"   :Dpragmat,
+  "'proto'"	:Dproto,	"'qualifier'" :Dqualifier,
+  "'root'"	:Droot,		"'rule'"      :Drule,
+  ";"		:Dsemicolon,	"'source'"    :Dsource,       
+  "*"		:Dstar,		"["           :Dsub,
+  "'to'"	:Dto,		"'upb'"       :Dupb,
+  "'vlwb'"	:Dvlwb,		"'vupb'"      :Dvupb,
+  "^"		:Dxor
 ).
 
-'pragmat'require=("lexical","display","ice","tags","types","symbols","version").
-$ ------------------------------------------------------------ $
-'datafile' DISC[DSYMB;LADM;LLOC;LEXT] = "/tmp/aleph.tmp">.
+'pragmat'require=("number","lexical","display","ice","tags","types",
+           "selector","symbols","config").
+$ ------------------------------------------------------------- 
+'datafile' DISCR[TTAG;DSYMB;LADM;LLOC;LEXT;NUMBER;INDICATOR] = >"/tmp/aleph.tmp",
+           DISCW[TTAG;DSYMB;LADM;LLOC;LEXT;NUMBER;INDICATOR] = "/tmp/aleph.tmp">.
 
 'table'MESSAGE=(
    "cannot create temp file %p, error code=%d, aborting"
-          :cannot open disc file
+          :cannot open disc file,
+   "open disc error, no=%d, mode=%c, file=%p, aborting"
+          :open disc error,
+   "no standard selector for %p in macro substitution"
+          :no standard selector
 ).
 
-'a'open disc+>mode-err:
-   open file+DISC+mode+LEXT+disc file,
-     (mode=/r/,0->Qbuffer ptr->Qshift,0->linenum,next disc symbol;+);
-   get file error+DISC+err,
-     Xerror+0+cannot open disc file+disc file+err.
-'a'close disc:
-   close file+DISC.
-'a'delete disc:
-   close disc,unlink file+LEXT+disc file.
+'variable'disc1=0,disc2=0.
+$ create temporary DISC file; store the LEXT pointers at disc1 and disc2.
+
+'a'open disc+>no+>mode:
+   no=1,open this disc+1+disc1+mode;
+   no=2,open this disc+2+disc2+mode;
+   internal error+_rule_.
+
+'a'open this disc+>no+>disc>+>mode-err:
+   mode=/t/,disc->err,copy string+LEXT+disc file+LEXT,>>LEXT->disc,
+          (is+err,Xerror+0+open disc error+no+mode+err;
+           open temp file+DISCW+LEXT+disc,0->wlinenum->wwlinenum;
+           get file error+DISCW+err,
+                     Xerror+0+cannot open disc file+disc+err);
+   mode=/r/,
+          (disc=0,Xerror+0+open disc error+no+mode+disc;
+           open file+DISCR+/r/+LEXT+disc,0->Qbuffer ptr,0->Qlinenum,
+                next disc symbol
+                ;
+           get file error+DISCR+err,
+                     Xerror+0+cannot open disc file+disc+err);
+    internal error+_rule_.
+
+'a'close discs:
+   close file+DISCR,close file+DISCW.
+'a'delete discs:
+   close discs, (disc1=0;unlink file+LEXT+disc1),
+     (disc2=0; unlink file+LEXT+disc2).
+                
 'a'rewind disc:
-  $ rewind disc file, prepare for macro substitution
+  $ rewind DISCR, prepare for macro substitution
   0->Qbuffer ptr->Qshift,restore disc position+0+0.
 
-'a'D+>x: $ x is a pointer to DSYMB, or coming from Dtag
-    put data+DISC+x+pointer.
-'a'D cons+>n:
-   put data+DISC+n+numerical.
-'a'D string+>x: $ x is a pointer to LEXT
-   put data+DISC+x+pointer.
-'a'D tag+>tag: $ x is a pointer to LADM or LLOC
-   was+LADM+tag,(has formal type+tag,repr*LADM[tag]->tag,:D tag;D+tag);
-   was+LLOC+tag,D+tag;
-   internal error+_rule_+_line_. $ D+tag $
+$ writing to the disc
+'variable'wlinenum=0,wwlinenum=0.
+   $ before writing the next symbol, insert wwlinenum newlines.
+'a'Dnlcr: 
+   $ indicate that a newline is to be written
+   incr+wwlinenum.
+'a'write disc+>data+>type:
+   $ write wlinenum newlines before writing the data
+   (wwlinenum=0;
+    wwlinenum=1,put data+DISCW+Dline+pointer;
+    put data+DISCW+Dlines+pointer,put data+DISCW+wwlinenum+numerical),
+   wlinenum->wwlinenum,0->wlinenum,put data+DISCW+data+type.
 
-$ reading with text substitution ----------------------------- $
+'a'D+>x: $ x is a pointer to DSYMB, NUMBER or INFICATOR
+   (was+DSYMB+x;was+NUMBER+x;was+INDICATOR+x),write disc+x+pointer;
+   internal error+_rule_.
+'a'Dcons+>n:
+   write disc+n+numerical.
+'a'Dstring+>x: $ x is a pointer to LEXT
+   x=0;       
+   was+LEXT+x,write disc+x+pointer;
+   internal error+_rule_.
+'a'Dttag+>x:
+   was+TTAG+x,write disc+x+pointer;
+   internal error+_rule_.
+'a'Dqtag+>q+>x:
+   Dttag+x,(is+q,D+Dqualifier,Dttag+q;+).
+'a'Dtag+>x:
+   was+LADM+x,write disc+x+pointer;
+   (<LLOC<=x,x<>LLOC),write disc+x+pointer;
+   internal error+_rule_.
+
+$ reading with text substitution ----------------------------- 
 $ if LLshift>0 and the disc symbol is a pointer to LLOC,
 $    1) add LLshift to the pointer (formal/local for the macro)
 $    2) check if  flag*LLOC[ptr]=Lsubst / type*LLOC[ptr]=Imacro
@@ -128,8 +209,7 @@ $   values are correct.)
   Qsymbol=0,	$ next symbol from the disc
   Qtype=0,	$ symbol type: 0: numerical, 1: pointer
   Qposition=0,	$ disc position we are looking at
-  Qlinenum=0,	$ line number to be restored
-  linenum=0.	$ actual line number for messages
+  Qlinenum=0.	$ next line number to be restored
 
 'stack'[1] QBUFFER. $ replacement text is stored here
 'variable'
@@ -148,80 +228,95 @@ $   values are correct.)
 'a'substitute:
   $ is it a formal to be substituted?
   was+LLOC+Qsymbol,add+Qsymbol+Qshift+Qsymbol,
-     (type*LLOC[Qsymbol]!=Imacro;
+     (ftype*LLOC[Qsymbol]!=Imacro;
       $ replace, save this formal affix
       Qsymbol->Qlocal,repr*LLOC[Qsymbol]->Qbuffer ptr,
         read from QBUFFER);
   +.
 
-'a'next disc symbol:
+'a'next disc symbol-x:
   is+Qbuffer ptr,0->Qlocal,read from QBUFFER;
-  set linenum+linenum,(nxt:
-   get file pos+DISC+Qposition,linenum->Qlinenum,
-    (get data+DISC+Qsymbol+Qtype,
-      ((Qsymbol=Dline,Qtype=1),incr+linenum,:nxt;
+  set linenum+Qlinenum,(nxt:
+   get file pos+DISCR+Qposition,
+    (get data+DISCR+Qsymbol+Qtype,
+      ((Qsymbol=Dline,Qtype=1),incr+Qlinenum,incr+wlinenum,
+            :nxt;
+       (Qsymbol=Dlines,Qtype=1),(get data+DISCR+x+#;0->x),
+               add+Qlinenum+x+Qlinenum,add+wlinenum+x+wlinenum,
+               :nxt;
        (is+Qshift,Qtype=1),substitute;
        +);
      Dend->Qsymbol,1->Qtype)).
 
 'f'save disc position+pos>+lnum>:
-   is+Qbuffer ptr,internal error+_rule_+_line_;
+   is+Qbuffer ptr,internal error+_rule_;
    Qposition->pos,Qlinenum->lnum.
 'a'restore disc position+>pos+>lnum:
-   is+Qbuffer ptr,internal error+_rule_+_line_;
-   set file pos+DISC+pos,lnum->linenum,next disc symbol.
+   is+Qbuffer ptr,internal error+_rule_;
+   set file pos+DISCR+pos,lnum->Qlinenum,next disc symbol.
 
-'p'Q+>x: x=Qsymbol,is+Qtype,next disc symbol.
-'q'Qahead+>x: x=Qsymbol,is+Qtype.
-'a'must Q+>x: Q+x; internal error+_rule_+_line_.
-'p'Qcons+x>: Qtype=0,Qsymbol->x,next disc symbol.
-'a'must Qcons+x>: is+Qtype,internal error+_rule_+_line_;
-             Qsymbol->x,next disc symbol.
-'p'Qtag+x>: is+Qtype,(=Qsymbol=[LADM;LLOC],Qsymbol->x,next disc symbol;
-                      -).
-'p'Qstring+x>:
-  is+Qtype,was+LEXT+Qsymbol,Qsymbol->x,next disc symbol.
+$ -------------------------------------------------------------
 
-'a'must Qtag+x>: Qtag+x;internal error+_rule_+_line_.
+'p'Q+>x:       x=Qsymbol,is+Qtype,next disc symbol.
+'p'Qcons+x>:   Qtype=0,Qsymbol->x,next disc symbol.
+'p'Qstring+x>: is+Qtype,was+LEXT+Qsymbol,Qsymbol->x,next disc symbol.
+'p'Qtag+x>:    =Qsymbol=[LADM;LLOC],is+Qtype,Qsymbol->x,next disc symbol;-.
+'p'Qttag+x>:   is+Qtype,was+TTAG+Qsymbol,Qsymbol->x,next disc symbol.
+'p'Qnumber+x>: is+Qtype,was+NUMBER+Qsymbol,Qsymbol->x,next disc symbol.
+'p'Qqtag+qf>+x>:
+          is+Qtype,was+TTAG+Qsymbol,Qsymbol->x,next disc symbol,
+             (Q+Dqualifier,must Qttag+qf;0->qf).
+'p'Qltag+x>:   =Qsymbol=[LLOC],is+Qtype,Qsymbol->x,next disc symbol;-.
+
+'a'mustQ+>x: Q+x; internal error+_rule_.
+'a'must Qcons+x>: 
+   is+Qtype,internal error+_rule_;Qsymbol->x,next disc symbol.
+'a'must Qtag+x>: Qtag+x; internal error+_rule_.
+'a'must Qttag+x>: Qttag+x;internal error+_rule_.
+'a'must Qqtag+qf>+x>:
+   Qqtag+qf+x;internal error+_rule_.
+'a'must Qtype+x>:
+   (is+Qtype,was+INDICATOR+Qsymbol),Qsymbol->x,next disc symbol;
+   internal error+_rule_.
 'a'must Qlist+tag>+local>:
    $ they should come in this order as Qtag destroys Qlocal
    Qlocal->local,must Qtag+tag.
-'a'Qskip+>to:
-   Qahead+Dend;
-   Q+to;
-   next disc symbol,:Qskip.
+
+'q'Qahead+>x: x=Qsymbol,is+Qtype.
+'a'Qskip+>to: Qahead+Dend; Q+to; next disc symbol,:Qskip.
 
 $ macro substitution ========================================= $
-$ tricky because of the * affix.
-$ when we see a formal affix (including *) it is replaced by
-$  the stored content, which might be several affixes for *
+$ tricky because of the @ affix.
+$ when we see a formal affix (including @) it is replaced by
+$  the stored content, which might be several affixes for @
 $
-$ 'a'RULE+T[]+*+>V : ... ,macro1+*, ... ,macro1+T+*,
-$ 'a'macro1+*+>a   : ... ,macro2+*, ... ,macro2+a+*,
-$ 'a'macro2+*+>b
-$  m1:   *1=>*0, a=>V;             *1=>T*T+*0, a=>T*T
-$  m2:   *2=>*0, b=>V; *2=>V+*0, b=>V
-$                           *2=>T*T+*0,b=>T*T; *2=>T*T+T*T+*0,b=>T*T
-$ if the block is a single *, then it is from the very first rule.
+$ 'a'RULE+T[]+@+>V : ... ,macro1+@, ... ,macro1+T+@,
+$ 'a'macro1+@+>a   : ... ,macro2+@, ... ,macro2+a+@,
+$ 'a'macro2+@+>b
+$  m1:   @1=>@0, a=>V;             @1=>T*T+@0, a=>T*T
+$  m2:   @2=>@0, b=>V; @2=>V+@0, b=>V
+$                           @2=>T*T+@0,b=>T*T; @2=>T*T+T*T+@0,b=>T*T
+$ if the block is a single @, then it is from the very first rule.
 $
-$ these rules assume that everything is correct;
+$ these procedures assume that everything is correct;
 
-'a'putQ+*+>v:
-  (* v->QBUFFER *)QBUFFER,(shift affix block+*,:putQ;+).
+'a'putQ+@+>v:
+  (* v->QBUFFER *)QBUFFER,(shift affix block+@,:putQ;+).
 
 'a'copy QBUFFER affix+>ptr>:
-  $ ptr points to an an affix; copy to the end of QBUFFER
+  $ ptr points to an affix; copy to the end of QBUFFER
   $ until Dplus or Dend
   =QBUFFER[ptr]= [Dplus;Dend],incr+ptr,putQ+Dend;
    [Dconst],incr+ptr,putQ+Dconst+QBUFFER[ptr],incr+ptr,:copy QBUFFER affix;
    putQ+QBUFFER[ptr],incr+ptr,:copy QBUFFER affix.
 
-$ - - - - - - - - - - - - $
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 $ routines to retrieve selector number and ssel
 $ replacement for a*L, selector is replaced by the number
-'a'read selector+x>-tag:
-  Qcons+x; $ this is the selector
-  must Qtag+tag,get repr+tag+x. $ x>0 $
+'a'read selector+>tag+offs>-sel:
+  Qcons+offs; $ this is the offset
+  must Qttag+sel,(find list selector+tag+sel+offs;
+                  internal error+_rule_). $ x>0 $
 $ replacement for L*L[>>L], figure out the standard selector
 'f'final ssel+>tag+>loc+x>:
   $ use the appropriate standard selector, x>0
@@ -229,7 +324,7 @@ $ replacement for L*L[>>L], figure out the standard selector
   was+LLOC+tag,ssel*LLOC[tag]->x;
   get ssel+tag+x.
 
-$ - - - - - - - - - - - - $
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 'p'limit op+op>:
   $ limit operator, followed by a list tag
   Qsymbol->op,(Q+Dvlwb;Q+Dvupb;Q+Dlwb;Q+Dupb;Q+Dcalibre).
@@ -237,20 +332,22 @@ $ - - - - - - - - - - - - $
 'a'fsimple affix+atype>-x-tag-type-loc:
   $ read and store a simple affix. Take care of implicit selectors
   $ don't store anything for Dnoarg; otherwise the replacement text
-  $  atype: Inoarg, Iformal repeat, other
-  Qcons+x,putQ+Dconst+x,0->atype;
+  $  atype: Inoarg, Iformal anchor, other
+  Qnumber+x,putQ+x,0->atype;
   limit op+x,must Qtag+tag,putQ+x+tag,0->atype;
   Q+Dsub,must Qtag+tag,putQ+Dsub+tag,fsimple affix+atype,
-    mustQ+Dbus,read selector+x,putQ+Dbus+Dconst+x;
+    mustQ+Dbus,read selector+tag+x,putQ+Dbus+Dconst+x;
   Q+Dnoarg,Inoarg->atype;
   must Qlist+tag+loc,0->atype,get type+tag+type,(=type=
     [Iconstant;Ipointer constant;Ivariable;Istatic var;
      Iformal in;Iformal out;Iformal inout;Ilocal],putQ+tag;
     [Istack;Itable;Istatic stack;Iformal stack;Iformal table],
      $ T ==> T*T[>>T] $
-     final ssel+tag+loc+x,putQ+Dsub+tag+Dupb+tag+Dbus+Dconst+x;
-    [Iformal repeat],putQ+tag,Iformal repeat->atype;
-    internal error+_rule_+_line_).
+     final ssel+tag+loc+x, 
+     (x>0;1->x,warning+9+no standard selector+tag),
+     putQ+Dsub+tag+Dupb+tag+Dbus+Dconst+x;
+    [Iformal anchor],putQ+tag,Iformal anchor->atype;
+    internal error+_rule_).
 
 'a'match formal actual+>ftype+atype>-tag:
   $ the actual affix can be * while we are expecting something else
@@ -259,58 +356,57 @@ $ - - - - - - - - - - - - $
   [Iformal file;Iformal table;Iformal stack],
     must Qtag+tag,putQ+tag,get type+tag+atype;
   [Iformal in;Iformal out;Iformal inout],fsimple affix+atype;
-  internal error+_rule_+_line_.
+  internal error+_rule_.
 
-'a'handle formal list+>formal+>type:
+'a'handle formal list+>tag+>cnt+>type-x-y:
   $ if this is a formal list, supply list data
   =type=
   [Iformal stack;Iformal table],
-      get formal calibre+formal+calibre*LLOC,
-      get formal ssel+formal+ssel*LLOC;
+     get formal list ext+tag+cnt+x+y,x->calibre*LLOC,y->ssel*LLOC;
   +.
 
-'a'expand varargs+>repeat-formal-ftype-atype-lrep-block:
-   $ repeat is the formal repeat affix of this macro (LADM)
-   $ block=0: * is matched immediately
+'a'expand varargs+>rtag+>n+>repeat-cnt-ftype-atype-lrep-block:
+   $ repeat is the index of formal repeat affix of macro rtag
+   $ block=0: @ is matched immediately
    $ block=1: there is at least one full block
-  get adm+repeat+formal,>>LLOC->lrep,0->block,
-  (nxt:get type+formal+ftype,match formal actual+ftype+atype,
-    (atype=Iformal repeat; $ the last actual affix is a *, it is on QBUFFER
-     (block=0, $ add the next entry to LLOC $
-       (* 0->repr,formal->tag,Imacro->type,0->flag->calibre->ssel *)LLOC,
-       handle formal list+formal+ftype; $ and correct lists $
-      +),      $ not in the first round
+  repeat->cnt,>>LLOC->lrep,0->block,
+  (nxt:incr+cnt,get formal type+rtag+cnt+ftype,match formal actual+ftype+atype,
+    (atype=Iformal anchor; $ the last actual affix is @, LLOC tag is in QBUFFER
+     (block!=0; $ add the next entry to LLOC and correct lists
+      create local affix+Imacro+0,handle formal list+rtag+cnt+ftype),
      (atype!=Inoarg; $ dummy argument is like a local affix $
-      block=0,-1->repr*LLOC,Ilocal->type*LLOC,putQ+>>LLOC;
+      block=0,-1->repr*LLOC,Ilocal->ftype*LLOC,putQ+>>LLOC;
       putQ+Dnoarg),
-     get adm+formal+formal,
-     (formal=0,1->block,get adm+repeat+formal;+),
+     (cnt=n,1->block,repeat->cnt;+),
      (Q+Dplus,putQ+Dplus,:nxt;+))),
-  (-aformal-qptr:block=0,QBUFFER->aformal,
-      $ no repeat block; the actual affix * is in the top of QBUFFER, 
-      $  it belongs to the very first rule
-      (nxt:formal=0,(aformal=0;internal error+_rule_+_line_); $ then aformal=0
-        (* >>QBUFFER->repr,formal->tag,Imacro->type,0->flag->calibre->ssel *)LLOC,
-        get type+formal+ftype,handle formal list+formal+ftype,
-        putQ+repr*LADM[aformal]+Dend,
-        get adm+formal+formal,get adm+aformal+aformal,:nxt);
-    $second case, lrep is the * affix in LLOC
-    putQ+Dend,repr*LLOC[lrep]->qptr,incr+qptr, $ qptr looks at the replacement text of *
-      (nxt:formal=0;
-       next+LLOC+lrep,(type*LLOC[lrep]=Imacro,>>QBUFFER->repr*LLOC[lrep];+),
-       copy QBUFFER affix+qptr,get adm+formal+formal,:nxt)).
+  (-aformal-qptr:block=0,QBUFFER->aformal,putQ+Dend,
+      $ no repeat block; the actual affix @ is in the top of QBUFFER, 
+      $  cnt=repeat+1
+      (nxt:cnt>n; $ then aformal=0
+        get formal type+rtag+cnt+ftype,
+        create local affix+Imacro+0,handle formal list+rtag+cnt+ftype,
+        >>QBUFFER->repr*LLOC,
+        next+LLOC+aformal,putQ+aformal+Dend,
+        incr+cnt,:nxt);
+    $second case, lrep is the @ affix in LLOC
+    putQ+Dend,repr*LLOC[lrep]->qptr,incr+qptr, $ qptr looks at the replacement text of @
+    repeat->cnt,
+      (nxt:cnt>=n;
+       next+LLOC+lrep,(ftype*LLOC[lrep]=Imacro,>>QBUFFER->repr*LLOC[lrep];+),
+       copy QBUFFER affix+qptr,incr+cnt,:nxt)).
 
-'a'macro arguments+>tag-formal-ftype-atype:
-  $ set up the LLOC structure for the formals of rule "tag"
-  get adm+tag+formal,(nxt:formal=0;
-  (* >>QBUFFER->repr,formal->tag,Imacro->type,0->flag->calibre->ssel *)LLOC,
-  mustQ+Dplus,get type+formal+ftype,handle formal list+formal+ftype,
-  (ftype=Iformal repeat,expand varargs+formal;
+'a'macro arguments+>tag-n-cnt-ftype-atype:
+  $ set up the LLOC structure for the formals of macro rule "tag"
+  get formal affixno+tag+n,1->cnt,(nxt:cnt>n;
+  create local affix+Imacro+0,>>QBUFFER->repr*LLOC,
+  mustQ+Dplus,get formal type+tag+cnt+ftype,
+  handle formal list+tag+cnt+ftype,
+  (ftype=Iformal anchor,expand varargs+tag+n+cnt;
    match formal actual+ftype+atype,
      (atype=Inoarg, $ dummy affix as actual, make it a local one $
-        -1->repr*LLOC,Ilocal->type*LLOC;
+        -1->repr*LLOC,Ilocal->ftype*LLOC;
       putQ+Dend),
-     get adm+formal+formal,:nxt)).
+     incr+cnt,:nxt)).
   
 'a'macro call head+>tag+Qa>+Qb>-Lptr:
    >>QBUFFER->Qa,Qshift->Qb,>>LLOC->Lptr,
@@ -319,7 +415,6 @@ $ - - - - - - - - - - - - $
 
 'a'macro call tail+>Qa+>Qb:
    Qb->Qshift,unstack to+QBUFFER+Qa.
-
 
 'root'+.
 'pragmat'endif=compile.

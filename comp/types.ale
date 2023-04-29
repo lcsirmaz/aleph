@@ -1,10 +1,10 @@
 $ types
-'pragmat'module="types".
+'pragmat'module=types, title="types v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -18,57 +18,52 @@ $  the GNU General Public License for more details.
 $
 $ ************************************************************* 
 
-$ HEADER ******************************************************** $
+$ HEADER ****************************************************** $
 $
 $ different types used
 $
 
 'constant' $ types
   Iempty,
-  Iconstant,		Irecconst,		Ivariable,
-  Istatic var,		Itable,
-  Istack,		Istatic stack,
-  Iselector,		Ipointer constant,	Ichar file,
-  Idata file,		Irule,			Ifirst formal type,
-  Iformal selector,	Iformal stack,		Iformal table,
-  Iformal file,		Iformal in,		Iformal out,
-  Iformal inout,	Iformal repeat,		Iformal shift,
-  Imacro,		Inoarg,			Ilocal,
-  Ilabel.
+  Iconstant,		Ivariable,		Istatic var,
+  Itable,		Istack,			Istatic stack,
+  Ipointer constant,	Ichar file,		Idata file,
+  Irule,
+  $ formal types
+  Iformal stack,	Iformal table,		Iformal file,
+  Iformal in,		Iformal out,		Iformal inout,
+  Iformal anchor,	Iformal shift,		Imacro,
+  Inoarg,		Ilocal,			Ilabel.
   
-'p'was type pointer+>ptr+[]st[].
-'q'has formal type+>tag.
+'p'was type pointer+>ptr.
+
 'table'INDICATOR.
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
 
-'pragmat'require="tags".
+'pragmat'require="buffer".
 
-'table'INDICATOR=(
+'table'[]INDICATOR=(
   "undefined"		:Iempty,
   "constant"		:Iconstant,
-  "constant"            :Irecconst, $ expression under evaluation
   "variable"		:Ivariable,
   "static var"		:Istatic var,
   "table"		:Itable,
   "stack"		:Istack,
   "static stack"	:Istatic stack,
-  "selector"		:Iselector,
   "pointer constant"	:Ipointer constant,
   "charfile"		:Ichar file,
   "datafile"		:Idata file,
   "rule"		:Irule,
-$formal types, should come at the end ...
-  "formal"		:Ifirst formal type, $dummy type
-  "formal selector"	:Iformal selector,
+$formal types
   "formal stack"	:Iformal stack,
   "formal table"	:Iformal table,
   "formal file"         :Iformal file,
   "formal in"		:Iformal in,
   "formal out"		:Iformal out,
   "formal inout"	:Iformal inout,
-  "formal repeat"	:Iformal repeat, $virtual type
+  "formal anchor"	:Iformal anchor,
   "formal shift"        :Iformal shift,
   "macro parameter"	:Imacro,
   "no argument"		:Inoarg,
@@ -76,10 +71,8 @@ $formal types, should come at the end ...
   "label"		:Ilabel
 ).
 
-'p'was type pointer+>ptr+[]st[]:
-   was+INDICATOR+ptr,copy string+INDICATOR+ptr+st.
-'q'has formal type+>tag-type:
-   get type+tag+type,type>=Ifirst formal type.
+'p'was type pointer+>ptr:
+   was+INDICATOR+ptr,copy string+INDICATOR+ptr+BUFFER.
 
 'root'+.
 'pragmat'endif=compile.

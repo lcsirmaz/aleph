@@ -1,6 +1,6 @@
 $ synbolic derivation
 'stack'[100](op,left,right)expr.
-'table'operator=("+":plus op,"-":min op,"*":tim op,"/":div op,
+'table'[]operator=("+":plus op,"-":min op,"*":tim op,"/":div op,
        "log":log op, $ log(f) is represented as 0 "log" f $
        "^": pow op ).
 'stack'[10] const=(0:c zero,1:c one, 2:c two).

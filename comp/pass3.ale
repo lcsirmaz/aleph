@@ -1,0 +1,336 @@
+$ pass three
+'pragmat'module=pass3,title="pass3, v2.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$
+$  (C) 2020-2023, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ******************************************************* $
+$ Creating ICE file header, item list, front /back matters, 
+$   followed by declarers, fills, expressions. Rule semantics
+$   is checked.
+$
+'a'third pass.
+
+$ BODY ********************************************************* $
+'pragmat'if=compile.
+  'pragmat'require=("dataflow","buffer","display","lexical","disc","ice","identifier",
+        "input","tags","types","selector","symbols","pragmats","config").
+
+'table'MESSAGE=(
+"%p %p: not used"                     :type tag not used,
+"%p %p: not used, cannot have filling":cannot have filling,
+"filling %p: undefined selector %p"   :undefined selector,
+"filling %p: field %p duplicated"     :double selector,
+"filling %p: not consecutive fields"  :wrong fill block,
+$ warning
+"filling %p: block size %d is bigger than calibre (%d)":large block size,
+"filling %p: block size %d is smaller than calibre (%d)":small block size
+).
+
+'a'warn not used+>tag-type-level:
+   $ tag not used; if in library or at level >1, ignore
+   (get module rank+tag+level,level>1); $ library
+   (level=0,3->level;1->level),get type+tag+type,
+           warning+level+type tag not used+type+tag.
+
+$ **************************************************************
+'a'third pass:
+   ICE header, ICE item list, fb matter, string table content, pass3.
+
+$ **************************************************************
+$ The ICE file
+$   header, item list, declarations, rules.
+$ **************************************************************
+$ ICE header:
+$   headline, lineno block, Dpoint.
+$ headline:
+$   'module' "moduletag" "title" 
+$  or
+$   'main' "title"
+$ lineno block:
+$     start line, end line, source string
+
+'a'ICE header-title-ptr-nmin-nmax-str:
+  (is pragmat value+pgt module,W+Dmodule,Wspace,
+        set source from lineno+-1,get module tag+str,Wstring+str;
+   W+Dmain),
+  get pragmat value+pgt title+title,Wspace,Wstring+title,
+  Wspace,Wcons+target word size,Wline,
+
+  0->ptr,(nxt:next input entry+ptr+nmin+nmax+str,
+                  Wcons+nmin,Wcons+nmax,Wstring+str,Wline,:nxt;
+              W+Dpoint).
+
+$ ==============================================================
+$ ICE item list
+$ for each imported, ecported, used tag there is an item line:
+$ <typer> <item> <flag> <defline> <type-specific> <qf> <ttag>
+$   <typer>    Iconstant, Ivariable, Istack, etc;
+$   <item>     I1234 (grows by one)
+$   <flag>     flags filtered by "iceflags"
+$   <defline>  define line (for messages)
+$   <type-specific> for lists and rules, see below
+$   <qf>       qualifier string, can be empty
+$   <ttag>     identifier string
+$  Type-specific information: 
+$   for a list (Itable, Istack, Istatic stack):
+$      <calibre> <ssel>
+$   for a rule (Irule): formal affixes
+
+'variable'next nitem=0. $ ID of the next item, starts at 1
+'a'ICE item list-first:
+    get ttag head+first,traverse tags+first,
+    get stdstring head+first,traverse stdstring pointers+first,
+    W+Dpoint.
+
+$ ---------------------------------------------------------------
+
+'a'write ICE item+>tag-type-x:
+    get type+tag+type,Wtype+type,Wtag+tag,
+    get tag flag+tag+iceflags+x,Wcons+x,
+    get defline+tag+x,Wcons+x,
+    (=type=
+     [Iconstant;Ivariable;Istatic var;Ipointer constant;
+        Icharfile;Idatafile],+;
+     [Itable;Istack;Istatic stack],list data+tag;
+     [Irule],formal affixes+tag;
+     internal error+_rule_),
+    $ fully qualified form
+    get qualifier+tag+x,(x=0,Wstring+Squote image;Wstring+x),Wspace,
+    get ttag+tag+x,Wstring+x,Wline.
+
+'f'get qualifier+>tag+qf>:
+    $ get the qualifier of a tag; zero or TTAG
+    (scope*LADM[tag]->qf,qf=0);
+    was+TTAG+qf;
+    get base name+qf+qf.
+'a'list data+>tag-x:
+    get calibre+tag+x,(x>0;1->x),Wcons+x,get ssel+tag+x,Wcons+x.
+
+'a'formal affixes+>tag-n-cnt-x-y:
+    get formal affixno+tag+n,Wcons+n,1->cnt,(nxt:cnt>n;
+       get formal type+tag+cnt+x,Wtype+x,
+         ((x=Iformal stack;x=Iformal table),
+          get formal list ext+tag+cnt+x+y,(x>0;1->x),Wcons+x,Wcons+y;+),
+         incr+cnt,:nxt).
+$ ---------------------------------------------------------------
+'a'traverse tags+>y-x:
+    y=0;
+    add+y+<>TTAG+x,traverse tags+left*TTAG[x],
+      define ice items+adm*TTAG[x],right*TTAG[x]->y,:traverse tags.
+'a'define ice items+>ptr:
+    ptr=0;
+    handle tag+ptr,get next tag+ptr+ptr,:define ice items.
+'q'is item tag+>tag-type:
+    $ check if tag goes to the ITEM list:
+    $    defined and used; if rule then not a macro
+    is tag flag+tag+tdefined,is tag flag+tag+tused,
+    get type+tag+type,(type=Irule,(is tag flag+tag+tpublic;
+                                   is tag flag+tag+rmacro,-;+);
+                       +).
+'a'handle tag+>tag:
+    is item tag+tag, $ does it go to the ITEM list?
+       incr+next nitem,put repr+tag+next nitem,
+       write ICE item+tag;
+    +.
+'a'traverse stdstring pointers+>tag:
+    tag=0;
+    incr+next nitem,put repr+tag+next nitem,write ICE item+tag,
+       get next tag+tag+tag,:traverse stdstring pointers.
+
+$ ==============================================================
+$ front / back matter
+$   strings to be included at the front / back of the final code
+'a'fb matter-ptr-type-str:
+    0->ptr,(nxt:get next matter+ptr+type+str,
+                   (type=1,W+Dfrontm;W+Dbackm),
+                   Wstring+str,W+Dpoint,:nxt;
+                +).
+$ ==============================================================
+$ content of @StringTable, a fill with strings and pointer defs.
+'a'string table content-tag-str:
+    $ Ipointer constants from @StringTable; string are in adm field;
+    $  correct it to point to the Xstring table
+    (get stdstring head+tag,tag=0); $ no string table
+    W+Dfill,Wtag+Xstring table,Wcons+-2, $ defline
+      (nxt:tag=0,W+Dpoint;
+           get adm+tag+str,put adm+tag+Xstring table,Wfstr+str,
+              W+Dcolon,Wtag+tag,get next tag+tag+tag,:nxt).
+
+$ **************************************************************
+
+'a'pass3-rtag:
+   Q+Drule,must Qtag+rtag,
+     (is tag flag+rtag+tused;warn not used+rtag),
+     check rule data flow+rtag,  :pass3;
+   Q+Droot,must Qtag+rtag, $ rtag=@root
+     check rule data flow+rtag,  :pass3;
+   Q+Dexternal,external declarer,:pass3;
+   Q+Dpragmat,pragmat,           :pass3;
+   Q+Dsource,set source,         :pass3;
+   Q+Dexpression,expression,     :pass3;
+   Q+Dfile,file data,            :pass3;
+   Q+Dlist,list declarer,        :pass3;
+   Q+Dfill,list filling,         :pass3;
+   Q+Dend;  $ last symbol
+   internal error+_rule_.
+
+$ ==============================================================
+$ external declarer
+'a'external declarer-tag-x:
+    (must Qtag+tag,is tag flag+tag+tused),
+       W+Dexternal,Wtag+tag,(Qstring+x;0->x),
+       Wstring+x,W+Dpoint,Qskip+Dpoint;
+    warn not used+tag,Qskip+Dpoint.
+$ ==============================================================
+$ pragmats: set warning level
+'a'pragmat-x:
+    must Qcons+#,$ pgt wlevel
+      must Qcons+x,set pragmat value+pgt wlevel+x.
+$ changing source, see symbols.ale
+'a'set source-x:
+    $ opening new source, set source base
+    must Qcons+x,set source from lineno+x.
+$ ==============================================================
+$ ICE expression
+$  Dexpression, <tag>, <expression>, Dpoint
+'a'expression-tag:
+    (must Qtag+tag,is tag flag+tag+tused),
+       W+Dexpression,Wtag+tag,is expression,must Q+Dpoint,W+Dpoint;
+    warn not used+tag,Qskip+Dpoint.
+'a'is expression:
+    (Q+Dminus,W+Dminus;+),
+    (nxt: exprbase,(Q+Dor,W+Dor,:nxt;
+                    Q+Dand,W+Dand,:nxt;
+                    Q+Dxor,W+Dxor,:nxt;
+                    Q+Dplus,W+Dplus,:nxt;
+                    Q+Dminus,W+Dminus,:nxt;
+                    Q+Dstar,W+Dstar,:nxt;
+                    Q+Ddiv,W+Ddiv,:nxt;
+                    +)).
+'a'exprbase-x:
+    $ tags are checked to be constant,
+    $ tags after limit are checked to be lists
+    Qtag+x,Wtag+x;
+    Qnumber+x,W+x;
+    Q+Dcompl,W+Dcompl,:exprbase;
+    Q+Dlwb,W+Dlwb,must Qtag+x,Wtag+x;
+    Q+Dupb,W+Dupb,must Qtag+x,Wtag+x;
+    Q+Dcalibre,W+Dcalibre,must Qtag+x,Wtag+x;
+    must Q+Dopen,W+Dopen,is expression,must Q+Dclose,W+Dclose.
+$ ==============================================================
+$ ICE file declarer
+$   Dfile, <tag>, area*, <direction>, <string>, Dpoint
+'a'file data-tag-x-optr-ptr:
+    (must Qtag+tag,is tag flag+tag+tused),
+       W+Dfile,Wtag+tag,>>BUFFER->optr,(Q+Dsub,file area;+),
+       must Qcons+x,Wcons+x,  $ direction 0 .. 3
+       must Qtag+x,Wtag+x,    $ Xstdstring
+       must Qtag+x,Wtag+x,    $  string offset
+       (>>BUFFER=optr;
+        W+Dsub,optr->ptr,(nxt:ptr<>>BUFFER,incr+ptr,Wtag+BUFFER[ptr],:nxt;
+          W+Dbus,unstack to+BUFFER+optr)),
+       must Q+Dpoint,W+Dpoint;
+    warn not used+tag,Qskip+Dpoint.
+'a'file area-x:
+    $ tags in a file area are non-external lists
+    Q+Dbus;
+    must Qtag+x,extend BUFFER+x,:file area.
+$ ==============================================================
+$ ICE stack size estimator
+$   Dlist, <tag>, {0,1,2,3,4}, <cons|tag>, Dpoint
+$   for stack only; 0/0 - no size estimate
+$                   1/const, 2/const, 3/tag, 4/tag
+'a'list declarer-tag-x:
+    (must Qtag+tag,is tag flag+tag+tused),
+         W+Dlist,Wtag+tag,must Qcons+x,Wcons+x,
+         (x<=2,must Qcons+x,Wcons+x;must Qtag+x,Wtag+x),
+         must Q+Dpoint,W+Dpoint;
+    warn not used+tag,Qskip+Dpoint.
+$ ==============================================================
+$ ICE list filling
+$   Dfill, <tag>, <linenum>, ( item, repeater, initializer*) *, Dpoint
+$ item: <string>; <number>; <tag>; Dopen, item*, Dclose.
+$ repeater: Dstar, <const|tag>.
+$ initialilzer: Dcolon, <tag>.
+'a'list filling-tag-x:
+    (must Qtag+tag,is tag flag+tag+tused),
+       W+Dfill,Wtag+tag,get linenum+x,Wcons+x,
+       (nxt:Q+Dpoint,W+Dpoint;
+            filler item+tag,repeater,initializer,:nxt);
+    get type+tag+x,error+cannot have filling+x+tag,Qskip+Dpoint.
+'a'filler item+>tag-x:
+    Qtag+x,Wtag+x; $ constant type
+    Qnumber+x,W+x;
+    Qstring+x,Wfstr+x,Wspace;
+    Q+Dopen,W+Dopen,filler block1+tag,W+Dclose;
+    must Q+Dextension,W+Dopen,filler block2+tag,W+Dclose.
+'a'emit fill+>x:
+    $ either LADM or number
+    x=0;was+LADM+x,Wtag+x;W+x.
+'a'filler block1+>tag-optr-ptr-calibre-cnt-rep-x-repcnt:
+    >>BUFFER->optr,get calibre+tag+calibre,0->cnt->rep->repcnt,
+    (nxt:Q+Dclose;
+         Q+Dstar,cnt->rep,:nxt;
+         Qnumber+x,extend BUFFER+x,incr+cnt,:nxt;
+         must Qtag+x,extend BUFFER+x,incr+cnt,:nxt),
+    (cnt=calibre;
+     cnt>calibre,warning+6+large block size+tag+cnt+calibre;
+     rep>0,subtr+calibre+cnt+repcnt;
+     warning+4+small block size+tag+cnt+calibre),
+    1->cnt,optr->ptr,incr+ptr,
+    (nxt:ptr>>>BUFFER;
+         emit fill+BUFFER[ptr],
+           ((cnt=rep,repcnt>0),decr+repcnt,:nxt;
+            incr+cnt,incr+ptr,:nxt)),
+    unstack to+BUFFER+optr.
+'a'to selectors+>tag+>rx>+>x-sel-off-ptr:
+    Q+Dto,(Q+Dstar,x->rx;must Qttag+sel,
+        (find list selector+tag+sel+off,
+            subtr+>>BUFFER+off+ptr,incr+ptr,
+            (BUFFER[ptr]=0,x->BUFFER[ptr];
+             error+double selector+tag+sel);
+         error+undefined selector+tag+sel)),:to selectors;
+    +.         
+'a'filler block2+>tag-optr-ptr-calibre-x-rx-cnt-err:
+    >>BUFFER->optr,get calibre+tag+calibre,0->x,
+    (nxt:extend BUFFER+0,incr+x,(x=calibre;:nxt)),
+    clear local error+err, 0->rx, $ repeat data
+    (nxt:Q+Dextension;
+         (Qnumber+x;must Qtag+x),to selectors+tag+rx+x,:nxt),
+    $ fill empty slots
+    0->cnt,optr->ptr,incr+ptr,(nxt:ptr>>>BUFFER;
+      BUFFER[ptr]=0,(is+rx,rx->BUFFER[ptr];incr+cnt),incr+ptr,:nxt;
+      (cnt=0;was local error+err;error+wrong fill block+tag),incr+ptr,:nxt),
+    $ warn if not full block
+    (cnt=0;was local error+err;
+     subtr+calibre+cnt+cnt,warning+4+small block size+tag+cnt+calibre),
+     >>BUFFER->ptr,(nxt:ptr<=optr;emit fill+BUFFER[ptr],decr+ptr,:nxt),
+    unstack to+BUFFER+optr.
+'a'repeater-x:
+    Q+Dstar,W+Dstar,(Qcons+x,Wcons+x; must Qtag+x,Wtag+x);+.
+     
+'a'initializer-tag:
+    Q+Dcolon,must Qtag+tag,
+      (is tag flag+tag+tused,W+Dcolon,Wtag+tag;
+       warning+3+type tag not used+Ipointer constant+tag),:initializer;
+    +.  
+'root'+.
+'pragmat'endif=compile.
+
+'end'
+

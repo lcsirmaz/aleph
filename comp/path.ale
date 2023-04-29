@@ -1,0 +1,102 @@
+$ path manipulation
+'pragmat'module=path,title="path v2.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$
+$  (C) 2020-2023, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** 
+$ path manipulation for source and target files
+
+'p'open src file+>type+>str.
+  $ str is a LEXT string; type=1: command line argument, no path
+  $ type=2: required/included, use pgt path
+  $ type=3: library, use pgt stdpath
+
+'a'create ice name.
+  $ create the .ice file name at >>LEXT
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+
+'pragmat'require=("buffer","config","display","lexical","input","pragmats").
+
+'a'add ale extension:
+  extend BUFFER+/./,extend BUFFER+/a/,extend BUFFER+/l/,extend BUFFER+/e/.
+
+'a'try buffer+>ptr+res>-ext-n:
+  $ open source stored at BUFFER[ptr], try adding extension
+  $ return value: res=0: file opened OK
+  $               res=1: file not found, try next path element
+  $               res=-1: other error when opening
+  0->ext,(nxt:subtr+>>BUFFER+ptr+n,pack string+BUFFER+n+LEXT,
+      try to open+>>LEXT+res,forget string+>>LEXT,
+      (res<=0; is+ext; 1->ext,add ale extension,:nxt)).
+
+'a'try next path+>ptr>+>str+res>-n-last:
+  $ path is unpacked to BUFFER, ptr points to the next path element
+  $ str is the souce string in LEXT
+  >>BUFFER->n,path separator->last,(nxt: BUFFER[ptr]=path separator;
+      BUFFER[ptr]->last,incr+ptr,extend BUFFER+last,:nxt),
+  (last=path separator,1->res; $ empty path, do nothing
+   (last=dir separator;extend BUFFER+dir separator), $ add / if missing
+   unpack string+LEXT+str+BUFFER, $ add str to the end
+   try buffer+n+res,unstack to+BUFFER+n).
+
+'a'try to open with path+>str+>path+res>-oldp-ptr-end:
+  $ path is either zero or a LEXT pointer for the path string
+  $ str is in LEXT the source
+  path=0,1->res;
+  >>BUFFER->oldp,unpack string+LEXT+path+BUFFER,
+    extend BUFFER+path separator,oldp->ptr,incr+ptr,>>BUFFER->end,
+    (nxt: ptr>=end,1->res;
+        try next path+ptr+str+res,(res=1,incr+ptr,:nxt;+)),
+    unstack to+BUFFER+oldp.
+
+'p'open src file+>type+>str-ptr-res:
+  $ type=1: command line argument, no path
+  $ type=2: required / included, try path
+  $ type=3: standard library, try stdpath
+  >>BUFFER->ptr,unpack string+LEXT+str+BUFFER,
+  try buffer+ptr+res,unstack to+BUFFER+ptr,
+  (res<=0;type<=1;get pragmat value+pgt path+ptr,
+        try to open with path+str+ptr+res),
+  (res<=0;type<=2;get pragmat value+pgt libpath+ptr,
+        try to open with path+str+ptr+res,
+        (res<=0;try to open with path+str+std search path+res)),
+  res=0.
+
+$ ---------------------------------------------------
+'a'create ice name-oldp-ptr-n-nn-ext:
+   $ use the -o argument; otherwise the name of the first source
+   >>BUFFER->oldp,get pragmat value+pgt ice+ptr,
+   (is+ptr,0->ext;get first source+ptr,1->ext),
+   unpack string+LEXT+ptr+BUFFER,>>BUFFER->nn,
+          $ does it have an extension? if yes strip it
+   (nxt:nn<=oldp; $ no extension found $
+      (=BUFFER[nn]=
+       [/./],(ext=0,2->ext,oldp->nn;
+              decr+nn,unstack to+BUFFER+nn,:nxt);
+       [///;/\/;/:/],(ext=1;oldp->nn);
+       decr+nn,:nxt)),
+   (ext=2; $ otherwise add extension
+       extend BUFFER+/./,extend BUFFER+/i/,extend BUFFER+/c/,extend BUFFER+/e/),
+   subtr+>>BUFFER+nn+n,pack string+BUFFER+n+LEXT,unstack to+BUFFER+oldp.
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'

@@ -1,10 +1,10 @@
 $ tag manipulating routines $
-'pragmat'module="tags".
+'pragmat'module=tags,title="tags v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -25,61 +25,55 @@ $  LADM - type and other information
 $  LLOC - local tags (such as formal, local, label)
 
 'stack'(left,right,adm,lastline,text) TTAG,
-       (defline,flag,type,repr,adm,tag) LADM,
-       (orepr=calibre,otype=ssel,flag,type,repr,tag) LLOC.
+       (next,scope,defline,flag,type,repr,adm,tag) LADM,
+       (calibre,ssel,flag,ftype,repr,ttag) LLOC.
 
-'a'enter tag+buf[]+rawtag>.
-   $ buf[] is a character set, return the corresponding entry in TTAG
-'f'find raw usage+>rawtag+x>.
-   $ tag is a raw pointer to TTAG; figure out usage using adm*TTAG[tag]
-   $  x=0: not mentioned; x=1: should be defined; x=2: has been defined
-'a'get tag entry+>rawtag+tag>.
-   $ recover or create the LADM entry for a raw tag.
-'p'was tag pointer+>ptr+[]st[].
-   $ if TTAG, LADM, LLOC pointer, store the string in st
-'a'pack selector+>sel+>tag+x>.
-   $ create the selector "sel*tag" to LADM
-'a'new list entry+>tag+>type.
-   $ add list extension to tag.
-'a'new formal tag+>type+>tag+formal>.
-   $ create a new formal LADM entry with the given type
-'a'redefine tag+>old+>new.
-   $ redefine: the raw tag of old now points to new (same raw tag)
-'a'restore tags.
-   $ redo all redefinitions.
-'a'new stdstring+>str+tag>.
-   $ create a new Ipointer constant entry for the string
-'f'get tag hash+>tag+hash>.
-   $ compute the hash of the tag
-$ dictionary $
-'a'add DICT+>rawtag+>line.
-   $ save line number for an occurrence of a raw tag
-'a'print dictionary.
+$ message handling
+'p'was tag pointer+>ptr.
+   $ for error and warning messages. If ptr is TTAG LADM or LLOC,
+   $  add the coresponding string to the top of BUFFER.
+
+$ first pass routines:
+'a'enter tag+>n+ttag>.
+   $ tag is the last n characters in BUFFER, return the corresponding entry in TTAG
+'a'use tag+>tag.
+   $ mark LADM tag as used
+'f'get ttag head+x>.
+   $ return the head of the TTAG tree for dictionary pronting
+'f'get stdstring head+x>.
+   $ return the head of pointer constants for @StringTable
+'a'new stdstring+>str+>dl+tag>. $ <=files,rulebody
+   $ create a new Iptr constant entry for a LEXT string
+'a'add pragmat matter+>type+>str.
+   $ front / back matter in a linked list
+'q'get next matter+>ptr>+type>+str>.
+   $ return the next matter, type=1: front, type=2:back
 $ --------------------------------------------- $
-'constant'Xstar,Xarrow,Xroot,Xexit,Xshift affix,Xstring table.
-   $ Xstar: LADM entry for the * formal affix
-   $ Xarrow, etc: LADM predefined tags
+'constant'Panchor,Pexit,Parrow.
+   $ TTAG identifiers, @, @exit, @make
+
+'constant'Xroot,Xshift affix,Xstring table.
+   $ Xroot, etc: LADM predefined tags
 
 $ rules to get tag fields from LADM
-'f'get tag+>tag+x>,get repr+>tag+x>,get adm+>tag+x>,get type+>tag+x>,
-   get defline+>tag+x>,get calibre+>tag+x>,get ssel+>tag+x>,
-   get formal calibre+>tag+x>,get formal ssel+>tag+x>.
-'a'put repr+>tag+>x,put adm+>tag+>x,put type+>tag+>x,put defline+>tag+>x,
-   put calibre+>tag+>x,put ssel+>tag+>x,
-   put formal calibre+>tag+>x,put formal ssel+>tag+>x.
+'f'get ttag+>tag+x>,get repr+>tag+x>,get adm+>tag+x>,get type+>tag+x>,
+   get defline+>tag+x>,get next tag+>tag+x>.
+'a'put repr+>tag+>x,put adm+>tag+>x,put defline+>tag+>x.
 $ tag flags
 'q'is tag flag+>tag+>flag.
 'f'get tag flag+>tag+>mask+val>.
-'a'set tag flag+>tag+>flag,clear tag flag+>tag+>flag,use tag+>tag.
-$ tag definition/prototype, where was it defined
-'a'add tag definition+>tag+>line+>err>,
-   add tag external+>tag+>line+>err>,
-   add tag import+>tag+>line+>err>,
-   add tag public+>tag+>line+>err>,
-   add tag prototype+>tag+>line.
-$ translate special symbol to rule name
-'q'is special rule+>symb+tag>.
+'a'set tag flag+>tag+>flag,clear tag flag+>tag+>flag.
+'q'is special rule+>symb+ttag>.
    $ ->, =, !=, etc to @make, @eq, @noteq, etc
+$ formal affixes
+'a'create local affix+>ftype+>ftag.
+   $ create a new LLOC entry
+'a'enter formal affixes+affs>.
+   $ return a pointer holding a description of affixes from LLOC.
+'f'get formal affixno+>tag+n>,
+   get formal type+>tag+>cnt+type>,
+   get formal list ext+>tag+>cnt+cal>+ssel>.
+
 $ --------------------------- $
 $ tag flags in flag*LADM $
 'constant'
@@ -87,17 +81,18 @@ $ tag flags in flag*LADM $
    tdefined    = 0x0002,       $ has a definition
    tpublic     = 0x0004,       $ public
    timported   = 0x0008,       $ imported => defined
-   texternal   = 0x0010,       $ external => defined
+   texternal   = 0x0010,       $ external
    tpermanent  = 0x0020,       $ permanent, cannot be redefined
-   rmacro      = 0x0080,       $ macro rule !! set by pragmat
+   tpragdef    = 0x0040,       $ defined by 'pragmat'define=tag
+   rmacro      = 0x0080,       $ macro rule, set by pragmat
    tnomacro    = timported|texternal|tpermanent,
-   tfill       = 0x0100,       $ stack or table with fill
+   tfill       = 0x1000,       $ stack or table with fill
 $ rule flags
    rside effect= 0x0100,       $ has side effect ('a','p')
    rcan fail   = 0x0200,       $ can fail ('q','p')
    rno return  = 0x0400,       $ cannot return ('e')
-   rcallexit   = 0x2000,       $ calls and exit rule
-   raffixes    = 0x4000,       $ formal affixes added to the adm field
+   rcallexit   = 0x2000,       $ calls an exit rule
+   rempty      = 0x4000,       $ @root is empty (no executable rule)
    rvararg     = 0x8000,       $ rule has formal varargs
    routvararg  =0x10000,       $ has out formal vararg
    rshiftrule  =0x20000,       $ standard vararg handling routine
@@ -107,20 +102,15 @@ $ rule flags
    rcount    =0x2000000,       $ count=on, profiling
    rbounds   =0x4000000,       $ array indexing with bound checking
 $ rule types 0x0? 0,1,2,3,4
-   rfunc       =0,
-   raction     =rside effect,
-   rque        =rcan fail,
-   rpred       =rside effect|rcan fail,
-   rexit       =rno return,
+   r func      =0,
+   r action    =rside effect,
+   r que       =rcan fail,
+   r pred      =rside effect|rcan fail,
+   r exit      =rno return,
    rtype       =rside effect|rcan fail|rno return,
 $ flags go to the ice file
-   ruleflags   = rtype|rvararg|routvararg|rtrace|rcount|rbounds,
+   ruleflags   = rtype|rvararg|routvararg|rempty|rtrace|rcount|rbounds,
    iceflags    = tpublic|timported|texternal|ruleflags.
-$ ICE routines
-'a'assign items.
-   $ go over all tags and stdstring pointers
-'p'Xstring table filling.
-   $ generate Xstring table filling 
 $ macro handling 
 'a'link macro rule+>tag+>dpos+>dnum.
 'f'search macro rule+>tag+dpos>+dnum>.
@@ -128,40 +118,32 @@ $ macro handling
   
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("display","pragmats","types","lexical","ice","buffer").
+'pragmat'require=("display","pragmats","types","selector","identifier",
+       "lexical","ice","buffer","input").
 
-$ standard local stuff $
-$ tag flags for predefined rules
+$ flags for predefined tags
 'constant'
-   rshiftarg = rque | rshiftrule | tdefined | timported | rvararg | tpermanent | raffixes,
-   rgetarg   = rfunc | rshiftrule | tdefined | timported | rvararg | tpermanent | raffixes,
-   rrootfl   = rexit | tused | tdefined | tpermanent | raffixes.
+   rstringfl = tdefined | timported | tused | tfill |tpermanent,
+   rshiftarg = rque | rshiftrule | tdefined | rvararg |timported| tpermanent,
+   rgetarg   = rfunc | rshiftrule | tdefined | rvararg |timported| tpermanent,
+   rrootfl   = r action | tused | tdefined | tpermanent.
    
 
 $ ----------------------------------------------------------------- $
 $ error / warning messages $
 'table'MESSAGE=(
   "%p: doubly defined in "
-     "the preamble (fatal)"     :preamble doubly defined,
-  "%p: was defined at %l"       :tag doubly defined,
-  "%p: is external (%l), cannot be redefined"
-                                :tag is external,
-  "%p: is external (%l), cannot be public"
-                                :cannot be public,
-  "%p: cannot be public"        :permanent notpublic,
-  "%p: is public (%l), cannot be external"
-                                :cannot be external,
-  "%p: cannot be redefined"     :tag cannot be redefined
+     "the preamble (fatal)"     :preamble doubly defined
 ).
 
 $ ============================================================ $
-$ stacks $
-
 $ TTAG selectors
+$
 $    left,rigth   pointers for the binary search tree
 $    adm          zero, or pointer to LADM or LLOC
 $    lastline     the last source line, or -1 (directory)
 $    text         zero or pointer to DICT (directory)
+
 'stack'[40](left, right, adm, lastline, text ) TTAG = (
  "" :first tag      ,(0*),         $ top of the search tree
 $ variable affixes
@@ -169,7 +151,7 @@ $ variable affixes
  "getaffixblockno"  ,(0*):Pget affx,
 $ root, exit, string table
  "@root"            ,(0*):Proot,
- "exit"             ,(0*):Pexit,
+ "@exit"            ,(0*):Pexit,
  "@StringTable"     ,(0*):Pstdstr,
 $ special rules to be defined in stdlib
  "@make"            ,(0*):Parrow,
@@ -179,132 +161,13 @@ $ special rules to be defined in stdlib
  "@more"            ,(0*):Pmore,
  "@less"            ,(0*):Pless,
  "@lseq"            ,(0*):Plseq,
-$ star and alternate forms of the above; not in the search tree
- "*"   :notag from  ,(0*):Pstar,   $ not valid tags
- "->"               ,(0*):PParrow,
- ">="               ,(0*):PPmreq,
- "="                ,(0*):PPequal,
- "!="               ,(0*):PPnot equal,
- ">"                ,(0*):PPmore,
- "<"                ,(0*):PPless,
- "<="  :notag to    ,(0*):PPlseq
-).
-$ LADM selectors, see also "types.ale"
-$      (defline,flag,type,repr,adm,tag)  <= tag
-$                        (calibre,ssel)  <= list extension,
-$                       (repr,adm,link)  <= stdstring filling
-$                  (dpos,dnum,adm,link)  <= macro link
-$                   (type,repr,adm,tag)  <= formal affix
-$    (fcalibre,fssel,type,repr,adm,tag)  <= formal list affix
-$  tag:       pointer to a TTAG block (not the string) for the raw tag
-$  defline:   -1 initially, otherwise line number
-$                 (can be prototype line, not a definition)
-$  flag:      public; macro; external; static; etc.
-$  type:
-$     Iempty      not defined yet
-$     Iconstant/Ivariable/Istatic variable
-$     Ipointer constant:
-$                 adm:  LADM[list]
-$     Iselector   tag:  stored as "select*list"
-$                 repr: -1: unavailable standard selector
-$                       0:  not definition encountered 
-$                       1.. : selector's value (starting from left)
-$                 adm: LADM[list]
-$                 flag,defline: not used
-$     Itable/Istack/Istatic stack
-$                 adm: link to (calibre,ssel)
-$                       calibre=-1: no selector list; otherwise 1 ..
-$                       calibre=0: not known
-$                       ssel:  standard selector (0: not known, -1: none)
-$  (table/stack prototypes without selector list leave calibre and
-$   standard selector undefined)
-$     Idatafile/Icharfile
-$                 flag:
-$     Irule       adm:  link to the first formal affix
-$
-$  formal affix:
-$                 tag:  pointer to raw tag
-$                 adm:  link to next formal affix
-$                 repr: pointer to a LLOC entry
-$     Iformal in/out/inout/file
-$     Iformal table/stack
-$                 fcalibre  -1=no selector list
-$                 fssel
-$     Iformal selector
-$                 adm:  formal stack/table
-$                 repr: offset (starting from 1)
-$     Iformal repeat    --  the * affix
-
-$ LADM selectors
-$     (defline,flag,type,repr,adm,tag)  <= tag
-$                       (calibre,ssel)  <= list extension,
-$                  (type,repr,adm,tag)  <= formal affix
-$   (fcalibre,fssel,type,repr,adm,tag)  <= formal list affix
-
-
-'stack'[39]( defline=fcalibre,flag=fssel,type=dpos,
-           repr=dnum,adm=calibre,tag=ssel=link ) LADM = (
-  (-2,0         ,Iempty,0,0,Pstar)      :Xstar,
-  (-2,tpermanent,Iempty,0,0,Pstdstr)    :Xstring table,
-  (-2,tpermanent,Iempty,0,0,Proot)      :Xroot,
-  (-2,tpermanent,Iempty,0,0,Pshift affx):Xshift affix,
-  (-2,tpermanent,Iempty,0,0,Pget affx)  :Xget affix,
-  (-2,0         ,Iempty,0,0,PParrow)    :Xarrow,
-  (-2,0         ,Iempty,0,0,Pexit)      :Xexit
+$ anchor, also pointers in @StringTable
+ "@":anchor tag     ,(0*):Panchor   $ not a valid tag
 ).
 
-$ LLOC selectors
-$    (flag, repr, type, tag, orepr,  otype)
-$    (flag, repr, type, tag, calibre,ssel)
-'stack'[2]( orepr=calibre,otype=ssel,flag,type,repr,tag)LLOC.
-
-$ ************************************************************** $
-'p'was tag pointer+>ptr+[]st[]:
-   $ string representation of a pointer (for messages)
-   was+TTAG+ptr,previous+TTAG+ptr,copy string+TTAG+ptr+st;
-   was+LADM+ptr,tag*LADM[ptr]->ptr,:was tag pointer;
-   was+LLOC+ptr,tag*LLOC[ptr]->ptr,:was tag pointer.
-
-$ ************************************************************** $
-$ get/set fields of LADM $
-'f'get tag+>tag+x>:    tag*LADM[tag]->x.
-'f'get repr+>tag+x>:   repr*LADM[tag]->x.
-'f'get adm+>tag+x>:    adm*LADM[tag]->x.
-'f'get type+>tag+x>:   (=tag= [LADM],type*LADM[tag]->x;
-                                     type*LLOC[tag]->x).
-'f'get defline+>tag+x>:defline*LADM[tag]->x.
-'f'get calibre+>tag+x>:calibre*LADM[adm*LADM[tag]]->x.
-'f'get ssel+>tag+x>:   ssel*LADM[adm*LADM[tag]]->x.
-'f'get formal calibre+>tag+x>:fcalibre*LADM[tag]->x.
-'f'get formal ssel+>tag+x>:   fssel*LADM[tag]->x.
-'a'put repr+>tag+>x:   x->repr*LADM[tag].
-'a'put adm+>tag+>x:    x->adm*LADM[tag].
-'a'put type+>tag+>x:   x->type*LADM[tag].
-'a'put defline+>tag+>x:x->defline*LADM[tag].
-$ list parameters
-'a'put calibre+>tag+>x:x->calibre*LADM[adm*LADM[tag]].
-'a'put ssel+>tag+>x:   x->ssel*LADM[adm*LADM[tag]].
-$ formal list parameters
-'a'put formal calibre+>tag+>x: x->fcalibre*LADM[tag].
-'a'put formal ssel+>tag+>x:    x->fssel*LADM[tag].
-
-
-$ flags $
-'a'set tag flag+>tag+>flag: 
-   bool or+flag*LADM[tag]+flag+flag*LADM[tag].
-'q'is tag flag+>tag+>flag-x:
-   bool and+flag*LADM[tag]+flag+x,x!=0.
-'f'get tag flag+>tag+>mask+x>: bool and+flag*LADM[tag]+mask+x.
-'a'clear tag flag+>tag+>flag-mask:
-   bool invert+flag+mask,bool and+flag*LADM[tag]+mask+flag*LADM[tag].
-'a'use tag+>tag:
-   type*LADM[tag]>=Ifirst formal type;
-   bool or+flag*LADM[tag]+tused+flag*LADM[tag].
-   
-$ ************************************************************** $
-'a'enter tag+buf[]+tag>-n-y:
-   $ buf[] contains the characters which should be added to the TTAG structure
-   list length+buf+n, pack string+buf+n+TTAG, first tag->y,
+'a'enter tag+>n+tag>-y:
+   $ BUFFER[] contains the characters which should be added to the TTAG structure
+   pack string+BUFFER+n+TTAG, first tag->y,
    (nxt: add+y+<>TTAG+tag, compare string+TTAG+y+TTAG+>>TTAG+n,
      (n=0, unstack string+TTAG;
       n>0, left*TTAG[tag]->y,
@@ -317,271 +180,272 @@ $ ************************************************************** $
            (* -1->lastline,0->left->right->adm->text *)TTAG,>>TTAG->tag)
      )
    ).
-'a'pack selector+>sel+>tag+x>:
-   $ create "sel*tag" to LADM
-   scratch+BUFFER, get tag+sel+sel,get tag+tag+tag,
-   previous+TTAG+sel,previous+TTAG+tag,
-   unpack string+TTAG+sel+BUFFER,extend BUFFER+/*/,
-   unpack string+TTAG+tag+BUFFER,enter tag+BUFFER+x,
-   get tag entry+x+x.
 
-$ ============================================================= $
+'f'get ttag head+x>: first tag->x.
+$ ============================================================ $
+$ LADM selectors
+$
+$ tag definition (declaration, import prototype, list with filling):
+$ (next,scope,defline,flag,type,repr,adm,tag)  <= tag
+$    next:    pointer to the next definition of the same tag
+$    scope:   TTAG: qualifier of the tag, INPUT: base
+$    defline: line number of the definition (defines the BASE)
+$    flag:    flag bits, depends on type
+$    type:    an element of INDICATOR (from types.ale)
+$    repr:    final representation of this item
+$    adm:     link depending on type
+$    tag:     link back to the TTAG entry
+$
+$    type:
+$      Iconstant/Ivariable/Istatic variable:
+$             adm=0,
+$      Ipointer constant:
+$             adm: LADM[list]; for @StringTable entry the LEXT string
+$      Itable/Istack/Istatic stack: (prototype,fill,definition)
+$             adm: link to list extension defined in selector.ale
+$      Idatafile/Icharfile:
+$             adm=0
+$      Irule: adm: link to the formal affixes
+$
+$ macro rule entry:
+$ (#,#,#,#,dpos,dnum,adm,tag)
+$    dpos:     DISC position
+$    dnum:     DISC line number
+$    adm:      LADM link to the macro definition
+$    link:     link to the next macro rule entry
+$
+$ affix list header:
+$ (#,#,#,#,#,alen,awidth,link),type1,type2,...
+$    alen:     number of affixes
+$    awidth:   width of affix block (plus 2 for every formal list)
+$    link:     link to the next affix list header
+$
+$ list extension, first entry (in selector.ale):
+$ (#,#,#,#,calibre,ssel,ttag,link)
+$    calibre:  list calibre, -1 if no field list
+$    ssel:     standard selector
+$    ttag:     0
+$    link:     link to selectors
+$ selector description (in selector.ale):
+$ (#,#,#,#,defln,offset,ttag,link)
+$    defln:    definition line (if doubly defined)
+$    offset:   offset, starting from 1, left to right
+$    ttag:     TTAG pointer to the selector
+$    link:     next selector
+
+'stack'[39](next,scope,defline,flag,type,repr,adm,tag)  $ tag $
+           (#,#,#,#,                dpos,dnum,adm,tag)  $ macro rule entry
+           (#,#,#,#,#,               alen,awidth,link)  $ affix list header
+           LADM = (
+$         flag       type       tag
+  (0,0,-2,tpermanent,Itable,0,0,Pstdstr)    :Xstring table,
+  (0,0,-2,tpermanent,Irule, 0,0,Proot)      :Xroot,
+  (0,0,-2,tpermanent,Irule, 0,0,Pshift affx):Xshift affix,
+  (0,0,-2,tpermanent,Irule, 0,0,Pget affx)  :Xget affix
+).
+
+$ ************************************************************** $
+$ LLOC selectors
+$ formal, local variables and labels are stores in LLOC
+$   calibre: calibre of formal list, -1: no field list
+$   ssel:    standard selector of formal list, -1: none
+$   flag:    used in later rounds
+$   ftype:   formal type, Ilocal, Ilabel
+$   repr:    first pass: content of old adm*TTAG
+$   ttag:    pointer to TTAG (for error messages)
+'stack'[2]( calibre,ssel,flag,ftype,repr,ttag)LLOC.
+
+'a'create local affix+>type+>tag:
+  (* type->ftype,tag->ttag,0->calibre->ssel->flag->repr *)LLOC.
+
+$ ************************************************************** $
+'p'was tag pointer+>ptr:
+   $ string representation of a pointer (for messages)
+   was+TTAG+ptr,previous+TTAG+ptr,copy string+TTAG+ptr+BUFFER;
+   was+LADM+ptr, $ check if it has a qualifier
+      (was tag pointer+scope*LADM[ptr],extend BUFFER+/:/,extend BUFFER+/:/;+),
+      tag*LADM[ptr]->ptr,:was tag pointer;
+   was+LLOC+ptr,ttag*LLOC[ptr]->ptr,:was tag pointer.
+
+$ ************************************************************** $
+$ get/set fields of LADM $
+'f'get ttag+>tag+x>:   tag*LADM[tag]->x.
+'f'get repr+>tag+x>:   repr*LADM[tag]->x.
+'f'get adm+>tag+x>:    adm*LADM[tag]->x.
+'f'get next tag+>tag+x>: next*LADM[tag]->x.
+'f'get type+>tag+x>:   (=tag= [LADM],type*LADM[tag]->x;
+                                     ftype*LLOC[tag]->x).
+'f'get defline+>tag+x>:defline*LADM[tag]->x.
+
+$ 'a'put ttag+>tag+>x:   x->tag*LADM[tag].
+'a'put repr+>tag+>x:   x->repr*LADM[tag].
+'a'put adm+>tag+>x:    x->adm*LADM[tag].
+'a'put defline+>tag+>x:x->defline*LADM[tag].
+
+$ flags $
+'a'set tag flag+>tag+>flag: 
+   bool or+flag*LADM[tag]+flag+flag*LADM[tag].
+'q'is tag flag+>tag+>flag-x:
+   bool and+flag*LADM[tag]+flag+x,x!=0.
+'f'get tag flag+>tag+>mask+x>: bool and+flag*LADM[tag]+mask+x.
+'a'clear tag flag+>tag+>flag-mask:
+   bool invert+flag+mask,bool and+flag*LADM[tag]+mask+flag*LADM[tag].
+'a'use tag+>tag:
+   $ tag is used; if Ipointer then mark the associated table
+   $  @StringTable pointers have the LEXT string in the adm field
+   bool or+flag*LADM[tag]+tused+flag*LADM[tag],
+   ((type*LADM[tag]=Ipointer constant,adm*LADM[tag]->tag,was+LADM+tag,
+      type*LADM[tag]=Itable),bool or+flag*LADM[tag]+tused+flag*LADM[tag];
+    +).
+
+$ ************************************************************** $
+$ formal affixes are stored in LADM as
+$ (alen,awidth,link,  type1,...,typen,calibre1,ssel1, ...)
+$              ^---- affix list pointer
+$    alen:   number of formal affixes
+$    awidth: total length
+$    link:   link to the next affix block
+
+'stack'LADM=(
+$ alen,awidth,link
+  (0,0,Ashiftblock) :Anone,         $ no affix
+  (1,1,Agetblockno) :Ashiftblock,   $ shift affix block+@
+      Iformal shift,
+  (2,2,0)           :Agetblockno,   $ get affix blockno+n>+@
+      Iformal out,Iformal shift
+).      
+
+'a'push AFFS+>x: (* x->tag *)LADM.
+'q'compare AFFS+>p1+>p2-w:
+   $ compare lists at p1 and p2
+   alen*LADM[p1]=alen*LADM[p2],
+   awidth*LADM[p1]=awidth*LADM[p2],awidth*LADM[p1]->w,(nxt:w<=0;
+      incr+p1,incr+p2,tag*LADM[p1]=tag*LADM[p2],decr+w,:nxt).
+'a'insert to AFFS+>old>+>top-ptr:
+   $ a new affix list is at the top of LADM starting at >old
+   $   check if the same block is already stored, if yes, shrink
+   $   LADM to >top, and change >old>
+   Anone->ptr, $ first block
+   (nxt: compare AFFS+ptr+old, $ found, shring LADM
+             ptr->old,unstack to+LADM+top;
+         link*LADM[ptr]=0, $ end of chain, add the new list
+             old->link*LADM[ptr];
+         link*LADM[ptr]->ptr,:nxt).
+'a'enter formal affixes+affs>-top-loc:
+   $ store the affix list in LLOC, return the LADM pointer
+   >>LADM->top,(* 0->awidth->alen->link *)LADM, >>LADM->affs, <<LLOC->loc,
+   $ first the types followed by calibre and ssel for lists
+   (nxt: loc>>>LLOC; $ affixes are there
+         (=ftype*LLOC[loc]=
+          [Ilabel;Ilocal],+;
+          push AFFS+ftype*LLOC[loc],incr+alen*LADM[affs]),
+         next+LLOC+loc,:nxt),
+   $ calibre and ssel, if any
+   <<LLOC->loc,
+   (nxt:loc>>>LLOC;
+        (=ftype*LLOC[loc]=
+         [Iformal table;Iformal stack],
+           push AFFS+calibre*LLOC[loc],push AFFS+ssel*LLOC[loc];
+         +),
+        next+LLOC+loc,:nxt),
+   subtr+>>LADM+affs+awidth*LADM[affs],insert to AFFS+affs+top.
+'f'get formal affixno+>tag+n>-ptr:
+    $ get the number of formal affixes
+    get adm+tag+ptr,alen*LADM[ptr]->n.
+'f'get formal type+>tag+>n+type>-ptr:
+    $ the the type of the n-th formal affix (starting at n=1)
+    get adm+tag+ptr,add+ptr+n+ptr,tag*LADM[ptr]->type.
+'f'get formal list ext+>tag+>n+cal>+ssel>-ptr-ptr2:
+    $ the n-th formal affix is a list, get calibre and ssel
+    get adm+tag+ptr,add+ptr+alen*LADM[ptr]+ptr2,incr+ptr,
+    (nxt:(tag*LADM[ptr]=Iformal table;tag*LADM[ptr]=Iformal stack),
+           decr+n,(n>0,incr+ptr2,incr+ptr2,incr+ptr,:nxt;+);
+         decr+n,incr+ptr,:nxt),
+    incr+ptr2,tag*LADM[ptr2]->cal,incr+ptr2,tag*LADM[ptr2]->ssel.
+
+$ ************************************************************** $
 $ initialize TTAG and LADM
 'a'enter predefined tag+>tag-n-x-y:
-  $ tag points to a string in TTAG; abort if doubly defined
-  $ strings between "notag from" and "notag to" are not entered
+  $ tag points to a string in TTAG; abort if identical entries found.
   tag=first tag;     $ search starts here; do not add
-  (notag from<=tag,tag<=notag to);
+  tag=anchor tag;    $ special entry, do not add
   first tag->y,
    (nxt: add+y+<>TTAG+x,compare string+TTAG+y+TTAG+tag+n,
      (n=0,next+TTAG+tag,Xerror+0+preamble doubly defined+tag,
-         internal error+_rule_+_line_;
+         internal error+_rule_;
       n>0,left*TTAG[x]->y,(y>0,:nxt;tag->left*TTAG[x]);
       right*TTAG[x]->y,(y>0,:nxt;tag->right*TTAG[x]))
    ).
-'a'add special rule+>tag+>alt-x:
-  $ @make and -> should point to the same LADM entry;
-  $   for messages use the alt form
-  new tag entry+alt+x,x->adm*TTAG[tag]->adm*TTAG[alt].
 'a'init tags-tag-y:
-  $ initially TTAG contains <"string",(0*)> entries populated 
-  $ by his and other modules. Abort if identical identifiers are found
-  >>TTAG->tag,(nxt:
-    tag<=<<TTAG;
-    previous+TTAG+tag,enter predefined tag+tag,
-      string width+TTAG+tag+y,subtr+tag+y+tag,:nxt),
-  $ @make and ->, @less and <, etc.
-  Xexit->adm*TTAG[Pexit],
-  Xshift affix->adm*TTAG[Pshift affx],
-  Xget affix->adm*TTAG[Pget affx],
-  Xroot->adm*TTAG[Proot],
-  Xstring table->adm*TTAG[Pstdstr],
-  Xarrow->adm*TTAG[Parrow]->adm*TTAG[PParrow],
-  add special rule+Pmreq+PPmreq,
-  add special rule+Pequal+PPequal,
-  add special rule+Pnot equal+PPnot equal,
-  add special rule+Pmore+PPmore,
-  add special rule+Pless+PPless,
-  add special rule+Plseq+PPlseq,
-  $ root
-  init stdstring table,
-  init rules.
-
-$ string table
-$ stdstrings are lined as <LEXT,LADM,next>, ending at std strings
-'variable'std empty pointer=0,std strings=0.
-
-'a'new stdstring+>str+c>:
-  $ create a new Ipointer constant for the given string
-  (str=Squote image,is+std empty pointer),std empty pointer->c;
-  new tag entry+Pstar+c,put type+c+Ipointer constant,
-  put adm+c+Xstring table,use tag+Xstring table,
-  set tag flag+Xstring table+tfill,set tag flag+Xstring table+timported,
-  set tag flag+c+tdefined,set tag flag+c+tused,
-  (* c->adm, str->repr,std strings->link *)LADM, >>LADM->std strings,
-  (str=Squote image,c->std empty pointer;+).
-
-'a'init stdstring table:
-  Xstring table->adm*TTAG[Pstdstr],
-  new list entry+Xstring table+Itable.
-
-$ variable affix rules
-'a'init rules-affix-affix2:
-  $ shift affix block+<*>
-  Xshift affix->adm*TTAG[Pshift affx],
-   put type+Xshift affix+Irule,set tag flag+Xshift affix+rshiftarg,
-   new formal tag+Iformal shift+Xstar+affix,
-   put adm+Xshift affix+affix,
-  $ get affix blockno+n>+<*>
-  Xget affix->adm*TTAG[Pget affx],
-   put type+Xget affix+Irule,set tag flag+Xget affix+rgetarg,
-   new formal tag+Iformal out+Xstar+affix,
-   put adm+Xget affix+affix,
-   new formal tag+Iformal shift+Xstar+affix2,
-   put adm+affix+affix2,
-  $ 'root'
-  Xroot->adm*TTAG[Proot],
-   put type+Xroot+Irule,set tag flag+Xroot+r rootfl.
- 
-$ ------------------------------------------------------------ $
-'f'get tag hash+>tag+hash>:
-   get tag+tag+tag,previous+TTAG+tag,simplehash+TTAG+tag+hash.
-$ ------------------------------------------------------------ $
-'a'new tag entry+>raw tag+x>:
-   $ add a LADM block to a raw tag in TTAG
-   (* -1->defline,Iempty->type,0->flag->repr->adm,raw tag->tag *)LADM,>>LADM->x.
-'a'get tag entry+>raw tag+x>:
-   adm*TTAG[raw tag]->x,
-     (x=0,new tag entry+raw tag+x,x->adm*TTAG[raw tag];+).
-'a'new formal tag+>type+>tag+formal>:
-   (=type=
-    [Iformal table;Iformal stack],
-      (* 0->fcalibre->fssel,type->type,0->repr->adm,tag*LADM[tag]->tag *)LADM;
-    (* type->type,0->repr->adm,tag*LADM[tag]->tag *)LADM),
-   >>LADM->formal. 
-'a'new list entry+>tag+>type:
-   put type+tag+type,
-   (* 0->ssel->calibre *)LADM,
-   put adm+tag+>>LADM.
-
-$ tag usage is interesting for 'pragmat' ifdef=<tag>
-$ and for library construct ?<tag> return value:
-$   0       not mentioned / no definition necessary
-$   1       needs definition
-$   2       has a definition
-'f'find raw usage+>tag+usage>:
-   tag=0,0->usage;                     $ not mentioned
-   adm*TTAG[tag]->tag,
-   (tag=0,0->usage;                    $ not mentioned
-    is tag flag+tag+tdefined,2->usage; $ was defined
-    is tag flag+tag+tused,1->usage;    $ needs definition
-    0->usage).                         $ something else
-'a'add tag definition+>tag+>line+>err>:
-   $ tag is declared in "line". Should not be defined before,
-   $   and cannot be external or imported. Only one declaration is allowed.
-   $ shift affix rules cannot be redefined
-   is+err;
-   is tag flag+tag+tpermanent,error+tag cannot be redefined+tag,1->err;
-   is tag flag+tag+texternal,error+tag is external+tag+defline*LADM[tag],1->err;
-   is tag flag+tag+tdefined,error+tag doubly defined+tag+defline*LADM[tag],1->err;
-   (line<=1;put defline+tag+line),set tag flag+tag+tdefined.
-'a'add tag external+>tag+>line+>err>:
-   $ tag is external with str; type is OK.
-   (is tag flag+tag+texternal;add tag definition+tag+line+err),
-   (is tag flag+tag+tpublic,error+cannot be external+tag+defline*LADM[tag],1->err;+),
-   (is+err;set tag flag+tag+texternal).
-'a'add tag import+>tag+>line+>err>:
-   $ tag has an "import" prototype; type is OK
-   is tag flag+tag+timported; $multiple prototypes are OK
-   is tag flag+tag+tpublic,error+cannot be public+tag+defline*LADM[tag],1->err;
-   add tag definition+tag+line+err,
-     (is+err;set tag flag+tag+timported).
-'a'add tag public+>tag+>line+>err>:
-   $ tag is in a public prototype; type is OK
-   is+err;
-   is tag flag+tag+tpermanent,error+permanent not public+tag,1->err;
-   is tag flag+tag+texternal,error+cannot be public+tag+defline*LADM[tag],1->err;
-   is tag flag+tag+timported,error+cannot be public+tag+defline*LADM[tag],1->err;
-   set tag flag+tag+tpublic,use tag+tag,add tag prototype+tag+line.
-'a'add tag prototype+>tag+>line:
-   $ if defline is not filled yet, fill it with the given line number
-   defline*LADM[tag]>0;line<=1;put defline+tag+line.
-
-$ redefine tags $
-'stack'[1](tag,adm)RETAG. $ redefined entries go here $
-
-'a'redefine tag+>old+>new-x:
-   tag*LADM[old]->x,x->tag*LADM[new],
-   (* old->adm,x->tag *)RETAG, $ save old values
-   new->adm*TTAG[x].
-'a'restore tags:
-   >>RETAG< <<RETAG; $ empty
-   adm*RETAG->adm*TTAG[tag*RETAG],unstack+RETAG,:restore tags.
-
-$ special rules: Xarrow and relations
-'q'is special rule+>symb+tag>:
-  symb=Sarrow,   adm*TTAG[Parrow]->tag; $ same as Xarrow $
-  symb=Sequals,  adm*TTAG[Pequal]->tag;
-  symb=Smore,    adm*TTAG[Pmore]->tag;
-  symb=Sless,    adm*TTAG[Pless]->tag;
-  symb=Snotequal,adm*TTAG[Pnotequal]->tag;
-  symb=Slseq,    adm*TTAG[Plseq]->tag;
-  symb=Smreq,    adm*TTAG[Pmreq]->tag.
+  $ add all predefined tags; create LADM structure for
+  $  @StringTable, @root, shift affix block, get affix blockno.
+  >>TTAG->tag,(nxt:tag<=<<TTAG;
+      previous+TTAG+tag,enter predefined tag+tag,
+           string width+TTAG+tag+y,subtr+tag+y+tag,:nxt),
+  $ permanent tags -- cannot be redefined
+  Xstring table->adm*TTAG[Pstdstr],    $ 'table'@StringTable.
+   set tag flag+Xstring table+tpermanent,
+   create list extension+Xstring table+-1+1, $ calibre and ssel
+  Xroot->adm*TTAG[Proot],              $ 'a'@root.
+   set tag flag+Xroot+rrootfl,
+   get base from lineno+-1+y,y->scope*LADM[Xroot],
+   put adm+Xroot+Anone,
+  Xshift affix->adm*TTAG[Pshift affx], $ 'q'shift affix block+@.
+   set tag flag+Xshift affix+rshiftarg,
+   put adm+Xshift affix+Ashiftblock,
+  Xget affix->adm*TTAG[Pget affx],     $ 'f'get affix blockno+n>+@.
+   set tag flag+Xget affix+rgetarg,
+   put adm+Xget affix+Agetblockno.
   
-$ ************************************************************ $
-$ stack "DICT" -- store line numbers for a tag $
-'stack'[35] DICT.
+$ ************************************************************** $
+$ @StringTable entries are automatically linked as the same 
+$   forbidden tag @. Strings are stored only once
 
-$ lastline*TTAG contains the last added line number defaults to -1
-$ tag line numbers are linked through entries in DICT.
-$ the entry at DICT[ptr] is (offs,diffn) where
-$  offs=0:  this is the last linked entry
-$  offs!=0: the previous entry is at ptr-offs
-$  diffn: the difference from the previous line number:
-$    1 .. 2029: subtract that much
-$    2047:      subtract 2000
+'q'is stdstring stored+>str+ptr>:
+   get stdstring head+ptr,(nxt:ptr=0,-;
+     (-eq:compare string+LEXT+str+LEXT+adm*LADM[ptr]+eq,eq=0);
+     get next tag+ptr+ptr,:nxt).
+'a'new stdstring+>str+>dl+c>:
+   is stdstring stored+str+c,forget string+str;
+   create tag definition+0+Panchor+Ipointer constant+dl+c,
+    put adm+c+str,set tag flag+c+tdefined,set tag flag+c+tused,
+    set tag flag+Xstring table+rstringfl.
+'f'get stdstring head+ptr>:
+   $ zero if no stdstring, otherwise the last LADM entry
+   adm*TTAG[Panchor]->ptr.
 
-$ pack and unpack two values (d,n), n has 11 bits
-'a'extend DICT+>x: (* x->DICT *)DICT.
-'f'pack2+>d+>n+x>:
-   d->x,left clear+x+11,bool or+x+n+x.
-'f'unpack2+>x+d>+n>:
-   bool and+x+0x7FF+n,x->d,right clear+d+11.
-'a'expand DICT+>ptr+>x-z:
-   (ptr=0,0->z;subtr+>>DICT+ptr+z,incr+z),
-    pack2+z+x+z,extend DICT+z.
-'a'add line to DICT+>ptr+>n: $n !=0 $
-   n<2030,expand DICT+ptr+n;
-   expand DICT+ptr+2047,subtr+n+2000+n,>>DICT->ptr,:add line to DICT.
-'a'add DICT+>tag+>line-l1:
-   $ add the next line number to TTAG[tag] if 'dict=on'
-   is pragmat value+pgt dict,lastline*TTAG[tag]->l1,
-     (l1<0,line->lastline*TTAG[tag],0->text*TTAG[tag];
-      subtr+line+l1+l1,(l1<=0; 
-        add line to DICT+text*TTAG[tag]+l1,line->lastline*TTAG[tag],
-           >>DICT->text*TTAG[tag]));
-   +.
-'a'reverse DICT+>tag-ptr-l-n-d-d1:
-   $ create the reverse linked list of line numbers
-   lastline*TTAG[tag]<0; text*TTAG[tag]=0; $none or one number only
-   $  (0,l2-l1),  (d1,l3-l2),    (dx,l{x+1}-lx)     l{x+1}
-   $   d1          d2             0 
-   lastline*TTAG[tag]->l,text*TTAG[tag]->ptr,0->d1,
-    (nxt: unpack2+DICT[ptr]+d+n,pack2+d1+n+DICT[ptr],
-            (=n= [1:2019],subtr+l+n+l;[2047],subtr+l+2000+l;+),
-            (d=0;
-             d->d1,subtr+ptr+d+ptr,:nxt)),
-    ptr->text*TTAG[tag],l->lastline*TTAG[tag].
+$ ************************************************************** $
+$ font / back matter pragmat strings
+'variable'matters=0.
+'a'add pragmat matter+>type+>str:
+   $ type=1: front, type=2: back
+   (* type->adm,str->repr,matters->link *)LADM, >>LADM->matters.
+'q'get next matter+>ptr>+type>+str>:
+   ((ptr=0,matters->ptr;link*LADM[ptr]->ptr),ptr!=0),
+      adm*LADM[ptr]->type,repr*LADM[ptr]->str.
 
-$ dictionary printing $
-'q'is special tag+>tag-ch: $ tag does not start with a letter
-  previous+TTAG+tag,
-    string elem+TTAG+tag+0+ch,(=ch=[/a/:/z/;/A/:/Z/],-;+).
-
-'a'DICT tag+>tag-l-n-d-ptr:
-   lastline*TTAG[tag]<=0; $ no occurence
-   is special tag+tag; $ does not start with a letter
-   adm*TTAG[tag]->ptr,(ptr=0,0->n;get defline+ptr+n),
-   reverse DICT+tag,lastline*TTAG[tag]->l,
-   text*TTAG[tag]->ptr,DICT header+tag+n,DICT item+l,
-   (nxt:ptr=0,DICT tail;
-        unpack2+DICT[ptr]+d+n,
-          (=n=[1:2019],add+l+n+l,DICT item+l;[2047],add+l+2000+l;+),
-          (d=0,DICT tail;
-           add+ptr+d+ptr,:nxt)).
-'a'print dict+>y-x:
-  y=0;
-  add+y+<>TTAG+x,print dict+left*TTAG[x],
-    DICT tag+x,right*TTAG[x]->y,:print dict.  
-
-'a'print dictionary:
-  print dict+first tag,release+DICT.
-
-$ ************************************************************ $
-$ ICE header and Xstring table filling 
-'a'assign tags+>y-x:
-  y=0;
-  add+y+<>TTAG+x,assign tags+left*TTAG[x],
-    define ice tag+adm*TTAG[x],right*TTAG[x]->y,:assign tags.
-'a'assign items-str:
-  assign tags+first tag, $ all tags first
-  $ strings, if any
-  std strings->str,(nxt:str=0;
-    define ice tag+adm*LADM[str],link*LADM[str]->str,:nxt).
-'p'Xstring table filling-str:
-  is+std strings,std strings->str,Xstring table filling head+Xstring table,
-    (nxt:str=0;
-     Xstring table item+adm*LADM[str]+repr*LADM[str],link*LADM[str]->str,:nxt).
+$ ------------------------------------------------------------ $
+$ special rule identifier: Parrow and relations
+'q'is special rule+>symb+ttag>:
+  symb=Sarrow,   Parrow->ttag;
+  symb=Sequals,  Pequal->ttag;
+  symb=Smore,    Pmore->ttag;
+  symb=Sless,    Pless->ttag;
+  symb=Snotequal,Pnotequal->ttag;
+  symb=Slseq,    Plseq->ttag;
+  symb=Smreq,    Pmreq->ttag.
+  
 $ ************************************************************ $
 $ store and retrieve macro
 
 'variable'macro ptr=0.
 'a'link macro rule+>tag+>dpos+>dnum:
+   $ (dpos,dnum) point to Dlabel <ruletag>
    (* dnum->dnum,dpos->dpos,tag->tag,macro ptr->adm *)LADM,
    >>LADM->macro ptr.
 'f'search macro rule+>tag+dpos>+dnum>-link:
    macro ptr->link,
-   (nxt: link=0,internal error+_rule_+_line_;
+   (nxt: link=0,internal error+_rule_;
     tag*LADM[link]=tag,dpos*LADM[link]->dpos,dnum*LADM[link]->dnum;
     get adm+link+link,:nxt).
 'q'next macro rule+>tag>-link:

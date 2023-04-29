@@ -1,0 +1,35 @@
+$ standard ALEPH library -- wait for buit-in
+'pragmat' module=stdlib,title="stdlib waitfor".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$
+$  (C) 2020-2023, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ module synchronization
+'a'wait for+t[]+>p.
+   $ wait until the given module finishes its root.
+
+$ BODY ******************************************************** $
+$ this is a separate module so the @@waitfor is not compiled
+$  if not used
+'pragmat'if=compile,library=on.
+$
+'x''a'wait for+t[]+>p = "@@waitfor".
+
+'root'+.
+'pragmat'endif=compile.
+'end'

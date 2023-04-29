@@ -7,22 +7,26 @@ $ number of a's are stored as a sequence of affixes
 
 'p'R+>x: chr=x,next char.
 
-'a'count a+*+>cnt:
-   R+/a/,count a+1+*;
-   expect+/b/+*,expect+/c/+*,
+'a'count a+@+>cnt:
+   R+/a/,count a+1+@;
+   expect+/b/+@,expect+/c/+@,
      (chr=newline;error+"extra symbol: "+chr).
 
-'a'expect+>c+*+>cnt:
-   R+c,(shift affix block+*,:expect;
+'a'expect+>c+@+>cnt:
+   R+c,(shift affix block+@,:expect;
         error+"wrong: too many "+c);
-   shift affix block+*,error+"wrong: expecting "+c;
+   shift affix block+@,error+"wrong: expecting "+c;
    +.
 
 'e'error+t[]+>ptr+>c:
    put string+STDOUT+t+ptr,put char+STDOUT+c,put char+STDOUT+newline,
    exit+0.
 
-'root'next char,count a+0,error+"a^nb^nc^n recognized"+/./.
+'root' put string+STDOUT+"Type a sequence of letters a,b,c",
+        put char+STDOUT+newline,
+       put string+STDOUT+"I tell if it is of the form a^nb^nc^n",
+        put char+STDOUT+newline,
+       next char,count a+0,error+"a^nb^nc^n recognized"+/./.
 
 'end'
 

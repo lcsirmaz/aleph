@@ -1,10 +1,10 @@
 $ pragmats for ALEPH
-'pragmat'module="pragmats".
+'pragmat'module=pragmats,title="pragmats, v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -21,27 +21,44 @@ $ *************************************************************
 $ HEADER ****************************************************** $
 
 $ pragmats
-$   include ="string"     add to the included list
-$   require ="string"     add to the required list
-$   title  = "string"     zero or LEXT ptr; only if compile=on
-$   module = "string"     module title, switch to module compilation
+$   error = "string"      issue an error message
+$   warning = "string"    warning at level 9
+$   define = tag          to be used in subsequent ifdef pragmat
+
+$   include = "string"    add to the included list
+$   require = "string"    add to the required list
+
+$   title  = "string"     zero or LEXT ptr
+$   module = tag          switch to module compilation
+
 $   library = on/off      allow library extensions
-$   prototype = public/import/none  how prototypes behave, 2, 1, 0
+$   prototype = public/import/none/reverse
+$                         how prototypes behave, 2, 1, 0
+
 $   list    = on/off      source listing
 $   tab width = 8         tabular width
+$   right margin=41       right margin for printing
 $   macro = rule          replace textually
-$   inline    = rule      same as macro
-$   dictionary= on/off    store / print occurence of tags, mark definition
-$   compile = on/off      flag, affects other pragmats
+$   inline = rule         same as macro
+$   dictionary= on/off    store / print tag occurences and definition
 $   std library=off       don't include standard library; only if compile=on
-$   public/export = tag   tag is global, (cannot be external)
-$  these are passed to round II
+
 $   warning level=3       warning level
 $   bounds = on/off       compile indexing with bound checking
 $   trace = on/off        called rules print out affixes and return status
 $   count = on/off        when entering the rule, a counter is incremented
-$  ==> Dpragmat, (warning level|trace|count|bounds), val  
-$  ==> Dpragmat, (macro|public), tag
+
+$   front matter="string" in library mode only, code snippet to be inserted
+$   back matter="string"
+
+$ these cannot occur in the program text
+$   compile = on/off      flag, affects other pragmats,
+$   path = "string"       specify search path
+$   ice = "string"        specify .ice file name
+
+$ these are passed to round II
+$ Dpragmat, <pgt warning level>,  <const> {val}
+$ Dpragmat, <pgt macro>, TTAG
 
 'f'get pragmat value+>what+to>.
    $ returns the given pragmat value.
@@ -57,77 +74,82 @@ $  ==> Dpragmat, (macro|public), tag
 'a'reset pragmats.
    $ reset all pragmats; might write to DISC
 
-
 $ pragmat ID
 'constant'
-   pgt tab width	=0x345600,  $ value of tab width
-   pgt warning level	=0x345601,  $ warning level
-   pgt proto            =0x345602,  $ prototype level (2=public,1=import,0=none)
-   pgt title		=0x345603,  $ program title (set only when compile=on)
-   pgt module		=0x34560f,  $ have module="module title"
-   pgt text		=0x345604,  $ give text: on/off
-   pgt library		=0x345605,  $ in library: on/off
-   pgt compile		=0x345606,  $ compile:  on/off
-   pgt dict             =0x345607,  $ dictionary: on/off
-   pgt bounds           =0x345608,  $ bounds: on/off
-   pgt trace            =0x345609,  $ trace
-   pgt count            =0x34560a,  $ count
-   pgt stdlib           =0x34560b,  $ include std library on/off
-   pgt margin		=0x34560c,  $ right margin for dictionary
-   pgt macro		=0x345610,  $ macro=<tag>
-   pgt public		=0x345611,  $ public=<tag>
-   pgt path             =0x345612,  $ path="string", program line argument only
-   pgt ice		=0x345613,  $ ice="string", program line argument only
-   pgt skip             =0x34560d.  $ pseudo pragmat, set if skip program text
+   pgt tab width	=0x5600,  $ value of tab width
+   pgt warning level	=0x5601,  $ warning level, write to DISC
+   pgt wlevel           =0x5602,  $ set warning level, don't touch DISC
+   pgt proto            =0x5603,  $ prototype level (2=public,1=import,0=none)
+
+   pgt title		=0x5604,  $ program title (set only when compile=on)
+   pgt module		=0x5605,  $ have module=<TAG>
+   pgt library		=0x5606,  $ in library: on/off
+
+   pgt text		=0x5607,  $ give text: on/off
+   pgt compile		=0x5608,  $ compile:  on/off
+   pgt dict             =0x5609,  $ dictionary: on/off
+   pgt bounds           =0x5601,  $ bounds: on/off
+   pgt trace            =0x560b,  $ trace
+   pgt count            =0x560c,  $ count
+   pgt stdlib           =0x560d,  $ include std library on/off
+   pgt margin		=0x560e,  $ right margin for dictionary
+   pgt macro		=0x5610,  $ macro=<tag>
+   pgt define		=0x5611,  $ define=<tag>
+
+   pgt path             =0x5612,  $ path="path" command line argument only
+   pgt libpath		=0x5613,  $ libpath="path" command line argument only
+   pgt ice		=0x5614,  $ ice="string" command line argument only
+   pgt require		=0x5615,  $ -m "file"  command line argument only
+   pgt addlib		=0x5616,  $ -y "file"  command line argument only
+   pgt skip             =0x560f.  $ pseudo pragmat, set if skip program text
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("input","lexical","display","disc",
-   "symbols","tags","passi","types").
-
-$ default title if none is given
-'stack'LEXT=("aleph":def program title).
+'pragmat'require=("input","lexical","display","disc","number",
+   "identifier","dictionary","symbols","tags","pass1","types").
 
 'variable'
    tab width=8,		$ tab width = 8
    give text=0,		$ print source
    in library=0,	$ library mode
    in compile=1,	$ compile = yes 
-   in module=0,		$ module = on/off
+   in module=0,         $ compiling a module, module=<TAG> is in effect
    dict on=0,		$ print dictionary
    use stdlib=1,	$ std lib=on
-   proto level=2,	$ 0: none, 1: import, 2: public
-   warning level=default warning level, $ defined in "display"
+   proto level=0,	$ 0: none, 1: import, 2: public
+   warning level=10,    $ warning level, different from 0..9
    right margin=120,	$ dictionary right margin
-   program title=def program title,  $ program title
+   program title=0,     $ program title
    trace=0,		$ print when entering a rule
    count=0,		$ profiling
    bounds=0,		$ indexing is done with bound checks
-   include path=0,      $ include path sequence
+   include path=0,      $ include path string
+   library path=0,	$ library path string
    ice name=0.		$ ice name
 
 'f'get pragmat value+>what+to>:
   =what=
   [pgt tab width], tab width->to;
+  [pgt margin],    right margin->to;
   [pgt text],      give text->to;
   [pgt library],   in library->to;
   [pgt compile],   in compile->to;
-  [pgt module],    in module->to;
   [pgt dict],      dict on->to;
   [pgt warning level], warning level->to;
-  [pgt stdlib],    use stdlib->to;
   [pgt proto],     proto level->to;
   [pgt title],     program title->to; $ ptr to LEXT or 0
-  [pgt path],      include path->to;  $ 0 or ptr to LEXT
+  [pgt path],      include path->to;  $ ptr to LEXT or 0
+  [pgt libpath],   library path->to;
   [pgt ice],       ice name->to;
-  [pgt margin],    right margin->to;
-  internal error+_rule_+_line_.
+  internal error+_rule_.
 'q'is pragmat value+>what:
   =what=
   [pgt library],in library=1;
+  [pgt stdlib], is+use stdlib;
   [pgt compile],in compile=1;
   [pgt module], in module=1;
   [pgt text],   give text=1;
+  [pgt title],  is+program title;
   [pgt skip],   is+pgmskip;
   [pgt dict],   is+dict on;
   [pgt trace],  is+trace;
@@ -138,29 +160,23 @@ $ default title if none is given
   =what=
   [pgt tab width], to->tab width;
   [pgt text],      to->give text;
-  [pgt library],   (is+to,set library;clear library);
-  [pgt compile],   to->in compile;
-  [pgt module],    (is+to,1->in module,2->proto level;
-                          0->in module);
+  [pgt library],   (is+to,1->in library;0->in library);
+  [pgt compile],   (is+to,1->in compile;0->in compile);
   [pgt dict],      to->dict on;
-  [pgt warning level],
-            (to=warning level;
-             to <0; to>9;
-             to->warning level);
-  [pgt stdlib],    to->use stdlib;
+  [pgt define],    enter string tag+to+to,pragmat ttag definition+to+-1;
+  [pgt warning level],(to=warning level;
+                       to <0; to>9;
+                       to->warning level,disc pragmat+pgt warning level+to);
+  [pgt wlevel],    to->warning level;
   [pgt proto],     to->proto level;  $ 0=none, 1=import, 2=public
   [pgt title],     to->program title;
-  [pgt path],      to->include path;
-  [pgt ice],       to->ice name;
-  internal error+_rule_+_line_.
-$ ===================================================================== $
-$ default warning levels 
-'constant'
-  default warning level=4,     $ default warning level
-  soft warning level=3,        $ warning level for -W
-  lib default warning level=5, $ in library mode raise warning level
-  lib soft warning level=5.
-
+  $ command line arguments
+  [pgt path],      to->include path;        $ -I path
+  [pgt libpath],   to->library path;        $ -L path
+  [pgt ice],       to->ice name;            $ -o file
+  [pgt require],   add required source+to;  $ -m source
+  [pgt addlib],    add required source+to;  $ -y source
+  internal error+_rule_.
 $ ===================================================================== $
 $ tags used by pragmats
 $ WARNING ... WARNING ... WARNING
@@ -177,19 +193,25 @@ $  in fact, unique. If not, aborts the compiler.
  "tabwidth"        ,(0*):Ptabwidth,
  "rightmargin"     ,(0*):Pmargin,
  "warninglevel"    ,(0*):Pwarning level,
+ "error"           ,(0*):Perror,
+ "warning"         ,(0*):Pwarning,
+ "define"          ,(0*):Pdefine,
  "dictionary"      ,(0*):Pdict,
- "stdlib"          ,(0*):Pstd lib,
+ "stdlibrary"      ,(0*):Pstd lib,
  "compile"         ,(0*):Pcompile,
- "library"         ,(0*):Plibrary,
  "require"         ,(0*):Prequire,
  "include"         ,(0*):Pinclude,
  "module"          ,(0*):Pmodule,
+ "library"         ,(0*):Plibrary,
+ "frontmatter"     ,(0*):Pfrontmatter,
+ "backmatter"      ,(0*):Pbackmatter,
  "macro"           ,(0*):Pmacro,
  "inline"          ,(0*):Pinline,
- "public"          ,(0*):Ppublic,
  "prototype"       ,(0*):Pproto,
+ "public"          ,(0*):Ppublic,
  "import"          ,(0*):Pimport,
  "export"          ,(0*):Pexport,
+ "reverse"         ,(0*):Preverse,
  "trace"           ,(0*):Ptrace,
  "bounds"          ,(0*):Pbounds,
  "count"           ,(0*):Pcount,
@@ -201,75 +223,48 @@ $  in fact, unique. If not, aborts the compiler.
  "endif"           ,(0*):Pendif
 ).
 $ ===================================================================== $
-$ error and warning messaged
+$ error messages
 'table'MESSAGE=(
- "wrong pragmat syntax"			:wrong pragmat,
- "unknown pragmat %p"			:unknown pragmat,
- "pragmat %p: wrong value %p"           :wrong pragmat value,
- "pragmat %p: out of range value %d"    :wrong cons pragmat value,
- "pragmat endif=%p missing"             :missing endif pragmat,
+ "wrong pragmat syntax"		        :wrong pragmat,
+ "pragmat %p syntax error"              :unknown pragmat,
+ "pragmat %p=%p wrong pragmat value"    :wrong pragmat value,
+ "pragmat %p=%d wrong pragmat value"    :wrong cons pragmat value,
+ "pragmat %p=""%p"" must be the same"   :pragmat redefined,
+ "pragmat endif=%p is missing"          :missing endif pragmat,
  "pragmat %p=%p has no matching part"   :misplaced if pragmat,
- "pragmat %p has no effect (compile=off)":pragmat has no effect,
-$ warning $
- "pragmat macro=%p is ignored"          :macro ignored
+ "pragmat %p has no effect"             :pragmat has no effect,
+ "pragmat %p in library mode only"      :pragmat in library only,
+ "%p"                                   :error pragmat
 ).
-
-$
-'variable' $ save warning and proto levels (changed in library mode)
-   save warning=0,save proto=0.
-   
-'a'set lib level:
-  warning level->save warning,proto level->save proto,0->proto level,
-  (warning level<soft warning level,lib soft warning level->warning level;
-   lib default warning level->warning level).
-'a'restore lib level:
-  save warning->warning level, save proto->proto level.
-
-'a'set library:
-  is+in library;
-  1->in library,set lib level,disc pragmat+pgt warning level+warning level.
-'a'clear library:
-  is+in library,restore lib level,0->in library,
-     disc pragmat+pgt warning level+warning level;
-  +.
 
 'a'reset pragmats:
   $ reset all pragmats when input changes
-  clear library,
+  0->in library,
   0->dict on,8->tab width,0->give text,0->proto level,
   1->in compile,
   0->trace->count->bounds,
   0->pgmskip->pgmiftag.
-$ commandline pragmat
+
+$ execute commandline pragmat --XXXX=YYYY
 'a'cmdline pragmat-x:
-  is raw tag+x,must+Sequals,pragmat item+x,
+  is raw ttag+x,must+Sequals,pragmat item+x,
     (R+Spoint;
      R+Scomma,:cmdline pragmat;
      must+Spoint,skip to point);
   error+wrong pragmat,skip to point.
-'a'pragmat item+>x-y:
+'a'pragmat item+>x-y: 
   R+Sopen,(nxt: pragmat item+x,(R+Scomma,:nxt;must+Sclose));
-  is raw tag+y,tag pragmat2+x+y+0;
-  is cons+y,cons pragmat2+x+y;
+  is raw ttag+y,tag pragmat2+x+y+0; $ TTAG, no DICT
+  is number+#+y,cons pragmat2+x+y;
   is string+y, string pragmat2+x+y;
   error+unknown pragmat+x,skip all.
 $ ========================================================= $
-$ handle macro and public pragmats
-'a'mark raw tag as macro+>x+>dl-tag-type:
-   (dl<=0;add DICT+x+dl),
-   get tag entry+x+tag,get type+tag+type,
-    (is tag flag+tag+tnomacro,warning+2+macro ignored+tag;
-     (type=Iempty;type=Irule),set tag flag+tag+rmacro,
-       D+Dpragmat,D cons+pgt macro,Dtag+tag;
-     warning+3+macro ignored+tag).
-'a'mark raw tag as public+>x+>dl-tag-err:
-   (dl<=0;add DICT+x+dl),
-   get tag entry+x+tag,0->err,add tag public+tag+0+err,
-   D+Dpragmat,D cons+pgt public,Dtag+tag.
+$ saving pragmats to DISC: pgt macro, pgt warning level
+'a'disc pragmat+>x+>y:
+  D+Dpragmat,Dcons+x,(x=pgt macro,Dttag+y;Dcons+y).
 $ ========================================================= $
 $ from "symbols" inpt contains the next input symbol
-$   which can be TTAG, CONST, LEXT for tag, constant, string
-$   the constant's value is CONTS[inpt]
+$   which can be TTAG, NUMBER, LEXT for tag, number, string
 'q'ahead raw tag+x>:
   was+TTAG+inpt,inpt->x.
 'a'insert symbol+>x: x->inpt.
@@ -301,11 +296,11 @@ $ 100     other           X        100
   [1],next symbol,(ahead raw tag+pgmtag,2->pgmstate;100->pgmstate);
   [2],next symbol,(ahead+Sequals,3->pgmstate;100->pgmstate);
   [3],next symbol,(=inpt=
-         [CONST;LEXT;TTAG],0->pgmstate;
+         [NUMBER;LEXT;TTAG],0->pgmstate;
          (ahead+Sopen,4->pgmstate,:next pragmat symbol;
            100->pgmstate));
   [4],next symbol,(=inpt=
-         [CONST;LEXT;TTAG],5->pgmstate;
+         [NUMBER;LEXT;TTAG],5->pgmstate;
          100->pgmstate);
   [5],next symbol,(
          ahead+Scomma,6->pgmstate;
@@ -329,7 +324,7 @@ $ 100     other           X        100
         error+wrong pragmat,1->err).
 'a'program pragmat item+>x+>err>-y-dl:
   =inpt=
-  [CONST],CONST[inpt]->y,next pragmat symbol,(is+pgmskip;cons pragmat2+x+y);
+  [NUMBER],get target number value+inpt+y,next pragmat symbol,(is+pgmskip;cons pragmat2+x+y);
   [LEXT], inpt->y,next pragmat symbol,(is+pgmskip;string pragmat2+x+y);
   [TTAG], inpt->y,get linenum+dl,next pragmat symbol,program tag pragmat2+x+y+dl+err;
   error+unknown pragmat+x,1->err.
@@ -344,8 +339,8 @@ $ 100     other           X        100
   error+wrong pragmat value+x+y,0->z.
 $ we are in 'pragmat' ifXXXX=<cond>
 $   program tag pragmat2 <== program pragmat item <== program pragmat
-$ finish the pragmat, then go over the program until the mathcing
-$  'pragmat'endif=<cond> is found ('pragmat' returns with err=2).
+$ finish the pragmat, then go over the program until the matching
+$  'pragmat'endif=<cond> is found, when 'pragmat' returns with err=2.
 'a'find matching endif-err:
   $ tail of program pragmat:
   (R+Spoint,0->err; $ out of pragmat
@@ -353,24 +348,23 @@ $  'pragmat'endif=<cond> is found ('pragmat' returns with err=2).
    error+wrong pragmat,1->err),
   (err=1,skip to point;+),
   (err=2; $ endif meanwhile
-   pass I,(ahead+Send symb,error+missing endif pragmat+pgmiftag;+)).
+   pass1,(ahead+Send symb,error+missing endif pragmat+pgmiftag;+)).
 'a'do pragmat skip+>iftag+>z-oldif-oldskip:
   pgmiftag->oldif,iftag->pgmiftag,pgmskip->oldskip,
-    (is+z,incr+pgmskip;+),
+    (is+pgmskip,incr+pgmskip;is+z,incr+pgmskip;+),
     find matching endif, 
     $ we are after 'pragmat' ... endif=<iftag>
     $                                         ^here
     oldskip->pgmskip,oldif->pgmiftag.
+
 'a'program tag pragmat2+>x+>y+>dl+>err>-z:
   =x=
   [Pif],     find if condition+x+y+z,
                (is+z,do pragmat skip+y+0;do pragmat skip+y+1);
   [Pifnot],  find if condition+x+y+z,
                (is+z,do pragmat skip+y+1;do pragmat skip+y+0);
-  [Pifdef],  find raw usage+y+z, $ 0: not seen, 1:needs definition, 2:defined
-               (z=2, do pragmat skip+y+0;do pragmat skip+y+1);
-  [Pifndef], find raw usage+y+z,
-               (z!=2,do pragmat skip+y+1;do pragmat skip+y+0);
+  [Pifdef],  (is ttag defined+y,do pragmat skip+y+0;do pragmat skip+y+1);
+  [Pifndef], (is ttag defined+y,do pragmat skip+y+1;do pragmat skip+y+0);
   [Pelse],   (pgmiftag=y,(pgmskip=0,1->pgmskip;
                           pgmskip=1,0->pgmskip;
                           +);
@@ -379,41 +373,38 @@ $  'pragmat'endif=<cond> is found ('pragmat' returns with err=2).
               error+misplaced if pragmat+x+y,(pgmiftag=0;2->err));
   (is+pgmskip;tag pragmat2+x+y+dl).
 
-'a'disc pragmat+>x+>y:
-  D+Dpragmat,D cons+x,D cons+y.
 'a'on off pragmats+>tag+>x>+>y:
   y=Pon, 1->x;
   y=Poff,0->x;
   error+wrong pragmat value+tag+y.
 'a'tag pragmat2+>x+>y+>dl: $ xxx=yyy
   =x=
-  [Plist],   (y=Pon, 1->give text;
-              y=Poff,0->give text;
-              error+wrong pragmat value+x+y);
-  [Pdict],   (y=Pon, 1->dict on;
-              y=Poff,0->dict on;
-              error+wrong pragmat value+x+y);
-$  [Pmodule], (y=Pon, 1->in module;
-$              y=Poff,0->in module;
-$              error+wrong pragmat value+x+y);
-  [Plibrary],(y=Pon, set library;
-              y=Poff,clear library;
-              error+wrong pragmat value+x+y);
-  [Pcompile],(y=Pon, 1->in compile;
-              y=Poff,0->in compile;
-              error+wrong pragmat value+x+y);
-  [Pproto],  ((y=Pno;y=Pnone),0->proto level;
-              y=Ppublic,2->proto level;
-              y=Pimport,1->proto level;
-              error+wrong pragmat value+x+y);
-  [Pstd lib],(in compile=0,warning+2+pragmat has no effect+x;
-              (y=Pno;y=Poff),0->use stdlib;
-              error+wrong pragmat value+x+y);
-  [Pmacro;Pinline], mark raw tag as macro+y+dl;
-  [Ppublic;Pexport],mark raw tag as public+y+dl;
-  [Ptrace],   on off pragmats+Ptrace+trace+y;
-  [Pcount],   on off pragmats+Pcount+count+y; $ how many times a rule has been called
-  [Pbounds],  on off pragmats+Pbounds+bounds+y;
+  [Plist],          (y=Pon, 1->give text;
+                     y=Poff,0->give text;
+                     error+wrong pragmat value+x+y);
+  [Pdict],          (y=Pon, 1->dict on;
+                     y=Poff,0->dict on;
+                     error+wrong pragmat value+x+y);
+  [Plibrary],       (y=Pon, 1->in library;
+                     y=Poff,0->in library;
+                     error+wrong pragmat value+x+y);
+  [Pproto],         (y=Pno,    0->proto level;
+                     y=Pnone,  0->proto level;
+                     y=Pimport,1->proto level;
+                     y=Ppublic,2->proto level;
+                     y=Pexport,2->proto level;
+                     y=Preverse,(=proto level= [1],2->proto level;[2],1->proto level;+);
+                     error+wrong pragmat value+x+y);
+  [Pstd lib],       (in compile=0,warning+4+pragmat has no effect+x;
+                     (y=Pno;y=Poff),0->use stdlib;
+                      error+wrong pragmat value+x+y);
+  [Pdefine],        (dl<=0;add DICT+y+dl),pragmat ttag definition+y+dl;
+  [Pmacro;Pinline], (dl<=0;add DICT+y+dl),disc pragmat+pgt macro+y;
+  [Ptrace],         on off pragmats+Ptrace+trace+y;
+  [Pcount],         on off pragmats+Pcount+count+y;
+  [Pbounds],        on off pragmats+Pbounds+bounds+y;
+
+  [Pmodule],        set module tag+x+y;
   error+unknown pragmat+x.
 'a'cons pragmat2+>x+>y:
   =x=
@@ -425,15 +416,36 @@ $              error+wrong pragmat value+x+y);
   [Pmargin],     (=y=[20:1000],y->right margin;
                   error+wrong cons pragmat value+x+y);
   error+unknown pragmat+x.
+
 'a'string pragmat2+>x+>y: $ xxx="..."
-  =x=
-  [Pinclude], add included source+y;
-  [Prequire], add required source+y;
-  [Ptitle],   (is+in compile,y->program title;+);
-  [Pmodule],  (is+in compile,y->program title,
-                  1->in module,2->proto level;+);
-  forget string+y,error+unknown pragmat+x.
-   
+  y=Squote image,error+wrong pragmat value+x+y;
+  (=x=
+  $ error and warning
+  [Perror],      error+error pragmat+y,forget string+y;
+  [Pwarning],    warning+9+error pragmat+y,forget string+y;
+  [Pfrontmatter],(is+in library,add pragmat matter+1+y;
+                  error+pragmat in library only+x);
+  [Pbackmatter], (is+in library,add pragmat matter+2+y;
+                  error+pragmat in library only+x);
+  $ include, require, title
+  [Pinclude],    add included source+y;
+  [Prequire],    add required source+y;
+  [Ptitle],      set program title+x+y;
+  forget string+y,error+unknown pragmat+x).
+
+$ title="title" and module=<TAG> pragmats
+
+'a'set program title+>x+>y:
+  in compile=0,forget string+y; $ ingore in required files
+  program title=0,y->program title;
+  (-eq:compare string+LEXT+program title+LEXT+y+eq,eq=0),forget string+y;
+  error+pragmat redefined+x+program title,forget string+y.
+
+'a'set module tag+>x+>y-old:
+   put module tag+y,get module tag+old,
+   (old=y;error+pragmat redefined+x+old),
+   (is+in compile,1->in module,2->proto level;1->proto level).
+
 'root'+.
 'pragmat'endif=compile.
 

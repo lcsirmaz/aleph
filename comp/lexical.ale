@@ -1,10 +1,10 @@
 $ lexical parser for ALEPH 
-'pragmat'module="lexical".
+'pragmat'module=lexical, title="lexical v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -18,84 +18,75 @@ $  the GNU General Public License for more details.
 $
 $ ************************************************************* 
 
-$ HEADER ****************************************************** $
+$ HEADER ****************************************************** 
 $ Create symbols from the raw character sequence read from SOURCE
 $   or from a string in LEXT
 $ A symbol is a pointer to 
 $   TTAG      tag
-$   CONST     contant
+$   NUMBER    contant
 $   LEXT      string
-$   SPECIAL   all other, they have special names
+$   SPECIAL   all others, they have special names
 $ Handle source printing through "display char+char+show"
 
 'constant' $ symbol names
-  Saction,	Sarrow,		Sasterisk,	Sbooland,
-  Sboolor,	Sboolxor,	Sbox,		Sbus,
-  Scalibre,	Scharfile,	Sclose,		Scolon,
-  Scomplement,	Scomma,		Sconssymb,	Sdatafile,
-  Sdummy symb,	Sendsymb,	Senquiry,	Seol,
-  Sequals,	Sexit,		Sextsymb,	Sfunction,
-  Sless,	Slseq,		Slwb,		Sminus,
-  Smore,	Smreq,		Snoarg,		Snot equal,
-  Sopen,	Splus,		Spoint,
-  Spredicate,	Spragsymb,	Squestion,	Sright,
-  Srootsymb,	Ssemicolon,	Sslash,		Sstacksymb,
-  Sstatic,	Ssub,		Stablesymb,	Supb,
-  Svarsymb,	Svlwb,		Svupb,
+  Saction,	Sanchor,	Sarrow,		Sasterisk,
+  Sbooland,	Sboolor,	Sboolxor,	Sbox,
+  Sbus,		Scalibre,	Scharfile,	Sclose,
+  Scolon,	Squalifier,	Scomplement,	Scomma,
+  Sconssymb,	Sdatafile,	Sdummy symb,	Sendsymb,
+  Seol,		Sequals,	Sexit,		Sextsymb,
+  Sfunction,	Sless,		Slseq,
+  Slwb,		Sminus,		Smore,		Smreq,
+  Snoarg,	Snot equal,	Sopen,		Splus,
+  Spoint,	Spredicate,	Spragsymb,	Squestion,
+  Sright,	Srootsymb,	Ssemicolon,	Sslash,
+  Sstacksymb,	Sstatic,	Ssub,		Stablesymb,
+  Supb,		Svarsymb,	Svlwb,		Svupb,
 $ empty string in LEXT
   Squote image.
 
-'stack'LEXT,CONST.
-'p'next source+>type+>ptr.
+'stack'LEXT.
+'p'open source+>type+>ptr.
    $ if type=0 then read from the third character of LEXT[ptr];
-   $ otherwise open the source file LEXT[ptr]; if type=2 try path.
-   $ fails if type=0 and cannot open the file
+   $ otherwise open the source file LEXT[ptr] with search paths
+   $ fails if type!=0 and cannot open the file
 'a'close source.
-   $ clean up after next source; close the open file handler
-'a'create ice name.
-   $ append '.ice' to the title. Use forget string+>>LEXT to free it
+   $ clean up; close the open file handler
+'a'try to open+>str+res>.
+   $ callback to open a fully qualified name in LEXT[str]
+   $ res=0: opened OK, res=1: not found, res=-1: error opening
 'a'read+x>.
    $ return the next symbol: one of the symbol names,
-   $ or a pointer fo LEXT (string), CONST (constant), 
+   $ or a pointer to LEXT (string), NUMBER (constant), 
    $ TTAG (tag)
+'a'enter string tag+>str+x>.
+   $ handle a string as an identifier; complain if not
 'a'skip+x>.
    $ go ahead until point, eol or eof; return that symbol
 'a'forget string+>x.
    $ throw away the last element of LEXT
-'p'was lexical pointer+>ptr+[]st[].
-   $ gives a readable version of a pointer for messages
-'q'was lexical integer+>ptr+x>.
-   $ return the value if it is a CONST
+'p'was lexical pointer+>ptr.
+   $ gives the string representation in BUFFER
 
-$ BODY ******************************************************** $
+$ BODY ********************************************************
 'pragmat'if=compile.
 
 $ external stuff $
-'pragmat'require=("display","tags","pragmats","buffer","input","rulebody","version").
+'pragmat'require=("display","tags","number","pragmats",
+    "buffer","input","path","rulebody","config").
 
-$ ************************************************************** $
-'charfile' SOURCE="stdin">.	$ input file
+$ ************************************************************* 
+'charfile' SOURCE=>"<<stdin>>".	$ input file
 
-$ stacks for strings and constants $
+$ stacks for strings
 'stack'[16] LEXT =(
-  ""		:Squote image      $ empty string
+  ""		:Squote image   $ empty string
 ).
-'stack'[5] CONST =(
-  0		:const zero,
-  1
-).
-'a'enter const+>v+ptr>-cnt:
-$ check the first 100 entries for equality, otherwise just add it
-  0->cnt,<<CONST->ptr,incr+ptr,(nxt:
-   >>CONST<ptr,(* v->CONST *)CONST,>>CONST->ptr;
-   CONST[ptr]=v;
-   cnt>100,(* v->CONST *)CONST,>>CONST->ptr;
-   incr+cnt,incr+ptr,:nxt).
 
-$ ************************************************************** $
+$ ************************************************************* 
 
 $ Symbol names $
-'table'SPECIAL =
+'table'[]SPECIAL =
 ("<dummy>"      :Sdummy symb,     "'end'"        :Sendsymb,
  "'action'"     :Saction,         "'function'"   :Sfunction,	
  "'predicate'"  :Spredicate,      "'question'"   :Squestion,
@@ -110,15 +101,15 @@ $ Symbol names $
  "<"            :Sless:Svlwb,     ">"            :Smore:Sright:Svupb,
  "<<"           :Slwb,            ">>"           :Supb,
  "["            :Ssub,            "]"            :Sbus,
-$ "[*"           :Ssubstar,        "*]"           :Sstarbus,
+ "@"            :Sanchor,         "#"            :Snoarg,          
  "<>"           :Scalibre,        "*"            :Sasterisk,
  "("            :Sopen,           ")"            :Sclose,
 
- ":"            :Scolon,          ","            :Scomma,
- ";"            :Ssemicolon,      "."            :Spoint,
+ ":"            :Scolon,          "::"           :Squalifier,
+ ","            :Scomma,          ";"            :Ssemicolon,
+ "."            :Spoint,
 
  "-"            :Sminus,          "+"            :Splus,
- "#"            :Snoarg,          "?"            :Senquiry,
  "!="           :Snot equal,      "/"            :Sslash,
  ">="           :Smreq,           "<="           :Slseq,
  "~"            :Scomplement,     "|"            :Sboolor,
@@ -126,27 +117,29 @@ $ "[*"           :Ssubstar,        "*]"           :Sstarbus,
 # end of line
  "\n"           :Seol
 ).
-$ put the character representation of ptr into []st[]
-'p'was lexical pointer+>ptr+[]st[]:
-  was+SPECIAL+ptr, copy string+SPECIAL+ptr+st;
-  was+LEXT+ptr, copy string+LEXT+ptr+st.
-'q'was lexical integer+>ptr+x>:
-  was+CONST+ptr,CONST[ptr]->x.
 
-$ ********************************************************* $
+$ put the character representation of ptr into []st[]
+'p'was lexical pointer+>ptr:
+  was+SPECIAL+ptr, copy string+SPECIAL+ptr+BUFFER;
+  was+LEXT+ptr, copy string+LEXT+ptr+BUFFER;
+  was+NUMBER+ptr, get number repr+ptr.
+
+$ ************************************************************* 
+
 $ error messages $
 'table'MESSAGE=(
-"too large number"            :number overflow,
 "hex digit expected after 0x" :hex digit expected,
 "wrong character denotation"  :wrong character denotation,
+"maximal string length exceeded":max string length exceeded,
 "unterminated string"         :unterminated string,
 "unknown key word '%p'"       :unrecognized bold,
-"wrong built-in %p"           :unrecognized builtin,
+"unknown manifest keyword %p" :unrecognized builtin,
 "missing ' after '%p'"        :missing bold delimiter,
+"not an identifier after -D"  :string tag syntax,
 "illegal character: %c"       :illegal character
 ).
 
-$ ****************** BASIC INPUT-OUTPUT ****************** $
+$ ****************** BASIC INPUT-OUTPUT *********************** $
 
 $ local variables and constants
 'variable'
@@ -164,6 +157,36 @@ $ local variables and constants
 'constant'
    tabchar=9,	$ tabular character
    end char=0x1234567. $ large number representing eof
+
+$ characters are read either from LEXT or from SOURCE
+$ 
+'p'open source+>type+>str:
+  $ switch to the next source:
+  $ type=0: read from the third character of LEXT[src]
+  $ type>0: LEXT[ptr] is a supplied name,
+  type=0,initialize source reading+str;
+  open src file+type+str,initialize source reading+0.
+
+'a'try to open+>str+res>-errno:
+  $ callback routine; str is a fully qualified name in LEXT
+  $ res=0: opened OK, res=1: file not found, res=-1: error opening
+  open file+SOURCE+/r/+LEXT+str,0->res; 
+  get file error+SOURCE+errno,(errno=2,1->res;-1->res).
+
+'a'close source:
+  $ clean up
+  was+LEXT+LEXTptr, -1->LEXTptr;
+  LEXTptr=0,close file+SOURCE,reset pr line,-1->LEXTptr;
+  +.
+
+$ ************************************************************* 
+
+'a'initialize source reading+>str:
+  $ initialize reading from either LEXT[str] or from SOURCE
+  str->LEXTptr,(str=0;string length+LEXT+str+LEXTlen,2->LEXTcnt),
+  0->pchar, -4->exhausted, 0->ppline, 0->was tab, 0->optor,
+  reset pr line, $ reset printed source line numbers
+  newline->char,next char,next visible char.
 
 'pragmat'macro=read char.
 'p'read char+char>:
@@ -195,119 +218,41 @@ $ local variables and constants
     end char->char
   ).
 
-$ ***************************************** $
+$ ************************************************************* 
 'p'bold letter+x>:
-  $ return the next bold letter; no spaces
+  $ return the next bold letter; no spaces are allowed
   =char=
   [/a/:/z/], char->x, next char;
   -.
 'p'digit+x>:
-  $ skip spaces, return the value of the digit
+  $ skip spaces, return the digit
   =char=
   [/ /], next char,:digit;
-  [/0/:/9/], subtr+char+/0/+x, next char;
+  [/0/:/9/], char->x,next char;
   -.
 'p'hex digit+x>:
-  $ skip spaces, return the value of the hex digit
+  $ skip spaces, return 0..9, A..F, a..f
   =char=
   [/ /], next char,:hex digit;
-  [/0/:/9/], subtr+char+/0/+x, next char;
-  [/a/:/f/], subtr+char+/a/+x,add+x+10+x, next char;
-  [/A/:/F/], subtr+char+/A/+x,add+x+10+x, next char;
+  [/0/:/9/;/a/:/f/;/A/:/F/],char->x,next char;
+  -.
+'q'is letgit char+>x:
+  =x=
+  [/A/:/Z/;/a/:/z/;/0/:/9/],+;
+  [/@/],is pragmat value+pgt library;
   -.
 'p'letgit+x>:
-  $ skip spaces, allow @ in library
-  =char=
-  [/ /], next char,:letgit;
-  [/A/:/Z/;/a/:/z/;/0/:/9/], char->x, next char;
-  [/@/], is pragmat value+pgt library, char->x, next char;
-  -.
+  $ skip spaces, allow @ in library mode only
+  char=/ /, next char, :letgit;
+  is letgit char+char,char->x,next char.
 'a'next visible char:
   $ skip spaces and newlines
   =char=
   [/ /], next char, :next visible char;
   [newline], incr+ppline, next char, :next visible char;
   +.
-$ ******************************************************** $
-$ path is unpacked to BUFFER. It is a sequence of strings
-$  separated by :
-'a'try to open+>str+res>-errno:
-  open file+SOURCE+/r/+LEXT+str, 0->res;
-  get file error+SOURCE+errno,(errno=2,1->res;-1->res).
 
-'a'add extension:
-  extend BUFFER+/./,extend BUFFER+/a/,extend BUFFER+/l/,extend BUFFER+/e/.
-
-'a'try next path+>ptr>+>str+>res>-n-nn-last:
-   $ copy the string from ptr until the next ;
-   >>BUFFER->n,path separator->last,(nxt: BUFFER[ptr]=path separator;
-               BUFFER[ptr]->last,incr+ptr,extend BUFFER+last,:nxt),
-   (last=path separator; $ empty path, do nothing $
-    (last=dir separator;extend BUFFER+dir separator), $ add separating slash $
-    unpack string+LEXT+str+BUFFER,
-    subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,
-    try to open+>>LEXT+res,forget string+>>LEXT,
-    (res<=0,unstack to+BUFFER+n;
-     add extension,
-     subtr+>>BUFFER+n+nn,pack string+BUFFER+nn+LEXT,
-     try to open+>>LEXT+res,forget string+>>LEXT,unstack to+BUFFER+n)).
-
-'a'try path+>str+>res>-path-ptr-end:
-   get pragmat value+pgt path+path,(path=0;
-    scratch+BUFFER,unpack string+LEXT+path+BUFFER,extend BUFFER+path separator,
-    <<BUFFER->ptr,>>BUFFER->end,(nxt:ptr>=end;
-      try next path+ptr+str+res,(res=1,incr+ptr,:nxt;+)),
-    scratch+BUFFER).
-
-'p'open source file+>type+>str-res-n:
-  $ try file name as it is, if not found, try to add extension ".ale"
-  try to open+str+res,
-  (res=1,scratch+BUFFER,unpack string+LEXT+str+BUFFER,
-    add extension,list length+BUFFER+n,pack string+BUFFER+n+LEXT,
-    scratch+BUFFER,try to open+>>LEXT+res,forget string+>>LEXT,
-    ((res=1,type=2),try path+str+res;+);+),
-  res=0.
-  
-'p'next source+>type+>ptr:
-   $ switch to the next source; 
-   $  type=0: read from the third character of LEXT[ptr]
-   $  type=1: LEXT[ptr] is the file name
-   $  type=2: try the string in the "path" pragmat
-   $  initialize reading; ptr=0 from SOURCE; 
-   $   otherwise from LEXT third char, first two are "--"
-   (type=0,ptr->LEXTptr,string length+LEXT+LEXTptr+LEXTlen,
-        2->LEXTcnt,0->give text;
-    open source file+type+ptr,0->LEXTptr,
-        get pragmat value+pgt text+give text),
-   0->pchar, get pragmat value+pgt tab width+tab width,
-   -4 ->exhausted, 0->ppline, 0->was tab, 0->optor,
-   reset pr line, $ reset printed source line numbers
-   newline->char,next char,next visible char.
-'a'close source:
-   $ close SOURCE of reading from there
-   LEXTptr>0,-1->LEXTptr;
-   LEXTptr=0,close file+SOURCE,reset pr line,-1->LEXTptr;
-   +.
-'a'create ice name-oldp-ptr-n-nn-ext:
-   $ use the -o argument; otherwise the name of the first source
-   >>BUFFER->oldp,get pragmat value+pgt ice+ptr,
-     (is+ptr,0->ext;get first source+ptr,1->ext;
-        internal error+_rule_+_line_),
-     unpack string+LEXT+ptr+BUFFER,>>BUFFER->nn,
-          $ does it have an extension; if yes strip it
-     (nxt:nn<=oldp; $ no extension found $
-      (=BUFFER[nn]=
-       [/./],(ext=0,2->ext,oldp->nn;
-              decr+nn,unstack to+BUFFER+nn,:nxt);
-       [///;/\/;/:/],(ext=1;oldp->nn);
-       decr+nn,:nxt)),
-     (ext=2; $ otherwise add extension
-       extend BUFFER+/./,extend BUFFER+/i/,extend BUFFER+/c/,extend BUFFER+/e/),
-      subtr+>>BUFFER+nn+n,pack string+BUFFER+n+LEXT,unstack to+BUFFER+oldp.
-   
-$ ******************************************************** $
-$ Symbols
-$ reading symbols $
+$ COMPOSITE SYMBOLS ******************************************* 
 'a'read greater+>optor+x>:
   $ look ahead after >; optor shows if after an operand 
   is+optor,(char=/=/,next char,Smreq->x; Smore->x);
@@ -332,63 +277,53 @@ $ reading symbols $
   [/0/], next char, read zero+1+x;
   [/1/:/9/], read const+1+x;
   Sminus->x.
-$ constants
+$ CONSTANTS *************************************************** 
 'a'read zero+>sign+x>:
   $ we are after a zero
   =char=
   [/ /], next char, :read zero; $ skip spaces
   [/0/:/9/], read const+sign+x; $ a constant
   [/x/;/X/], next char, read hex+sign+x;
-  const zero->x.
-'f'decimal overflow+>of>+>sign+>v:
-  v>=0;
-  (is+sign,v=min int);
-  1->of.
-'a'read const+>sign+x>-v-of:
-  $ a digit; this works for minint and maxint
-  subtr+char+/0/+v,0->of,next char,
-    (nxt-d: digit+d, addmult+v+10+d+v,decimal overflow+of+sign+v,:nxt;
-            is+of,error+number overflow;
-            is+sign,subtr+0+v+v;
-            +),
-    enter const+v+x.
-'f'hex overflow+>of>+>v-v1:
-  $ the topmost four bits of v should be zero
-  v->v1,left clear+v1+4,right clear+v1+4,
-   (v=v1;1->of).
-'a'read hex+>sign+x>-d-v-of:
+  get number zero+x.
+'a'read const+>sign+x>-ptr:
+  $ char is a digit, put the digits to BUFFER
+  >>BUFFER->ptr,extend BUFFER+char,next char,
+  (nxt-d:digit+d,extend BUFFER+d,:nxt;+),
+  enter const string+sign+ptr+x,unstack to+BUFFER+ptr.
+'a'read hex+>sign+x>-d-ptr:
   $ after 0x
-  hex digit+v,0->of,
-    (nxt: hex digit+d, hex overflow+of+v, left clear+v+4,
-            bool or+v+d+v, :nxt;
-          is+of,error+number overflow;
-          is+sign,subtr+0+v+v;+),
-    enter const+v+x;
-  error+hex digit expected, const zero->x.
+  hex digit+d,>>BUFFER->ptr,extend BUFFER+d,
+    (nxt: hex digit+d,extend BUFFER+d,:nxt;+),
+    enter hex const string+sign+ptr+x,unstack to+BUFFER+ptr;
+  error+hex digit expected, get number zero+x.
 
+$ CHARACTERS AND STRINGS ************************************** 
 'a'read char denotation+x>-v:
   $ we are after / reading a character denotation
   char->v,
     (char=newline, error+wrong character denotation;
      next char, (char=///, next char;
                  error+wrong character denotation)
-    ), enter const+v+x.
+    ), enter const value+v+x.
 'a'skip char denotation:
   $ skip  /X/
   char=newline;
   next char, (char=///, next char; +).
 
-'a'read string+x>-n:
+'a'read string+x>-optr-n:
   $ strings are stored in LEXT, char=/"/
-  scratch+BUFFER,0->n,
+  >>BUFFER->optr,0->n,
   (nxt: next char, (=char=
     [/"/], next char, $ closing quote mark
       (char=/"/, extend BUFFER+char, incr+n, :nxt;
        next visible char, $ if /"/ then continuation
          (char=/"/,:nxt;
           n=0, Squote image->x;
-          pack string+BUFFER+n+LEXT, >>LEXT->x));
-    [newline; end char], error+unterminated string, Squote image->x;
+          (n<max string length;error+max string length exceeded,
+            max string length->n),
+            pack string+BUFFER+n+LEXT,unstack to+BUFFER+optr,>>LEXT->x));
+    [newline; end char], error+unterminated string,
+          unstack to+BUFFER+optr,Squote image->x;
     extend BUFFER+char, incr+n, :nxt)).
 
 'a'skip string:
@@ -399,12 +334,12 @@ $ constants
    next char, :skip string.
 
 'a'forget string+>x:
-   $ remove the topmost string if not not needed
+   $ remove the topmost string in LEXT, it is not needed anymore
    x=Squote image;
    x=>>LEXT, unstack string+LEXT;
    +.
 
-$ COMMENTS $
+$ COMMENTS **************************************************** 
 'a'long comment:
   $ comment starting with dollar goes to the next one
   =char=
@@ -420,9 +355,9 @@ $ COMMENTS $
       [/A/:/Z/;/a/:/z/;/0/:/9/;/ /], next char, :nxt; +);
   -. $ not a short comment
 
-$ BOLD SYMBOLS $
-$ bold symbols are stored in a table
-'table'(left,right,adm)BOLD =
+$ BOLD SYMBOLS ************************************************ 
+$ allowed bold symbols are stored in a binary search table
+'table'[](left,right,adm)BOLD =
 ("a"           :B1        ,(   0,   0,Saction    ),
  "act"         :B2        ,(  B1,  B3,Saction    ),
  "action"      :B3        ,(   0,   0,Saction    ),
@@ -454,58 +389,68 @@ $ bold symbols are stored in a table
  "var"         :B29       ,(   0,   0,Svarsymb   ),
  "variable"    :B30       ,( B29, B31,Svarsymb   ),
  "x"           :B31       ,(   0,   0,Sextsymb   ),
-$ built-in strings and constants
+$ built-in manifest constants
  "_file_"      :D1        ,(   0,   0,1          ),
  "_line_"      :D2        ,(  D1,   0,2          ),
  "_rule_"      :first bin ,(  D2,  D4,3          ),
  "_source_"    :D4        ,(   0,  D5,4          ),
  "_title_"     :D5        ,(   0,   0,5          )
 ).
-'a'read bold+x>-n:
-  $ read a bold symbol 'abc'; give error messages
-    scratch+BUFFER,0->n,
+'a'read bold+x>-optr-n:
+  $ read a bold symbol 'abc'; give error message in case of error
+    >>BUFFER->optr,0->n,
     ((nxt-t: bold letter+t,extend BUFFER+t,incr+n,:nxt;
              char=/'/,next char),
-     pack string+BUFFER+n+LEXT,first bold->x,
-     (nxt: x=0,error+unrecognized bold+>>LEXT,Sdummy symb->x;
-          compare string+BOLD+x+LEXT+>>LEXT+n,next+BOLD+x,
-            (n>0,left*BOLD[x]->x,:nxt;
-             n<0,right*BOLD[x]->x,:nxt;
-             adm*BOLD[x]->x
-            )
-     ),
-     unstack string+LEXT;
+       pack string+BUFFER+n+LEXT,first bold->x,
+       (nxt: x=0,error+unrecognized bold+>>LEXT,Sdummy symb->x;
+            compare string+BOLD+x+LEXT+>>LEXT+n,next+BOLD+x,
+              (n>0,left*BOLD[x]->x,:nxt;
+               n<0,right*BOLD[x]->x,:nxt;
+               adm*BOLD[x]->x
+              )
+       ),
+       unstack string+LEXT,unstack to+BUFFER+optr;
     pack string+BUFFER+n+LEXT,error+missing bold delimiter+>>LEXT,
-    unstack string+LEXT,Sdummy symb->x).
-$ IDENTIFIERS $
-$ identifiers are passed to the "tags" module
-'a'read tag+x>:
-  $ handle an identifier colleced in BUFFER
-  scratch+BUFFER, extend BUFFER+char, next char,
-  (nxt-t: letgit+t, extend BUFFER+t, :nxt; +),
-  enter tag+BUFFER+x.
-$ built-in definitions $
-$ _line_, _file_, _rule_
-'a'read built in+x>-n:
-  scratch+BUFFER,extend BUFFER+/_/,1->n,
+     Sdummy symb->x,unstack string+LEXT,unstack to+BUFFER+optr).
+
+$ manifest constants:  _line_, _file_, _rule_, etc $
+'a'read manifest+x>-optr-n:
+  >>BUFFER->optr,extend BUFFER+/_/,1->n,
   ((nxt-t: bold letter+t,extend BUFFER+t,incr+n,:nxt;
            char=/_/,extend BUFFER+/_/,incr+n,next char),
-   pack string+BUFFER+n+LEXT,first bin->x,
-   (nxt:x=0,error+unrecognized builtin+>>LEXT;
-        compare string+BOLD+x+LEXT+>>LEXT+n,next+BOLD+x,
-         (n>0,left*BOLD[x]->x,:nxt;
-          n<0,right*BOLD[x]->x,:nxt;
-          adm*BOLD[x]->x)),
-   unstack string+LEXT,(=x=
-     [1;4],$ file  $ find linenum+0+#+x;
-     [2],  $ line  $ find linenum+0+x+#,enter const+x+x;
-     [3],  $ rule  $ get rule tag+x;
-     [5],  $ title $ get pragmat value+pgt title+x,(is+x;Squote image->x);
-     $ none of the above $ Sdummy symb->x);
-  n=1,error+illegal character+/_/,Sdummy symb->x;
+      pack string+BUFFER+n+LEXT,first bin->x,
+      (nxt:x=0,error+unrecognized builtin+>>LEXT;
+          compare string+BOLD+x+LEXT+>>LEXT+n,next+BOLD+x,
+           (n>0,left*BOLD[x]->x,:nxt;
+            n<0,right*BOLD[x]->x,:nxt;
+            adm*BOLD[x]->x)),
+      unstack string+LEXT,unstack to+BUFFER+optr,(=x=
+      [1;4],$ file  $ find linenum+0+#+x;
+      [2],  $ line  $ find linenum+0+x+#,enter const value+x+x;
+      [3],  $ rule  $ get rule tag+x;
+      [5],  $ title $ get pragmat value+pgt title+x,(is+x;Squote image->x);
+      $ none of the above $ Sdummy symb->x);
+  n=1,error+illegal character+/_/,unstack to+BUFFER+optr,Sdummy symb->x;
   pack string+BUFFER+n+LEXT,error+unrecognized builtin+>>LEXT,
-   unstack string+LEXT,Sdummy symb->x).
-$ **************************************************************** $
+    forget string+>>LEXT,unstack to+BUFFER+optr,Sdummy symb->x).
+
+$ TAGS ******************************************************** 
+$ identifiers are passed to the "tags" module for processing
+'a'read tag+>at+x>-ptr-n:
+  $ handle an identifier colleced in BUFFER
+  >>BUFFER->ptr,1->n, extend BUFFER+char, next char,
+  (nxt-t: letgit+t, extend BUFFER+t,0->at,incr+n,:nxt;+),
+  (is+at, Sanchor->x; enter tag+n+x), unstack to+BUFFER+ptr.
+'a'enter string tag+>str+x>-ptr-ptr2-n:
+  $ handle a string as an identifier; complain if not
+  >>BUFFER->ptr,unpack string+LEXT+str+BUFFER,subtr+>>BUFFER+ptr+n,
+  ptr->ptr2,incr+ptr2,
+  (nxt:n=0,1->n,extend BUFFER+/a/,error+string tag syntax;
+       ptr2>>>BUFFER;
+       is letgit char+BUFFER[ptr2],incr+ptr2,:nxt;
+       error+string tag syntax),
+  enter tag+n+x,unstack to+BUFFER+ptr.
+$ ************************************************************* 
 
 'variable'
   optor=0.	$ 1 after ),], tag, digits, char denotation
@@ -515,7 +460,7 @@ $ **************************************************************** $
   ppline>0, decr+ppline, Seol->x; $ stored newlines
   optor->ooptor, 0->optor, (nxt: =char=
     [/ /], next char, :nxt; $ skip spaces
-    [/A/:/Z/;/a/:/z/], 1->optor, read tag+x;
+    [/A/:/Z/;/a/:/z/], 1->optor, read tag+0+x;
     [/+/], next char, Splus->x;
     [/,/], next char, Scomma->x;
     [/;/], next char, Ssemicolon->x;
@@ -530,13 +475,13 @@ $ **************************************************************** $
     [/</], next char, read less+ooptor+x;
     [/>/], next char, read greater+ooptor+x;
     [/*/], next char, Sasterisk->x;
-    [/:/], next char, Scolon->x;
+    [/:/], next char, (char=/:/,next char,Squalifier->x;Scolon->x);
     [///], next char, (is+ooptor, Sslash->x;
             1->optor, read char denotation+x);
     [/./], next char, Spoint->x;
-    [/@/], (is pragmat value+pgt library, 1->optor, read tag+x;
-            error+illegal character+char, next char,:nxt);
-    [/?/], next char, Senquiry->x;
+    [/@/], (is pragmat value+pgt library, 1->optor, read tag+1+x;
+            next char,Sanchor->x);
+    [/?/], next char, Snoarg->x;
     [/$/], next char, long comment, :nxt;
     [/[/], next char, Ssub->x;
     [/]/], next char, 1->optor, Sbus->x;
@@ -545,14 +490,14 @@ $ **************************************************************** $
     [/!/], next char, (char=/=/, next char, Snot equal->x;
                        error+illegal character+/!/, :nxt);
     $ boolean operators $
-    [/~/],next char,Scomplement->x;
-    [/|/],next char,Sboolor->x;
-    [/&/],next char,Sbooland->x;
-    [/^/],next char,Sboolxor->x;
-    $ buit-in definitions $
-    [/_/],next char,read built in+x;
-    [end char],next char,Sendsymb->x;
-    error+illegal character+char,next char,:nxt
+    [/~/], next char, Scomplement->x;
+    [/|/], next char, Sboolor->x;
+    [/&/], next char, Sbooland->x;
+    [/^/], next char, Sboolxor->x;
+    $ manifest constants $
+    [/_/], next char, read manifest+x;
+    [end char], next char, Sendsymb->x;
+    error+illegal character+char, next char, :nxt
   ).  
 
 'a'skip+x>:

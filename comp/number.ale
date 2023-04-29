@@ -1,0 +1,182 @@
+$ hadnling target numbers for ALEPH
+'pragmat'module=number,title="number v2.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$
+$  (C) 2020-2023, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ target numbers are stored in the NUMBER[] stack,
+$    each number occupies one or more consecutive slots.
+$ actual arithmetic operations depend on the target word size
+$    and performed in the arithmetic module.
+
+$ target numbers
+'f'get number zero+x>.
+  $ return pointer to the zero target value
+'a'get target number value+>x+n>.
+   $ get target number value: list estimator and fill repeat
+   $ works for non-negative small numbers only
+'a'enter const string+>sign+>ptr+x>.
+   $ store the decimal string from BUFFER[ptr+1],
+   $   each entry is /0/../9/;  error if overflow
+'a'enter hex const string+>sign+>ptr+x>.
+   $ store the hexadecimal constant from BUFFER[ptr+1],
+   $  each entry is /0/--/9/,/A/../F/; error if overflow
+'a'enter const value+>n+ptr>.
+   $ enter the given value, error if not in (tmin int, tmax int)
+'a'get number repr+>ptr.
+   $ get the decimal representation of NUMBER[ptr] to BUFFER
+'stack'NUMBER.
+   $ target number storing space
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("arithm","buffer","display","config").
+
+'variable'rtarget min=0,rtarget max=0,max decimal=0,max hex=0.
+   $ registers with these values
+'variable'last digit=0. $ the last digit value in decimal repr.
+'variable'zero ptr=0.   $ target zero
+
+'stack'[2]NUMBER.
+
+'table'MESSAGE=(
+   "integer denotation is out of range": number overflow,
+   "integer value %d is out of range": wrong value
+).
+
+$ store a register as a NUMBER ****************************************
+'q'same number block+>x-y-cnt:
+   >>NUMBER->y,0->cnt,(nxt:cnt>=target word width;
+     NUMBER[x]=NUMBER[y],incr+cnt,decr+x,decr+y,:nxt).
+'a'store register+>reg+x>-old-cnt:
+   >>NUMBER->old,zero ptr->x,0->cnt,write register+reg+NUMBER, $top of NUMBER
+   (nxt:x>old; $ new
+        same number block+x,unstack to+NUMBER+old; $ found
+        cnt>100,>>NUMBER->x;
+        incr+cnt,add+x+target word width+x,:nxt).
+
+$ target numbers ******************************************************
+'f'get number zero+x>: zero ptr->x.
+   $ NUMBER with zero value
+'a'get target number value+>ptr+n>-v:
+   $ return the value of a target number, works for small positive numbers
+   read register+NUMBER+ptr+v,getcst register+v+n.
+
+'a'get digit+>ptr+d>: $ get next digit value from BUFFER
+   =BUFFER[ptr]=
+   [/0/:/9/],subtr+BUFFER[ptr]+/0/+d;
+   internal error+_rule_.
+'a'get hex digit+>ptr+d>: $ get next hex digit value from BUFFER
+   =BUFFER[ptr]=
+   [/0/:/9/],subtr+BUFFER[ptr]+/0/+d;
+   [/A/:/F/],subtr+BUFFER[ptr]+/A/+d,add+d+10+d;
+   [/a/:/f/],subtr+BUFFER[ptr]+/a/+d,add+d+10+d;
+   internal error+_rule_.
+
+'a'add digit+>v+>d-w:
+   $ v*10+d -> v
+   putcst register+10+w,reg operator+Atimes+w+v,
+   putcst register+d+w, reg operator+Aplus+w+v.
+'a'enter const string+>sign+>ptr+x>-v-d-of:
+   $ BUFFER[ptr+1] constains /0/../9/ digits, store as NUMBER
+   0->of,putcst register+0+v,incr+ptr,(nxt:ptr>>>BUFFER;
+     (get digit+ptr+d,reg compare2+Alt+v+max decimal),add digit+v+d,incr+ptr,:nxt;
+     reg compare2+Alt+v+max decimal,1->of;
+     d<last digit,add digit+v+d,incr+ptr,:nxt;
+     d<last digit,1->of;
+     (is+sign,ptr=>>BUFFER),add digit+v+d,incr+ptr,:nxt;
+     1->of),
+   (is+sign,reg operator+Aneg+v+v;+),
+   (is+of,error+number overflow,free register+v,zero ptr->x;
+    store register+v+x).
+
+'a'add hex digit+>v+>d-w:
+   dupl register+v+w,reg operator+Aplus+w+v,
+   dupl register+v+w,reg operator+Aplus+w+v,
+   dupl register+v+w,reg operator+Aplus+w+v,
+   dupl register+v+w,reg operator+Aplus+w+v,
+   putcst register+d+w,reg operator+Aor+w+v.
+'a'enter hex const string+>sign+>ptr+x>-v-d-of:
+   $BUFFER[ptr+1] ... contains /0/../9/,/a/../f/ hex digits
+   0->of,putcst register+0+v,incr+ptr,(nxt:ptr>>>BUFFER;
+     reg compare+Alt0+v,1->of;         $ sign bit is set
+     reg compare2+Ale+max hex+v,1->of; $ top 4 bits are set
+     get hex digit+ptr+d,add hex digit+v+d,incr+ptr,:nxt),
+   (is+sign,reg operator+Aneg+v+v;+),
+   (is+of,error+number overflow,free register+v,zero ptr->x;
+    store register+v+x).
+
+'a'enter const value+>n+x>-v:
+   is target const+n,putcst register+n+v,store register+v+x;
+   error+wrong value+n,zero ptr->x.
+
+'a'get number repr+>x-v:
+   $ get the decimal representation of NUMBER[x] to BUFFER.
+   $ use (-1-target max int) for target min int
+   (read register+NUMBER+x+v,reg compare2+Aeq+rtarget min+v),
+       $ it is target min int
+       free register+v,extend BUFFER+/-/,
+       dupl register+rtarget max+v,get register repr+v+/1/;
+   reg compare+Alt0+v, $ it is negative
+       reg operator+Aneg+v+v,extend BUFFER+/-/,get register repr+v+/0/;
+   get register repr+v+/0/.
+
+'a'get register repr+>x+>base-v-w:
+   $ release x at the end, >=0
+   dupl register+x+v,putcst register+10+w,reg operator+Adiv+w+v,
+   (reg compare+Aeq0+v;dupl register+v+w,get register repr+w+/0/),
+   $ v is x/10
+   putcst register+10+w,reg operator+Atimes+w+v,reg operator+Aminus+v+x,
+   $ now x is the remainder, print it
+   getcst register+x+w,add+w+base+w,extend BUFFER+w.
+
+$ initialize **********************************************************
+'a'initialize numbers-v-w-i-j:
+   $ create the first entry in NUMBER
+   putcst register+0+v,write register+v+NUMBER,>>NUMBER->zero ptr,
+   $
+   putcst register+0+rtarget max,     $ 0111 1111 1111 1111
+   putcst register+1+v,1->i,5->j,     $ 0000 0010 0000 0000
+   (nxt:i>=target word size;
+        dupl register+v+w,reg operator+Aor+w+rtarget max,
+        dupl register+v+w,reg operator+Aplus+w+v, $ shift left
+        (j=target word size,dupl register+v+max hex;+),
+                                      $ 0001 0000 0000 0000
+        incr+j,incr+i,:nxt),
+   $ now v=target min int
+   dupl register+v+rtarget min,       $ 1000 0000 0000 0000
+   free register+v,
+   dupl register+rtarget max+max decimal,putcst register+10+w,
+      reg operator+Adiv+w+max decimal,
+   dupl register+max decimal+w,putcst register+10+v,
+      reg operator+Atimes+v+w,dupl register+rtarget max+v,
+      reg operator+Aminus+w+v, getcst register+v+last digit,
+      incr+last digit.
+
+'root' waitfor+"arithmetic",initialize numbers.
+
+'pragmat'endif=compile.
+
+
+
+'end'
+
+
+
+
+
+

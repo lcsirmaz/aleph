@@ -1,0 +1,22 @@
+$ quicksort with callback function, main module (call QS)
+
+'pragmat'title="sort with callback".
+
+'pragmat'require="QS".
+
+'stack'[]A=(one,two,three,four,five,six,seven,eight,nine).
+'table'[]B=("one":one,"two":two,"three":three,"four":four,"five":five,
+          "six":six,"seven":seven,"eight":eight,"nine":nine).
+'variable'forward=0.
+
+'a'print A-idx:
+   <<A->idx,(nxt:idx>>>A,put char+STDOUT+newline; 
+    put string+STDOUT+B+A[idx],put char+STDOUT+newline,next+A+idx,:nxt).
+
+'root' print A,0->forward, quicksort+<<A+>>A+A, print A,
+               1->forward, quicksort+<<A+>>A+A, print A.
+'q'QS::qsort less+>x+>y-cmp:
+     compare string+B+x+B+y+cmp,(is+forward,cmp>0;cmp<0).
+
+'end'
+

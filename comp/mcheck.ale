@@ -1,10 +1,10 @@
 $ check macros
-'pragmat'module="macros".
+'pragmat'module=macros,title="macros v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -32,19 +32,18 @@ $ BODY ********************************************************* $
 ).
 
 'a'skip source:
-  Q cons+#;
+  Qnumber+#;
   (Q+Dlwb;Q+Dupb;Q+Dvlwb;Q+Dvupb;Q+Dcalibre),must Qtag+#;
-  Q+Dsub,must Qtag+#,skip source,mustQ+Dbus,(Qtag+#;must Qcons+#);
+  Q+Dsub,must Qtag+#,skip source,mustQ+Dbus,(Qttag+#;must Qcons+#);
   Q+Dnoarg;
   must Qtag+#.
 'a'skip affixes:
   Q+Dplus,skip source,:skip affixes;+.
 
 'a'rule body:
-  (Q+Dlabel,must Qtag+#;+),
+  (Q+Dlabel,must Qttag+#;+),
   (Q+Dlocal,Qskip+Dcolon;+),
-  (Q+Dbox,Qskip+Dbox,classification;
-   alt sequence).
+  (Q+Dbox,Qskip+Dbox,classification;alt sequence).
 'a'classification:
   mustQ+Darea,Qskip+Darea,mustQ+Dcomma,alternative,
     (Q+Dsemicolon,:classification;+).

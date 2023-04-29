@@ -1,10 +1,10 @@
 $ item.ale
-'pragmat'module="item".
+'pragmat'module=item, title="item, v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -16,49 +16,64 @@ $  but  WITHOUT ANY WARRANTY; without even the implied warranty
 $  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 $  the GNU General Public License for more details.
 $
-$ ************************************************************* 
+$ *************************************************************
 
-$ HEADER *************************************************** $
+$ HEADER ******************************************************
 $ read all items from the .ice file
 
-'a'convert to item.
-   $ the item for I<idx>
+'f'convert to item+>x>.
+   $ make a pointer to ITEM from I<idx>
+'a'head section+>fileptr.
+'a'skip head section.
+   $ process/skip the head section of the opened ice file
+'a'item section.
+  $ process the item section at the first pass
+'a'skip item section.
+   $ skip item section in subsequent iterations
+'a'scan linked modules.
+   $ determine which modules to keep; check double definitions; add
+   $  import ITEMS their definition in the repr field
+'a'report not used public items.
+   $ report these items (warning)
+'a'open next module+next>.
+   $ next=0: no more modules, 1: opened, 2: no need to read (built-in)
+'a'get next module head+ptr>.
+   $ return the next required module head, or zero if no more
+'a'read file info+>item.
+   $ read definition string and file area, add to item
+'a'add matter+>type+>str.
+   $ add front/back matter to be retrieved later
+'q'get matter+>ptr>+>type+str>.
+   $ get the next matter starting from ptr=0; fails if no more
+
+'q'is assign item+>item,is waitfor item+>item,is root item+>item.
 'q'is builtin rule+>item+idx>.
-'f'get calibre+>item+x>,get ssel+>item+x>,get fill+>item+x>,
-   get vupb+>item+x>,get vlwb+>item+x>,get list link+>item+x>.
+'q'no call stack rule+>item.
+$ auxiliary functions
+'f'get calibre+>item+x>,get fill+>item+x>,get vupb+>item+x>,
+   get vlwb+>item+x>,get list link+>item+x>.
 'a'put vupb+>item+>x,put vlwb+>item+>x,put fill+>item+>x,
    put list link+>item+>x.
    $ item is a list, get/set data
 'f'get number of formals+>item+n>,get formal+>item+>i+type>,
-   get repeat count+>item+cnt>.
+   get anchor count+>item+cnt>.
    $ item is a rule, get number and type of formal affixes
-'f'get file data+>item+id>+ptr>+link>,get file link+>link>+hash>+id>.
+'f'get file data+>item+str>+off>,get file area+>item+>cnt+list>.
+   $ item is a file, get string and area members, starting from 1
 
 'q'is item flag+>item+>flag.
 'a'set item flag+>item+>flag.
 'a'clear item flag+>item+>flag.
-'q'get item def+>item+def>.
-   $ if item is imported, return the defining item
 
-'a'advance base item+flag>.
-'a'head section+>flag.
-'a'skip head section.
-   $ process/skip head section of the next input file
-'a'item section.
-'a'skip item section.
-   $ process/skip item section of a module/main
-'a'file entry.
-   $ handles a file entry; storing all details 
-'a'check all items.
-   $ check that imported tags have a definition
-
+$ error information about an item
 'f'find item lineno+>item+line>+str>+module>.
    $ %i format: find line/source (module) for an item
 'f'find lineno+>old+line>+str>.
-   $ %l format: find a place in this module
+   $ %l format: find the line number in this module
 
 $ item flags $
 'constant'
+  theader	= 0x0001, $ module header
   tpublic	= 0x0004, $ public 
   timported	= 0x0008, $ imported
   texternal	= 0x0010, $ external
@@ -68,11 +83,16 @@ $ constant, pointer constant
 $ file
   tinfile	= 0x0020, $ direction in file declaration
   toutfile	= 0x0040,
+$ referenced export
+  treferenced	= 0x0080, $ which exported items are used
 $ rule flags
   rside effect	= 0x0100, $ 'a','p'
   rcan fail	= 0x0200, $ 'q','p'
   rno return	= 0x0400, $ 'e'
-  rvararg	= 0x8000, $ has formal *
+  rplainpidgin	= 0x1000, $ pidgin external call
+  raltpidgin	= 0x2000, $ alt pidgin external call
+  rempty        = 0x4000, $ empty body
+  rvararg	= 0x8000, $ has formal @
   routvararg	=0x10000, $ has out formal vararg
   rtrace      =0x1000000, $ trace=on, print when enter the rule
   rcount      =0x2000000, $ count=on, profiling
@@ -84,36 +104,48 @@ $ rule types
   rpred		=rside effect|rcan fail,
   rexit		=rno return,
   rtype		=rside effect|rcan fail|rno return,
-  rspecial	=rtrace|rcount|rbounds.
+  rpidgin	=rplainpidgin|raltpidgin,
+  rspecial	=rtrace|rbounds. $ create a_rulename
 
-'stack'(flag,type,tag,lineno,adm,repr)ITEM.
+'stack'(flag,type,scope,tag,lineno,adm,repr)ITEM.
 
 $ BODY *************************************************** $
 'pragmat'if=compile.
 
-'pragmat'require=("lexical","input","error","version").
+'pragmat'require=("lexical","input","error","config").
 
 $ ITEM stack --------------------------------------------- $
-'stack'[20](flag,type,tag,lineno,adm,repr)ITEM.
-$ type:  Irule      adm => formals
+'stack'[20](flag,type,scope,tag,lineno,adm,repr)ITEM.
+$
+$ type:  Irule      adm => AUX(formals)
 $        variable   adm => expression (to be evaluated)
-$        list       adm => vlwb,vupb,fill,calibre,ssel (+link)
-$        pointer    adm => list
-$        file       adm => (off,table,link) for string
+$        list       adm => AUX(vlwb,vupb,fill,calibre,ssel,link)
+$        pointer    adm => ITEM(list)
+$        file       adm => AUX(count,table,pointer) followed by area
+$ scope: LEXT entry, the qualifier (can be Squite image)
 $ tag:   LEXT entry; data*tag is the global definition
 $ lineno:definition line in this module 
+$ repr:  for tpublic  link to the module head (to add the "used" flag)
+$        for tmported link to defining ITEM
+$
+$ 
+$ external rule:           repr => string
+$ external const/variable: repr => string
+$ external file:           adm  => string (repr is gemerated)
+$ external list:           vlwb => string (repr is generated)
 $
 $ for a module head:
-$        tag    => module title
-$        type   => Dmodule/Dtitle
-$        flag   => use extension
+$        tag    => module tag/ 0
+$        scope  => title
+$        type   => ptr in FILES (for opening it again), or zero
+$        flag   => theader + Mmodule / Mrequested / Mchecked
+$        lineno => max lineno here
 $        adm    => definition list in AUX
-$        repr   => link to the following module head
-$        lineno => maximal lineno value in this module
+$        repr   => link to the next module head
 $
 
 'a'expand ITEM:
-  (* 0->flag->type->tag->lineno->adm->repr *) ITEM.
+  (* 0->flag->type->scope->tag->lineno->adm->repr *) ITEM.
 
 'q'is item flag+>item+>flag-x:
   bool and+flag*ITEM[item]+flag+x,is+x.
@@ -121,74 +153,73 @@ $
   bool or+flag*ITEM[item]+flag+flag*ITEM[item].
 'a'clear item flag+>item+>flag-mask:
   bool invert+flag+mask,bool and+mask+flag*ITEM[item]+flag*ITEM[item].
-'q'get item def+>item+def>:
-  is item flag+item+touter,get tag data+tag*ITEM[item]+def.
-'a'convert to item:
-   addmult+inpt value+<>ITEM+base item+inpt value.
+
+'f'convert to item+>x>:
+   addmult+x+<>ITEM+mod base+x.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
 'constant'
   tglobal	= tpublic|timported|texternal,
-  touter	= timported|texternal,
-  titem mask	= tglobal|rtype|rvararg|routvararg|
-                        rtrace|rcount|rbounds.
+  titem mask	= tglobal|rtype|rvararg|routvararg|rempty|
+                        rtrace|rcount|rbounds,
+  Mmodule	= 0x0002, $ module, not main
+  Mrequested	= 0x0004, $ module requested (main)
+  Mchecked	= 0x0008. $ module imports are checked
   
 $ AUX stack ---------------------------------------------- $
-'stack'[10](vlwb,vupb,fill,calibre=count,width=ssel=item,link=data=AUX)AUX.
-$ adm*rule => <count,width,link>
-$  followed by <count> many formal types; formal lists have two
-$  additional entries: calibre and ssel; <width> is the total 
-$  width of the list
-$  each formal list is stored only once (linear search)
-$ adm*list => <vlwb,vupb,fill,calibre,ssel,link>
-$  where vlwb,vupb also stores size estimate,
-$  size
-$ adm*file => <count,item,link>
+$ store auxiliary information about items
+$ list extension of an ITEM from adm*ITEM
+$ (vlwb,vupb,fill,calibre,ssel,link)
+$      vlwb:     esize (first round), vlwb NUMBER; string for external 
+$      vupb:     etype (first round), vupb NUMBER
+$      fill:     total fill size
+$      calibre:  calibre, >=1
+$      ssel:     standard selector
+$      link:     linking all list definitions
+$
+$ formal affix block head, followed by types and list parameters
+$ (#,#,#,count,width,link)
+$      count:    number of formal affixes
+$      width:    length of the following block (plus 2 for lists)
+$      link:     next formal affix block
+$
+$ module line number blocks, linked from the adm*ITEM field
+$ (#,#,#,minn,maxn,data)
+$      minn:     minimal line number
+$      maxn:     maximal line number
+$      data:     LEXT pointer to the supplied module string
+$
+$ front/back matter, roots
+$ (#,#,#,minn,maxn,link)
+$      minn:     type (0,1,2)
+$      maxn:     item or string
+$      link:     link to the next
+$
+$ tag definitions with the same tag but different qualifier
+$ (#,#,#,scope,item,link)
+$      scope:    LEXT qualifier
+$      item:     corresponding ITEM
+$      link:     link to the next definition
+$
+$ file extension from adm*ITEM
+$ (#,#,#,count,tble,data)
+$      connt:    number of lists following this flock
+$      tble:     @StdString table for the string
+$      data:     pointer constant ITEM for the string
+$
+'stack'[10](vlwb,vupb,fill,calibre,ssel,link)
+           (#,#,#,          count,width,link)
+           (#,#,#,            minn,maxn,data)
+           (#,#,#,            minn,maxn,link)
+           (#,#,#,           scope,item,link)
+           (#,#,#,           count,tble,data)
+           (#,#,#,#,#,                   AUX)AUX.
+
 'a'push AUX+>x: (* x->data *)AUX.
 
-$ compatibility ------------------------------------------ $
-'table'MESSAGE=(
-  "%p: incompatible types at %i and %i" :incompatible global types,
-  "%p: mixing external at %i and %i"    :incompatible external,
-  "%p: doubly defined at %i and %i"     :doubly defined,
-  "%p: no definition, requested at %i"  :not defined
-).
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
-'q'stack size mismatch+>item1+>item2-x1-x2:
-  (get ssel+item1+x1,get ssel+item2+x2,x1!=x2);
-  (get calibre+item1+x1,get calibre+item2+x2,x1!=x2).
-
-'q'unequal types+>type1+>type2:
-  type1=type2,-;
-  type1=Iconstant,type2=Ipointer constant,-;
-  type1=Ipointer constant,type2=Iconstant,-;
-  +.
-
-'q'incompatible types+>item1+>item2-type:
-  (type*ITEM[item1]->type,unequal types+type+type*ITEM[item2]);
-  type=Irule,adm*ITEM[item1]!=adm*ITEM[item2];  $ have different formal list $
-  (type=Istack;type=Itable;type=Istatic stack),stack size mismatch+item1+item2;
-  -.
-
-'a'check compatibility+>tag+>item1+>item2:
-   incompatible types+item1+item2,error+incompatible global types+tag+item1+item2;
-   is item flag+item1+texternal,
-     (is item flag+item2+texternal;error+incompatible external+tag+item1+item2);
-   is item flag+item2+texternal,error+incompatible external+tag+item2+item1;
-   is item flag+item1+tpublic,
-     (is item flag+item2+tpublic,error+doubly defined+tag+item1+item2;+);
-   is item flag+item2+tpublic,put tag data+tag+item2;
-   +.
-
-'a'enter item+>item-tag-def:
-   is item flag+item+tglobal, $ if not global, don't do anything
-     tag*ITEM[item]->tag,get tag data+tag+def,
-     (def=0,put tag data+tag+item;
-      check compatibility+tag+def+item);
-   +.
-
 $ item interface ----------------------------------------- $
-'variable'link formals=0. $ link all formals $
+'variable'link formals=0. $ AUX pointer for the first formal affix block $
 
+$ list extension for an item
 'f'get calibre+>item+x>: calibre*AUX[adm*ITEM[item]]->x.
 'f'get ssel+>item+x>: ssel*AUX[adm*ITEM[item]]->x.
 'f'get vupb+>item+x>: vupb*AUX[adm*ITEM[item]]->x.
@@ -200,23 +231,28 @@ $ item interface ----------------------------------------- $
 'a'put fill+>item+>x: x->fill*AUX[adm*ITEM[item]].
 'a'put list link+>item+>x:x->link*AUX[adm*ITEM[item]].
 
+$ rule extension
 'f'get number of formals+>item+n>: count*AUX[adm*ITEM[item]]->n.
 'f'get formal+>item+>i+type>-p:
    (adm*ITEM[item]->p,i>=count*AUX[p]),0->type;
    incr+p,add+i+p+p,AUX[p]->type.
-'f'get repeat count+>item+cnt>-p-n:
+'f'get anchor count+>item+cnt>-p-n:
    0->cnt,adm*ITEM[item]->p,count*AUX[p]->n,
    (nxt:n=0;
-        decr+n,incr+p,(AUX[p]=Iformal repeat,n->cnt;:nxt)).
+        decr+n,incr+p,(AUX[p]=Iformal anchor,n->cnt;:nxt)).
 
-'f'get file data+>item+id>+ptr>+link>-p:
-  adm*ITEM[item]->p,item*AUX[p]->id,count*AUX[p]->ptr,link*AUX[p]->link.
-
-'f'get file link+>link>+hash>+id>:
-  link=0,0->id->hash;
-  count*AUX[link]->hash,item*AUX[link]->id,link*AUX[link]->link.
-
-$ item section ******************************************** $
+$ matter section *****************************************
+'variable'matter link=0.
+'a'add matter+>type+>str:
+   $type=0: back; type=1: front, type=2: roots
+   (* type->minn,str->maxn,matter link->link *) AUX,
+      >>AUX->matter link.
+'q'get matter+>ptr>+>type+str>:
+   $ type=0: back, type=1: front
+   (ptr=0,matter link->ptr;link*AUX[ptr]->ptr),
+   (nxt:was+AUX+ptr,(minn*AUX[ptr]=type,maxn*AUX[ptr]->str;
+                     link*AUX[ptr]->ptr,:nxt)).
+$ item section ******************************************** 
 'q'compare formals+>p1+>p2-w:
    count*AUX[p1]=count*AUX[p2],
    width*AUX[p1]->w,width*AUX[p2]=w,(nxt:w=0;
@@ -231,12 +267,16 @@ $ item section ******************************************** $
 'a'formal affixes+>formals+>cnt-x1-x2-type:
   cnt=0;
   decr+cnt,must+Ttype+type,push AUX+type,
-    ((type=Iformal stack;type=Iformal table),
-       must+Tconst+x1,must+Tconst+x2,
-       formal affixes+formals+cnt, $ store the rest $
-       incr+width*AUX[formals],push AUX+x1,
-       incr+width*AUX[formals],push AUX+x2;
-     :formal affixes).
+    (=type=
+     [Iformal stack;Iformal table],
+           must+Tconst+x1,must+Tconst+x2,
+           formal affixes+formals+cnt, $ store the rest $
+           incr+width*AUX[formals],push AUX+x1,
+           incr+width*AUX[formals],push AUX+x2;
+     [Iformal in;Iformal out;Iformal inout;
+      Iformal file;Iformal anchor;Iformal shift],
+           :formal affixes;
+     corrupt ice file+_rule_).
 
 'a'store formal affixes+formals>-cnt-old:
    must+Tconst+cnt,>>AUX->old,
@@ -246,197 +286,353 @@ $ item section ******************************************** $
 
 'a'store list bounds+bounds>-cal-ssel:
    must+Tconst+cal,must+Tconst+ssel,
-   (* 0->vlwb->vupb->fill,cal->calibre,ssel->ssel,-1->link *)AUX,
+   (* 0->vlwb->vupb->fill,cal->calibre,ssel->ssel,0->link *)AUX,
    >>AUX->bounds.
 
-'f'check item ID+>ID:
-   ID=>>ITEM;corrupted ice file+_title_+_line_.
+'a'check item ID+>ID:
+   ID=>>ITEM;corrupt ice file+_rule_.
+
+'a'enter item-def:
+   $ if >>ITEM is public, add to the global list of definitions
+   $   of this tag (together with the qualifier, which is not empty)
+   $ set repr to the mod base
+   is item flag+>>ITEM+tpublic, $ if not exported, do nothing
+     mod base->repr*ITEM,      $ to mark the module to be included
+     (* scope*ITEM->scope,>>ITEM->item,0->link *)AUX,
+     get tag data+tag*ITEM+def,
+     (nxt:def=0,put tag data+tag*ITEM+>>AUX;
+      $ def is an AUX pointer,
+      link*AUX[def]=0,>>AUX->link*AUX[def];
+      link*AUX[def]->def,:nxt);
+   +.
 
 'a'read item-ID-flag-lineno:
+   $ read the next item
    expand ITEM,
    must+Ttype+type*ITEM,must+Titem+ID,check item ID+ID,
    must+Tconst+flag,bool and+flag+titem mask+flag*ITEM,
    must+Tconst+lineno,
-   (lineno<=0;
-    lineno>max lineno,corrupted ice file+_title_+_line_;
+   (lineno<=0;  $ buit-in
+    lineno>max lineno,corrupt ice file+_rule_;
     lineno->lineno*ITEM),
    (=type*ITEM=
     [Irule], store formal affixes+adm*ITEM;
     [Istack;Itable;Istatic stack],store list bounds+adm*ITEM;
     [Iconstant;Ivariable;Istatic var;Ipointer constant;
      Ichar file;Idata file],+;
-    corrupted ice file+_title_+_line_),
-   must+Tstring+tag*ITEM, enter item+>>ITEM.
+    corrupt ice file+_rule_),
+   must+Tstring+scope*ITEM,must+Tstring+tag*ITEM,enter item.
 
 'a'item section:
+   $ read all items and populate the ITEM stack
    was error;
-   (nxt:R+Dpoint; read item,:nxt).
+   (nxt:R+Dpoint;read item,:nxt).
 
 'a'skip item section:
-   R+Dpoint;next symbol,:skip item section.
+   $ skip the item section
+   R+Dpoint;R+Dend;next symbol,:skip item section.
 
-$ file entry ********************************************** $
-'f'check type+>item+>type:
-  (=type*ITEM[item]=
-   [Icharfile;Idatafile],type!=Dfile;
-   [Itable;Istack;Istatic stack],type!=Dlist;
-   +),corrupted ice file+_title_+_line_;
-  +.
-'a'file area+>ptr-list-hash:
-  R+Dsub,(nxt:R+Dbus;
-          must+Titem+list,check type+list+Dlist,must+Tconst+hash,
-          (* hash->count,list->item,0->link *)AUX, 
-          >>AUX->link*AUX[ptr],>>AUX->ptr,:nxt);
-  +.
-'a'file entry-item-ptr-x:
-   $ I8 [I9 670911447 I75 208619606 I77 -1497425117 I76 -1890251351 ]2 I1 I168 .
-   $ <item> Dsub (<tag> <hash>)* Dbus 
-   $     <direction 0..3> <stdstr> <ptr> Dpoint
-   must+Titem+item,check type+item+Dfile,
-     (* 0->count->item->link *)AUX,>>AUX->ptr->adm*ITEM[item],
-     file area+ptr,must+Tconst+x, $ direction $
-     ((x=1;x=3),set item flag+item+tinfile;+),
-     ((x=2;x=3),set item flag+item+toutfile;+),
-     must+Titem+x,x->item*AUX[ptr],  $ item, @StringTable $
-     must+Titem+x,x->count*AUX[ptr], $ pointer constant $
-     must+Dpoint+#.
-
-$ string table ******************************************** $
-$ @StringTable and @@make is defined here
+$ built-in tags ******************************************** $
+$ @StringTable, shift affix block, get affix blockno
 'stack'(next,def)LEXT=(
   "@StringTable",   (0,0):StdString,
-  "@@make",         (0,0):Sassignment,
   "shiftaffixblock",(0,0):Sshiftaffix,
-  "getaffixblockno",(0,0):Sgetaffixno
+  "getaffixblockno",(0,0):Sgetaffixno,
+  "@@waitfor",      (0,0):Swaitfor,
+  "@@make",         (0,0):Smake,
+  "@root",          (0,0):Sroot,
+  "backtrack",      (0,0):Sbacktrack
 ).
 'constant'
-  tassignment	= texternal|rvararg|routvararg,
-  tshiftaffix	= tpublic|rpred.  
+  modulehead    = theader|Mmodule,
+  tshiftaffix	= tpublic|rque|rvararg,
+  tgetaffix	= tpublic|rvararg.
+'variable'waitfor formals=0,make formals=0,root formals=0.
 
-'a'add stdstring:
-  (* 0->vlwb->vupb->fill,1->calibre->ssel,-1->link *)AUX,
-  (* tpublic->flag,Itable->type,0->lineno,StdString->tag,
-            >>AUX->adm,0->repr *)ITEM,
-  put tag data+StdString+>>ITEM.
+'a'add stdstring: $ module for @StringTable
+   head section+0,
+   $ add @StringTable entry
+   expand ITEM, Itable->type*ITEM, tpublic->flag*ITEM,
+       Squote image->scope*ITEM,StdString->tag*ITEM,  
+   $ list bounds
+   (* 0->vlwb->vupb->fill,1->calibre->ssel,0->link *)AUX,
+       >>AUX->adm*ITEM,
+   enter item.
 
-'a'add assignment external-old:  $ >in+*+out> $
-   >>AUX->old,(* 3->count->width,0->link *)AUX,
-   (* tassignment->flag,Irule->type,0->lineno,Sassignment->tag,
-           >>AUX->adm,0->repr *)ITEM,
-   push AUX+Iformal in,push AUX+Iformal repeat,push AUX+Iformal out,
-   search formals+old+adm*ITEM,put tag data+Sassignment+>>ITEM.
-'a'add shiftaffix external-old: $ +* $
-   >>AUX->old,(* 1->count->width,0->link *)AUX,
-   (* tshiftaffix->flag,Irule->type,0->lineno,Sshiftaffix->tag,
-           >>AUX->adm,0->repr *)ITEM,
-   push AUX+Iformal shift,
-   search formals+old+adm*ITEM,put tag data+Sshiftaffix+>>ITEM.
-'a'add getaffixno external-old: $ +>n + * $
-   >>AUX->old,(* 2->count->width,0->link *)AUX,
-   (* tpublic->flag,Irule->type,0->lineno,Sgetaffixno->tag,
-           >>AUX->adm,0->repr *)ITEM,
-   push AUX+Iformal out,push AUX+Iformal shift,
-   search formals+old+adm*ITEM,put tag data+Sgetaffixno+>>ITEM.
+'a'add shift affix rules: $ module for shift affix and get affix
+   head section+0,
+   $ rule shift affix block, this is a question
+   expand ITEM, tshiftaffix->flag*ITEM,Irule->type*ITEM,
+       Squote image->scope*ITEM,Sshiftaffix->tag*ITEM,
+   add formal affixes+adm*ITEM+1+Iformal shift,
+   enter item,
+   $ rule get affix blockno, this is a function
+   expand ITEM, tgetaffix->flag*ITEM,Irule->type*ITEM,
+       Squote image->scope*ITEM,Sgetaffixno->tag*ITEM,
+   add formal affixes+adm*ITEM+2+Iformal out+Iformal shift,
+   enter item.
 
+'a'add formal affixes+formals>+>cnt+@+>affs-old:
+   >>AUX->old,(* cnt->count,0->width->link *)AUX,>>AUX->formals,
+   (cnt=0;(nxt:push AUX+affs,incr+width*AUX[formals],
+                    (shift affix block+@,:nxt;+))),
+   search formals+old+formals.
+
+'a'add builtin formals:
+   $ @@waitfor+T[]+>ptr.
+   add formal affixes+waitfor formals+2+Iformal table+Iformal in+1+1,
+   $ @@make+>in+@+out>.
+   add formal affixes+make formals+3+Iformal in+Iformal anchor+Iformal out,
+   $ @root.
+   add formal affixes+root formals+0+0.
+
+'q'is waitfor item+>item: $ it has the rpidgin flag
+   repr*ITEM[item]=Swaitfor,type*ITEM[item]=Irule,
+       adm*ITEM[item]=waitfor formals.
+'q'is assign item+>item:
+   repr*ITEM[item]=Smake,is item flag+item+texternal,
+   type*ITEM[item]=Irule,adm*ITEM[item]=make formals.
+$ mod base is not necessarily set (scanning the ITEM list only)
+'q'is root item+>item:
+   tag*ITEM[item]=Sroot,type*ITEM[item]=Irule,
+   adm*ITEM[item]=root formals,(is item flag+item+texternal,-;+).
 'q'is builtin rule+>item+idx>:
-  =tag*ITEM[item]=
-  [Sassignment],1->idx;
-  [Sshiftaffix],2->idx;
-  [Sgetaffixno],3->idx;
-  -.
-$ head section ******************************************** $
+   =tag*ITEM[item]=
+   [Sshiftaffix],1->idx;
+   [Sgetaffixno],2->idx;
+   -.
+'q'no call stack rule+>item:
+   is waitfor item+item,-;
+   is item flag+item+rexit,-;
+   is item flag+item+texternal,tag*ITEM[item]!=Sbacktrack;
+   is builtin rule+item+#.
+$ file extension *********************************************
+'a'read file info+>item-ptr-x-y:
+    $ add file extension: string plus area
+    must+Titem+x,must+Titem+y, $ @StringTable, offset
+    (* 0->count,x->tble,y->data *)AUX, >>AUX->ptr->adm*ITEM[item],
+    (R+Dsub,(nxt:R+Dbus;must+Titem+x,push AUX+x,incr+count*AUX[ptr],:nxt);+).
+'f'get file data+>item+tbl>+off>-ptr:
+    adm*ITEM[item]->ptr,tble*AUX[ptr]->tbl,data*AUX[ptr]->off.
+'f'get file area+>item+>cnt+list>-ptr:
+    $ cnt starting from 1, the last entry is zero.
+    (adm*ITEM[item]->ptr,cnt>count*AUX[ptr]),0->list;
+    add+ptr+cnt+ptr,AUX[ptr]->list.
+    
+
+$ head section ***********************************************
 $ each module has an ITEM entry linked through the repr field
 'variable'
    max lineno=0,   $ maximal lineno in this module
-   base item=0,    $ ITEM[base] describes this module
-   first item=0.   $ the first module starts here
+   mod base=0,     $ ITEM[base] describes this module
+   first module=0, $ the first module starts here
+   last module=0,  $ the last (empty) module
+   main module=0.  $ the main module
 
 'table'MESSAGE=(
-  "module with the same title ""%p""" :same title,
-  "two main modules: ""%p"" and ""%p""":two main modules,
-  "no main module":no main module,
-  "incompatible .ice format": incompatible format
+  "more than one main module: %p"  :two main modules,
+  "compiled for different target word size" :wrong target size
 ).
 
-'a'check module title-ptr:
-   first item->ptr,(nxt:ptr=0;
-     (type*ITEM=Dtitle,type*ITEM[ptr]=Dtitle),
-        error+two main modules+tag*ITEM+tag*ITEM[ptr];
-     tag*ITEM=tag*ITEM[ptr],warning+same title+tag*ITEM;
-     repr*ITEM[ptr]->ptr,:nxt).
-'a'check ice compat-n:
-   must+Tconst+n,
-     (n=target word size;
-      error+incompatible format,corrupted ice file+_title_+_line_),
-   must+Tconst+n,
-     (n=max stack size;
-      error+incompatible format,corrupted ice file+_title_+_line_),
-   must+Tconst+n,
-     (n=max repeat size;
-      error+incompatible format,corrupted ice file+_title_+_line_).
-'a'read definition list-n-str:
-   must+Tconst+n,
-     (n>=max lineno,n->max lineno;
-      corrupted ice file+_title_+_line_),
+'a'check main module:
+   $ this is a main module, check for uniqueness
+   is+main module,error+two main modules+type*ITEM[main module];
+   >>ITEM->main module.
+'a'read definition list-minn-maxn-str:
+   $ read line numbers into AUX (see positions)
+   $ <min> <max> "source file"
+   must+Tconst+minn,must+Tconst+maxn,
+     (maxn>=max lineno,maxn->max lineno;
+      corrupt ice file+_rule_),
      must+Tstring+str,
-     (* n->width,str->data *)AUX,
+     (* minn->minn,maxn->maxn,str->data *)AUX,
      (adm*ITEM=0,>>AUX->adm*ITEM;+),
      (R+Dpoint;:read definition list).
-
-'a'head section+>flag:
-  expand ITEM, flag->flag*ITEM,
-  (R+Dmodule,Dmodule->type*ITEM;
-   R+Dtitle,Dtitle->type*ITEM,set target file;
-   corrupted ice file+_title_+_line_),
-  must+Tstring+tag*ITEM, check module title, $ warn for the same title 
-  check ice compat, $target word size, stack sizes
-  0->max lineno,read definition list,max lineno->lineno*ITEM,
-  $ finally link them $
-  (base item=0,>>ITEM->first item;>>ITEM->repr*ITEM[base item]),
-  >>ITEM->base item.
-  
-'a'advance base item+flag>:
-$  (base item=0;repr*ITEM[base item]->base item),
-  (base item=0,first item->base item;repr*ITEM[base item]->base item),
-  (base item=0,0->flag;
-    lineno*ITEM[base item]->max lineno,
-    flag*ITEM[base item]->flag).
+'a'link module header:
+   $ link the module head
+   (mod base=0,>>ITEM->first module; >>ITEM->repr*ITEM[mod base]),
+   >>ITEM->mod base.
+'a'head section+>file:
+   $ read a new .ice file; file=0: virtual heades
+   file=0,expand ITEM,modulehead->flag*ITEM,link module header;
+   expand ITEM,file->type*ITEM,theader->flag*ITEM,
+   (R+Dmodule,set item flag+>>ITEM+Mmodule,
+      must+Tstring+tag*ITEM,   $ module ID
+      must+Tstring+scope*ITEM; $ title
+    R+Dmain,set item flag+>>ITEM+Mrequested,
+      must+Tstring+scope*ITEM, $ title only, no module ID
+      check main module;
+    corrupt ice file+_rule_),
+   link module header, $ link the header
+   $ check target word size
+   ((-x:must+Tconst+x,x=target word size);
+     error+wrong target size),
+   $ read the definition list
+   0->max lineno,read definition list,max lineno->lineno*ITEM.
 
 'a'skip head section:
   R+Dpoint;next symbol,:skip head section.
 
 $ find position ******************************************* $
 'f'search for line+>ptr+>old+line>+str>:
-   (old<=1;old>lineno*ITEM[ptr]),0->line,Squote image->str;
-   adm*ITEM[ptr]->ptr,old->line,
-      (nxt:old>width*AUX[ptr],subtr+old+width*AUX[ptr]+line,add+ptr+2+ptr,:nxt;
-           data*AUX[ptr]->str).
+   $ ptr: module head, line: number to search for
+   (old<=1;old>lineno*ITEM[ptr];adm*ITEM[ptr]=0),
+                         0->line,Squote image->str;
+   adm*ITEM[ptr]->ptr,
+      (nxt:old<=maxn*AUX[ptr],subtr+old+minn*AUX[ptr]+line,
+                         incr+line,data*AUX[ptr]->str;
+           add+ptr+3+ptr,:nxt).
 
 'f'find lineno+>old+line>+str>:
-   base item=0,old->line,Squote image->str;
-   search for line+base item+old+line+str.
+   mod base=0,old->line,Squote image->str;
+   search for line+mod base+old+line+str.
 
 'f'find item lineno+>item+line>+str>+module>-ptr-nptr:
-   first item->ptr,
+   first module->ptr,
    (nxt:repr*ITEM[ptr]->nptr,((is+nptr,nptr<item),nptr->ptr,:nxt;+)),
    tag*ITEM[ptr]->module,search for line+ptr+lineno*ITEM[item]+line+str.
 
-$ check if all items are defined ************************** $
-'a'check all items-ptr-def-main:
-  <<ITEM->ptr,0->main,(nxt:ptr>>>ITEM;
-  (type*ITEM[ptr]=Dtitle,1->main;type*ITEM[ptr]=Dmodule),
-     next+ITEM+ptr,:nxt;
-  get item def+ptr+def,
-     (is item flag+def+tpublic;
-      is item flag+def+texternal;
-      error+not defined+tag*ITEM[ptr]+ptr),next+ITEM+ptr,:nxt;
-  next+ITEM+ptr,:nxt),
-  (main=1;error+no main module).
+$ find definitions **************************************** $
+$ determine which modules should be kept
 
-$ ROOT **************************************************** $
+'table'MESSAGE=(
+  "no main module"                     :no main module,
+  "%p: not defined at %i"              :not defined,
+  "%p: incompatible types at %i and %i":type mismatch,
+  "%p: doubly defined at %i and %i"    :doubly defined,
+  "%p: not referenced %i"              :not referenced
+).
 
-'root'add stdstring,add assignment external,
-      add shiftaffix external,add getaffixno external.
+'q'stack size mismatch+>item1+>item2-x1-x2:
+    (get ssel+item1+x1,get ssel+item2+x2,x1!=x2);
+    (get calibre+item1+x1,get calibre+item2+x2,x1!=x2).
+
+'q'unequal types+>texp+>timp:
+    texp=timp,-;
+    texp=Ipointer constant,timp=Iconstant,-;
+    +.
+
+'q'incompatible types+>exp+>imp-type:
+   (type*ITEM[exp]->type,unequal types+type+type*ITEM[imp]);
+   type=Irule,adm*ITEM[exp]!=adm*ITEM[imp]; $ have different formal affixes
+   (type=Istack;type=Itable;type=Istatic stack),stack size mismatch+exp+imp;
+   -.
+
+'a'find item def+>item+def>-qf-ptr:
+   $ item is imported, search for the first tpublic definition and
+   $  save it in the repr*ITEM[item] field
+   scope*ITEM[item]->qf,get tag data+tag*ITEM[item]+ptr,
+     (nxt:ptr=0,0->def; $ no definition found
+          scope*AUX[ptr]!=qf,link*AUX[ptr]->ptr,:nxt;
+          (item*AUX[ptr]->def,is item flag+def+tpublic),def->repr*ITEM[item];
+          link*AUX[ptr]->ptr,:nxt).
+
+'a'scan item+>item-def:
+   $ scan item; if it is imported search for a definition
+   $   scope*ITEM, tag*ITEM
+   is item flag+item+timported,find item def+item+def,
+      (def=0,error+not defined+tag*ITEM[item]+item;
+       incompatible types+def+item,
+             error+type mismatch+tag*ITEM[item]+def+item;
+       was+ITEM+repr*ITEM[def],set item flag+def+treferenced,
+             set item flag+repr*ITEM[def]+Mrequested;
+       internal error+_rule_);
+   +.
+
+'a'scan for definitions+>new>-item:
+    $ scan all modules marked Mrequested but not Mchecked;
+    $ 1->new if there is such a module
+    $ for each imported tag check and mark the first definition
+    $ check uniqueness at a later pass
+    (-x:advance mod base+x,x=0);
+    is item flag+mod base+Mrequested,
+       (is item flag+mod base+Mchecked,:scan for definitions;
+        set item flag+mod base+Mchecked,1->new,
+        mod base->item,next+ITEM+item, $ scan all items
+        (nxt: is item flag+item+theader;
+              scan item+item, next+ITEM+item,:nxt),:scan for definitions);
+    :scan for definitions.
+
+'a'scan item for dble def+>item-qf-ptr-def:
+    scope*ITEM[item]->qf,get tag data+tag*ITEM[item]+ptr,
+      (nxt:ptr=0;
+           scope*AUX[ptr]!=qf,link*AUX[ptr]->ptr,:nxt;
+           (item*AUX[ptr]->def,def=repr*ITEM[item]),link*AUX[ptr]->ptr,:nxt;
+           (is item flag+def+tpublic,is item flag+repr*ITEM[def]+Mrequested),
+                error+doubly defined+tag*ITEM[item]+repr*ITEM[item]+def;
+           link*AUX[ptr]->ptr,:nxt).
+
+'a'scan for double definitions-item:
+    (-x:advance mod base+x,x=0);
+    is item flag+mod base+Mrequested, $ it also has the Mchecked flag
+       mod base->item,next+ITEM+item,
+       (nxt:is item flag+item+theader,:scan for double definitions;
+            (is item flag+item+timported,scan item for dble def+item;+),
+               next+ITEM+item,:nxt);
+    :scan for double definitions.
+
+'a'clean up items-item:
+    $ set all items in an unreqested module to zero
+    (-x:advance mod base+x,x=0);
+    is item flag+mod base+Mrequested,:clean up items;
+    mod base->item,next+ITEM+item,
+      (nxt:is item flag+item+theader,:clean up items;
+           0->type*ITEM[item],next+ITEM+item,:nxt).
+
+'a'scan linked modules-new:
+    $ determine which modules to keep; check for double definitions
+    $   'advance mod base' works for the next round
+    main module=0,error+no main module;
+    head section+0,mod base->last module, $ add a closing empty head
+      (nxt:0->new,scan for definitions+new,(is+new,:nxt;+)),
+      (was error;scan for double definitions),
+      (was error;clean up items).
+
+'a'report item+>item:
+   is item flag+item+treferenced;
+   is builtin rule+item+#;
+   is item flag+item+tpublic,warning+not referenced+tag*ITEM[item]+item;
+   +.
+
+'variable'do report=0.
+$ can be called repeatedly; before reading the first source
+$    mod base=first module=last module=0
+'a'report not used public items-item:
+    do report=0,incr+do report; $ so it will generate the report next time
+    (-x:advance mod base+x,x=0);
+    (is item flag+mod base+Mrequested,set source+type*ITEM[mod base],
+       not stdlib source),mod base->item,next+ITEM+item,
+       (nxt:is item flag+item+theader,:report not used public items;
+            report item+item,next+ITEM+item,:nxt);
+    :report not used public items.
+
+'a'advance mod base+next>:
+  (mod base=last module,first module->mod base;repr*ITEM[mod base]->mod base),
+  (mod base=last module,0->next;
+    lineno*ITEM[mod base]->max lineno,1->next).
+
+$ read required modules **************************************** $
+$ in subsequent scans skip modules with no Mrequested flag
+$   if repr*ITEM[module]=0, don't open it, but call open source+0
+$   otherwise call open source+repr*ITEM[module] to open the module
+$    for reading
+'a'open next module+next>-file:
+    $ go to the next valid module
+    $ next=0: no more modules; next=1: opened, next=2: empty module
+    (advance mod base+next,next=0); $ no more module
+    is item flag+mod base+Mrequested,type*ITEM[mod base]->file,
+       open source+file,(file=0,2->next;1->next);
+    :open next module.
+
+'a'get next module head+head>:
+    (advance mod base+head,head=0); $ no more modules
+    is item flag+mod base+Mrequested,mod base->head;
+    :get next module head.
+
+$ ROOT ********************************************************* $
+
+'root'add stdstring,add shift affix rules,add builtin formals.
 'pragmat'endif=compile.
 'end'
+
 

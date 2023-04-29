@@ -1,10 +1,10 @@
 $ rule body
-'pragmat'module="rulebody".
+'pragmat'module=rulebody,title="rule body v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -20,261 +20,285 @@ $ *************************************************************
 
 $ HEADER ******************************************************* $
 $
-'a'rule body+>tag+>repaffix.
-   $ write rule body to DISC; rule tag, repeat affix block 
+'a'rule body+>tag.
+   $ write rule body to DISC; rule tag in LADM, formal affixes in LLOC 
 'a'root body.
    $ write root body to DISC
 'a'get rule tag+string>.
-   $ _rule_ constant: return a LEXT pointer with the rule tag
+   $ _RULE_ constant: return a LEXT pointer with the rule tag
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.
 'pragmat'require=("symbols","tags","types","lexical","disc",
-    "display","pragmats").
+    "number","selector","display","pragmats").
 
 'table'MESSAGE=(
   "symbol %p is expected here"     :expected,
   "symbol %p is expected after %p" :expected after,
   "tag expected after %p"          :tag expected after,
   "tag expected"                   :tag expected,
+$  "cannot call %p"                 :cannot call,
   "source or tag expected"         :source or tag expected,
   "in extension selector expected" :selector tag expected,
   "after extension tag expected"   :stack tag expected,
   "wrong affix form"               :wrong affix form,
   "rule %p: unknown label %p"      :unknown label,
+  "rule %p: formal affix %p repeated":duplicate formal affix,
   "source expected after %p"       :source expected,
-  "formal selector %p not defined" :undefined formal selector,
+  "formal selector %p*%p not defined":undefined formal selector,
+  "affix %p is not table or stack" :not a formal list,
   "rule %p: member expected"       :member expected,
-  "formal affix %p as an actuel rule":formal as rule,
-  "rule %p: no formal repeat affix":no formal repeat affix,
+  "rule %p: no formal anchor affix":no formal anchor affix,
   "rule %p: zone syntax (cannot be empty)" :wrong zone,
   "classification has no cases"    :empty classification
   
 ).
 
 $ ------------------------------------------------------ $
-$ dont'give cumulative error messages
-'variable'suppress messages=0.
+$ general error handling:
+$  clear local error+old>:
+$        remembers the error number
+$  was local error+>old:   
+$        true if there was an error since then
+$  suspend Errors+>n ... suspend Errors+0
+$        stop issuing error messages after n >=1 errors;
+$        resume error messages after "suspend Errors+0"
 
-'a'Eerror+*+>msg:
-  is+suppress messages;
-  1->suppress messages,error+*.
-'a'clear errors:
-   0->suppress messages.
-'q'had errors:
-   is+suppress messages.
-'pragmat'macro=(Eerror,clear errors,had errors).
 $ ------------------------------------------------------ $
-$ the rule tag and the formal repeat affix, if any
-'variable'rule tag=0,formal repeat affix=0.
+$ the rule tag (LADM) and the formal anchor affix (LLOC), if any
+'variable'rule tag=0,empty rule=0,formal anchor affix=0.
 $ ------------------------------------------------------ $
 $ local affixes $
-$  (orepr,  otype,flag,type,repr,tag) LLOC <== formal/local
-$  (calibre,ssel, flag,type,repr,tag) LLOC <== formal lists
+$  ftype: Ilocal,Iformal XXX:   repr: old content of adm*TTAG[ttag]
+$         Ilocal anchor:        ttag: "@"
+$         Ilabel:               ttag: the label
+$
 
-'stack'(orepr=calibre,otype=ssel,flag,type,repr,tag) LLOC=().
-  $ the empty () is added to prevent exporting this stack
+'stack'(calibre,ssel,flag,ftype,repr,ttag) LLOC=().
+  $ () is added so it is not a prototype
 
-$ retrieve formal calibre and ssel
-'a'handle formal list+>formal:
-  =type*LLOC=
-  [Iformal stack;Iformal table],
-     get formal calibre+formal+calibre*LLOC,
-     get formal ssel+formal+ssel*LLOC;
-  +.
-$ open a range
-'a'set up local stack+>rtag+loc>-formal:
-   scratch+LLOC,get adm+rtag+formal,
-   $ formal affixes $
-   (nxt: formal=0;
-     (*0->flag->repr,type*LADM[formal]->type,formal->tag,0->orepr->otype *)LLOC,
-     handle formal list+formal,put repr+formal+>>LLOC,
-     get adm+formal+formal,:nxt),
-   >>LLOC->loc,
+$ make adm*ttag point to loc, store old content at repr*LLOC
+'a'set local repr+>loc-ttag:
+   ttag*LLOC[loc]->ttag,adm*TTAG[ttag]->repr*LLOC[loc],loc->adm*TTAG[ttag].
+$ restore adm*ttag to the old value
+'a'restore local repr+>loc-ttag:
+   ttag*LLOC[loc]->ttag,repr*LLOC[loc]->adm*TTAG[ttag].
+$ create the initial range; LLOC has an entry for each formal affix
+'a'set up local stack+>rtag-loc-ttag:
+   <<LLOC->loc,0->formal anchor affix,
+   (nxt:loc>>>LLOC; $ figure out formal anchor
+     ftype*LLOC[loc]=Iformal anchor,loc->formal anchor affix,next+LLOC+loc,:nxt;
+     $ otherwise replace ttag = ttag*LLOC[loc] to point to loc
+     set local repr+loc, $check for duplicate formal affixes
+     (was+LLOC+repr*LLOC[loc],error+duplicate formal affix+rtag+loc;+),
+     next+LLOC+loc,:nxt),
    $ add rule tag as label
-   D+Dlabel,Dtag+rtag,
-   (* 0->flag->repr,Ilabel->type,rtag->tag,0->orepr->otype *)LLOC.
-'a'open new local range+>label+old>:
+   get ttag+rtag+ttag,create local affix+Ilabel+ttag,D+Dlabel,Dttag+ttag.
+$ close the range; restore formal and local affixes
+'a'close local stack:
+   >>LLOC<<<LLOC;
+   (ftype*LLOC=Ilabel;ftype*LLOC=Iformal anchor;restore local repr+>>LLOC),
+   unstack+LLOC,:close local stack.
+'a'open local range+>label+old>: $ label is a TTAG
    >>LLOC->old,
    (label=0;
-    (* 0->flag->repr->orepr->otype,Ilabel->type,label->tag *)LLOC,
-       D+Dlabel,Dtag+label).
-'a'add local affix+>tag-orepr-otype:
-   get repr+tag+orepr,get type+tag+otype,
-   (* 0->flag->repr,Ilocal->type,tag->tag,orepr->orepr,otype->otype *)LLOC,
-   put type+tag+Ilocal,put repr+tag+>>LLOC.
+    create local affix+Ilabel+label,D+Dlabel,Dttag+label).
+'a'add local affix+>ttag:
+   create local affix+Ilocal+ttag,set local repr+>>LLOC.
 'a'close local range+>old:
-   >>LLOC<=old;
-   $ type*LLOC can be Ilocal,ILabel,or some formal value $
-   (type*LLOC=Ilocal,put repr+tag*LLOC+orepr*LLOC,
-           put type+tag*LLOC+otype*LLOC;+),   
+   >>LLOC<=old; $ ftype*LLOC can be Ilocal or Ilabel
+   (ftype*LLOC=Ilocal,restore local repr+>>LLOC;+),
    unstack+LLOC,:close local range.
 $ ----------------------------------------------------- $
+$ handle formal/local affixes; they have no qualifier
+'f'get formal affix+>qf+>tag+loc>:
+    $ find if tag is a formal/local affix
+    (qf=0,adm*TTAG[tag]->loc,was+LLOC+loc);
+    0->loc.
+'p'is qltag+qf>+tag>+loc>:
+    is qtag+qf+tag,get formal affix+qf+tag+loc.
+'a'Dqloc+>qf+>tag+>loc:
+    $ write either tag or the formal affix
+    loc=0,Dqtag+qf+tag;Dtag+loc.
+'a'must formal list+>loc:
+    $ if formal/local, it must be stack or table
+    loc=0;
+    (=ftype*LLOC[loc]=
+      [Iformal table;Iformal stack],+;
+      Error+not a formal list+loc).
+$ ----------------------------------------------------- $
 $ check if it is an extension. The alternate syntax is
-$ ambiguous; go ahead and retrieve list tag and its type
+$ ambiguous; go ahead and retrieve the list tag and its type
 $   (* 0->s1->s2 *) STACK
 $   ( * 0->s1->s2 *STACK, ... )
 
 $ skip over an index [a*b[32]]
 'a'skip over an index:
    R+Ssub,skip over source+#,
-     (R+Sbus;Eerror+expected+Sbus);
+     (R+Sbus;Error+expected+Sbus);
    +.
 $ skip over a source; single=1 if this is a single tag
-'a'skip over source+single>-symb:
+'a'skip over source+single>-symb-qf:
    0->single,inpt->symb,
-    (is cons+#;
-     is tag+#,(R+Sasterisk,(is tag+#,skip over an index;
-                  Eerror+tag expected after+Sasterisk);
+    (is number+#+#;
+     is qtag+qf+#,
+               ((qf=0,R+Sasterisk),(is qtag+#+#,skip over an index;
+                                    Error+tag expected after+Sasterisk);
                ahead+Ssub,skip over an index;
                1->single);
      (R+Slwb;R+Supb;R+Svlwb;R+Svupb;R+Scalibre),
-                  (is tag+#;Eerror+tag expected after+symb);
-     Eerror+source or tag expected).
+                  (is qtag+#+#;Error+tag expected after+symb);
+     Error+source or tag expected).
 $ skip over target selectors (there must be at least one)
 'a'skip over destination:
-   R+Sarrow,(nxt:is tag+#,(R+Sarrow,:nxt;+);
-     Eerror+selector tag expected);
-   Eerror+expected+Sarrow.
+   R+Sarrow,(nxt:is ttag+#,(R+Sarrow,:nxt;+);
+                 Error+selector tag expected);
+   Error+expected+Sarrow.
 $ skip over an extension
-$  >ex     : if set, allow "*) STACK" extended syntax
-$  tag>    : the STACK
-$  simple> : set if the extended syntax was used
-'a'skip over extension+>ex+tag>+simple>:
-   clear errors,0->tag->simple,init restore,
+$  ex      : if set, allow "*) STACK" extended syntax
+$  qf+tag  : the STACK, tag=0 if there was an error
+$  simple  : set if the extended syntax was used
+'a'skip over extension+>ex+qf>+tag>+simple>+err>:
+   clear local error+err,0->qf->tag->simple,init restore,
+   suspend Errors+3, $ throw at most three errors in this block
    Rskip+Sasterisk,
    (nxt:skip over source+#,skip over destination,
          (R+Scomma,:nxt;+)),
    $ * STACK or *) STACK
    must+Sasterisk,
    ((is+ex,R+Sclose),1->simple;+),
-   (is tag+tag;Eerror+stack tag expected),
-   (had errors,forget restore,skip all;make restore).
-$ check whether this is an affix form, tranport or relation
-$  tag is zero if affix form, Xarrow for ->, and other
-$  LADM entry for other relation
-'a'peek after source+tag>-single tag:
-   clear errors,init restore,0->tag,skip over source+single tag,
-     (is special rule+inpt+tag;
-      is+single tag;
-      Eerror+wrong affix form),
-   (had errors,forget restore,skip all;make restore).
-$ ----------------------------------------------------- $
+   (is qtag+qf+tag;Error+stack tag expected),
+   suspend Errors+0,  $ allow error messages from here
+   (was local error+err,forget restore,skip all,1->err;
+    make restore,0->err).
 
+$ check whether this is an affix form, transport or relation
+$   ttag is zero if an affix form, 
+$   TTAG entry for -> and relations
+'a'peek after source+ttag>+err>-single tag:
+   clear local error+err,init restore,0->ttag,suspend Errors+2,
+   skip over source+single tag,
+     (is special rule+inpt+ttag;
+      is+single tag;
+      Error+wrong affix form),
+   suspend Errors+0,
+   (was local error+err,forget restore,skip all,1->err;
+    make restore,0->err).
+$ ----------------------------------------------------- $
 $ search "tag" as a label; complain if not found
 'a'search jump+>tag-loc:
    >>LLOC->loc,(nxt:
       loc<<<LLOC,error+unknown label+rule tag+tag;
-      (type*LLOC[loc]=Ilabel,tag*LLOC[loc]=tag),D+Djump,Dtag+loc;
+      (ftype*LLOC[loc]=Ilabel,ttag*LLOC[loc]=tag),D+Djump,Dtag+loc;
       previous+LLOC+loc,:nxt).
 'p'terminator-x:
   R+Splus,D+Dplus;
   R+Sminus,D+Dminus;
-  R+Sexit,Dtag+Xexit,use tag+Xexit,
-     D+Dplus,clear errors,source+Xexit;
-  R+Scolon,(is tag+x,search jump+x;error+tag expected after+Scolon).
+  R+Sexit,Dttag+Pexit,D+Dplus,source+Pexit;
+  R+Scolon,(is ttag+x,search jump+x;error+tag expected after+Scolon).
 
 $ SEL*LIST [ index ] ==>
 $  Dsub Dtag(LIST) <index> Dbus Dtag/Dcons
-'a'index source+>tag:
-   R+Ssub,D+Dsub,Dtag+tag,source+tag,D+Dbus,
-      (R+Sbus;Eerror+expected after+Sbus+tag);
-   D+Dsub,Dtag+tag,D+Dupb,Dtag+tag,D+Dbus.
+'a'index source+>qf+>tag+>loc:
+   must formal list+loc,
+   (R+Ssub,D+Dsub,Dqloc+qf+tag+loc,source+tag,D+Dbus,
+      (R+Sbus;Error+expected after+Sbus+tag);
+    D+Dsub,Dqloc+qf+tag+loc,D+Dupb,Dqloc+qf+tag+loc,D+Dbus).
 $ emit the selector after the index value
-'a'selector+>sel+>tag-type-repr:
-   pack selector+sel+tag+sel,
-     (has formal type+tag,get type+sel+type,
-        (type=Iformal selector,get repr+sel+repr;-1->repr),
-        $ repr=-1: selector not defined
-        (repr>0,D cons+repr;
-         error+undefined formal selector+sel);
-      Dtag+sel).
+'a'selector+>sel+>tag+>loc-offs:
+   loc=0,Dttag+sel;
+   must formal list+loc,
+    (find temp selector+sel+loc+offs,Dcons+offs;
+     error+undefined formal selector+sel+tag).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 $ a list tag is expected after <L, <<L, <>L, >L, >>L
-'a'list tag+>x-tag:
-   is tag+tag,use tag+tag,Dtag+tag;
-   Eerror+tag expected after+x.
-'a'source+>tag-x-y:
-   is cons+x,Dcons+x;
-   is tag+x,(R+Sasterisk,
-                (is tag+y,index source+y,use tag+y,selector+x+y;
-                 Eerror+tag expected after+Sasterisk);     
-             ahead+Ssub,index source+x,use tag+x,selector+x+x;
-             use tag+x,Dtag+x);
+'a'list tag+>x-qf-tag-loc:
+   is qltag+qf+tag+loc,must formal list+loc,Dqloc+qf+tag+loc;
+   Error+tag expected after+x.
+'a'source+>tag-qf-x-y-loc:
+   is number+x+#,D+x; $ constant pointer
+   is qltag+qf+x+loc,
+        ((qf=0,R+Sasterisk),  $ x is a selector
+              (is qltag+qf+y+loc,index source+qf+y+loc,selector+x+y+loc;
+               Error+tag expected after+Sasterisk);
+         ahead+Ssub,index source+qf+x+loc,selector+x+x+loc;
+         Dqloc+qf+x+loc);
    R+Slwb,D+Dlwb,list tag+Slwb;
    R+Supb,D+Dupb,list tag+Supb;
    R+Svlwb,D+Dvlwb,list tag+Svlwb;
    R+Svupb,D+Dvupb,list tag+Svupb;
    R+Scalibre,D+Dcalibre,list tag+Scalibre;
-   Eerror+source expected+tag,skip all.
+   Error+source expected+tag,skip all.
 $ actual affix can be a string, dummy argument # or ?, or a source
-'a'source or string+>tag-x-c:
-   is string+x,new stdstring+x+c,$ c and Xstring table are used
+'a'source or string+>tag-x-c-dl:
+   is string+x,get linenum+dl,new stdstring+x+dl+c,$ c and Xstring table
       D+Dplus,Dtag+Xstring table,D+Dplus,Dtag+c;
    R+Snoarg,D+Dplus,D+Dnoarg;
-   R+Senquiry,D+Dplus,D+Dnoarg; $ +? is the same as +# 
    D+Dplus,source+tag.
-'p'repeat affix:
-   R+Sasterisk,(is+formal repeat affix,D+Dplus,Dtag+formal repeat affix;
-      error+no formal repeat affix+rule tag).
-'a'affix form-tag:
-   is tag+tag,(has formal type+tag,error+formal as rule+tag,skip all;
-       Dtag+tag,use tag+tag,clear errors,
-          (nxt:R+Splus,(repeat affix; $this must be the last affix $
-                        source or string+tag,:nxt);+));
+'p'anchor affix:
+   R+Sanchor,(is+formal anchor affix,D+Dplus,Dtag+formal anchor affix;
+      error+no formal anchor affix+rule tag).
+'a'affix form-qf-ttag:
+   is qtag+qf+ttag,Dqtag+qf+ttag,0->empty rule,
+$ do not complain if @root is called
+$         (ttag=Proot,error+cannot call+ttag;+),
+          (nxt:R+Splus,(anchor affix; $this must be the last affix $
+                        source or string+ttag,:nxt);+);
    error+tag expected,skip all.
-'a'special affix form+>tag:
-   Dtag+tag,use tag+tag,D+Dplus,clear errors,source+tag,
-     (had errors;next symbol), $ skip -> or the relation
+'a'special affix form+>tag-err:
+   Dqtag+0+tag,D+Dplus,0->empty rule,clear local error+err,source+tag,
+     (was local error+err;next symbol), $ skip -> or the relation
      D+Dplus,source+tag,
-     (tag=Xarrow,(nxt:R+Sarrow,D+Dplus,source+tag,:nxt;+);+).
+     (tag=Parrow,(nxt:R+Sarrow,D+Dplus,source+tag,:nxt;+);+).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
-'a'to selectors+>tag-sel:
-   R+Sarrow,(nxt:is tag+sel,D+Dto,selector+sel+tag,(R+Sarrow,:nxt;+);
-                 Eerror+tag expected after+Sarrow,skip all);
-   Eerror+expected+Sarrow.
-'a'extension+>tag:
-   D+Dextension,use tag+tag,Dtag+tag,Rskip+Sasterisk,clear errors,
-   (nxt:source+tag,to selectors+tag,(R+Scomma,:nxt;+)),
-   D+Dextension,Rskip+Sasterisk,Rskip+Sclose,Rskip+tag.
+'a'to selectors+>tag+>loc-sel:
+   R+Sarrow,(nxt:is ttag+sel,D+Dto,selector+sel+tag+loc,(R+Sarrow,:nxt;+);
+                 error+tag expected after+Sarrow,skip all);
+   error+expected+Sarrow.
 
+'a'extension+>qf+>tag-loc:
+   get formal affix+qf+tag+loc,must formal list+loc,0->empty rule,
+   D+Dextension,Dqloc+qf+tag+loc,Rskip+Sasterisk,
+   (nxt:source+tag,to selectors+tag+loc,(R+Scomma,D+Dcomma,:nxt;+)),
+   D+Dextension,Rskip+Sasterisk,Rskip+Sclose,Rskip+qf,Rskip+Squalifier,Rskip+tag.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'q'looking at a member:
    =inpt=
-   [Sopen;                   $ compound member or extension $
-    Sasterisk;               $ extension $
-    Slwb;Supb;Svlwb;Svupb;Scalibre; $ limit $
-    CONST;TTAG               $ constant or tag $
+   [Sopen;                   $ compound member or extension
+    Sasterisk;               $ extension
+    Slwb;Supb;Svlwb;Svupb;Scalibre; $ limit
+    NUMBER;TTAG              $ constant or tag
    ],+;
    -.
-'a'member-tag-simple:
+'a'member-qf-tag-simple-err:
    R+Sopen,(ahead+Sasterisk, $ check for (* ... *)STACK
-               skip over extension+1+tag+simple,
-               (had errors; $ error
-                is+simple,extension+tag;
+               skip over extension+1+qf+tag+simple+err,
+               (is+err;   $ error
+                is+simple,extension+qf+tag;
                 compound member);
             compound member);
-   ahead+Sasterisk,skip over extension+0+tag+#,
-          (had errors;extension+tag);
-   peek after source+tag,
-          (had errors;is+tag,special affix form+tag;affix form).
+   ahead+Sasterisk,skip over extension+0+qf+tag+#+err,
+          (is+err;extension+qf+tag);
+   peek after source+tag+err,
+          (is+err;is+tag,special affix form+tag;affix form).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'peek label+label>:
    init restore,0->label,
-      (is tag+label,(ahead+Scolon;ahead+Sminus;0->label);+),
+      (is ttag+label,(ahead+Scolon;ahead+Sminus;0->label);+),
       make restore.
 'a'skip label+>label:
    is+label,Rskip+label,Rskip+Scolon;+.
 'a'add local affixes-tag:
    init restore,
-     ((R+Sminus,is tag+#),make restore,D+Dlocal,
-        (nxt:R+Sminus,(is tag+tag,Dtag+tag,add local affix+tag,:nxt;
+     ((R+Sminus,is ttag+#),make restore,D+Dlocal,
+        (nxt:R+Sminus,(is ttag+tag,Dttag+tag,add local affix+tag,:nxt;
                 error+tag expected after+Sminus,skip all);
              R+Scolon,D+Dcolon;
              error+expected+Scolon,skip all);
       make restore).
 'a'compound member-label-loc:
    D+Dopen,
-   peek label+label,open new local range+label+loc,
+   peek label+label,open local range+label+loc,
    skip label+label,add local affixes,
    (R+Sbox,classification;alternative series),
    (R+Sclose;error+expected+Sclose,skip all),
@@ -286,29 +310,30 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    error+member expected+rule tag.
 'a'alternative series:
    alternative,(R+Ssemicolon,D+Dsemicolon,:alternative series;+).
-'a'classifier-x-empty:
-   0->empty,
-   (is tag+x,Dtag+x,use tag+x;is cons+x,Dcons+x;1->empty),
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
+'a'area-qf-x-empty:
+   0->empty, $ classifier cannot have formal/local affixes
+   (is qtag+qf+x,Dqtag+qf+x;is number+x+#,D+x;1->empty),
    (R+Scolon,0->empty,D+Dcolon,
-     (is tag+x,Dtag+x,use tag+x;is cons+x,Dcons+x;+);+),
+     (is qtag+qf+x,Dqtag+qf+x;is number+x+#,D+x;+);+),
    (is+empty, error+wrong zone+rule tag;+),
-   (R+Ssemicolon,D+Dsemicolon,:classifier;
+   (R+Ssemicolon,D+Dsemicolon,:area;
     must+Sbus).
-'a'area+last>:
-   R+Ssub,0->last,D+Darea,classifier,D+Darea,D+Dcomma,
-     (R+Scomma;Eerror+expected+Scomma),
+'a'class+last>:
+   R+Ssub,0->last,D+Darea,area,D+Darea,D+Dcomma,
+     (R+Scomma;error+expected+Scomma),
      alternative;
    1->last,D+Darea,D+Dcolon,D+Darea,D+Dcomma,alternative.
 $ classification: we are after =
-'a'classification-last-cnt:
-  D+Dbox,clear errors,0->cnt,source+Sbox,D+Dbox,
-    (R+Sbox;Eerror+expected+Sbox),
-    (nxt:area+last,(is+last;R+Ssemicolon,D+Dsemicolon,incr+cnt,:nxt;+)),
-    (had errors,skip all;last=0;cnt=0,error+empty classification;+).
+'a'classification-err-last-cnt:
+  D+Dbox,0->empty rule,clear local error+err,0->cnt,source+Sbox,D+Dbox,
+    (R+Sbox;error+expected+Sbox),
+    (nxt:class+last,(is+last;R+Ssemicolon,D+Dsemicolon,incr+cnt,:nxt;+)),
+    (was local error+err,skip all;last=0;cnt=0,error+empty classification;+).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'get rule tag+string>:
-   $ get rule tag as a string; built-in string _rule_
-   is+rule tag,get tag+rule tag+string,previous+TTAG+string,
+   $ get rule tag as a string; built-in string for _rule_
+   is+rule tag,get ttag+rule tag+string,previous+TTAG+string,
         copy string+TTAG+string+LEXT,>>LEXT->string;
    Squote image->string.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
@@ -316,23 +341,26 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    (is pragmat value+pgt trace,set tag flag+tag+rtrace;+),
    (is pragmat value+pgt count,set tag flag+tag+rcount;+),
    (is pragmat value+pgt bounds,set tag flag+tag+rbounds;+).
-'a'rule body+>tag+>repaffix-loc:
-   tag->rule tag,repaffix->formal repeat affix,
-   D+Drule,Dtag+rule tag,rule pragmats+rule tag,
-   set up local stack+tag+loc,
+'a'rule body+>tag:
+   $ tag is a LADM, formal affixes are in LLOC
+   tag->rule tag,rule pragmats+rule tag,
+   set up local stack+tag,1->empty rule,
    (ahead+Sminus,add local affixes;
     R+Scolon;
     error+expected+Scolon,skip all),
    (R+Sbox,classification; alternative series),
-   D+Dpoint,close local range+loc,0->rule tag,
+   D+Dpoint,close local stack,0->rule tag,
+   (is+empty rule,set tag flag+tag+rempty;+),
    (R+Spoint;error+expected+Spoint,skip to point).
 
-'a'root body-loc:
-   Xroot->rule tag,0->formal repeat affix,
-   D+Droot,Dtag+Xroot,rule pragmats+Xroot,
-   set up local stack+Xroot+loc,add local affixes,
+'a'root body-dl:
+   Xroot->rule tag,0->formal anchor affix,
+   get linenum+dl,put defline+Xroot+dl,
+   D+Droot,Dtag+Xroot,rule pragmats+Xroot,scratch+LLOC,
+   set up local stack+Xroot,1->empty rule,add local affixes,
    (R+Sbox,classification; alternative series),
-   D+Dpoint,close local range+loc,0->rule tag,
+   D+Dpoint,close local stack,0->rule tag,
+   (is+empty rule,set tag flag+Xroot+rempty;+),
    (R+Spoint;error+expected+Spoint,skip to point).
 
 'root'+.

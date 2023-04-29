@@ -1,5 +1,5 @@
 $ towers of hanoi, full printing of the towers $
-'charfile'print="stdout">.
+'charfile'print="<<stdout>>">.
 'stack'[1]a,[1]b,[1]c.
 'constant'size=5.
 'action'move tower+>length+[]from[]+[]via[]+[]to[]:

@@ -5,10 +5,10 @@ $ when running, use the -T as the first argument the see trace
 
 'pragmat'trace=on.
 
-'a'sum+result>+*+>a>-h:
+'a'sum+result>+@+>a>-h:
   a->result,
-    (nxt:a=0,(shift affix block+*,add+result+a+result,:nxt;+);
-         decr+a,sum+h+a+*,add+result+h+result,:nxt).
+    (nxt:a=0,(shift affix block+@,add+result+a+result,:nxt;+);
+         decr+a,sum+h+a+@,add+result+h+result,:nxt).
 
 'root'-h: sum+h+a1+a2+a3+a4,put int+STDOUT+h,put char+STDOUT+newline.
 

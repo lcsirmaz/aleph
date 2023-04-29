@@ -1,10 +1,10 @@
 $ ALEPH link main module
-'pragmat'title="link".
+'pragmat'title="ALEPH linker, v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -18,51 +18,69 @@ $  the GNU General Public License for more details.
 $
 $ ************************************************************* 
 
-'pragmat'require=("input","item","data","error","target").
+$ 'pragmat'require=("input","item","data","error","target").
+'pragmat'require=("rule","input","item","error","lexical","data","expr","target").
 
-'a'pass i-ext:
-   $ collect information: items, list bounds, file areas
-   was error;
-   next source+0+ext,head section+ext,item section,data section,:pass i;
-   $ no more input file and no error so far
-   advance base item+#,
-   check all items,loose evaluation,loose bounds.
+'a'pass1-ptr:
+   $ collect definitions, imports and exports
+   was error; $ stop at the first error
+   get next source+ptr,
+       head section+ptr,item section,close source,:pass1;
+   +.
+'a'pass2-next:
+   $ read data sections for the first time; 
+   was error; $ stop at the first error
+   open next module+next,(next=0;next=2,:pass2;
+      skip head section,skip item section,data section i,:pass2).
 
-'a'pass ii:
-   $ determine fill size and relative pointer values
-   $  as now we have the repeaters' values
+'a'pass3-next:
+   $ scan data sections again; store externals, front and back matters,
+   $  determine the relative address of pointer constants.
    was error;
-   (-ext:advance base item+ext,next source+ext+#),
-      skip head section,skip item section,data section ii,:pass ii;
-   was error;
-   distribute virtual address,finalize pointer constants,final evaluation,
-   assign repr numbers.
+   open next module+next,(next=0;next=2,:pass3;
+       skip head section,skip item section,data section ii,:pass3).
 
-'a'pass iii:
-   $ generate data and fill section
-   target prelude,data declaration,fill table head,
-   (nxt:(-ext: advance base item+ext,next source+ext+#),
-        skip head section,skip item section,data section iii,:nxt;
-    +),
-   fill table tail,data initialization,target main.
+'a'pass4-next:
+   fill table head,
+   (nxt:open next module+next,(next=0; next=2,:nxt;
+        skip head section,skip item section,data section iii,:nxt)),
+   fill table tail.
 
-'a'pass iv:
-   $ generate rules
+'a'pass5-next:
    was error;
-   (-ext:advance base item+ext,next source+ext+#),
-      skip head section,skip item section,data section iv,:pass iv;
-   close target.
-   
-$ exit values:
+   open next module+next,(next=0;next=2,:pass5;
+       skip head section,skip item section,
+          skip data section,rule section,:pass5).
+
+$ standard exit values:
 $   0:  output is generated
 $   1:  no argument, --help or --version
 $   2:  error
 $   3:  missing or corrupted .ice file
-$ 64+:  internal error
-'root'check arguments, (was error,exit+1;+),
-      pass i,pass ii,  (was error,exit+2;+),
-      open target,     (was error,exit+4;+),
-      pass iii,pass iv,(was error,delete target,exit+2;+).
+$   4:  cannot create target file
+'root' check command line arguments,(was error,exit+1;+),
+         $ handle --help, --version and other flags
+       pass1,(was error,close source,exit+2;+),
+         $ determine which modules to keep
+         scan linked modules,report not used public items,
+       pass2,(was error,close source,exit+2;+),
+         $ pre-evaluate expressions and determined estimators
+         loose evaluation,loose bounds,
+       pass3,(was error,close source,exit+2;+),
+         $ distribute virtual addresses and compute pointers
+         distribute virtual address,(was error,exit+2;+),
+         $ compute all expressions and then release the stack
+         final evaluation,(was error,exit+2;+),
+         $ finally assign item representation numbers
+         assign repr numbers,
+       open target,(was error,exit+4;+),
+         target prelude,data declaration,
+       pass4,data initialization,target main,
+         $ generate fill table and the ROOT routine
+       pass5,profiling declaration,target postlude,close target,
+         $ compile rules
+         (was error,delete target,exit+2;+).
 
 'end'
+
 

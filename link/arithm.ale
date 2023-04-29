@@ -1,0 +1,141 @@
+$ target size arithmetic for ALEPH
+'pragmat'module=arithmetic,title="arithmetic v2.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$
+$  (C) 2020-2023, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ******************************************************
+$ target machine arithmetic using registers
+$ 
+$ target machine arithmetic using target word size
+  'constant'Axor=1,Aand=2,Aor=3,Acomp=4,   $ operators
+   Aneg=5,Aplus=6,Aminus=7,Atimes=8,Adiv=9,
+   $ XXX+op+reg2+reg1:  reg1 op reg2 -> reg1, free reg2
+   Aeq0=10,Alt0=11,Agt0=12, $ compare to zero
+   Adiff1=20,Alt=21,Ale=22,Aeq=23. $ compare two registers
+   
+'a'free register+>reg.          $ free register "reg"
+'f'mark registers+mark>.	$ mark top of registers
+'a'free registers from mark+>mark.$ free registers from previous mark
+'a'dupl register+>reg1+reg2>.   $ duplicate a register
+'a'read register+t[]+>ptr+reg>. $ load register, ptr is the last in the block
+'a'write register+>reg+[]st[].  $ store register at top and free it
+'a'putcst register+>cst+reg>.   $ put constant value
+'a'getcst register+>reg+cst>.   $ get register value and free it.
+'a'reg operator+>op+>reg2+>reg1.$ plus free register reg2
+'q'reg compare+>op+>reg.        $ compare reg to zero
+'q'reg compare2+>op+>reg1+>reg2.$ compare two registers
+
+$ putcst and getcst make no check. getcst is guaranteed to 
+$  retrieve the correct value for small non-negative values only
+$  for overflow use the followng procedures
+
+'q'is target const+>cst.        $ cst is target representable
+$'q'is host value+>reg.          content of reg is host representable
+
+$ how many host words a target word occupies
+'static''var'target word width.
+
+$ BODY ********************************************************
+'pragmat'if=compile.
+'pragmat'require=("config","error").
+
+'stack'[1]REGISTER.
+$ a target word occupies one or more consecutive words in REGISTER
+$  the block is pointed by the *first* word in the block
+$  'read register' gets the address of the last word in the block
+'static''var'target word width=1.
+
+'a'get register+reg>-i:
+   (* 0->REGISTER *)REGISTER,>>REGISTER->reg,
+   target word width->i,(nxt:i=1;
+    (* 0->REGISTER *)REGISTER,decr+i,:nxt).
+'a'free register+>reg-i:
+   (add+reg+target word width+i,decr+i,i!=>>REGISTER);
+    (nxt:reg=>>REGISTER,unstack+REGISTER;unstack+REGISTER,:nxt).
+'f'mark registers+mark>: >>REGISTER->mark.
+'a'free registers from mark+>mark:unstack to+REGISTER+mark.
+'a'dupl register+>old+new>-ptr-i:
+   get register+new,new->ptr,target word width->i,
+    (nxt:i<=1,REGISTER[old]->REGISTER[ptr];
+         REGISTER[old]->REGISTER[ptr],decr+i,incr+old,incr+ptr,:nxt).
+'a'read register+t[]+>ptr+new>-np-i:
+   $ t[ptr] is the *last* of the REGISTER block
+   get register+new,new->np,target word width->i,
+     subtr+ptr+target word width+ptr,incr+ptr,
+     (nxt:i<=1,t[ptr]->REGISTER[np];
+          t[ptr]->REGISTER[np],decr+i,incr+ptr,incr+np,:nxt).
+'a'write register+>reg+[]st[]-i-ptr:
+   target word width->i,reg->ptr,
+   (nxt:i<1;(*REGISTER[ptr]->st*)st,decr+i,incr+ptr,:nxt),
+   free register+reg.
+
+$ *********************************************************************
+$ these rules depend on the host and target word size
+$    These definitions work when both host and target is 32 bit long
+'q'is target const+>cst:cst=cst.
+    $ is a host value is also a target
+$'q'is host value+>reg:reg=reg.
+    $ does a register contains a host value
+'a'putcst register+>cst+reg>:
+   get register+reg,cst->REGISTER[reg].
+'a'getcst register+>reg+cst>:
+   REGISTER[reg]->cst,free register+reg.
+'a'reg operator+>op+>reg2+>reg1:
+   =op=
+   [Axor],bool xor+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Aand],bool and+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Aor], bool or+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Aplus],add+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Aminus],subtr+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Atimes],mult+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Adiv],div+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Acomp],bool invert+REGISTER[reg1]+REGISTER[reg1];
+   [Aneg],subtr+0+REGISTER[reg1]+REGISTER[reg1];
+   +.
+'q'reg compare+>op+>reg:
+   =op=
+   [Aeq0],REGISTER[reg]=0;
+   [Alt0],REGISTER[reg]<0;
+   [Agt0],REGISTER[reg]>0.
+'q'reg compare2+>op+>reg1+>reg2:
+   =op=
+   [Adiff1],(-tmp:REGISTER[reg1]->tmp,incr+tmp,tmp=REGISTER[reg2]);
+   [Alt],REGISTER[reg1]<REGISTER[reg2];
+   [Ale],REGISTER[reg1]<=REGISTER[reg2];
+   [Aeq],REGISTER[reg1]=REGISTER[reg2].
+
+$ *********************************************************************
+$ compute target word width.
+'root'-i: 1->target word width,word size->i,
+    (nxt:i>=target word size;
+         add+i+word size+i,incr+target word width,:nxt),
+    waitfor+"error",
+    ((word size=32,target word size=32);internal error+"arithmetic").
+
+'pragmat'endif=compile.
+'end'
+
+
+

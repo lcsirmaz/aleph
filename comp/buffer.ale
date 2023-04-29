@@ -1,10 +1,10 @@
 $ provide an all purpose buffer
-'pragmat'module="buffer".
+'pragmat'module=buffer,title="buffer v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License

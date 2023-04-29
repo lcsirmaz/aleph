@@ -22,7 +22,7 @@ $ permutation, "next perm" fails.
    $ and swap them
    st[p]->st[br],item->st[p].
 
-'stack'V=(/a/,/b/,/c/,/d/,/e/).
+'stack'[]V=(/a/,/b/,/c/,/d/,/e/).
 'root'(rep:put line+STDOUT+V+newline,
          (next perm+5+V,:rep;+)
       ).

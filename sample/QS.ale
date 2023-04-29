@@ -1,0 +1,38 @@
+$ quicksort with ballback function
+'pragmat'module=QS.
+
+'a'quicksort+>form+>to+[]a[].
+
+'pragmat'prototype=reverse.
+'question'qsort less+>x+>y.
+'pragmat'prototype=reverse.
+
+'pragmat'if=compile.
+
+'a'quicksort+>from+>to+[]a[]-left-middle-right-amiddle:
+   from >= to; $ done
+   from->left,to->right,
+   subtr+to+from+middle,div+middle+2+middle,add+from+middle+middle,
+   a[middle]->amiddle,
+   (split: (push right:
+              left>to;
+              qsort less+amiddle+a[left];
+              incr+left,:push right),
+           (push left:
+              from>right;
+              qsort less+a[right]+amiddle;
+              decr+right,:push left),
+           (left<right,(-elem:a[left]->elem,a[right]->a[left],elem->a[right]),
+              incr+left,decr+right,:split;
+            middle<right,
+              a[right]->a[middle],amiddle->a[right],decr+right;
+            left<middle,
+              a[left]->a[middle],amiddle->a[left],incr+left;
+            +)
+   ),quicksort+from+right+a,quicksort+left+to+a.
+
+'root'+.
+'pragmat'endif=compile.
+
+'end'
+

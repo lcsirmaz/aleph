@@ -1,10 +1,10 @@
 $ error handling rules
-'pragmat'module="error".
+'pragmat'module=error,title="error, v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -19,12 +19,12 @@ $
 $ ************************************************************* 
 
 $ HEADER *********************************************** $
-'a'error+*+>msg.
-'a'warning+*+>msg.
-'a'message+*+>msg. $ --help and --version
-'e'fatal error+*+>msg.
-'e'internal error+T[]+>rule+>lineno.
-'e'corrupted ice file+T[]+>file+>lineno.
+'a'error+@+>msg.
+'a'warning+@+>msg.
+'a'message+@+>msg. $ --help and --version
+'e'fatal error+@+>msg.
+'e'internal error+T[]+>rule.
+'e'corrupt ice file+T[]+>rule.
 'q'was error.
 'table'MESSAGE.
 
@@ -32,15 +32,15 @@ $ BODY ************************************************* $
 'pragmat'if=compile.
 'pragmat'require=("input","lexical","item","target").
 
-'table'MESSAGE=(
+'table'[]MESSAGE=(
   "too many errors, further messages are suppressed" :too many errors,
   "internal error at rule "   :fatal head,
-  " line %d, aborted"         :fatal tail,
-  ".ice file %p corrupt (%d/" :corrupted head,
+  ", aborted"                 :fatal tail,
+  "%p: corrupt .ice file ("   :corrupted head,
   "), aborted"                :corrupted tail
 ).
 $ messages go here $
-'charfile' PRINTFILE="stdout">.
+'charfile' PRINTFILE="<<stdout>>">.
 'variable'prpos=0.
 
 'a'print char+>ch: 
@@ -75,17 +75,18 @@ $ simple output $
 $ formatted printing $
 'a'print pointer+>ptr:
    ptr=0,print+"[NULL]";
+   was ice source+ptr+ptr,:print pointer;
    was+MESSAGE+ptr,print+MESSAGE+ptr;
    was+STDARG+ptr,print+STDARG+ptr;
    was+LEXT+ptr,get tag image+ptr+ptr,print+LEXT+ptr;
-   internal error+_rule_+_line_.
+$   was+BOLD+ptr,print+BOLD+ptr;
+   internal error+_rule_.
 'a'print base+>str-obuff-ptr:
    >>BUFFER->obuff,
-   (was+LEXT+str,get tag image+str+str,
-        unpack string+LEXT+str+BUFFER;
-    was+STDARG+str,
-        unpack string+STDARG+str+BUFFER;
-    internal error+_rule_+_line_),
+   (was+LEXT+str,get tag image+str+str,unpack string+LEXT+str+BUFFER;
+    was+STDARG+str,unpack string+STDARG+str+BUFFER;
+    str=0;
+    internal error+_rule_),
    >>BUFFER->ptr,
    $ go back until / or \
    (nxt: ptr<=obuff;
@@ -101,27 +102,29 @@ $ formatted printing $
    (line<=0;print form+line),
    (source=Squote image;
     print char+///,print base+source),
-   print char+/ /,print char+/(/,print pointer+module,print char+/)/.
+   (module=0;
+    print char+/ /,print+"(module ",print pointer+module,print char+/)/).
 'a'print line+>l-line-source:
    $ error in this module; print "0034/static"
    find lineno+l+line+source,
    (line<=0;print form+line),
    (source=Squote image;print char+///,print base+source).
 
-'a'format print+*+>fmt-optr-ptr:
+'a'format print+@+>fmt-optr-ptr:
    >>BUFFER->optr,unpack string+MESSAGE+fmt+BUFFER,add+optr+1+ptr,
    (nxt:>>BUFFER<ptr;
           BUFFER[ptr]!=/%/,print char+BUFFER[ptr],incr+ptr,:nxt;
           incr+ptr,(>>BUFFER<ptr,print char+/%/;
                     (=BUFFER[ptr]=
-                     [/p/],(shift affix block+*,print pointer+fmt;print+"[?]"),incr+ptr,:nxt;
-                     [/i/],(shift affix block+*,print item+fmt;print+"[?]"),incr+ptr,:nxt;
-$                     [/f/],(shift affix block+*,print form+fmt;print+"[?]"),incr+ptr,:nxt;
-                     [/l/],(shift affix block+*,print line+fmt;print+"[?]"),incr+ptr,:nxt;
-                     [/d/],(shift affix block+*,print int+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/p/],(shift affix block+@,print pointer+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/i/],(shift affix block+@,print item+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/c/],(shift affix block+@,print char+fmt;print+"[?]"),incr+ptr,:nxt;
+$                     [/f/],(shift affix block+@,print form+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/l/],(shift affix block+@,print line+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/d/],(shift affix block+@,print int+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/n/],print char+newline,incr+ptr,:nxt;
                      print char+BUFFER[ptr],incr+ptr,:nxt))),
-   (shift affix block+*,print+"[...]";+),
+   (shift affix block+@,print+"[...]";+),
    unstack to+BUFFER+optr.
 
 $ error handling ******************************************** $
@@ -137,25 +140,25 @@ $ error handling ******************************************** $
   (M=/F/,print char+///,print form+source line;+),
   print char+/ /,tab line+message col.
 
-'a'error+*+>mess:
+'a'error+@+>mess:
    error no>=maximal errors;
-   message head+/E/,format print+*,nlcr,incr+error no,
+   message head+/E/,format print+@,nlcr,incr+error no,
     (error no<maximal errors;
      message head+/F/,format print+too many errors,nlcr).
-'a'warning+*+>mess:
+'a'warning+@+>mess:
    error no>=maximal errors;
-   message head+/W/,format print+*,nlcr.
-'a'message+*+>mess:
-   format print+*,nlcr,incr+error no.
+   message head+/W/,format print+@,nlcr.
+'a'message+@+>mess:
+   format print+@,nlcr,incr+error no.
 
-'e'fatal error+*+>mess:
-   message head+/F/,format print+*,nlcr,delete target,exit+3.
-'e'corrupted ice file+T[]+>source+>line-ice:
-   message head+/F/,get ice file+ice,format print+corrupted head+ice+line,
-   print+T+source,format print+corrupted tail,nlcr,delete target,exit+3.
-'e'internal error+T[]+>rule+>line:
+'e'fatal error+@+>mess:
+   message head+/F/,format print+@,nlcr,delete target,exit+15.
+'e'corrupt ice file+T[]+>rule-ice:
+   message head+/F/,get ice file+ice,format print+corrupted head+ice,
+   print+T+rule,format print+corrupted tail,nlcr, exit+3.
+'e'internal error+T[]+>rule:
    message head+/F/,format print+fatal head,print+T+rule,
-   format print+fatal tail+line,nlcr,delete target,exit+64.
+   format print+fatal tail,nlcr,exit+15.
 
 'root'+.
 

@@ -1,10 +1,10 @@
 $ symbol handling for ALEPH
-'pragmat'module="symbols".
+'pragmat'module=symbols,title="symbols v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020, L.Csirmaz, Hungary
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -23,7 +23,7 @@ $ HEADER ***************************************************** $
 $ * Handling symbols
 $   the input stream is parsed into symbols which is a pointer to
 $     TTAG    a tag
-$     CONST   a constant or a character denotation with the value
+$     NUMBER  a number or a character denotation
 $     LEXT    string denotation; "Squote image" is the empty string
 $     SPECIAL all other symbols (defined in "lexical")
 $  'variable'inpt. 
@@ -31,7 +31,7 @@ $     next symbol; DO NOT USE directly
 $  'a'next symbol.
 $     advance the input stream and replace "inpt" by the next symbol
 $ * Look ahead
-$    to go back in symbol stream, use the "restore" functions. 
+$    to go back in the symbol stream, use the "restore" functions. 
 $  'a'init restore.
 $      mark the current position to be returned potentially. Only
 $      one position can be marked at the same time
@@ -47,10 +47,10 @@ $    put into the dictionary. The total number of stored symbols should
 $    not exceed the buffer size.
 $ * Line numbers
 $    "linenum" indicates the source line; it start at zero and advances
-$    for each eol character emitting a Dline to the DISC. Each source
-$    file stores the starting value.
+$    for each eol character. Each source file stores the start and end
+$    line number.
 
-$ do not use these variables directly.
+$ do not use this variable directly.
 'variable'
    inpt.     $ contains the next symbol
 
@@ -80,16 +80,18 @@ $   dictionary is turned off while look ahead is in effect
    $ skip up to the next point looking at a point
 'pragmat'macro=(ahead,R).
 
-'p'is raw tag+tag>.
-   $ if the next symbol is a tag, return pointer to TTAG
-'p'is tag+tag>,is tagdl+tag>+dl>.
-   $ if the next symbol is a tag, return pointer to LADM or LLOC
-   $ If dict-on, add the line number
-   $ return the line number in dl
-'p'is cons+value>.
-   $ constant or char denotation, return the value
-'q'ahead cons.
-   $ the next symbol is a constant.
+'p'is ttag+tag>.
+   $ if the next symbol is a tag, return pointer to TTAG, add to DICT
+'p'is raw ttag+tag>.
+   $ same as "is ttag" but do not add to DICT
+'p'is qtag+qf>+tag>.
+   $ tag or qualified tag, qf is either null or TTAG.
+   $ tag is TTAG
+
+'p'is number+ptr>+value>.
+   $ number or char denotation, the NUMBER pointer and the truncated value
+'q'ahead number.
+   $ the next symbol is a number.
 'p'is string+str>.
    $ string, pointer to LEXT (including empty string)
 'f'get linenum+x>.
@@ -97,12 +99,14 @@ $   dictionary is turned off while look ahead is in effect
 'a'set linenum+>x.
    $ set linenum to the given value.
 'a'advance linenum.
-   $ advance and write Dline to the disc.
+   $ advance and call Dnlcr.
+'a'switch source.
+   $ mark the start of a new source file,
 
 $ BODY *************************************************** $
 
 'pragmat'if=compile.
-'pragmat'require=("display","lexical","tags","disc","version").
+'pragmat'require=("config","number","display","lexical","dictionary","tags","disc").
 
 'constant'T=1,F=0.
 
@@ -125,7 +129,7 @@ $ init restore: starts backtrack
 $     T->do restore
 $     save "out restore" to "old restore" (so we know the position)
 $     save current inpt and linenum (otherwise they would be lost)
-$     We might still reading stored symbols (in!=out is possible)
+$     We might still read stored symbols (in!=out is possible)
 $ make restore: 
 $     F->do restore
 $     old restore->out restore, restore inpt and linenum
@@ -137,7 +141,8 @@ $      if not "do restore", decrease restore count
 'stack'[=restore size=]RESTORE=(0*restore size).
 
 'table'MESSAGE=(
- "symbol %p is inserted"         :inserted,
+ "symbol %p is inserted"                    :inserted,
+ "tag expected after ::"                    :tag expected,
  "program text skipped until the next point":text skipped, $ info
  "FATAL: maximal restore size exceeded (%d)":too large backtrack
 ).
@@ -148,16 +153,16 @@ $      if not "do restore", decrease restore count
      inrestore=<RESTORE,outrestore=<RESTORE.
 
 'a'init restore:
-   $ start remembmering symbols, take care of linenum
+   $ start remembmer symbols, take care of linenum
    $ we might be serving symbols from RESTORE (restore count!=0)
-   is+do restore,internal error+_rule_+_line_;
+   is+do restore,internal error+_rule_;
    outrestore->old restore,inpt->old inpt,linenum->old linenum,
    T->do restore.
 'a'make restore:
    $ reset to the saved position
-   do restore=F,internal error+_rule_+_line_;
+   do restore=F,internal error+_rule_;
    restore count>restore size,error+too large backtrack+restore size,
-          delete disc,exit+3;
+          delete discs,exit+3;
    old restore->outrestore,
    old inpt->inpt,old linenum->linenum,
    F->do restore.
@@ -168,7 +173,7 @@ $      if not "do restore", decrease restore count
 'a'save to restore:
    $ save inpt to stack RESTORE
    do restore=F; $ do nothing
-   outrestore!=inrestore,internal error+_rule_+_line_;
+   outrestore!=inrestore,internal error+_rule_;
    incr+restore count,count restore+inrestore,inrestore->outrestore,
      inpt->RESTORE[inrestore].
 'p'read from restore:
@@ -176,14 +181,14 @@ $      if not "do restore", decrease restore count
    inrestore=outrestore,-;
    count restore+outrestore,RESTORE[outrestore]->inpt,
    (is+do restore; decr+restore count),
-   (restore count>=0;internal error+_rule_+_line_).
+   (restore count>=0;internal error+_rule_).
 'f'count restore+>x>:
    x>=>>RESTORE,<<RESTORE->x;incr+x.
 $ ---------------------------------------------- $
 'variable'inpt=0,linenum=0.
 
 'a'set symbol position:
-   inpt=Seol,incr+linenum,(is+do restore;D+Dline);
+   inpt=Seol,incr+linenum,(is+do restore;Dnlcr);
    +.
 'a'next symbol:
    (read from restore; read+inpt,save to restore),
@@ -191,24 +196,31 @@ $ ---------------------------------------------- $
    (inpt=Seol,:next symbol;+).
 'a'Rskip+>symbol:
    symbol=inpt,next symbol;
-   (was+LADM+symbol,inpt=tag*LADM[symbol]),next symbol;
    +.
 'a'must+>symbol:
    symbol=inpt,next symbol;error+inserted+symbol.
-'p'is raw tag+tag>:
+
+$ tags return pointers to TTAG
+$    raw tag: do not add to DICT
+'p'is raw ttag+tag>:
    was+TTAG+inpt,inpt->tag,next symbol.
-'p'is cons+value>:
-   was+CONST+inpt,CONST[inpt]->value,next symbol.
-'q'ahead cons:
-   was+CONST+inpt.
+'p'is ttag+tag>:
+   was+TTAG+inpt,inpt->tag,
+       (inrestore=outrestore,add DICT+inpt+linenum;+),
+       next symbol.
+'p'is qtag+qf>+tag>-ln:
+   was+TTAG+inpt,inpt->tag,linenum->ln,next symbol,
+      (R+Squalifier,tag->qf,
+          (is ttag+tag;error+tag expected);
+       0->qf,(inrestore=outrestore,add DICT+tag+ln;+)).
+
+'p'is number+ptr>+value>:
+   was+NUMBER+inpt,inpt->ptr,get target number value+inpt+value,next symbol.
+'q'ahead number:
+   was+NUMBER+inpt.
 'p'is string+str>:
    was+LEXT+inpt,inpt->str,next symbol.
-'p'is tagdl+tag>+dl>:
-   was+TTAG+inpt,(inrestore=outrestore,add DICT+inpt+linenum;+),
-    linenum->dl,get tag entry+inpt+tag,next symbol.
-'p'is tag+tag>:
-   was+TTAG+inpt,(inrestore=outrestore,add DICT+inpt+linenum;+),
-    get tag entry+inpt+tag,next symbol.
+
 
 $ skip $
 'a'skip symbol:
@@ -227,10 +239,8 @@ $ handle linenum $
 
 'f'get linenum+x>: linenum->x.
 'a'set linenum+>x: x->linenum.
-'a'advance linenum: incr+linenum,D+Dline.
-$'a'get next linenum+x>:
-$  D+Dline,incr+linenum,linenum->x.
-$'a'advance linenum: incr+linenum.
+'a'advance linenum: incr+linenum,Dnlcr.
+'a'switch source: D+Dsource,Dcons+linenum.
 
 'root'+.
 'pragmat'endif=compile.

@@ -1,8 +1,7 @@
 $ symbolic differentiation, problem iii in "machine oriented
 $ languages bulletin", molb 3.1.2, (1973).
-'charfile'out="stdout">.
 'stack'[100](op,left,right)expr.
-'table'operator=("+":plus op,"-":min op,"*":tim op,"/":div op,
+'table'[]operator=("+":plus op,"-":min op,"*":tim op,"/":div op,
      "ln": ln op $ ln(f) is represented as 0 "ln" f $,
      "pow": pow op $ pow(f,g) is represented as f "pow" g $).
 'stack'[1]const=(0: c zero, 1: c one, 2: c two).
@@ -35,19 +34,19 @@ $ languages bulletin", molb 3.1.2, (1973).
                   gen node+plus op+n1+n2+de
      ).
 'action'print expr+>e-zz:
-   was+const+e,put int+out+const[e];
-   was+var+e,put string+out+var+e;
+   was+const+e,put int+STDOUT+const[e];
+   was+var+e,put string+STDOUT+var+e;
    op*expr[e]->zz,
    (= zz =
      [plus op; min op; tim op; div op],
-        put char+out+/(/,print expr+left*expr[e],
-        put char+out+/)/,put string+out+operator+zz,
-        put char+out+/(/,print expr+right*expr[e],
-        put char+out+/)/;
-     put string+out+operator+zz,put char+out+/(/,
+        put char+STDOUT+/(/,print expr+left*expr[e],
+        put char+STDOUT+/)/,put string+STDOUT+operator+zz,
+        put char+STDOUT+/(/,print expr+right*expr[e],
+        put char+STDOUT+/)/;
+     put string+STDOUT+operator+zz,put char+STDOUT+/(/,
         (equal+zz+pow op, print expr+left*expr[e],
-             put char+out+/,/; +),
-        print expr+right*expr[e], put char+out+/)/
+             put char+STDOUT+/,/; +),
+        print expr+right*expr[e], put char+STDOUT+/)/
    ).
 'action'test-e1-e2-e3:
    gen node+pow op+x var+x var+e1, $ pow(x,x) $
@@ -60,6 +59,6 @@ $ languages bulletin", molb 3.1.2, (1973).
       derivative+e2+e3, print expr+e3, nl.
 'action'gen node+>op+>left+>right+res>:
    * op->op, left->left, right->right *expr, >>expr->res.
-'action' nl: put char+out+new line.
+'action' nl: put char+STDOUT+new line.
 'root'test.
 'end'

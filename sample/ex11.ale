@@ -10,7 +10,7 @@ $  it is a global variable changed by the called rule.
 'a'decr global+>x>:
    decr+x,decr+ptr.
 
-'stack'st=(0,10,20,30,40).
+'stack'[]st=(0,10,20,30,40).
 'a'print stack+st[]-x:
   <<st->x,(nxt:x>>>st;put int+STDOUT+st[x],incr+x,:nxt),put char+STDOUT+newline.
 

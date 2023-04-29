@@ -12,4 +12,5 @@
 * [Built-in constants](ex10.ale) such as `_rule_` or `_title_`
 * [Side effects](ex11.ale) when the rule as a macro has different semantics
 * [a<sup>n</sup>b<sup>n</sup>c<sup>n</sup>](ex12.ale) parser using variable affixes as counter
-* [reversing](ex13.ale) a sequence of integers using variable number of affixes 
+* [reversing](ex13.ale) a sequence of integers using variable number of affixes
+* [Quick sort module with call back](ex14.ale) how to use using qualifiers

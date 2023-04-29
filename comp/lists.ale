@@ -1,10 +1,10 @@
 $ table and stack
-'pragmat'module="lists".
+'pragmat'module=lists,title="lists, v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -18,393 +18,286 @@ $  the GNU General Public License for more details.
 $
 $ ************************************************************* 
 
-$ HEADER ************************************************* $
-
-   $ stack and table declaration, pass I
+$ HEADER ****************************************************** $
+$ stack and table declaration
 'a'static stack declaration,stack declaration+>ext,
    table declaration+>ext.
-   $ if a list has a fill, this rule is called
-'a'fix list usage+>tag.
 
-$ BODY *************************************************** $
+$ BODY ******************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("display","lexical","tags","symbols","types","disc",
-         "pragmats","version").
+         "identifier","selector","pragmats","config").
 $
-$ table and list declaration
-$ 'table'<field list> tag = <filler>
-$ 'stack'<estimate><field list> tag = <filler>
-$   => Dlist <tag> <etype> <esize> Dpoint
-$  (only if etype>0)
-$  <etype>:: 0 - none or empty, 1 - [cons],  2 - [=cons=], 3 [tag], 4 [=tag=]
-$  <esize>:: cons|tag
-$ filler (emitted independently, see below)
-$   => Dfill <tag> ... Dpoint
-$ declaration must have a size estimate
-$ external declaration does not have filler and size estimate
-$   <string> -> repr
+$ Table and stack declaration
+$  first pass: selectors go to DISC, handled in separate run
 $
-$ filler:
-$    Dfill <tag> (<item><repeater?><initializer*>)* Dpoint
-$  <repeater>:: Dstar <tag> | Dstar <cons> | <none>
-$  <item>::     <cons>|<tag>|<string>|Dopen<block>Dclose 
-$                     | Dextension<block2>Dextension
-$  <block>::    (<cons>|<tag>|Dstar)* 
-$  <block2>::   ( (<cons>|<tag>)(Dto<selector>)* )*
-$     (only one Dstar in the block; not the first one)
-$  <initializer>:: Dcolon <tag>
+$ external and prototype:
+$  => Dexternal, LADM, <string>, Dpoint.
+$  => Dimport, LADM, <selectors>, Dpoint.
+$  => Dproto/Dexport, <typer>, <qtag>, <selectors>, Dpoint,
+$ table, stack and static stack declaration:
+$  => Dlist, LADM, <etype>, <esize>,<selectors> Dpoint.
+$ fill:
+$  => Dfill,<typer>,<qtag>,<selectors>,Dcolon,<filler>*, Dpoint.
+$
+$ <selectors>::  <calibre>,<ssel>,(<ttag>,<offset>)+ .
+$      standard selector is included, thus list length >= 1
+$ <etype>:: 0 {none} | 1 {cons} | 2 {=cons=} | 3 {tag} | 4 {=tag=}.
+$ <esize>:: <cons> | <qtag> .
+$
+$ <filler>::  <item>, <repeater>?, <initializer>* .
+$ <item>::
+$    <NUMBER> | <qtag> | <string> | Dopen,<block>*,Dclose | 
+$          Dextension, <block2>*, Dextension
+$ <repeater>::  Dstar, (<qtag> |  <const>).
+$ <initializer>:: Dcolon, LADM.
+$ <block>::  <NUMBER> | <qtag> .
+$ <block2>::  (<NUMBER> | <qtag>) (Dto {Dstar|TTAG))*
 
-$ ------------------------------------------------------ $
-$
-$  LADM fields:
-$    adm: link to (calibre,ssel)
-$           calibre:  0 -- not determined yet
-$                     >=1  otherwise
-$           ssel:     0 -- not known
-$                    -1 -- no ssel (if no field list then ssel=1)
-$           flag:     tfill
-$  Iselector:
-$    adm: LADM[list]
-$    repr: 0 .. n     0 -- not known
-$
+$ Pointer constants: no list in the first pass, should be set later.
+$    if the pointer constant has flag tused, it should go to the list
+$ list fill not added to LADM; a fill in a list declaration
+$   generates a separate Dfill section.
 $ ======================================================== $
+'variable'ltype=0,lqf=0,ltag=0,lcalibre=0,lssel=0.
+   $ the list qualifier,tag,calibre and standard selector
+
 'table'MESSAGE=(
- "selector syntax"                    :wrong selector,
- "selector expected"                  :selector expected,
- "list tag is missing after 'stack' or 'table'" :list tag missing,
- "%p %p: selector %p different (%l)"  :doubly defined selector,
- "%p %p: standard selector %p different (%l)"   :standard selector different,
- "%p %p: calibre must be %d (%l) "    :different calibre,
- "repeat constant expected"           :repeat constant expected,
- "repeat constant %d out of range (1 .. %d)":repeat constant out of range,
- "%p filling: only one * in the block":only one repeater,
- "%p filling: selector expected"      :filling selector expected,
- "%p %p: cannot have filling"         :external list with fill,
- "%p %p filling: syntax error"        :error in filling,
- "%p filling: missing tag after :"    :missing tag initializer,
- "%p filling: block expected"         :filling list expected,
- "%p %p: redefined as %p (%l)"        :tag redefined at,
- "%p %p: redefined as %p"             :tag redefined proto,
- "external %p: missing string after =":no external string,
- "no size estimator in external declaration":no external size,
- "syntax error in size estimator"     :wrong size estimator,
- "mixing declaration and prototype in %p declaration" :mixing proto,
+"%p: selector lists calibre mismatch"  :different calibre,
+"%p: selector list syntax error"       :wrong selector,
+"%p: selector tag expected"            :selector tag expected,
+"%p: list tag is missing"              :list tag missing,
+"%p: syntax error in size estimator"   :wrong size estimator,
+
+"%p %p: only one * in a filling block" :only one repeater,
+"%p %p: in filling selector expected"  :filling selector expected,
+"%p %p: filling block syntax"          :filling list expected,
+"%p %p: syntax error in filling"       :error in filling,
+"%p %p: repeat constant %d out of range (1..%d)":repeat constant out of range,
+"%p %p: no repeat for a string"        :no string repeat,
+"%p %p: repeat constant expected"      :repeat constant expected,
+"%p %p: missing tag after :"           :missing tag initializer,
+
+"external %p %p: missing string"       :no external string,
+"mixing %p declaration and prototype"  :mixing proto,
 $ warning $
- "size estimator ""%d"" out of allowed range" :size estimator range
+"%p: size estimator %d is out of allowed range" :size estimator range
+
 ).
 
-'a'tag redefined+>tag+>newtype-l-type:
-   $ when a list is redefined, it might not have a proper definition
-   get defline+tag+l,get type+tag+type,
-   (l>0,error+tag redefined at+type+tag+newtype+l;
-        error+tag redefined proto+type+tag+newtype).
-      
-$ a fixed stack size is between 1 and max stack size.
-$ relative stack size is between 1 and 100.
-
 $ -------------------------------------------------------- $
-'a'skip field list+calibre>+err>:
-   $ skips selector list; sets err if there is an error
-   R+Sopen,1->calibre,(nxt:is tag+#,(R+Scomma,incr+calibre,:nxt;
-                          R+Sequals,:nxt;
-                          R+Sclose,0->err;
-                          error+wrong selector,1->err);
-            error+selector expected,1->err);
-   0->err,-1->calibre.
-'a'get list tag+tag>+calibre>+fill>+err>:
-   $ peek after selector list, return tag and calibre
-   init restore,skip field list+calibre+err,0->tag->fill,
-   (is+err;
-    is tag+tag,(ahead+Sequals,1->fill;+);
-    error+list tag missing,1->err),
-   (is+err,forget restore; make restore).
-'a'get external list tag+tag>+calibre>+str>+err>:
-   $ peek after selector list, return <tag>=<string>
-   init restore,skip field list+calibre+err,0->tag->str,
-   (is+err;
-    is tag+tag,((R+Sequals,is string+str);
-                error+no external string+tag,1->err);
-    error+list tag missing,1->err),
-   (is+err,forget restore; make restore).
+$ read field list
+'a'read field lists+calibre>+err>-cal:
+    R+Sopen,0->err,read field list+calibre+err,
+      (nxt:R+Sopen,read field list+cal+err,
+          (is+err;cal=calibre;1->err,error+different calibre+ltype),:nxt;
+       +);
+    -1->calibre,0->err.
+'a'read field list+calibre>+>err>-tag:
+    1->calibre,(nxt:
+      (is ttag+tag,enter temp selector+tag+0+calibre;R+Snoarg),
+        (R+Scomma,incr+calibre,:nxt;
+         R+Sequals,:nxt;
+         R+Sclose;
+         error+wrong selector+ltype,1->err);
+      error+selector tag expected+ltype,1->err).
+'a'find ssel:
+    lcalibre<0,1->lssel,(enter temp selector+ltag+0+1;+); $ no field list
+    find temp selector+ltag+0+lssel; $ selector found
+    -1->lssel.                  $ no standard selector
+'a'get list tag+err>:
+    $ read selectors; set calibre, ssel, and (qf:tag) for the list
+    reset temp selector stack,
+    read field lists+lcalibre+err,
+    (is+err;
+     is qtag+lqf+ltag,find ssel;
+     error+list tag missing+ltype,1->err).
 $ -------------------------------------------------------- $
-'a'selector list+>typer+>tag+>calibre-lin-n-x-ssel-repr-l:
-   $ process selector definition. Selector seen before
-   $  but not defined has repr=0, otherwise repr= offset 1,2,...
-   $  The standard selector has value -1 if we have
-   $  a selector list and it was not defined there
-   $ calibre*LIST=0 means no selector list was processed before
-   $ calibre is the number of fields
-   R+Sopen,get linenum+lin,pack selector+tag+tag+ssel,get repr+ssel+x,
-    $ check L*L, x=old offset $
-    (x=0,put type+ssel+Iselector,put adm+ssel+tag,
-            add tag prototype+ssel+lin,set tag flag+ssel+tdefined;
-    +),
-    put repr+ssel+0,calibre->n,$ selector offset $
-    (nxt:
-      (-sel-type:is tag+sel,pack selector+sel+tag+sel,get type+sel+type,
-         (type=Iselector, $ was defined before $ get repr+sel+repr,
-           (repr=n;       $ OK, same offset $
-            repr=0,       $ selector seen before but was not defined $
-                put repr+sel+n,set tag flag+sel+tdefined,put defline+sel+lin;
-            get defline+sel+l,error+doubly defined selector+typer+tag+sel+l);
-          put type+sel+Iselector, $ defined right now
-            put defline+sel+lin,set tag flag+sel+tdefined,
-            put repr+sel+n,put adm+sel+tag);
-       internal error+_rule_+_line_),    $ should not happen $   
-      (R+Scomma,decr+n,:nxt;
-       R+Sequals,:nxt;
-       +)),
-    must+Sclose,get repr+ssel+repr, $ check L*L
-    (repr=0, (x=0, -1->x;  $ L*L was not defined here and should not be defined $
-              x=-1;        $ L*L should not be defined, thus OK $ 
-              get defline+ssel+l, $ error, L*L was not defined here
-                error+standard selector different+typer+tag+ssel+l);
-     repr=x;               $ same as before, OK $
-     x=0,repr->x,put defline+ssel+lin;
-                           $ defined here but not earlier; indicate the place
-     get defline+ssel+l,error+standard selector different+typer+tag+ssel+l),
-                           $ previous and this definition differ
-    put repr+ssel+x,put ssel+tag+x, $ store the right value for L*L
-    get calibre+tag+x,     $ check clibre
-    (x=calibre;            $ they are equal
-     x=0,put calibre+tag+calibre,put defline+tag+lin;
-                           $ not defined earlier; indicate the place
-     get defline+tag+l,error+different calibre+typer+tag+x+l);
-   +.                      $ no selector list, do nothing
-
-'a'no selector list+>typer+>tag+>calibre-ssel-x-dl:
-   $ if there was no selector list, make calibre=ssel=1
-   calibre>=0;
-   pack selector+tag+tag+ssel,get repr+ssel+x,
-     (x=1;     $ this is 1
-      x>0,get defline+ssel+dl,error+standard selector different+typer+tag+ssel+dl;
-      put type+ssel+Iselector,put adm+ssel+tag,put repr+ssel+1,
-            put ssel+tag+1,get linenum+dl,add tag prototype+ssel+dl),
-   get calibre+tag+x,
-     (x=1;     $ this is 1
-      x>0,get defline+tag+dl,error+different calibre+typer+tag+x+dl;
-      put calibre+tag+1).
-
-$ when a list has a fill
-$   if was timported, set it to tused
-$   if was not defined, then set calibre=ssel=1
-'a'fix list usage+>tag-x-ssel-type:
-   (get type+tag+type,(type=Itable;type=Istack;type=Istatic stack)),
-     (is tag flag+tag+timported,set tag flag+tag+tused;+),
-     (is tag flag+tag+tdefined;
-      set tag flag+tag+tdefined,get calibre+tag+x,
-        (x=0,put calibre+tag+1,put ssel+tag+1,
-             pack selector+tag+tag+ssel,put type+ssel+Iselector,
-             put repr+ssel+1,set tag flag+ssel+tdefined,put adm+ssel+tag;
-         +));
-   +.
-$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
-$ declaration: [estimate](fields) TAG
-$ prototype:   (fields) TAG
-$   both could be followed by an initializer
-$ The prototype form can also be a definition
-
-'a'size estimator+etype>+esize>:
-   $ estimate:  none empty [number] [=number=] [tag] [=tag=]
-   $ etype:      -1   0     1        2          3      4
-   R+Ssub,(R+Sbox,1->etype;0->etype),
-     (is cons+esize,incr+etype,
-         (=esize=
-          [:0],warning+9+size estimator range+esize,1->esize;
-          [max stack size:],warning+6+size estimator range+esize,
-                (etype=1,100->esize;max stack size->esize);
-          [101:],(etype=1,warning+6+size estimator range+esize,100->esize;+);
-          +);
-      is tag+esize,add+etype+3+etype,use tag+esize;
-      etype=1,error+wrong size estimator,0->esize->etype;
-      0->esize->etype),
-     Rskip+Sbox,must+Sbus;      
-   -1->esize->etype. $ no estimator
+$ size estimator: [XXX] or [=XXX=]
+'p'size estimator+etype>+eqf>+esize>:
+   $ estimate:   []    [number] [=number=] [qtag] [=qtag=]
+   $ etype:       0     1        2          3      4
+   R+Ssub,(ltype=Itable,0->etype->eqf->esize,must+Sbus;
+     (R+Sbox,1->etype;0->etype),
+       (is number+#+esize,0->eqf,incr+etype,
+          (=esize=
+           [:0],warning+9+size estimator range+ltype+esize,1->esize;
+           [max stack size:],warning+6+size estimator range+ltype+esize,
+                 (etype=1,100->esize;max stack size->esize);
+           [101:],(etype=1,warning+6+size estimator range+ltype+esize,100->esize;+);
+           +);
+        is qtag+eqf+esize,add+etype+3+etype;
+        ahead+Sbus,0->esize->eqf->etype;
+        error+wrong size estimator+ltype,0->etype->eqf->esize),
+     Rskip+Sbox,must+Sbus).
 
 $ -------------------------------------------------------- $
 $ FILLING LIST PACK $
-$ <pack>      ::= '(' <filling> (',' <filling>)* ')'
-$ <filling>   ::= <fillitem> ('*'<simple>)? (':'<tag>)*
-$ <fillitem>  ::= <simple>; <string>; <block>
-$ <simple>    ::= <constant>; <constant tag>
-$ <block>     ::= '(' <simple> (',' <simple>)* ('*')? ')'
-$ if the last element in the block is '*' then that element
+$ <pack>     ::= Sopen, <filler> (Scomma, <filler>)*, Sclose.
+$ <filler>   ::= <item>, <repeater>?, <initializer>*.
+$ <repeater> ::= Sasterisk,(<qtag>;<NUMBER>).
+$ <initizer> ::= Scolon,<qtag>.
+$ <item>     ::= <NUMBER>;<qtag>;<string>; <block>
+$ <block>    ::= Sopen,(<block1>*;<block2>*),Sclose.
+$ <block1>   ::= <NUMBER>; <qtag>; Sasterisk;
+$ <block2>   ::= (<NUMBER;<qtag>) (Dto TTAG|Sasterisk)*
+$ if an element in block1 is '*' then that element
 $    is repeated until the block size is = calibre.
-'a'repeat count-n-tag:
-   $ repeat count; should be between 1 and max repeat size
-   $ if it is a tag, indicate that it should be defined
-   $   (type is checked at the next pass)
-   1->n,0->tag,
-    (R+Sasterisk,
-       (is cons+n,
-         (=n=[1:max repeat size],+;
-          error+repeat constant out of range+n+max repeat size,1->n);
-        is tag+tag,-1->n,use tag+tag;
-        error+repeat constant expected);
-    +),
-    (n=1;
-     D+Dstar,(n<0,D tag+tag;Dcons+n)).
 
 'p'is extended block:
    $ check if the filling block has extended syntax
-   $   <value> -> selector or <value> -> *
+   $   <value> ->
    init restore,(
-    ((is cons+#;is tag+#),R+Sarrow),make restore;
+    ((is number+#+#;is qtag+#+#),ahead+Sarrow),make restore;
     make restore,-).
-'a'selectors+>tag+>t>-sel:
-   R+Sarrow,(nxt:D+Dto,
-     (R+Sasterisk,(t=0,1->t,D+Dstar;error+only one repeater+tag);
-      is tag+sel,pack selector+sel+tag+sel,Dtag+sel;
-      error+filling selector expected+tag,skip all),
-     (R+Sarrow,:nxt;+));
-   error+filling selector expected+tag,skip all.
 
-'a'extended block+>tag-cnt-x-t:
+'a'to selectors+>t>-sel:
+   R+Sarrow,(nxt:D+Dto,
+     (R+Sasterisk,(t=0,1->t,D+Dstar;error+only one repeater+ltype+ltag);
+      is ttag+sel,Dttag+sel; $ the selector
+      error+filling selector expected+ltype+ltag,skip all),
+     (R+Sarrow,:nxt;+));
+   error+filling selector expected+ltype+ltag,skip all.
+
+'a'extended block-cnt-x-y-t:
    0->cnt->t,D+Dextension,(nxt:
     R+Scomma,:nxt;
-    is cons+x,Dcons+x,selectors+tag+t,incr+cnt,:nxt;
-    is tag+x,use tag+x,D tag+x,selectors+tag+t,incr+cnt,:nxt;
-    cnt=0,error+filling list expected+tag,skip all;
+    is number+x+#,D+x,to selectors+t,incr+cnt,:nxt;
+    is qtag+x+y,Dqtag+x+y,to selectors+t,incr+cnt,:nxt;
+    cnt=0,error+filling list expected+ltype+ltag,skip all;
     must+Sclose,D+Dextension).
 
-'a'list fill block+>tag-x-t-cnt:
-   $ no strings inside a block
-   is extended block,extended block+tag;
+'a'list fill block-x-y-t-cnt:
+   $ no string inside a block
+   is extended block,extended block;
    0->cnt->t,D+Dopen,(nxt:
     R+Scomma,:nxt;
-    is cons+x,Dcons+x,incr+cnt,:nxt;
-    is tag+x,use tag+x,D tag+x,incr+cnt,:nxt;
-    cnt=0,error+filling list expected+tag,skip all;
-    R+Sasterisk,(t=0,1->t,D+Dstar;error+only one repeater+tag),:nxt;
+    is number+x+#,D+x,incr+cnt,:nxt;
+    is qtag+x+y,Dqtag+x+y,incr+cnt,:nxt;
+    cnt=0,error+filling list expected+ltype+ltag,skip all;
+    R+Sasterisk,(t=0,1->t,D+Dstar;error+only one repeater+ltype+ltag),:nxt;
     must+Sclose,D+Dclose).
 
-'a'initializer+>list-tag-type-dl-err:
-   $ process pointer definitions; type=Ipointer constant, adm=<list>
-   $ the tag can be in previous 'constant' prototypes (not defined)
-   R+Scolon,0->err,
-     (is tagdl+tag+dl,get type+tag+type,
-        ((type=Iempty;type=Iconstant),add tag definition+tag+dl+err,
-            (is+err; $ was defined before $
-             put type+tag+Ipointer constant,put adm+tag+list,
-             D+Dcolon,D tag+tag);
-         tag redefined+tag+Ipointer constant),
-        :initializer;
-      error+missing tag initializer+list);
+'a'filler item+str>-x-y:
+      is number+x+#,D+x,0->str;
+      is qtag+x+y,Dqtag+x+y,0->str;
+      is string+x,Dstring+x,1->str;
+      R+Sopen,list fill block,0->str;
+      error+error in filling+ltype+ltag,skip all,0->str.
+
+'a'repeat count+>str-n-qf-tag:
+   $ repeat count; should be between 1 and max repeat size
+   $ if it is a tag, indicate that it should be defined
+   $   (type is checked at the next pass)
+   R+Sasterisk,(str=0;error+no string repeat+ltype+ltag),
+     (is number+#+n,
+         (=n=[1:max repeat size],+;
+          error+repeat constant out of range+ltype+ltag+n+max repeat size,1->n),
+         (n=1; D+Dstar,Dcons+n);
+      is qtag+qf+tag,D+Dstar,Dqtag+qf+tag;
+      error+repeat constant expected+ltype+ltag);
+   +.
+
+'a'initializer-qf-tag-dl-res:
+   $ process pointer definitions; type=Ipointer constant
+   R+Scolon,
+     (is qtag+qf+tag,get linenum+dl,
+        create tag definition+qf+tag+Ipointer constant+dl+res,
+        set tag flag+res+tdefined,check tag definition+res,
+        D+Dcolon,Dtag+res,:initializer;
+      error+missing tag initializer+ltype+ltag);
    +.       
 
-'a'list fill+>typer+>tag-x:
+'a'create list filler-err-str:
    $ stack or table filling list pack
    $ calibre*tag can be zero which means don't know
    $ accept an empty filling to indicate that this is not a
    $      public prototype.
    R+Sopen,(R+Sclose;
-     (is tag flag+tag+texternal,error+external list with fill+typer+tag;+),
-     D+Dfill,D tag+tag,
-     (nxt:
-       (is cons+x,D cons+x,repeat count;
-        is tag+x,use tag+x,D tag+x,repeat count;
-        is string+x,D string+x,repeat count;
-        R+Sopen,list fill block+tag,repeat count;
-        error+error in filling+typer+tag,skip all),
-      initializer+tag,
-      (R+Scomma,:nxt;
-       R+Sclose,D+Dpoint,set tag flag+tag+tfill;
-       error+error in filling+typer+tag,skip all)
-      ));
-   error+error in filling+typer+tag,skip all.
+     (nxt:clear local error+err,filler item+str,repeat count+str,initializer,
+        (R+Scomma,:nxt;
+         R+Sclose;
+         was local error+err,skip all;
+         error+error in filling+ltype+ltag,skip all)));
+   error+error in filling+ltype+ltag,skip all.
 
 $ ================================================================ $
-'a'list declaration tail+>typer+>tag+>etype+>esize:
-   $ type is OK; look at the selector list
-   $ if Iempty, then fill it
-   $ etype: -1,    0,  1,    2,      3,     4
-   $        none  []  [10]  [=10=]  [tag]  [=tag=]
-   ((-otype:get type+tag+otype,otype=Iempty),
-     new list entry+tag+typer;+),
-   (etype<=0;D+Dlist,Dtag+tag,Dcons+etype,
-     (etype<3,Dcons+esize;Dtag+esize),D+Dpoint).
 
-$ after 'external'<TYPER>
-'a'external declarer+>typer+>dl-tag-calibre-str-err-otype:
-  get external list tag+tag+calibre+str+err,
+'a'list fill:
+    D+Dfill,D+ltype,Dqtag+lqf+ltag,dump temp selectors+lcalibre+lssel,
+    D+Dcolon,create list filler,D+Dpoint.
+
+$ after 'external'<TYPER>  <fields> tag = "string"
+'a'external declarer+>dl-err-res-str:
+  get list tag+err, $ read selectors, 
   (is+err,skip all;
-   get type+tag+otype,
-     (otype=Iempty;
-      otype=typer;
-      tag redefined+tag+typer,1->err),
-   add tag external+tag+dl+err,
-   (is+err,skip all;
-    list declaration tail+typer+tag+0+-1,
-      selector list+typer+tag+calibre,no selector list+typer+tag+calibre,
-      (is tag flag+tag+tfill,error+external list with fill+typer+tag;+),
-      put repr+tag+str,Rskip+tag,Rskip+Sequals,Rskip+str)
-  ).
+   must+Sequals,create tag definition+lqf+ltag+ltype+dl+res,
+   create list extension+res+lcalibre+lssel,
+   set tag flag+res+tdefined,set tag flag+res+texternal,
+   check tag definition+res,
+   (is string+str;0->str,error+no external string+ltype+ltag),
+   D+Dexternal,Dtag+res,Dstring+str,D+Dpoint).
 
-$ 'stack'<fields option>tag      prototype or fill
-$ 'table'<fields option>tag
+'a'list prototype+>dl-proto-res:
+   get pragmat value+pgt proto+proto, $1: import, 2: public, 0_ none
+   (proto=1,create tag definition+lqf+ltag+ltype+dl+res,
+      create list extension+res+lcalibre+lssel,
+      set tag flag+res+tdefined,set tag flag+res+timported,
+      check tag definition+res,
+      D+Dimport,Dtag+res,dump temp selectors+lcalibre+lssel,D+Dpoint;
+    (proto=2,D+Dexport;D+Dproto),D+ltype,Dqtag+lqf+ltag,
+                  dump temp selectors+lcalibre+lssel,D+Dpoint).
+
+$ <TYPER><fields>tag=      fill
+$ <TYPER><fields>tag       prototype
 $     ext: 0/3 prototype, 0/4 fill
-'a'prototype+>typer+>dl+>ext>-proto-tag-fill-calibre-otype-err:
-   get pragmat value+pgt proto+proto, $ 1: import, 2: public, 0: none $
-   get list tag+tag+calibre+fill+err,
-   (is+err;
-    is+fill,0->proto,(ext=3,error+mixing proto+typer,1->err;4->ext);
-    ext=4,error+mixing proto+typer,1->err;
-    3->ext),
+'a'prototype or fill+>dl+>ext>-err:
+   get list tag+err,
    (is+err,skip all;
-    get type+tag+otype,
-      (otype=Iempty;
-       otype=typer;
-       tag redefined+tag+typer,1->err),
-      (is+err;
-       proto=1,add tag import+tag+dl+err;
-       proto=2,add tag public+tag+dl+err;
-       add tag prototype+tag+dl),
-      (is+err,skip all;
-       list declaration tail+typer+tag+0+-1,
-         selector list+typer+tag+calibre,
-         (proto=0;no selector list+typer+tag+calibre),
-         Rskip+tag,(R+Sequals,list fill+typer+tag;+))).
+    R+Sequals,(ext=3,error+mixing proto+ltype,skip all;
+               4->ext,list fill);
+    ext=4,must+Sequals,list fill;
+    3->ext,list prototype+dl).
 
-$ 'stack'[]<field option>tag<filler option> with size estimate
-'a'declarer+>typer+>dl+>etype+>esize-tag-calibre-otype-err:
-   $ stack with empty (or missing) estimator is of fixed size
-   get list tag+tag+calibre+#+err,
-   (is+err,skip all;
-    get type+tag+otype,
-     (otype=Iempty;
-      otype=typer;
-      tag redefined+tag+typer,1->err),
-     add tag definition+tag+dl+err,
-     (is+err,skip all;
-      list declaration tail+typer+tag+etype+esize,
-        selector list+typer+tag+calibre,no selector list+typer+tag+calibre,
-        Rskip+tag,(R+Sequals,list fill+typer+tag;+))).
-
-$ 'x''stack'<fields>tag   external declaration
-$ 'stack'[]<fields>tag    declaration
-$ 'stack'<fields>tag      prototype or fill
+$ 'stack'[](fields) tag with size estimato
+$ 'table'[](fields) tag
+'a'declarer+>dl+>etype+>eqf+>esize-err-res:
+   get list tag+err, $ read selectors
+   (is+err,skip all; $ error
+    create tag definition+lqf+ltag+ltype+dl+res,
+       create list extension+res+lcalibre+lssel,
+       set tag flag+res+tdefined,check tag definition+res,
+       D+Dlist,Dtag+res,Dcons+etype,
+       (=etype= [0],+;[1;2],Dcons+esize;Dqtag+eqf+esize),
+       dump temp selectors+lcalibre+lssel,
+       D+Dpoint,
+       (R+Sequals,list fill;+)).
+    
+$ 'x''stack'<fields>tag=    external declaration
+$ 'stack'[]<fields>tag      declaration
+$ 'stack'[]<fileds>tag=     declaration+fill
+$ 'stack'<fields>tag        prototype
+$ 'stack'<fileds>tag=       fill
 $  ext=1: external;
-$  0/2: declarer   (with size estimate)
-$  0/3: prototype  (no size estimate)
-$  0/4: fill       (no size estimate)
-'a'declaration+>ext>+>typer-l-etype-esize:
+$  0/2: declarer with size estimator
+$  0/3: prototype  (no size estimator)
+$  0/4: fill       (no size estimator)
+'a'declaration+>ext>-l-etype-eqf-esize:
    get linenum+l,
-     ((typer!=Itable,size estimator+etype+esize,etype>=0),
-        $ there was a size estimate, maybe empty $
-        (ext>=3,error+mixing proto+typer,skip all;
-         ext=1,error+no external size,skip all;
-         2->ext,declarer+typer+l+etype+esize);
-      $ table or no size estimate
-      ext=1,external declarer+typer+l;
-      ext=2,error+mixing proto+typer,skip all;
-      prototype+typer+l+ext).
+     (ext=1,external declarer+l;
+      size estimator+etype+eqf+esize,
+        (ext>=3,error+mixing proto+ltype,skip all;
+         2->ext,declarer+l+etype+eqf+esize);
+      $ no size estimator
+      ext=2,error+mixing proto+ltype,skip all;
+      prototype or fill+l+ext).
 
 $ ext changes reflecting thw type
 'a'declaration series+>ext+>typer:
-   declaration+ext+typer,
-        (R+Scomma,:declaration series;
-         R+Spoint;
-         must+Spoint,skip to point).
+   typer->ltype,declaration+ext,
+      (nxt:R+Scomma,declaration+ext,:nxt;
+           R+Spoint;
+           must+Spoint,skip to point).
 
 $ 'external''table' or 'table'
 'a'table declaration+>ext:

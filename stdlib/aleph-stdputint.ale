@@ -1,0 +1,47 @@
+$ standard ALEPH library -- put int
+'pragmat' module=stdlib, title="stdlib putint".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$
+$  (C) 2020-2023, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ put int
+'a'put int+""f+>n.
+$ prints n as a signed integer using intsize+1 characters:
+$   spaces, sign if negative, and the decimal representation of n.
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+
+'a'put int+""f+>n:
+  n>0, put int1+f+n+/ /+int size;
+  n=0, put int1+f+n+/0/+int size;
+  n=min int, put int1+f+n+/-/+int size;
+  get abs+n+n, put int1+f+n+/-/+int size.
+'a'put int1+""f+>n+>ch+>m-q-r:
+  m<0;
+  n=0, decr+m, put int1+f+0+/ /+m,put char+f+ch;
+  n>0, decr+m, divrem+n+10+q+r,put int1+f+q+ch+m,
+      add+r+/0/+r,put char+f+r;
+  $ n=min int; use min int= -(max int+1)
+  decr+m, divrem+max int+10+q+r,put int1+f+q+ch+m,
+      add+r+/1/+r,put char+f+r.
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+

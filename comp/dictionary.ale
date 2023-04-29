@@ -1,0 +1,100 @@
+$ creating and printing dictionary
+'pragmat'module=dictionary,title="dictionary v2.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$
+$  (C) 2020-2023, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+'a'add DICT+>ttag+>line.
+  $ save line number for the dictionary item ttag
+'a'print dictionary.
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("tags","pragmats","display").
+
+
+'stack'[35] DICT.
+
+$ lastline*TTAG contains the last added line number defaults to -1
+$ tag line numbers are linked through entries in DICT.
+$ the entry at DICT[ptr] is (offs,diffn) where
+$  offs=0:  this is the last linked entry
+$  offs!=0: the previous entry is at ptr-offs
+$  diffn: the difference from the previous line number:
+$    1 .. 2029: subtract that much
+$    2047:      subtract 2000
+
+$ pack and unpack two values (d,n), n has 11 bits
+'a'extend DICT+>x: (* x->DICT *)DICT.
+'f'pack2+>d+>n+x>:
+   d->x,left clear+x+11,bool or+x+n+x.
+'f'unpack2+>x+d>+n>:
+   bool and+x+0x7FF+n,x->d,right clear+d+11.
+'a'expand DICT+>ptr+>x-z:
+   (ptr=0,0->z;subtr+>>DICT+ptr+z,incr+z),
+    pack2+z+x+z,extend DICT+z.
+'a'add line to DICT+>ptr+>n: $n !=0 $
+   n<2030,expand DICT+ptr+n;
+   expand DICT+ptr+2047,subtr+n+2000+n,>>DICT->ptr,:add line to DICT.
+'a'add DICT+>tag+>line-l1:
+   $ add the next line number to TTAG[tag] if 'dict=on'
+   is pragmat value+pgt dict,lastline*TTAG[tag]->l1,
+     (l1<0,line->lastline*TTAG[tag],0->text*TTAG[tag];
+      subtr+line+l1+l1,(l1<=0; 
+        add line to DICT+text*TTAG[tag]+l1,line->lastline*TTAG[tag],
+           >>DICT->text*TTAG[tag]));
+   +.
+'a'reverse DICT+>tag-ptr-l-n-d-d1:
+   $ create the reverse linked list of line numbers
+   lastline*TTAG[tag]<0; text*TTAG[tag]=0; $none or one number only
+   $  (0,l2-l1),  (d1,l3-l2),    (dx,l{x+1}-lx)     l{x+1}
+   $   d1          d2             0 
+   lastline*TTAG[tag]->l,text*TTAG[tag]->ptr,0->d1,
+    (nxt: unpack2+DICT[ptr]+d+n,pack2+d1+n+DICT[ptr],
+            (=n= [1:2019],subtr+l+n+l;[2047],subtr+l+2000+l;+),
+            (d=0;
+             d->d1,subtr+ptr+d+ptr,:nxt)),
+    ptr->text*TTAG[tag],l->lastline*TTAG[tag].
+
+$ dictionary printing $
+'q'is special tag+>tag-ch: $ tag does not start with a letter
+  previous+TTAG+tag,
+    string elem+TTAG+tag+0+ch,(=ch=[/a/:/z/;/A/:/Z/],-;+).
+
+'a'DICT tag+>tag-l-n-d-ptr:
+   lastline*TTAG[tag]<=0; $ no occurence
+   is special tag+tag; $ does not start with a letter
+   reverse DICT+tag,lastline*TTAG[tag]->l,
+   text*TTAG[tag]->ptr,DICT header+tag,DICT item+l,
+   (nxt:ptr=0,DICT tail;
+        unpack2+DICT[ptr]+d+n,
+          (=n=[1:2019],add+l+n+l,DICT item+l;[2047],add+l+2000+l;+),
+          (d=0,DICT tail;
+           add+ptr+d+ptr,:nxt)).
+'a'print dict+>y-x:
+  y=0;
+  add+y+<>TTAG+x,print dict+left*TTAG[x],
+    DICT tag+x,right*TTAG[x]->y,:print dict.  
+
+'a'print dictionary-first:
+  get ttag head+first, print dict+first,release+DICT.
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+

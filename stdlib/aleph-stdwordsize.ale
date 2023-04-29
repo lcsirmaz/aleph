@@ -1,0 +1,31 @@
+$ standard ALEPH library -- word size
+'pragmat' module=stdlib.
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$
+$  (C) 2020-2023, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ the exact values here depend on the target architecture.
+$ the values here are for 32 bit word size
+
+'cons'word size=32,             $ word size in bits
+      max int=0x7fffffff,       $ maximal integer value
+      min int=-max int-1,       $ minimal integer value
+      int size=10.              $ number of difits in the decimal
+                                $  form of max int
+
+'end'
+

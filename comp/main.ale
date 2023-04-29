@@ -1,10 +1,10 @@
 $ ALEPH compiler main module
-'pragmat'title="compiler".
+'pragmat'title="ALEPH to ICE compiler, v2.0".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH)
+$  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2022, L.Csirmaz
+$  (C) 2020-2023, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -18,37 +18,37 @@ $  the GNU General Public License for more details.
 $
 $ ************************************************************* 
 
-'pragmat'require=("disc","input","display","ice","passi","passii",
-     "mcheck","tags").
+'pragmat'require=("disc","display","input","ice","pass1","pass2",
+     "pass3","mcheck","pass4").
 
-'a'first pass:
-   read sources,(was error;was root scanned),(was error;read stdlib),
-   close disc,(was error,delete disc;+),
-   print dictionary.
-'a'second pass:
-   create ice header,
-   open disc+/r/,passII,
-   (was error;check macro rules),
-   (was error,delete disc,delete ice file;+).
-'a'third pass:
-   rewind disc, $ and prepare for macro substitution $
-   pass III,
-   delete disc,close ice file.
-
-$ exit values:
-$   0: .ice file generated
-$   1: no source file
-$   2: there was an error in the program
-$   3: too large backtract (symbol)
-$   4: cannot create temporary file or the out file
-$ 64+: internal error
 'root'
-   read arguments,(was error,exit+1;+),
-   open disc+/w/, (was error,exit+4;+),
-   first pass,    (was error,exit+2;+),
-   open ice file, (was error,delete disc,exit+4;+),
-   second pass,   (was error,exit+2;+),
-   third pass,    (was error,exit+2;+).
+   $ standard exit values:
+   $   1 - error in command line arguments
+   $   2 - error in source files
+   $   3 - too large backtrack (module 'symbols')
+   $   4 - cannot create temporary file or ice file
+   $  15 - compiler internal error
+
+   $ parse command line arguments, handle --help, --version
+   read command line arguments,(was error,exit+1;+),
+   $ open first disc for writing
+   open disc+1+/t/, (was error,exit+4;+),
+   $ read all soruces, create token list in DISC1
+   $   store all definitions (declaration, import prototype)
+   first pass,      (was error,delete discs,exit+2;+),
+   close discs,open disc+1+/r/,open disc+2+/t/,
+                    (was error,delete discs,exit+4;+),
+   $ read token list, determine definiting occurrence for all tags
+   $   write the new token sequence to DISC2
+   second pass,     (was error,delete discs,exit+2;+),
+   close discs,open disc+2+/r/,open ice file,
+                    (was error,delete discs,exit+4;+),
+   $ create ICE header, definition list, declarations, check rules
+   third pass,(was error;check macro rules),
+                    (was error,delete discs,delete ice file,exit+2;+),
+   $ compile rules, no error messages, only diagnostic warnings
+   fourth pass,
+   close ice file,delete discs.
 
 'end'
 
