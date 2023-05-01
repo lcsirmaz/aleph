@@ -391,10 +391,11 @@ $ allowed bold symbols are stored in a binary search table
  "x"           :B31       ,(   0,   0,Sextsymb   ),
 $ built-in manifest constants
  "_file_"      :D1        ,(   0,   0,1          ),
- "_line_"      :D2        ,(  D1,   0,2          ),
- "_rule_"      :first bin ,(  D2,  D4,3          ),
- "_source_"    :D4        ,(   0,  D5,4          ),
- "_title_"     :D5        ,(   0,   0,5          )
+ "_line_"      :D2        ,(  D1,  D3,2          ),
+ "_module_"    :D3        ,(   0,   0,3          ),
+ "_rule_"      :first bin ,(  D2,  D4,4          ),
+ "_source_"    :D4        ,(   0,  D5,5          ),
+ "_title_"     :D5        ,(   0,   0,6          )
 ).
 'a'read bold+x>-optr-n:
   $ read a bold symbol 'abc'; give error message in case of error
@@ -414,6 +415,9 @@ $ built-in manifest constants
      Sdummy symb->x,unstack string+LEXT,unstack to+BUFFER+optr).
 
 $ manifest constants:  _line_, _file_, _rule_, etc $
+'a'string from tag+>tag+string>:
+   was+TTAG+tag,previous+TTAG+tag,copy string+TTAG+tag+LEXT,>>LEXT->string;
+   Squote image->string.
 'a'read manifest+x>-optr-n:
   >>BUFFER->optr,extend BUFFER+/_/,1->n,
   ((nxt-t: bold letter+t,extend BUFFER+t,incr+n,:nxt;
@@ -425,10 +429,11 @@ $ manifest constants:  _line_, _file_, _rule_, etc $
             n<0,right*BOLD[x]->x,:nxt;
             adm*BOLD[x]->x)),
       unstack string+LEXT,unstack to+BUFFER+optr,(=x=
-      [1;4],$ file  $ find linenum+0+#+x;
-      [2],  $ line  $ find linenum+0+x+#,enter const value+x+x;
-      [3],  $ rule  $ get rule tag+x;
-      [5],  $ title $ get pragmat value+pgt title+x,(is+x;Squote image->x);
+      [1;5],$ file   $ find linenum+0+#+x;
+      [2],  $ line   $ find linenum+0+x+#,enter const value+x+x;
+      [3],  $ module $ get module tag+x,string from tag+x+x;
+      [4],  $ rule   $ get rule tag+x,string from tag+x+x;
+      [6],  $ title  $ get pragmat value+pgt title+x,(is+x;Squote image->x);
       $ none of the above $ Sdummy symb->x);
   n=1,error+illegal character+/_/,unstack to+BUFFER+optr,Sdummy symb->x;
   pack string+BUFFER+n+LEXT,error+unrecognized builtin+>>LEXT,

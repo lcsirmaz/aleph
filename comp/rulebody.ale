@@ -24,8 +24,8 @@ $
    $ write rule body to DISC; rule tag in LADM, formal affixes in LLOC 
 'a'root body.
    $ write root body to DISC
-'a'get rule tag+string>.
-   $ _RULE_ constant: return a LEXT pointer with the rule tag
+'a'get rule tag+tag>.
+   $ _RULE_ constant: return TTAG or 0
 
 $ BODY ********************************************************* $
 'pragmat'if=compile.
@@ -331,11 +331,9 @@ $ classification: we are after =
     (nxt:class+last,(is+last;R+Ssemicolon,D+Dsemicolon,incr+cnt,:nxt;+)),
     (was local error+err,skip all;last=0;cnt=0,error+empty classification;+).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
-'a'get rule tag+string>:
+'a'get rule tag+tag>:
    $ get rule tag as a string; built-in string for _rule_
-   is+rule tag,get ttag+rule tag+string,previous+TTAG+string,
-        copy string+TTAG+string+LEXT,>>LEXT->string;
-   Squote image->string.
+   is+rule tag,get ttag+rule tag+tag;0->tag.
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'rule pragmats+>tag:
    (is pragmat value+pgt trace,set tag flag+tag+rtrace;+),
