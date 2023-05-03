@@ -93,7 +93,7 @@ $ check argument list for options
     arg top < <<STDARG,error+no input;
     is first arg+"--help",message+help message;
     is first arg+"--version",message+version message+version major+version minor;
-    is first arg+"--no-stdlib",0->add stdlib,
+    is first arg+"-no-stdlib",0->add stdlib,
         previous string+STDARG+arg top,:nxt;
     is first arg+"-o",previous string+STDARG+arg top,
         (arg top < <<STDARG,error+missing argument+/o/;
