@@ -43,6 +43,7 @@
 
 /* ALEPH stack and table */
 typedef struct {
+  const char *name;	// list name
   int *offset;          // offset for virtual index
   int *p;               // pointer to the beginning
   int *top;             // pointer to the top
@@ -54,6 +55,7 @@ typedef struct {
 
 /* ALEPH character file */
 typedef struct {
+  const char *name;	// file name
   unsigned openflag;    // how was it opened
   int fileError;        // last file error
   int st1,st2;          // string pointers
@@ -67,6 +69,7 @@ typedef struct {
 } a_AREA;
 #define a_MAXIMAL_AREA  32
 typedef struct {
+  const char *name;	// file name
   unsigned openflag;    // how was it opened
   int fileError;        // last file error
   int st1,st2;          // string pointers
@@ -108,10 +111,11 @@ extern int a_requestspace(int ID,int n);
 /********************************************************************
 *  Data structure initialization
 *
-*  void a_setup_list(kind,ID,calibre,lwb,upb,fill_size)
+*  void a_setup_list(kind,ID,name,calibre,lwb,upb,fill_size)
 *    kind     0 for table, 1 for stack
 *    ID       index in a_DATABLOCK, use to_LIST(ID) to get the 
 *             pointer to the corresponding structure
+*    name     name of the list
 *    calibre  calibre (1 or more)
 *    lwb,upb  virtual lower and upper bound for this list
 *    fill_size  allocate at least that much space (can be zero)
@@ -120,17 +124,19 @@ extern int a_requestspace(int ID,int n);
 *    T        pointer to the integer array containing description
 *             of all table and stack filling
 *
-*  void a_setup_charfile(ID,dir,sID,soff)
+*  void a_setup_charfile(ID,name,dir,sID,soff)
 *    ID       index in a_DATABLOCK, use to_CHFILE(ID) to get the
 *             pointer to the corresponding structure
+*    name     name of the file
 *    dir      0,1: input, 2,3: output direction
 *    sID,soff list and pointer (ALEPH values) to the string in
 *             the declaration, giving the file name and direction
 *             if not opened explicitly
 *
-*  void a_set_dfile(ID,die,sID,soff,narea)
+*  void a_setup_dfile(ID,name,dir,sID,soff,narea)
 *    ID       index in a_DATABLOCK, use to_DFILE(ID) to get the
 *             pointer to the corresponding structure
+*    name     name of the file
 *    dir      0,1: input, 2,3: output direction
 *    sID,soff list and pointer (ALEPH values) to the string in
 *             the declataion
@@ -142,10 +148,13 @@ extern int a_requestspace(int ID,int n);
 *    count    position starting from 1
 *
 ********************************************************************/
-extern int a_virtual_min,a_virtual_max;
-extern void a_setup_list(int kind,int ID,int cal,int lb,int up,int fill);
-extern void a_setup_charfile(int ID,int dir,int sID,int soff);
-extern void a_setup_dfile(int ID,int dir,int sID,int soff,int narea);
+extern int  a_virtual_min,a_virtual_max;
+extern void a_setup_list(int kind,int ID,const char*name,
+                             int cal,int lb,int up,int fill);
+extern void a_setup_charfile(int ID,const char*name,
+                             int dir,int sID,int soff);
+extern void a_setup_dfile(int ID,const char*name,int dir,
+                             int sID,int soff,int narea);
 extern void a_add_filearea(int ID,int aID,int hash);
 extern void a_list_fill(int *fill);
 
@@ -165,6 +174,12 @@ extern void a_list_fill(int *fill);
 *  void a_area_failed(char *rule,int v)
 *    rule     the rule, or NULL if no rule name (root)
 *    v        the offending value
+*
+* index is out of range, give an error message
+*  void a_index_error(int L,int idx,char*rule)
+*    L        index of list
+*    idx      the index
+*    rule     rule where the error happened
 ********************************************************************/
 /* fatal error values */
 #define a_FATAL_waitfor         1 /* circular waitfor call */
@@ -178,6 +193,8 @@ extern void a_list_fill(int *fill);
 extern int a_extstrcmp(int table,int off,const char *str);
 extern void a_fatal(int code);
 extern void a_area_failed(const char *rule,int v);
+extern void a_index_error(int L,int idx,const char*rule);
+
 
 /********************************************************************
 * call stack,
@@ -188,11 +205,11 @@ extern void a_area_failed(const char *rule,int v);
 *  each rule call is &a_Ltr.
 * a_addto_callstack(rulename)
 * a_unused_callstack(rulename)
-*  creates a local call block and assigns it to a_Ltr, suppress warning
+*  create the local call block a_Ltr; suppress "not used" warning
 * a_addto_callstack_bottom()
-*  creates the bottom element of the call stack
+*  create the bottom call stack element in the main @root
 * a_backtrack(top,code)
-*  prints the call stack starting at top
+*  print the call stack starting at top; it code!=0 it is from exit
 ********************************************************************/
 
 typedef struct a_CALL{
@@ -204,7 +221,7 @@ typedef a_CALL *a_CALLp;
 #define a_unused_callstack(rulename)			\
    a_CALL __attribute__((unused)) a_Ltr={rulename,a_tr}
 #define a_addto_callstack_bottom()			\
-   a_CALL a_Ltr={"root@main",NULL}
+   a_CALL a_Ltr={NULL,NULL}
 
 extern void a_backtrack(a_CALLp tr,int);
 
@@ -254,14 +271,14 @@ void a_trace_rule(const char*rname,int affixno,...);
     else if(working!=1){				\
       a_backtrack(&a_Ltr,-1);a_fatal(a_FATAL_waitfor);}	\
   }
-#else  /* CALL STACK */
+#else  /* no CALL_STACK */
 #define a_MODROOT(x,name)				\
   if(a_F2==0 || a_extstrcmp(a_F1,a_F2,name)==0){	\
     static int working=0;				\
     if(working==0){working=2;x();working=1;}		\
     else if(working!=1){a_fatal(a_FATAL_waitfor);}	\
   }
-#endif /* CALL STACK */
+#endif /* CALL_STACK */
 
 /********************************************************************
 * list access with bound check
@@ -272,27 +289,24 @@ void a_trace_rule(const char*rname,int affixno,...);
 *
 ********************************************************************/
 
-#ifndef a_CALL_STACK
-inline static int a_listelem(int L,register int idx,int off,
-             const char *rname)
-{   if(idx-off<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
-       idx > to_LIST(L)->aupb){fprintf(stderr,"in rule %s: index "
-         "%d of list %d is out of bounds (%d,%d)\n",
-         rname,idx,L,to_LIST(L)->alwb,to_LIST(L)->aupb);
-       a_fatal(a_FATAL_index);}
-    return idx-off;
-}
-#else /* CALL STACK */
+#ifdef a_CALL_STACK
 inline static int a_listelem(a_CALLp bt,int L,register int idx,
          const int off,const char *rname)
 {   if(idx-off<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
-       idx > to_LIST(L)->aupb){fprintf(stderr,"in rule %s: index "
-         "%d of list %d is out of bounds (%d,%d)\n",
-         rname,idx,L,to_LIST(L)->alwb,to_LIST(L)->aupb);
-       a_backtrack(bt,-1);a_fatal(a_FATAL_index);}
+       idx > to_LIST(L)->aupb){
+         a_index_error(L,idx,rname),a_backtrack(bt,-1);
+         a_fatal(a_FATAL_index);}
     return idx-off;
 }
-#endif /* CALL STACK */
+#else /* no CALL_STACK */
+inline static int a_listelem(int L,register int idx,int off,
+             const char *rname)
+{   if(idx-off<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
+       idx > to_LIST(L)->aupb){
+         a_index_error(L,idx,rname);a_fatal(a_FATAL_index); }
+    return idx-off;
+}
+#endif /* CALL_STACK */
 
 #endif /* ALEPH_CORE_H */
 

@@ -593,8 +593,8 @@ $        places where Uuse => Uspare
 'a'diagnose out affix+>utype+>loc:
   addRULE flag!=1;
   flag*RULE[RULEtop]!=Uspare;
-  utype=Uinout,warning+1+out affix not used+rule called+ttag*LLOC[loc];
-  warning+4+out affix not used+rule called+ttag*LLOC[loc].
+  utype=Uinout,warning+1+out affix not used+rule compiled+ttag*LLOC[loc];
+  warning+4+out affix not used+rule compiled+ttag*LLOC[loc].
 'a'diagnose formals-loc-base-off:
   <<LLOC->loc,<<RULE->base,1->off,
   (nxt: loc>>>LLOC;

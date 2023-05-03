@@ -56,17 +56,17 @@ int a_requestspace(int ID,int n){
  *     block.
  */
 void a_extension(int ID,int n){
-  if(a_requestspace(ID,n)){
   #define st    to_LIST(ID)
+  if(a_requestspace(ID,n)){
      st->top=st->offset+st->aupb;
      return;
-  #undef st
   }
-  fprintf(stderr,"in an extension of list %d by %d words, "
-                 "out of %s\n",ID,n,
-                 to_LIST(ID)->aupb+n>to_LIST(ID)->vupb ?
+  fprintf(stderr,"list %s: extension by %d words, "
+                 "out of %s\n",st->name,n,
+                 st->aupb+n>st->vupb ?
                        "virtual space" : "memory");
   a_fatal(a_FATAL_memory);
+  #undef st
 }
 /* auxiliary functions */
 
@@ -80,11 +80,11 @@ int a_extstrcmp(int ID,int off,const char *str){
   return strcmp((char*)(ptr+1-*ptr),str);
   #undef  st
 }
-/* a_area_failed(int v)
+/* a_area_failed(char *rule,int v)
  *   last area in a classification failed
  */
 void a_area_failed(const char *rule,int v){
-  fprintf(stderr,"classification in rule %s failed for value %d\n",
+  fprintf(stderr,"rule %s: classification failed for value %d\n",
      rule,v);
   a_fatal(a_FATAL_area);
 }
@@ -92,10 +92,11 @@ void a_area_failed(const char *rule,int v){
 *  Data structure initialization
 *
 * setup a list structure
-*   a_setup_list(kind,list,calibre,vlwb,vupb,fill size)
+*   a_setup_list(kind,list,name,calibre,vlwb,vupb,fill size)
 *      kind        0 - table, 1 - stack (ignored)
 *      ID          index in a_DATABLOCK, use to_LIST(ID) to get the 
 *                  pointer  to the corresponding structure
+*      name        name of the list
 *      calibre     calibre
 *      vlwb,vupb   virtual lower and upper bounds
 *      fill        fill size
@@ -107,9 +108,10 @@ void a_area_failed(const char *rule,int v){
 *      fill        integer array with the description of all list fill.
 *
 *******************************************************************/
-void a_setup_list(int kind __attribute__((unused)),
-               int ID,int cal,int lb,int up,int fill){
+void a_setup_list(int kind __attribute__((unused)),int ID,
+             const char*name,int cal,int lb,int up,int fill){
   #define st    to_LIST(ID)
+  st->name=name;
   st->offset=0; st->p=0; st->length=0;
   st->vlwb=lb; st->vupb=up; st->calibre=cal;
   st->alwb=lb; st->aupb=st->alwb-cal;
@@ -118,10 +120,10 @@ void a_setup_list(int kind __attribute__((unused)),
 }
 
 /* a_list_fill(int *fill)
-*    filling is collected in the integer array 'fill'
-*     after this call 'fill' can be discarded; the
-*     content could also come from an external file
-*/
+ *    filling is collected in the integer array 'fill'
+ *    after this call 'fill' can be discarded; the
+ *    content could also come from an external file
+ */
 void a_list_fill(int *fill){
   int ID,x,i,cnt,*idx;
   #define st    to_LIST(ID)
@@ -135,6 +137,15 @@ void a_list_fill(int *fill){
       } fill++;
   }
   #undef st
+}
+
+/* void a_index_error(int L,int idx,char *rname)
+ *  index error message
+ */
+void a_index_error(int L,int idx,const char*rname){
+    fprintf(stderr,"rule %s: index %d of list %s is "
+     "out of bounds (%d,%d)\n",
+     rname,idx,to_LIST(L)->name,to_LIST(L)->alwb,to_LIST(L)->aupb);
 }
 
 /*******************************************************************
@@ -162,36 +173,40 @@ void a_list_fill(int *fill){
 #define setfl_in(x,y)           setflag_general(x,y,0x20)
 #define setfl_out(x,y)          setflag_general(x,y,0x40)
 
-/* a_setup_charfile(ID,dir,dd,off)
+/* a_setup_charfile(ID,name,dir,dd,off)
  *    setup a charfile structure
  *      ID      structure index
+ *      name    file name
  *      dir     1,3: in, 2,3: out
  *      dd,off  init string for implicit open
  */
-void a_setup_charfile(int ID,int dir,int dd,int off){
+void a_setup_charfile(int ID,const char*name,int dir,int dd,int off){
   #define ch    to_CHFILE(ID)
+  ch->name=name;
   ch->openflag=0;ch->fileError=0;ch->st1=dd;ch->st2=off;
   ch->f=NULL; 
   if(dir&1){setfl_in(ch,1);}
   if(dir&3){setfl_out(ch,1);}
   #undef ch
 }
-/* a_setup_dfile(ID,dir,dd,off,cnt)
+/* a_setup_dfile(ID,name,dir,dd,off,cnt)
  *   setup datafile structure
  *      ID      structure index
+ *      name    file name
  *      dir     1,3: in, 2,3: out
  *      dd,off  init string for implicit open
  *      cnt     number of lists in file area
  */
-void a_setup_dfile(int ID,int dir, int dd, int off,int cnt){
+void a_setup_dfile(int ID,const char*name,int dir, int dd, int off,int cnt){
   #define df    to_DFILE(ID)
+  df->name=name;
   df->openflag=0;df->fileError=0; df->st1=dd;df->st2=off;
   df->fhandle=0; df->iflag=0; df->inarea=df->outarea=0;
   setfl_data(df,1); // this is a datafile
   if(dir&1){setfl_in(df,1);}
   if(dir&3){setfl_out(df,1);}
   if(cnt>=a_MAXIMAL_AREA){
-    fprintf(stderr,"setup datafile: too many file areas\n");
+    fprintf(stderr,"datafile %s: too many file areas\n",df->name);
     a_fatal(a_FATAL_datafile);
   }
   #undef df
@@ -208,11 +223,11 @@ void a_add_filearea(int ID,int list,int num){
   #define df    to_DFILE(ID)
   i=df->outarea;
   if(i>=a_MAXIMAL_AREA){
-    fprintf(stderr,"setup datafile: too many file areas\n");
+    fprintf(stderr,"datafile %s: too many file areas\n",df->name);
     a_fatal(a_FATAL_datafile);
   }
   if(i+1!=num){
-    fprintf(stderr,"setup datafile: inconsistent data\n");
+    fprintf(stderr,"datafile %s: inconsistent data\n",df->name);
     a_fatal(a_FATAL_datafile);
   }
   df->out[i].lwb=to_LIST(list)->vlwb-to_LIST(list)->calibre+1;
@@ -251,7 +266,7 @@ void a_trace_rule(const char *name,int affixno,...){
   if(a_traced_index<=0){a_traced_index=TRACE_SIZE;}
   a_traced_rules[--a_traced_index]=name;
   if(do_trace==0){return;}
-  fprintf(stderr," %s(",name);
+  fprintf(stderr," %s (",name);
   va_start(args,affixno);
   while(affixno>0){
      affix=va_arg(args,int);fprintf(stderr,"%s%d",sep,affix);
@@ -286,8 +301,8 @@ a_PROFILE **p,*q; int done=1;
 void a_backtrack(a_CALLp tr,int code){
 int i=1;
    if(code){fprintf(stderr,"exit with code %d\n",code);}
-   while(tr){
-      fprintf(stderr,"caller %2d: %s\n",i,tr->rule);
+   while(tr && tr->rule){
+      fprintf(stderr,"#%-2d %s ()\n",i,tr->rule);
       i++;tr=tr->next;}
 }
 
@@ -332,19 +347,22 @@ int main(int argc,char *argv[]){
    memset(a_traced_rules,0,sizeof(const char *)*TRACE_SIZE);
    a_traced_index=-1;
    a_ROOT();
-   a_sort_profiles();
-   while(a_profiles){
-     printf("%-20s => %7lu\n",a_profiles->rulename,a_profiles->count);
-     a_profiles=a_profiles->link;
-   }
    if(a_traced_index>=0 && do_trace==0){
      int i=a_traced_index;
-     fprintf(stderr,"Last %d rules with trace on called:\n%s\n",
+     fprintf(stderr,"Last %d traced rules:\n%s ()\n",
              TRACE_SIZE,a_traced_rules[i]);
      i++;if(i==TRACE_SIZE){i=0;}
      while(i!=a_traced_index){
-        if(a_traced_rules[i]){fprintf(stderr,"%s\n",a_traced_rules[i]);}
+        if(a_traced_rules[i]){fprintf(stderr,"%s ()\n",a_traced_rules[i]);}
         i++;if(i==TRACE_SIZE){i=0;}
+     }
+   }
+   if(a_profiles){
+     fprintf(stderr,"Counted rule calls:\n");
+     a_sort_profiles();
+     while(a_profiles){
+       fprintf(stderr," %-20s => %7lu\n",a_profiles->rulename,a_profiles->count);
+       a_profiles=a_profiles->link;
      }
    }
    return 0;

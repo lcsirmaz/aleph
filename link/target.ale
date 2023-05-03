@@ -411,12 +411,10 @@ $    and file initializations. Call list_FILL which adds
 $    all fillings.
 $  void a_data_setup(void){ ... }
 $   set virtual limits,
-$   a_setup_list(0/1,<id>,calibre,lb,ub,fill size);
-$   a_setup_chfile(<id>,direction,<stringtable>,<stringptr>);
-$   a_setup_dfile(<id>,direction,<stringtable>,<stringptr>,number of areas);
+$   a_setup_list(0/1,<id>,<name>calibre,lb,ub,fill size);
+$   a_setup_chfile(<id>,<name>,direction,<stringtable>,<stringptr>);
+$   a_setup_dfile(<id>,<name>,direction,<stringtable>,<stringptr>,number of areas);
 $      a_add_filearea(<id>,<table>,count);
-$  external lists:  XXXXX(<id>,calibre)
-$  external files:  XXXXX(<id>)
 
 'a'list initialization+>kind+>item-cal-lb-up-fill:
    is item flag+item+texternal,get calibre+item+cal,
@@ -424,8 +422,8 @@ $  external files:  XXXXX(<id>)
      T+" %p(%r,%d); /* %p */%n"+lb+item+cal+item;
    get calibre+item+cal,get vupb+item+up,get vlwb+item+lb,
      get fill+item+fill,
-     T+" a_setup_list(%d,%r,%d,%t,%t,%d); /* %p */%n"
-        +kind+item+cal+lb+up+fill+item.
+     T+" a_setup_list(%d,%r,""%p"",%d,%t,%t,%d); /* %p */%n"
+        +kind+item+item+cal+lb+up+fill+item.
 
 'a'charfile initialization+>item-dir-id-ptr:
    is item flag+item+texternal, $ init function is in adm
@@ -433,8 +431,8 @@ $  external files:  XXXXX(<id>)
    (is item flag+item+toutfile,2->dir;0->dir),
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr,get item def+id,
-     T+" a_setup_charfile(%r,%d,%r,%r); /* %p */%n"
-        +item+dir+id+ptr+item.
+     T+" a_setup_charfile(%r,""%p"",%d,%r,%r); /* %p */%n"
+        +item+item+dir+id+ptr+item.
 'f'count file area+>item+cnt>-list:
    1->cnt,(nxt:get file area+item+cnt+list,
       (list=0,decr+cnt;incr+cnt,:nxt)).
@@ -444,7 +442,8 @@ $  external files:  XXXXX(<id>)
    (is item flag+item+toutfile,2->dir;0->dir),
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr,count file area+item+cnt,get item def+id,
-     T+" a_setup_dfile(%r,%d,%r,%r,%d); /* %p */%n"+item+dir+id+ptr+cnt+item,
+     T+" a_setup_dfile(%r,""%p"",%d,%r,%r,%d); /* %p */%n"
+             +item+item+dir+id+ptr+cnt+item,
      1->cnt,(nxt:get file area+item+cnt+link,
             (link=0;
              get item def+link,
@@ -625,8 +624,9 @@ $ BUFFER[ptr] starts an affix; generate code for it
    internal error+_rule_.
 'a'T index+>ptr>-x:
    is item flag+this rule+rbounds, $ indexing with bound checking $
-      T+"to_LIST(%p)->offset[a_listelem(%p,"+ptr+ptr,incr+ptr,
-      incr+ptr,T affix inner+ptr,incr+ptr,
+      T+"to_LIST(%p)->offset[a_listelem("+ptr,call trace call+x,
+      arg sep+x,T+"%p,"+ptr,incr+ptr,incr+ptr,
+      T affix inner+ptr,incr+ptr,
       subtr+BUFFER[ptr]+1+x,incr+ptr,T+",%d,a_rulename)]"+x;
    T+"to_LIST(%p)->offset["+ptr,incr+ptr,incr+ptr,T affix inner+ptr,
       $ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,

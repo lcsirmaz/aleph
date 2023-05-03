@@ -201,12 +201,14 @@ $   affixes might disappear (macro substitution).
 'variable'
    C1=0,C2=0,C3=0,
    local affix ptr=0,do local affix check=0,
-   store rule name=0,add cs=0.
+   store rule name=0, $ store rule name
+   indexed affix=0,   $ was an indexed affix
+   add cs=0.          $ add call stack arguments
 
 'a'set rule head-tag-x1-x2-x3:
    must+Titem+tag,get item def+tag,tag->tag*NODE[this node],
    must+Tconst+x1,must+Tconst+x2,must+Tconst+x3,
-   (is item flag+tag+rpidgin; $ do not count towards C1-C2-C3
+   (is item flag+tag+rpidgin; $ does not count towards C1-C2-C3
     is item flag+tag+rempty,set node flag+nempty;
     max+x1+C1,max+x2+C2,max+x3+C3),
    (is node flag+nempty;no call stack rule+tag;1->add cs).
@@ -229,6 +231,7 @@ $ skip a unit; skip an affix, skip an area $
 'a'skip to comma-idx:
    R+Dcomma;
    RR+Tlocal+idx,mark local affix+idx,:skip to comma;
+   R+Dsub,1->indexed affix,:skip to comma;
    R+Dend,corrupt ice file+_rule_;
    next symbol,:skip to comma.
 
@@ -248,7 +251,7 @@ $ skip a unit; skip an affix, skip an area $
    R+Dnoarg;     $ only as out affix  
    R+Tnumber;    $ number
    is limit,skip list;
-   R+Dsub,skip list,skip affix,must+Dbus+#,must+Tconst+#;
+   R+Dsub,1->indexed affix,skip list,skip affix,must+Dbus+#,must+Tconst+#;
    corrupt ice file+_rule_.
 
 $ node equality ******************************************* $
@@ -291,7 +294,10 @@ $
         push BUFFER+inpt+inpt value,next symbol, :nxt;
      [Tformal;Tnumber;Tconst],
         push BUFFER+inpt+inpt value,next symbol,:nxt;
-     [Dlwb;Dupb;Dvlwb;Dvupb;Dcalibre;Dnoarg;Dsub;Dbus;Danchor;Dcolon],
+     [Dsub],
+        push BUFFER+inpt,next symbol,
+        (is node flag+nempty;1->indexed affix),:nxt;
+     [Dlwb;Dupb;Dvlwb;Dvupb;Dcalibre;Dnoarg;Dbus;Danchor;Dcolon],
         push BUFFER+inpt,next symbol,:nxt;
      +),
    must+Dout+fnext*NODE[this node],must+Dout+tnext*NODE[this node],
@@ -559,23 +565,26 @@ $ scans *************************************************** $
 'a'make rule-rtag-obuff-minloc-maxloc:
    (must+Titem+rtag,must+Tconst+minloc,must+Tconst+maxloc,
        is item flag+rtag+rempty),skip rule;
-   create nodes,        $ read number of nodes $
-   save input position, $ restart from this point $
-   (is item flag+rtag+rspecial, $ if rtrace or rbounds set
-       1->store rule name;0->store rule name),
-   0->this node->add cs,>>BUFFER->obuff,
+   create nodes,             $ read number of nodes $
+   0->add cs->indexed affix, $ call stack, list index
+   (is item flag+rtag+rtrace,1->store rule name;0->store rule name),
+   >>BUFFER->obuff,          $ save buffer
    clear stack size,start local affix check+minloc+maxloc,
-       scan i,0->do local affix check,omit empty nodes,
-   (node hash different;
+   save input position,0->this node,scan i,
+      0->do local affix check,omit empty nodes,
+      (is+store rule name;
+       is item flag+rtag+rbounds,indexed affix->store rule name;
+       +),
+   (node hash different;     $ find identical nodes
     restore input position,0->this node,scan ii),
    rule declaration head+rtag+C1+C2+C3+store rule name
                 +minloc+maxloc+local affix ptr+add cs,
    unstack to+BUFFER+obuff,
    restore input position,0->loop found,0->this node,scan iii,
-   (is+loop found,error+loop in rule+tag*ITEM[rtag]+
+      (is+loop found,error+loop in rule+tag*ITEM[rtag]+
                              lineno*ITEM[rtag]+tag*ITEM[loop found];
-    restore input position,0->this node,scan iv,
-    rule declaration tail).
+   restore input position,0->this node,scan iv,
+   rule declaration tail).
 
 'root'+.
 'pragmat'endif=compile.

@@ -246,8 +246,8 @@ void a_unpackstring(int F1,int F2,int F3){
    //some sanity check
    if(n<0 || n>99000 || ptr[0]<3 || n>4*ptr[0] ||
      F2-ptr[0]<to_LIST(F1)->alwb-to_LIST(F1)->calibre){
-      fprintf(stderr,"unpackstring: list %d, index %d, not a string\n",
-                      F1,F2);
+      fprintf(stderr,"unpackstring: list %s index %d: not a string\n",
+                  to_LIST(F1)->name,F2);
       a_fatal(a_FATAL_string);
    }
    a_extension(F3,n);
@@ -255,8 +255,8 @@ void a_unpackstring(int F1,int F2,int F3){
    char *chr=(char*)(ptr+1-*ptr);
    for(i=0;i<n;i++,goal++){
      *goal=*chr;chr++;if(*goal==0){
-       fprintf(stderr,"unpackstring: list %d, index %d, wrong encoding\n",
-                       F1,F2);
+       fprintf(stderr,"unpackstring: list %s index %d: wrong encoding\n",
+                    to_LIST(F1)->name,F2);
        a_fatal(a_FATAL_string);
      }
      if((*goal&0x80)==0) continue;
@@ -284,8 +284,8 @@ void a_copystring(int F1,int F2,int F3){
    // some sanity check
    if(n<3 || n>25000 || ptr[-1]>4*n ||
        F2-n<to_LIST(F1)->alwb-to_LIST(F1)->calibre){
-       fprintf(stderr,"copy string: list %d, index %d, not a string\n",
-                      F1,F2);
+       fprintf(stderr,"copy string: list %s index %d: not a string\n",
+                   to_LIST(F1)->name,F2);
        a_fatal(a_FATAL_string);
    }
    a_extension(F3,n);
@@ -702,16 +702,16 @@ int a_closefilep(int F1){
 /* 'a'put data+""f+>data+>flag. */
 void a_putdata(int F1,int F2,int F3){
    if(!a_putdatap(F1,F2,F3)){
-     fprintf(stderr,"put data to file %d failed with code %d\n",
-        F1,to_DFILE(F1)->fileError);
+     fprintf(stderr,"datafile %s: put data failed with code %d\n",
+        to_DFILE(F1)->name,to_DFILE(F1)->fileError);
      a_fatal(a_FATAL_datafile);
    }
 }
 /* 'a'close file+"". */
 void a_closefile(int F1){
    if(!a_closefilep(F1)){
-     fprintf(stderr,"close file for file %d failed widh code %d\n",
-       F1,to_DFILE(F1)->fileError);
+     fprintf(stderr,"file %s: close file failed with code %d\n",
+       to_DFILE(F1)->name,to_DFILE(F1)->fileError);
      a_fatal(a_FATAL_datafile);
    }
 }
