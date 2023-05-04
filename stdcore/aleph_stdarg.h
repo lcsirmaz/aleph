@@ -18,7 +18,7 @@
 ********************************************************************/
 /* initializing function for external table STDARG */
 
-void a_setup_stdarg(int,int); /* STDARG init */
+void a_setup_stdarg(int,const char*,int); /* STDARG init */
 
 /* EOF */
 

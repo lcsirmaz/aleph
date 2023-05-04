@@ -936,7 +936,7 @@ $  check it, but don't generate code later
  "rule %p: has global side effect"      :rule has global side effect,
  "rule %p: has empty body"              :rule is empty,
  "rule %p: has no global side effect"   :rule has no side effect,
- "rule %p: might be optimized out"      :optimized out,
+ "rule %p: calls an exit rule"          :calls exit,
  "rule %p: can have global side effect when fails"   :fail and rule side effect,
  "rule %p: formal affix %p not used"                 :formal not used,
  "rule %p: not all repeat blocks might be visited"   :repeat blocks visited,
@@ -983,7 +983,7 @@ $  check it, but don't generate code later
    $ if no side effect and exit then give a warning
    (is tag flag+rtag+rside effect;
     is tag flag+rtag+rno return;
-    is tag flag+rtag+rcallexit,warning+2+optimized out+rtag;
+    is tag flag+rtag+rcallexit,warning+3+calls exit+rtag;
     +),
    (nxt: >>LLOC < <<LLOC;
          (-check-tag: $ ftype*LLOC=Ilabel; $

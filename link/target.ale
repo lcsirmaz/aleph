@@ -419,7 +419,7 @@ $      a_add_filearea(<id>,<table>,count);
 'a'list initialization+>kind+>item-cal-lb-up-fill:
    is item flag+item+texternal,get calibre+item+cal,
      get vlwb+item+lb, $ the init function
-     T+" %p(%r,%d); /* %p */%n"+lb+item+cal+item;
+     T+" %p(%r,""%p"",%d);%n"+lb+item+item+cal;
    get calibre+item+cal,get vupb+item+up,get vlwb+item+lb,
      get fill+item+fill,
      T+" a_setup_list(%d,%r,""%p"",%d,%t,%t,%d); /* %p */%n"
@@ -427,7 +427,7 @@ $      a_add_filearea(<id>,<table>,count);
 
 'a'charfile initialization+>item-dir-id-ptr:
    is item flag+item+texternal, $ init function is in adm
-     T+" %p(%r); /* %p */%n"+adm*ITEM[item]+item+item;
+     T+" %p(%r,""%p"");%n"+adm*ITEM[item]+item+item;
    (is item flag+item+toutfile,2->dir;0->dir),
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr,get item def+id,
@@ -438,7 +438,7 @@ $      a_add_filearea(<id>,<table>,count);
       (list=0,decr+cnt;incr+cnt,:nxt)).
 'a'datafile initialization+>item-dir-id-ptr-link-cnt:
    is item flag+item+texternal,
-     T+" %p(%r); /* %p */%n"+adm*ITEM[item]+item+item;
+     T+" %p(%r,""%p"");%n"+adm*ITEM[item]+item+item;
    (is item flag+item+toutfile,2->dir;0->dir),
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr,count file area+item+cnt,get item def+id,

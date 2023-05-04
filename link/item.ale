@@ -98,14 +98,13 @@ $ rule flags
   rcount      =0x2000000, $ count=on, profiling
   rbounds     =0x4000000, $ bound checks
 $ rule types
-  rfunc		=0,
-  raction	=rside effect,
-  rque		=rcan fail,
-  rpred		=rside effect|rcan fail,
-  rexit		=rno return,
+$  rfunc		=0,
+$  raction	=rside effect,
+$  rque		=rcan fail,
+$  rpred		=rside effect|rcan fail,
+$  rexit		=rno return,
   rtype		=rside effect|rcan fail|rno return,
-  rpidgin	=rplainpidgin|raltpidgin,
-  rspecial	=rtrace|rbounds. $ create a_rulename
+  rpidgin	=rplainpidgin|raltpidgin.
 
 'stack'(flag,type,scope,tag,lineno,adm,repr)ITEM.
 
@@ -345,7 +344,7 @@ $ @StringTable, shift affix block, get affix blockno
 ).
 'constant'
   modulehead    = theader|Mmodule,
-  tshiftaffix	= tpublic|rque|rvararg,
+  tshiftaffix	= tpublic|rcan fail|rvararg,
   tgetaffix	= tpublic|rvararg.
 'variable'waitfor formals=0,make formals=0,root formals=0.
 
@@ -403,7 +402,7 @@ $ mod base is not necessarily set (scanning the ITEM list only)
    -.
 'q'no call stack rule+>item:
    is waitfor item+item,-;
-   is item flag+item+rexit,-;
+   is item flag+item+rno return,-;
    is item flag+item+texternal,tag*ITEM[item]!=Sbacktrack;
    is builtin rule+item+#.
 $ file extension *********************************************

@@ -94,9 +94,10 @@ extern int a_virtual_min,a_virtual_max;
  *    setup routine for the standard external table STDARG, fills the
  *    table with the comomand line arguments found at a_argc,a_argv
  */
-void a_setup_stdarg(int F1,int F2){
+void a_setup_stdarg(int F1,const char*name,int F2){
   int i;
   #define st    to_LIST(F1)
+  st->name=name;
   st->offset=0;st->p=0;st->length=0;
   st->vlwb=a_virtual_max+16;a_virtual_max+=64536;
   if(a_virtual_max<=0){
