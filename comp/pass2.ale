@@ -225,17 +225,20 @@ $ list declarer, see lists.ale
           must Qqtag+qf+ttag,find ttag definition+qf+ttag+tag,
           (tag=0; $ not found
            Dtag+tag,check strict constant type+tag,use tag+tag)),
-     read list selectors+list,Qskip+Dpoint,D+Dpoint.
+     read list selectors+0+list,Qskip+Dpoint,D+Dpoint.
 
-'a'read list selectors+>list-dl-x-y-sel-offs-skip:
+'a'read list selectors+>export+>list-dl-x-y-sel-offs-skip:
     $ calibre,ssel, (ttag,offs)*
     $ calibre,ssel must agree; except when calibre=-1
     $  add selectors only when calibres agree
     get linenum+dl,get calibre+list+y,must Qcons+x, $ calibre
     (x=y,0->skip;1->skip),
-    (x=-1,must Qcons+#; $ a fill with no selector list
+    (x=-1,must Qcons+#, $ no selector list (fill,prototype,declaration)
+                        $ error if export
+       (x=y;export=0;selector error+list+different calibre);
      (x=y;selector error+list+different calibre),
-     must Qcons+x,get ssel+list+y,(x=y;selector error+list+different ssel)),
+       must Qcons+x,get ssel+list+y,
+       (x=y;is+skip;selector error+list+different ssel,1->skip)),
     (nxt:Qttag+sel,must Qcons+offs,
             (is+skip;add list selector+list+sel+offs+dl),:nxt;
          +).
@@ -255,7 +258,7 @@ $ list fill, see lists.ale
      get type+list+type,
       (type!=rtype,error+type error+rtype+list+type+defline*LADM[list],
               Qskip+Dpoint;
-       read list selectors+list, must Q+Dcolon,
+       read list selectors+0+list, must Q+Dcolon,
               filler+list,D+Dpoint)).
 'a'filler+>list:
     $ <item> <repeater>? <initializer>
@@ -339,7 +342,7 @@ $   not imported and not permanent. Handle list selectors as well.
     $ <file type>, <qtag>, Dpoint
     $ <list type>, <qtag>, selectors, Dpoint
     $ <const/var type>, <qtag>, Dpoint
-    check prototype+tag,
+    check prototype+1+tag,
     (tag=0;
      is tag flag+tag+tpermanent; $ignore silently
      is tag flag+tag+timported,error+cannot export+type*LADM[tag]+tag+defline*LADM[tag];
@@ -350,13 +353,13 @@ $ ==============================================================
 $ a prototype, there must be a matching definition.
 $   Handle list selectors
 'a'prototype:
-    check prototype+#.
+    check prototype+0+#.
 
 'q'type mismatch+>rtype+>tag-type:
     $ type match: either equal, or Iconstant vs Ipointer constant
     get type+tag+type,type!=rtype,(rtype!=Iconstant;type!=Ipointer constant).
 
-'a'check prototype+tag>-type-qf-ttag:
+'a'check prototype+>export+tag>-type-qf-ttag:
     $ check the prototype, return the tag if no error
     Q+Drule,rule prototype+tag;
     $ <typer>, <qtag>, selectors, Dpoint
@@ -364,7 +367,7 @@ $   Handle list selectors
     (tag=0,Qskip+Dpoint;
      type mismatch+type+tag,error+type error+type*LADM[tag]+tag+type+defline*LADM[tag],
            0->tag,Qskip+Dpoint;
-     is list type+tag,read list selectors+tag,Qskip+Dpoint;
+     is list type+tag,read list selectors+export+tag,Qskip+Dpoint;
      Qskip+Dpoint).
 'a'rule prototype+tag>-r-qf-ttag-formals-x:
     $ <ruletype>, <qtag>, <formals> Dpoint
@@ -386,7 +389,8 @@ $ import prototype: handle list selectors
     $ Dimport,<tag>,<selectors>,Dpoint.
     must Qtag+list,
     (Q+Dpoint;
-     check list type+list,read list selectors+list,Qskip+Dpoint).
+     is list type+list,read list selectors+0+list,Qskip+Dpoint;
+     check list type+list,Qskip+Dpoint).
 
 $ ==============================================================
 $ changing source, see symbols.ale

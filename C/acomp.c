@@ -593,7 +593,7 @@ static void a_1575(void); /* affixform */
 static void a_1576(void); /* alternative */
 static void a_1577(int a_F1); /* checkconstanttype */
 static void a_1578(int a_F1); /* checklisttype */
-static void a_1579(int a_A[1]); /* checkprototype */
+static void a_1579(int a_F1,int a_A[1]); /* checkprototype */
 static void a_1580(int a_A[1]); /* checkruletype */
 static void a_1581(int a_F1); /* checkstrictconstanttype */
 static void a_1582(int a_F1); /* checktagformacro */
@@ -621,7 +621,7 @@ static void a_1603(void); /* listfill */
 static void a_1604(int a_F1); /* noexternal */
 static void a_1605(void); /* pragmat */
 static void a_1606(void); /* prototype */
-static void a_1607(int a_F1); /* readlistselectors */
+static void a_1607(int a_F1,int a_F2); /* readlistselectors */
 static void a_1608(void); /* readqtloc */
 static void a_1609(int a_F1); /* ruledeclarer */
 static void a_1610(int a_A[1]); /* ruleprototype */
@@ -7264,30 +7264,35 @@ if(a_equal(a_L5,0)){ goto a_G16;}
 a_1161(a_L5);
 a_1581(a_L5);
 a_1752(a_L5);
-a_G16:a_1607(a_L4);
+a_G16:a_1607(0,a_L4);
 a_1175(1696719101);
 a_1153(1696719101); return;
 } /* listdeclarer */
-static void a_1607(int a_F1){ /* readlistselectors+>a */
-int a_L2;int a_L3;int a_L4;int a_L5;int a_L6;int a_L7;int a_P[1];
-a_1684(a_P);a_L2=a_P[0];
-a_1671(a_F1,a_P);a_L4=a_P[0];
-a_1196(a_P);a_L3=a_P[0];
-if(!a_equal(a_L3,a_L4)){ goto a_G6;}
-a_L7=0; goto a_G7;
-a_G6:a_L7=1;
-a_G7:if(!a_equal(a_L3,-1)){ goto a_G9;}
-a_1196(a_P); goto a_G15;
-a_G9:if(a_equal(a_L3,a_L4)){ goto a_G11;}
-a_1613(a_F1,2130705673);
-a_G11:a_1196(a_P);a_L3=a_P[0];
-a_1674(a_F1,a_P);a_L4=a_P[0];
-if(a_equal(a_L3,a_L4)){ goto a_G15;}
-a_1613(a_F1,2130705685);
-a_G15:if(!a_1179(a_P)){ return;}a_L5=a_P[0];
-a_1196(a_P);a_L6=a_P[0];
-if(a_is(a_L7)){ goto a_G15;}
-a_1663(a_F1,a_L5,a_L6,a_L2); goto a_G15;
+static void a_1607(int a_F1,int a_F2){ /* readlistselectors+>a+>a */
+int a_L3;int a_L4;int a_L5;int a_L6;int a_L7;int a_L8;int a_P[1];
+a_1684(a_P);a_L3=a_P[0];
+a_1671(a_F2,a_P);a_L5=a_P[0];
+a_1196(a_P);a_L4=a_P[0];
+if(!a_equal(a_L4,a_L5)){ goto a_G6;}
+a_L8=0; goto a_G7;
+a_G6:a_L8=1;
+a_G7:if(!a_equal(a_L4,-1)){ goto a_G12;}
+a_1196(a_P);
+if(a_equal(a_L4,a_L5)){ goto a_G20;}
+if(a_equal(a_F1,0)){ goto a_G20;}
+a_1613(a_F2,2130705673); goto a_G20;
+a_G12:if(a_equal(a_L4,a_L5)){ goto a_G14;}
+a_1613(a_F2,2130705673);
+a_G14:a_1196(a_P);a_L4=a_P[0];
+a_1674(a_F2,a_P);a_L5=a_P[0];
+if(a_equal(a_L4,a_L5)){ goto a_G20;}
+if(a_is(a_L8)){ goto a_G20;}
+a_1613(a_F2,2130705685);
+a_L8=1;
+a_G20:if(!a_1179(a_P)){ return;}a_L6=a_P[0];
+a_1196(a_P);a_L7=a_P[0];
+if(a_is(a_L8)){ goto a_G20;}
+a_1663(a_F2,a_L6,a_L7,a_L3); goto a_G20;
 } /* readlistselectors */
 static void a_1613(int a_F1,int a_F2){ /* selectorerror+>a+>a */
 int a_L3;int a_P[4];
@@ -7310,7 +7315,7 @@ a_1751(a_L5,1);
 a_G12:a_1735(a_L5,a_P);a_L2=a_P[0];
 if(!a_noteq(a_L2,a_L1)){ goto a_G16;}
 a_P[0]=2130705695;a_P[1]=a_L1;a_P[2]=a_L5;a_P[3]=a_L2;a_P[4]=to_LIST(a_1712)->offset[a_L5-5];a_1237(-1,5,a_P); goto a_G6;
-a_G16:a_1607(a_L5);
+a_G16:a_1607(0,a_L5);
 a_1195(1696718995);
 a_1592(a_L5);
 a_1153(1696719101); return;
@@ -7477,7 +7482,7 @@ a_1153(1696719101); return;
 } /* externaldeclarer */
 static void a_1585(void){ /* exportprototype */
 int a_L1;int a_P[4];
-a_1579(a_P);a_L1=a_P[0];
+a_1579(1,a_P);a_L1=a_P[0];
 if(a_equal(a_L1,0)){ return;}
 if(a_1740(a_L1,32)){ return;}
 if(!a_1740(a_L1,8)){ goto a_G6;}
@@ -7490,7 +7495,7 @@ a_G10:a_P[0]=2130705739;a_P[1]=to_LIST(a_1712)->offset[a_L1-3];a_P[2]=a_L1;a_123
 } /* exportprototype */
 static void a_1606(void){ /* prototype */
 int a_P[1];
-a_1579(a_P); return;
+a_1579(0,a_P); return;
 } /* prototype */
 static int a_1618(int a_F1,int a_F2){ /* typemismatch+>a+>a */
 int a_L3;int a_P[1];
@@ -7499,20 +7504,20 @@ if(!a_noteq(a_L3,a_F1)){ return 0;}
 if(a_noteq(a_F1,16777226)){ return 1;}
 if(!a_noteq(a_L3,16777257)){ return 0;} return 1;
 } /* typemismatch */
-static void a_1579(int a_A[1]){ /* checkprototype+a> */
-int a_L2;int a_L3;int a_L4;int a_P[5];
+static void a_1579(int a_F1,int a_A[1]){ /* checkprototype+>a+a> */
+int a_L3;int a_L4;int a_L5;int a_P[5];
 if(!a_1163(1696719123)){ goto a_G3;}
 a_1610(a_P);a_A[0]=a_P[0]; return;
-a_G3:a_1201(a_P);a_L2=a_P[0];
-a_1198(a_P);a_L3=a_P[0];a_L4=a_P[1];
-a_1301(a_L3,a_L4,a_P);a_A[0]=a_P[0];
+a_G3:a_1201(a_P);a_L3=a_P[0];
+a_1198(a_P);a_L4=a_P[0];a_L5=a_P[1];
+a_1301(a_L4,a_L5,a_P);a_A[0]=a_P[0];
 if(!a_equal(a_A[0],0)){ goto a_G8;}
 a_G7:a_1175(1696719101); return;
-a_G8:if(!a_1618(a_L2,a_A[0])){ goto a_G12;}
-a_P[0]=2130705695;a_P[1]=to_LIST(a_1712)->offset[a_A[0]-3];a_P[2]=a_A[0];a_P[3]=a_L2;a_P[4]=to_LIST(a_1712)->offset[a_A[0]-5];a_1237(-1,5,a_P);
+a_G8:if(!a_1618(a_L3,a_A[0])){ goto a_G12;}
+a_P[0]=2130705695;a_P[1]=to_LIST(a_1712)->offset[a_A[0]-3];a_P[2]=a_A[0];a_P[3]=a_L3;a_P[4]=to_LIST(a_1712)->offset[a_A[0]-5];a_1237(-1,5,a_P);
 a_A[0]=0; goto a_G7;
 a_G12:if(!a_1600(a_A[0])){ goto a_G7;}
-a_1607(a_A[0]); goto a_G7;
+a_1607(a_F1,a_A[0]); goto a_G7;
 } /* checkprototype */
 static void a_1610(int a_A[1]){ /* ruleprototype+a> */
 int a_L2;int a_L3;int a_L4;int a_L5;int a_L6;int a_P[5];
@@ -7537,9 +7542,10 @@ static void a_1598(void){ /* importprototype */
 int a_L1;int a_P[1];
 a_1199(a_P);a_L1=a_P[0];
 if(a_1163(1696719101)){ return;}
-a_1578(a_L1);
-a_1607(a_L1);
-a_1175(1696719101); return;
+if(!a_1600(a_L1)){ goto a_G6;}
+a_1607(0,a_L1);
+a_G5:a_1175(1696719101); return;
+a_G6:a_1578(a_L1); goto a_G5;
 } /* importprototype */
 static void a_1614(void){ /* setsource */
 int a_L1;int a_P[1];

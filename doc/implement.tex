@@ -203,16 +203,16 @@ sequence of words indexed by words, and is populated partially by \g{table}s and
 \g{stack}s. Tables and stacks occupy disjoint (and far away) segments of the
 virtual memory. A stack can grow and shrink at its upper end, and
 shrink at its lower end, while the position and size of tables are fixed
-and never change.
+and never change. Pointers can only point to a table or stack element,
+consequently a pointer uniquely determines the list it points into.
 
 Consecutive locations in a table or in a stack can be grouped together
-either to a block, or to a string. Such a group is pointed to by its
-last (topmost or rightmost, having the largest address) element. Elements in
-a block is identified relative to its address by selectors.
-Strings, on the other hand, behave like black boxes, and can be manipulated
-by built-in routines, called externals, only. This way characters in a
-string are not restricted to single byte (or wide) characters, and can use
-arbitrary character sets.
+either to a block, or to a string. Such a group is pointed to by its last
+(topmost or rightmost, having the largest address) element. Elements in a
+block are identified relative to its address by \emph{selectors}. Strings, on
+the other hand, behave like black boxes, and can be manipulated by
+predefined routines only. This way characters in a string are not restricted
+to single byte (or wide) characters, but can use arbitrary character sets.
 
 Finally, for communicating with the outside world, \A{} has character and
 data files. They can be opened, closed, and can send and
@@ -235,24 +235,26 @@ required affix types are specified in the head of the rule declaration as
    rule + >affix1> + []stack[]+ ""file + >affix2
 \end{program}
 \noindent
-The first affix both receives and returns a value; the second affix is a
-stack, the third one is a file, and the last one receives a value but does
-not return any (thus the rule body can use \pp|affix2| as a local variable).
+The first affix \pp|affix1| both receives and returns a word value; the
+second affix is a stack, the third one is a file, finally \pp|affix2|
+receives a word value but does not return anything (thus the rule body can
+use \pp|affix2| as a local variable).
 
-The control flow in the rule declaration is quite restricted. It is a
-sequence of alternatives probed in the order of their presence. An
-alternative is a sequence of members guarded by its first member: if the
-first member of the alternative succeeds, the alternative is chosen and the
-remaining members are executed; otherwise the next alternative is probed.
-Jumps are allowed only as abbreviations for tail recursion. There are no
-repetitive statements, iteration is handled by recursion. Next to rule
-calls a member can be a \g{compound member} or an \g{extension}. The
-compound member is an (implicit) rule definition enclosed in parentheses,
-while the extension adds a block of specified values to the top of a stack.
+The control flow in the rule body is quite restricted: it is a sequence of
+alternatives probed in the order of their presence. An alternative is a
+sequence of members guarded by its first member. If this first member
+succeeds, the alternative is chosen and the remaining members are executed;
+otherwise the next alternative is probed. Jumps are allowed only as
+abbreviations for tail recursion. There are no repetitive statements,
+iteration is handled by recursion. Next to rule calls a member can be a
+\g{compound member} or an \g{extension}. The compound member is an
+(implicit) rule definition enclosed in parentheses, while an extension adds
+a block of specified values to the top of a stack.
 
-Due to its simplicity, the control flow inside a routine is tractable.
+Due to its simplicity, the control flow inside a rule is tractable.
 Liveliness and reachability properties can be checked statically during
-compilation. In particular, the \A{} compiler checks statically that
+compilation. In particular, the \A{} compiler checks statically that in a
+rule
 \begin{itemize}
 \item[$\bullet$] all members are reachable;
 \item[$\bullet$] the flow can reach a return point;
@@ -264,14 +266,14 @@ compilation. In particular, the \A{} compiler checks statically that
 value, it is actually used.
 \end{itemize}
 
-There are no uninitialized global values in an \A{} program. Variables,
-tables and files are initialized when they are declared; and a stack can be
-extended only by supplying values for the extension.
+There are no uninitialized global values in an \A{} program. Variables and
+tables are initialized when they are declared; and a stack can be extended
+only by supplying values for the extension.
 
 \subsection{Externals}
 
 Basic data manipulation, such as addition, comparison of words (integers)
-and the like, is done by using (standard) external rules. As an example
+and similar operations, are done by (standard) external rules. As an example
 \pp|incr+x| increases the value of its argument by one; and \pp|equal+x+y|
 tests for equality. All file operations are done by externals. Externals can
 be redefined; this feature can be used to mimic overloading basic operators.
@@ -280,7 +282,7 @@ be redefined; this feature can be used to mimic overloading basic operators.
 
 Originally \A{} has no prototypes. It was, however, a natural extension to
 the language. Prototypes are indispensable when the program is split into
-smaller modules which are to be compiled independently. Each module should
+smaller modules which can be compiled independently. Each module should
 have complete information on all objects (rules, variables, stacks, etc.) it
 imports, and should provide that information on those objects it exports.
 Prototypes are just the right constructs for this purpose.
@@ -288,17 +290,19 @@ Prototypes are just the right constructs for this purpose.
 \subsection{Modules}
 
 An \A{} module provides certain resources to other modules and can be
-compiled independently. A module can \emph{require} resources provided by other
-modules, and can \emph{export} certain resources. An \A{} module has a
-public and a private part. The public part specifies the exported items by a
-set of prototypes, and the private part contains the realization of the
-provided resources. When the module is required, only the public part is
-scanned. When the module is compiled, the compiler checks that all objects
-this module promises to export are indeed defined.
+compiled independently. A program can \emph{require} resources provided by
+certain modules, and can \emph{export} resources defined within it.
+Accordingly, an \A{} module has a public and a private part. The public part
+specifies the exported items using prototypes, and the private part
+contains the realization of the provided resources. When the module is
+required, the public part is scanned. When the module is compiled, the
+compiler checks that all objects this module promises to export are indeed
+provided by its private part.
 
-The public part of the module can contain not only prototypes but
-declarations, even may require additional modules. These declarations will
-be compiled into the invoking module using the module namespace.
+The public part of the module may contain other declarations next to the
+list of export prototypes, and may even require additional modules. Such
+declarations will be compiled into the invoking module using the module
+namespace.
 
 An \A{} module can redefine any resource provided by a required module. To
 reach the hidden definition, name qualifiers can be added in the usual way.
@@ -311,11 +315,11 @@ The \A{} Manual \cite{A-manual}, the official definition of the language,
 has several revisions. All of them were published by the Mathematisch
 Centrum, Amsterdam, between 1974 and 1982. Implementations frequently add
 new features, restrict or leave out others. This happened with \A{} as well;
-the changes are reflected in the different versions of the Manual. The \A{}
+these changes are reflected in the different versions of the Manual. The \A{}
 language implemented -- and used -- by the present compiler is no exception.
 Making modular programming possible -- as opposed to using monolith programs
 prevalent at the time of the creation of \A{} -- required new features.
-Other extensions and restrictions came naturally; some of them date back to
+Other extensions and restrictions came naturally; some of those date back to
 the time of the first \A{} compilers. All changes made by this
 implementation hopefully respect the original design ideas and philosophy.
 
@@ -325,20 +329,20 @@ implementation hopefully respect the original design ideas and philosophy.
 different typeface. Practical coding, however, uses a single (monospace)
 typeface. There are several approaches to distinguish keywords from the
 surrounding text but none of them is perfect. This implementation requires
-keywords enclosed between apostrophe characters such as
+keywords to be enclosed between apostrophe characters:
 \begin{program}
 'variable'x=0.
 'root'print int+STDOUT+x.
 'end'
 \end{program}
 \noindent
-Other approach is to use capital letters for keywords (as in several
+Other possibility could be using capital letters for keywords (as in several
 {\sf PASCAL} implementations); restricting keywords (as in {\sf C} and
-related languages); using an initial escape character only and whitespace at
+related languages); using an initial escape character and whitespace at
 the end (e.g., leaving out the closing apostrophe); and so on.
 
 Characters in \A{} are not restricted to single bytes as character
-strings cannot be indexed directly. This implementation allows any unicode
+strings cannot be manipulated directly. This implementation allows any unicode
 character as a string character. According to the \A{} Manual \pp|newline|
 and \pp|newpage| are not characters. This implementation relaxes this
 restriction. A newline character can be part of a string, but not of a
@@ -350,8 +354,8 @@ characters.
 
 \subsection{Hexadecimal constants}
 
-Wherever integers are accepted, constants in hexadecimal notation are
-recognized and accepted as well. An example is \pp|0x1234abcd|. A 
+Wherever integer denotation is accepted, hexadecimal constants are
+recognized and accepted as well. An example is \pp|0x1234abcd|. The
 minus sign \pp|-| can also appear before a hexadecimal constant.
 
 \subsection{Relations}\label{subsec:relations}
@@ -360,8 +364,7 @@ minus sign \pp|-| can also appear before a hexadecimal constant.
 \def\HE{\hss\egroup}
 The external rule \pp|equal+x+y| tests the equality of \pp|x| and \pp|y|.
 The same test can be done by writing \pp|x=y|.
-Similar shorthands are added (which were not present in the original language)
-for other comparison operators:
+Similar shorthands are added for other comparison operators:
 
 \smallskip
 
@@ -378,10 +381,11 @@ for other comparison operators:
 
 \subsection{Lists in scalar context}\label{subsec:list-in-scalar}
 
-In an affix position where a single word is required, a list \pp|L| (a
-\g{table} or \g{stack}) can appear with the meaning that the value is that
-of its topmost (rightmost) element, namely, \pp|L[>>L]|. The same
-abbreviation can be used even with selectors. Thus the rule call
+In an actual affix position where a single word is required, a list \pp|L|
+(a \g{table} or \g{stack}) can also appear with the meaning that the value
+it represents is that of its topmost (rightmost) element, namely,
+\pp|L[>>L]|. The same abbreviation can be used with selectors. Thus the
+rule call
 \begin{program}
 add + a*L + b*L + c*L
 \end{program}
@@ -391,12 +395,12 @@ is equivalent to
 add + a*L[>>L] + b*L[>>L] + c*L[>>L]
 \end{program}
 \noindent
-This extension means that a stack looks -- and behaves --
+Using this extension a stack looks -- and behaves --
 like a variable, making writing and comprehending stack operations easier.
-
-This extension comes handy when the content of a newly added block on
+%
+The extension comes handy when the content of a newly added block on
 the top of a stack is to be manipulated. The drawback is that it
-prevents the compiler reporting a parameter type mismatch when a list is
+prevents the compiler reporting a parameter type mismatch when the list is
 used by mistake. This extension causes, quite unexpectedly, extra
 complications during macro substitution, see Section \ref{sec:macro} for
 details.
@@ -407,7 +411,7 @@ Manifest constants start and end with an underscore, and are replaced either
 by an integer or by a string while scanning the source text. In particular,
 they are replaced before macro substitution, thus \pp|_line_| and
 \pp|_rule_| in a macro text reflects the source line of the macro definition
-and the macro name, and not those of the macro application. Similarly,
+and the macro name, and not those of the invoking rule. Similarly,
 \pp|_title_| and \pp|_module_| expands to the empty string if they appear
 before the corresponding \pp|title| or \pp|module| pragmat.
 
@@ -421,7 +425,7 @@ in
 
 \HH\pp|\_module\_|\HE string, module name as set by the pragmat \pp|module=...|
 
-\HH\pp|\_title\_|\HE string, the title as set by the pragmat \pp|title=".."|
+\HH\pp|\_title\_|\HE string, the title as set by the pragmat \pp|title="..."|
 
 \HH\pp|\_rule\_|\HE string, the rule name if used inside a rule definition.
 
@@ -438,7 +442,7 @@ purpose, while the official representation \pp|?| is also accepted.
 
 A \g{string denotation} can be used as an actual affix. This extension
 simplifies writing program texts as the actual string can appear where it is
-used. Without this feature strings are be put into a table with a pointer
+used. Without this feature strings are to be put into a table with a pointer
 constant pointing to them, and then the string is identified by the table
 name and the string pointer together:
 \begin{program}
@@ -446,56 +450,58 @@ name and the string pointer together:
 'action'tag error:error+MESSAGE+unknown tag.
 \end{program}
 \noindent
-With this extension the string can appear directly as an argument:
+With this extension the string can appear directly as an actual affix:
 \begin{program}
 'action'tag error:error+"unknown identifier".
 \end{program}
 \noindent
-As an \g{actual affix}, a string denotation translates into two affixes: first,
-a special internal table, and second, a pointer which points to the string in 
-that table. The specified string is automatically added to the internal table.
+The string denotation translates into two affixes: first,
+a special internal table, and second, a pointer which points to the string in
+that table.
 
 \subsection{Extension syntax}
 
 An \g{extension} adds a new block to the top of a (formal or global) stack.
 An extension is specified as a sequence of assignments where the
-destinations are selectors of the block; enclosed between \pp|*|
-symbols and followed by the list tag. If the \g{stack} \pp|st| has three
-selectors \pp|sel|, \pp|ect|, and \pp|ors|, then the \g{extension}
+destinations are selectors of the block to be added; this list is enclosed
+between \pp|*| symbols and followed by the list tag. If the \g{stack}
+\pp|st| has three selectors \pp|sel|, \pp|ect|, and \pp|ors|, then the
+\g{extension}
 \begin{program}
   * pnt->sel, 0->ect->ors * st
 \end{program}
 \noindent
-extends \pp|st| with a block of three elements. To make extensions
+extends \pp|st| with a block of three elements. To make the extensions
 visually more appealing parentheses can be inserted as follows:
 \begin{program}
   (* pnt->sel, 0->ect->ors *) st
 \end{program}
 \noindent
-Accepting both versions destroys the \g{LL(1)} property of the \A{} syntax.
-It is so as a \pp|(*| sequence can be either the start of an \g{extension}, 
-or that of a \g{compound block} which has an \g{extension} as its first
-\g{member}. This compiler accepts both syntax by doing a reasonable amount
-of look-ahead.
+Accepting both extension forms destroys the \g{LL(1)} property of the \A{}
+syntax. It is so as a \pp|(*| sequence can be either the start of an
+\g{extension}, or that of a \g{compound block} which has an \g{extension} as
+its first \g{member}. This compiler solves this problem by doing a
+reasonable amount of look-ahead.
 
 \subsection{Variable number of affixes}
 
-Allowing and handling variable number of rule affixes is one of the the main
-achievements of this implementation. Variable number of affixes raises
+Allowing and handling a variable number of rule affixes is one of the the
+main achievements of this implementation. Variable number of affixes raises
 several problems, and poses a potential obstacle for control flow
-tractability. The used approach meets the two main requirements: it provides
-a flexible and usable variable argument mechanism, while keeps the
-tractability properties of \A{} programs. This is achieved by restricting
-how the ``invisible'' affixes in a variable affix block can be accessed.
+tractability. The used approach meets the following two main requirements:
+it provides a flexible and usable variable argument mechanism, while keeping
+all tractability properties of \A{} programs. This is achieved by
+restricting how the ``invisible'' affixes in a variable affix block can be
+accessed.
 
 A \g{formal affix sequence}, which defines the arguments of a \g{rule}, may
-contain the \g{anchor symbol}, \pp|@|, which indicates the position from which
+contain the \g{anchor symbol} \pp|@| indicating the position from which
 point the affixes to the right end of the list can repeat indefinitely. The rule
 declaration \pp|sum| in the snippet
 \begin{program}
 'function'sum+a>+@+>b+>c:
   0->a,(nxt:add+a+b+a,add+a+c+a,
-            shift affix block+@,:nxt;+).
+            (shift affix block+@,:nxt;+)).
 \end{program}
 \noindent
 has the single out affix \pp|a|, and two input affixes \pp|b| and \pp|c|,
@@ -560,14 +566,14 @@ passed to the rule \pp|handle format char|.
 Another application could be pushing and popping an unspecified number of
 elements to and from a stack. We remark that the rule \pp|pop| below works
 correctly only when the stack has calibre (block size) one, as
-\pp|unstack+st| discards a complete block and not a single element, see also
+\pp|unstack+st| discards a complete block and not a single element, see
 Section \ref{subsec:list-block}. The
 assignment \pp|st->x| stores the topmost element of the stack \pp|st| in
-\pp|x|, see Section \ref{subsec:list-in-scalar}.
+\pp|x| as discussed in Section \ref{subsec:list-in-scalar}.
 \begin{program}
 'action'push+[]st[]+@+>x:
    (* x->st *) st,(shift affix block+@,:push;+).
-'action'pop+[]st[]+x>:
+'action'pop+[]st[]+@+x>:
    st->x,unstack+st,(shift affix block+@,:pop;+).
 \end{program}
 
@@ -592,7 +598,7 @@ of a \g{source} included in the \g{classifier box}. An example is
 \end{program}
 \noindent
 The \g{area} in the square brackets determines whether the alternative
-following it will be chosen. An \g{area}, may contain integer denotations
+following it will be chosen. An \g{area} may contain integer denotations
 (decimal or hexadecimal), constant tags (including constant pointers) and
 global (not formal) lists; no expressions are allowed. A global list stands
 for its complete virtual address range. All values in an area are determined
@@ -602,62 +608,81 @@ are swapped); and the compiler gives a warning if it could happen that none
 of the alternatives are chosen. When running the program and none of the
 alternatives succeeds the program is aborted with an error message.
 
+\subsection{Expressions}\label{subsec:expression}
 
-\subsection{Matching formal and actual lists}\label{subsec:list-block}
+In \A{} all \g{expression}s are evaluated during compilation. Originally
+\g{expression}s could be used at several places; this implementation
+restricts them to \g{constant} and \g{variable declaration}s only. It is not
+an essential restriction as new constant tags can be declared with the
+desired value whenever necessary.
 
-Every \g{table} and \g{stack} has an associated \emph{block structure} which
-determines the block size of that list (its \g{calibre}), together with the
-set of its \g{selector}s. By default, the block size is 1, and the only
-selector is the same as the list name -- called \emph{standard selector}.
-Otherwise the list definition has a selector list which contains the
-selectors in a left to right order. For example, the \g{formal stack}
-definition
+An \g{expression} evaluates to a constant value. It may contain
+constant tags declared later (or in another module), but cannot depend
+on itself. Thus
 \begin{program}
-[](tag,left,right)tags[]
+'constant'a=b+2.
+'constant'b=/a/.
 \end{program}
 \noindent
-specifies that the block structure of the formal argument \pp|tags| has
-three elements with selectors \pp|tag|, \pp|left|, and \pp|right| in this
-order. Also, the list \pp|tags| has no standard selector, namely a selector
-with the name of the list.
+is accepted where \pp|/a/| is the value of character `\pp|a|' in the used coding, 
+while
+\begin{program}
+'constant'p=q+1,q=1-p.
+\end{program}
+\noindent
+gives an error message as the value of \pp|p| depends on itself.
 
-The \g{selector list} of a list within the parentheses cannot be empty
-(the \A{} Manual allows this in a formal list definition), but the selector
-list can be missing completely. The blocks of the formal and of the
-actual lists are compared as follows.
+In addition to the usual arithmetic operators \pp|+|, \pp|-|, \pp|*| and  \pp|/|,
+the following Boolean operators can also be used:
 \begin{itemize}
-\item[$\bullet$] The formal list has no selectors.
+\item[$\bullet$] \pp|~x| for the (binary) complement of \pp|x|,
+\item[$\bullet$] \pp|x\&y| and {\tt x|y} for the bitwise and and bitwise or,
+\item[$\bullet$] \pp|x^y| for the bitwise xor (modulo 2 addition) operator.
+\end{itemize}
+They have lower priorities than the arithmetic operators.
 
-There is no restriction on the actual list. Observe, however, that in this
-case the standard selector of the formal and the actual list might be different.
-Suppose we have the rule declaration
+In expressions integer denotations (both decimal and hexadecimal), constant
+tags, pointer constants (defined in fillings), virtual bounds and block size
+(calibre) can be used. List size estimates and repeat numbers (see Section
+\ref{subsec:filling}) are evaluated before the virtual bounds are
+determined, thus these values cannot depend on these bounds.
+
+\subsection{Root rule}
+
+The only executable command of an \A{} program is its \g{root}.
+It can have local affixes and a \g{rule body}. As the \g{root} is
+executed only once there is no need to designate a separate rule for this
+purpose. Example:
 \begin{program}
-'action'set zero+[]st[]: 0->st.
+'root'(rep:put line+STDOUT+V+newline,
+         (next perm+<<V+V,:rep;+)).
 \end{program}
 \noindent
-which sets the topmost element of the \g{stack} \pp|st| to zero. With the
-declaration \pp|'stack'[1](L,b)L| the assignment \pp|0->L| clears the second to
-last element of \pp|L|, while \pp|set zero+L| clears its last (topmost)
-element.
-
-\item[$\bullet$]
-The formal list has a selector pack.
-
-The actual list must have the same block size and the same standard
-selector while the selector names can be different. If this restriction
-is violated, a warning is issued; if the called rule is a macro, then this
-is an error.
-\end{itemize}
-
+Module roots are executed before the root of the main program (see Section
+\ref{section:module}), they can perform all necessary initialization for the
+module. Modules which do not require initialization should use an empty \g{root}:
+\begin{program}
+'root'+.
+\end{program}
+\noindent
+To control the order of module initializations, a module can call the
+rule 
+\begin{program}
+wait for+"xxx"
+\end{program}
+\noindent
+to force the root of the indicated module \pp|xxx| to terminate before the
+call returns. The \pp|wait for| rule aborts with an error message if two
+modules would wait for each other producing a deadlock.
 
 \subsection{Actual and virtual limits}
 
 The complete \emph{virtual memory space} -- the allowed range of indices --
-is distributed by the compiler among the tables and stacks with almost no
-control of the programmer. These virtual bounds are fixed and do not change
-during runtime. Pointers refer to a list element using its virtual address.
-The virtual address space of different lists are disjoint, thus a pointer
-uniquely identifies the list it points into.
+is distributed among the tables and stacks with almost no control of the
+programmer. These virtual bounds are fixed and do not change during runtime.
+Pointers refer to a list element using its virtual address. The virtual
+address space of different lists are disjoint, thus a pointer uniquely
+identifies the list it points into.
 
 A stack typically does not occupy its virtual space completely. Existing
 locations (which correspond to locations in the machine memory) form a
@@ -671,101 +696,25 @@ of the program run) and cannot be reclaimed again.
 
 Thus the \emph{actual address space} of a \g{stack} changes when the stack
 is extended or shrunken For a list \pp|L| the constructs \pp|<<L| and
-\pp|>>L| return the actual lower and actual upper bounds of \pp|L|m
-respectively, in the virtual memory.
-To obtain the fixed \emph{virtual} limits of the same list, use
-\pp|<L| and \pp|>L| (with a single \g{left symbol} and \g{right symbol}). In
-expressions only the fixed virtual limits can be used.
+\pp|>>L| return the actual lower and actual upper bound of \pp|L|,
+respectively. To obtain the fixed \emph{virtual} limits of the same list,
+use \pp|<L| and \pp|>L| (with a single \g{left symbol} and \g{right
+symbol}). In expressions only the fixed virtual limits can be used as only
+these are available during compilation.
 
 For \g{table}s the actual and virtual limits are always equal. In case of
 \g{stack}s actual limits are always within the virtual limits. Fixed stacks
-(i.e. stacks with an exact size estimate or no size estimate at all) have
+(i.e. stacks with an exact size estimate or no size estimate) have
 equal actual and virtual limits.
 
 
-\subsection{Root rule}
-
-The only executable command of an \A{} program (or module) is its \g{root}.
-It can have local affixes and a \g{rule body}. The \g{root} is
-executed only once and there is no need to designate a separate rule for this
-purpose. Example:
-\begin{program}
-'root'(rep:put line+STDOUT+V+newline,
-         (next perm+<<V+V,:rep;+)).
-\end{program}
-Roots of the modules are executed before the root of the main program, thus
-they can perform the necessary initialization. Modules which do not require
-such initialization should use the empty \g{root}
-\begin{program}
-'root'+.
-\end{program}
-
-
-\subsection{Expressions}\label{subsec:expression}
-
-In \A{} all \g{expression}s are evaluated during compilation. Originally
-\g{expression}s could be used at several places; this implementation
-restricts them to \g{constant} and \g{variable declaration}s only. It is not
-an essential restriction as new constant tags can be declared with the
-desired values whenever necessary.
-
-An \g{expression} evaluates to a constant value. It may contain
-constant tags declared later (or in another module), but cannot depend
-on itself. Thus
-\begin{program}
-'constant'a=b+2.
-'constant'b=/a/.
-\end{program}
-\noindent
-is accepted (here \pp|/a/| is the value of character `\pp|a|' in the used coding), 
-while
-\begin{program}
-'constant'p=q+1,q=1-p.
-\end{program}
-\noindent
-is not, and gives an error message.
-
-In addition to the usual arithmetic operators \pp|+|, \pp|-|, \pp|*| and  \pp|/|,
-the following Boolean operators can also be used:
-\begin{itemize}
-\item[$\bullet$] \pp|~x| for the (binary) complement of \pp|x|;
-\item[$\bullet$] \pp|x\&y| and {\tt x|y} for the bitwise and and bitwise or;
-\item[$\bullet$] \pp|x^y| for the bitwise xor (modulo 2 addition) operator.
-\end{itemize}
-They have lower priorities than the arithmetic operators.
-
-In expressions integer denotations (both decimal and hexadecimal), constant
-tags, pointer constants (defined in fillings), virtual bounds and block size
-(calibre) can be used. List size estimates and repeat numbers (see Section
-\ref{subsec:filling}) are evaluated before the virtual bounds are
-determined, thus these values cannot depend on these bounds.
-
-\subsection{Multiple selector definitions}
-
-The same block element of a list can be identified by several selectors. To
-emphasize which selectors are used together, multiple selector packs are
-accepted. Each pack, however, must have the same number of selectors. In 
-these selector packs the \g{dummy symbol} \pp|\#| is accepted as a placeholder. 
-In the declaration
-\begin{program}
-'stack'[1](s1,s2,s3)(\#,t1,t2)stack.
-\end{program} 
-\noindent
-selectors \pp|s2| and \pp|t1|, and selectors \pp|s3| and
-\pp|t2| refer to the same block element. The same declaration can be written
-using original syntax as
-\begin{program}
-'stack'[1](s1,s2=t1,s3=t2)stack.
-\end{program}
-
-
-\subsection{Stack size estimate}\label{subsec:size-estimate}
+\subsection{Size estimate}\label{subsec:size-estimate}
 
 The \g{size estimate} in a \g{stack declaration} specifies how much 
 virtual address space this stack requires. The estimate is given between
 square brackets, and can be \emph{fixed}, \emph{relative}, or
-\emph{empty}. In the first two cases it must be either an integer or a
-constant tag; no expression is allowed.
+\emph{empty}. In the first two cases the limit must be either an integer
+denotation or a constant tag; no expression is allowed.
 \begin{itemize}
 \item[$\bullet$] Fixed size is written between \pp|=| symbols; the value
 cannot be larger than 1,000,000 (and, of course, must be positive). The
@@ -778,47 +727,131 @@ After reserving virtual addresses for \g{table}s and fixed size \g{stack}s,
 the remaining virtual space is distributed proportionally to the requested
 relative amount.
 
-\item[$\bullet$] If size estimate is left empty, the stack size (both 
-virtual and actual) is determined by the amount of its fillings.
+\item[$\bullet$] If size estimate is left empty, the stack size (both
+virtual and actual) is determined by the amount of its fillings (see Section
+\ref{subsec:filling}). Such a stack can still shrink, but cannot expand
+beyond its virtual upper limit.
+
 \end{itemize}
 
 \subsection{Table declarers}
 
 To distinguish \g{table declaration}s from prototypes and fillings (see
-Sections \ref{subsec:prototype} and \ref{subsec:filling}), a
+Sections \ref{subsec:prototype} and \ref{subsec:filling}, respectively), a
 \g{table declaration} must contain an empty size estimate:
 \begin{program}
-'table'[](length,width)=((1,10),(2,15)).
+'table'[](length,width)TBL,[]pi=(3,1,4,1,5,9,2,6).
 \end{program}
+
+\subsection{List selectors}
+
+Every \g{table} and \g{stack} has an associated \emph{block structure} which
+determines the block size, called \g{calibre}, of that list, together with
+the set of its \g{selectors}. When no selectors are specified, the block
+size is 1 and the selector of that element is the name of the list -- the
+\emph{standard selector}. In general, this standard selector is used
+implicitly when the list is indexed without specifying a selector. If the
+list definition has a selector list, then this list contains the block
+selectors in a left to right order. The \g{formal stack} definition
+\begin{program}
+[](tag,left,right)tags[]
+\end{program}
+\noindent
+specifies that the block structure of the formal affix \pp|tags| has
+three elements with selectors \pp|tag|, \pp|left|, and \pp|right| in this
+order. Also, the list \pp|tags| has no standard selector, namely a selector
+with the name of the list. The \g{selector list}, if present, cannot be
+empty, must contain at least one selector.
+
+The same block element can be identified by several selectors. These
+additional selector names are specified after the initial selector 
+separated by an equal sign as in the \g{stack declaration}:
+\begin{program}
+'stack'[1](s1,s2=t1,s3=t2)stack.
+\end{program}
+\noindent
+To emphasize which selectors are used together, multiple selector packs are
+accepted. Each pack must have the same number of selectors, the
+\g{dummy symbol} \pp|\#| can be used as a placeholder. Thus the previous
+declaration can also be written as
+\begin{program}
+'stack'[1](s1,s2,s3)(\#,t1,t2)stack.
+\end{program} 
+
+If a list was defined with selectors, then a public prototype must contain
+a selector list pack, while a filling may have such a pack, see Section
+\ref{subsec:filling}. These selector packs must define the same block size
+and the same standard selector (but could define additional selector names).
+
+\subsection{Matching formal and actual lists}\label{subsec:list-block}
+
+The block sizes of the formal and the actual lists are compared as follows.
+\begin{itemize}
+\item[$\bullet$] The formal list has no selectors.
+
+There is no restriction on the block size of the actual list. Observe, 
+however, that in this case the standard selector of the formal and the 
+actual list might be different. Suppose we have the rule declaration
+\begin{program}
+'action'set zero+[]st[]: 0->st.
+\end{program}
+\noindent
+which sets the topmost element of the \g{stack} \pp|st| to zero. With the
+declaration \pp|'stack'[1](L,b)L| the assignment \pp|0->L| clears the second to
+last element of \pp|L|, while \pp|set zero+L| clears its last (topmost)
+element.
+
+\item[$\bullet$]
+The formal list has a selector pack.
+
+The actual list must have the same block size and the same standard
+selector, while selector names might be different. If this restriction
+is violated, a warning is issued; if the called rule is a macro, then this
+is an error.
+\end{itemize}
+
 
 \subsection{Filling}\label{subsec:filling}
 
-In addition to selectors and size estimate, \g{table} and \g{stack}
-declarations may also specify the initial content of the list. This \g{filling}
-is a sequence of integer denotations, constant tags (including constant
-pointers), strings, and blocks. Except for strings, others can be followed
-by the \g{repeat symbol} \pp|*|, followed by either an integer or by a
-constant tag specifying how many times this item should be repeated. Then
-the optional \g{pointer initialization} follows: a colon \pp|:| and a tag
-which is defined to have the the value of the virtual address of the last
-defined list item. The \g{stack declaration} in the example
+In addition to specifying the size estimate and the optional selectors, a
+\g{table} or \g{stack} declaration may also define the initial content of
+the list. This content can also be specified separately using
+\emph{fillings}. Fillings can spread across the program (actually, can
+spread across several modules). A list description (without size estimate),
+followed by \pp|=| and a filling can appear multiple times across the
+program. Fillings specified this way are accumulated. Their final order is
+unspecified, but within a single filling the order of the added elements is
+kept intact. The list description in the filling may contain a selector pack
+only if the corresponding list was defined with selectors. If there is a
+selector pack, both the block size and the standard selector must be the
+same; the selectors, however, can be different.
+
+The \g{filling} itself is enclosed in parentheses, and is  a sequence of integer
+denotations, constant tags (including constant pointers), strings, and
+blocks. Each item, except for strings, can be followed by the \g{repeat
+symbol} \pp|*| and either an integer or a constant tag specifying how many
+times this item should be repeated. Then the optional \g{pointer
+initialization} follows: a colon \pp|:| and a tag which is defined to have
+the the value of the virtual address of the lastly defined list item. In the
+example
 \begin{program}
 'constant'tsize=10.
-'stack'[]T=(0*tsize:tzero,1*tsize,"string":tstring).
+'stack'T=(0*tsize:tzero,1*tsize,"string":tstring).
 \end{program}
 \noindent
-adds ten zeroes, ten ones, followed by the internal representation of the
-string \pp|"string"|. It also declares \pp|tzero| to be the (virtual) address of the
-lastly added \pp|0|, and \pp|tstring| to be the (virtual) address of the last 
-element of the representation of \pp|"string"| (which, if no further filling is 
-added to \pp|T|, is the same as \pp|>>T|).
+the \g{filling} adds ten zeroes, ten ones, followed by the internal
+representation of the string \pp|"string"| to \pp|T|. It also declares \pp|tzero| to
+be the (virtual) address of the lastly added \pp|0|, and \pp|tstring| to be
+the (virtual) address of the last element of the representation of
+\pp|"string"| (which, if no further filling is added to \pp|T|, is the same
+as \pp|>>T|).
 
 In the \g{filling} a \g{compound block} defines the content of a
 block. The \g{compound block} must have exactly as many elements as the
-block size -- the \g{calibre} -- of the list; violating this requirement
- will result in a warning. A block
-element must be either an integer or a constant tag (possibly a pointer
-constant), but it cannot be a string. In the block the constant value is
+block size (\g{calibre}) of the list; violating this requirement
+results in a warning. A block
+element must be either an integer denotation or a constant tag (possibly a pointer
+constant), but not a string. In the block the constant value is
 followed by an \g{arrow symbol} \pp|->| and the selector where it will be
 stored. The filling in the example
 \begin{program}
@@ -844,25 +877,11 @@ adds 100 blocks to the stack \pp|big block|, each consisting of a one,
 six zeroes, and another one. The block can also be written as
 \pp|(1,0*6,1)|.
 
-\subsection{Multiple list filling}\label{subsec:spread-filling}
-
-Fillings for a list can spread across the program (actually, can spread
-across several modules). A list description (without size estimate),
-followed by \pp|=| and a filling can appear multiple times across the
-program. Fillings specified this way are accumulated. Their final order is
-unspecified, but within a single filling the order of the added elements is
-kept intact.
-
-If the \g{stack declaration} has empty size estimate, then its virtual size
-will be equal to the total size of the fillings, see Section
-\ref{subsec:size-estimate}. Such a stack can still shrink,
-but cannot expand beyond its virtual upper limit.
-
 \subsection{Exit rule type}\label{subsec:exit}
 
 Executing the \g{terminator} \pp|'exit'16| causes the program to terminate
 with exit value 16. The \pp|'exit'| statement is replaced internally by a
-call of the \g{external rule} \pp|exit|, in this case it becomes \pp|exit+16|.
+call of the external rule \pp|exit|, in this case it becomes \pp|exit+16|.
 Consequently \pp|'exit'| must be followed by an \g{actual affix}, and not by
 an \g{expression}.
 
@@ -883,7 +902,8 @@ use the returned value.
 When an exit rule is defined, these conditions are checked. When such a rule
 is used, it is treated as a \g{terminator} which can neither succeed nor
 fail. An exit rule has an implicit side effect (aborts the program), thus it
-cannot be used in functions and questions. 
+cannot be used in functions and questions. Violating this restriction gives
+a warning message.
 
 \subsection{File area, file string}\label{subsec:datafiles}
 
@@ -1028,7 +1048,7 @@ text. The most notable one is \pp|compile|, which can be either \pp|on| or
 \pp|off|. Some pragmat values can be interrogated by conditional pragmats, 
 see Section \ref{conditional}.
 %
-Command-line arguments starting with double dash, such as \pp|{-}{-}XX=YYYY|
+Command-line arguments starting with a double dash, such as \pp|{-}{-}XX=YYYY|
 are parsed as 
 \begin{program}
 \pp|'pragmat'XX=YYYY.|
@@ -1098,7 +1118,7 @@ appearing in a \g{prototype} automatically gets the \emph{public} flag, and
 must be defined in this source (in particular, it cannot be imported). When
 \pp|prototype=none|, prototypes are used for type checking only, and do
 not imply any specific behavior. Finally, \pp|prototype=reverse| swaps the
-current prototype value between \pp|import| and \pp|public|, while keeps
+current prototype value between \pp|import| and \pp|public|, while keeping
 \pp|none| unchanged.
 
 \subsection{Conditional pragmats}\label{conditional}
@@ -1173,7 +1193,7 @@ explain the additional restrictions a macro rule must satisfy.
 \begin{enumerate}\def\HH{\noindent\hbox to 0.33\linewidth\bgroup\hskip\programindent}%
 \programindent=4pt%
 \setlength\parskip{1pt plus 1pt minus 1pt}%
-\item In a macro \g{formal in} affixes cannot be assigned to.
+\item In a macro, \g{formal in} affixes cannot be assigned to.
 
 Indeed, suppose the rule \pp|macro| is defined as
 \begin{program}
@@ -1194,7 +1214,7 @@ Using the same \pp|macro| rule as above, the substitution has incorrect syntax:
 affix block| nor \pp|get affix blockno| can be used in a macro text.
 
 Rule \pp|is zero|
-below checks whether one of its arguments have value zero; rule \pp|math| computes
+below checks whether one of its arguments has value zero; rule \pp|math| computes
 the product of its arguments if none of them is zero, otherwise it computes their
 sum.
 \begin{program}
@@ -1340,16 +1360,6 @@ Similar mechanism allows redefining items in libraries, as definitions in
 library modules (including the standard library) are used only as a last
 resort when no other definition has been found.
 
-All modules must have a \g{root}. Module roots are executed before the
-\g{root} of the main program. A module root can perform all necessary local
-initialization. If no initialization is necessary, the module can use an
-empty \g{root} as in the examples above. To control the order of module
-initializations, a module root can call \pp|wait for+"xxx"| to force the
-root of the indicated module \pp|xxx| to terminate before continuation. The
-\pp|wait for| rule aborts with an error message if two modules would wait
-for each other producing a deadlock.
-
-
 \subsection{Required and included source files}
 
 Source files are handled one at a time, they are read, processed and closed
@@ -1429,7 +1439,7 @@ qualifier:
 The definition of an identifier -- which is either an import prototype or a
 declaration -- is determined as follows. First, the actual source is scanned
 for a definition. If found, it is the definition, and the search is
-finished. If not found, then modules required from this source is checked;
+finished. If not found, then modules required from this source are checked;
 if not found, then modules required from the required modules checked, and
 so on. There must be a unique definition of the first level where such a
 definition is found, but there might be other definitions at higher levels,
@@ -1576,7 +1586,7 @@ upper bounds (inclusive) are strictly increasing (thus the ranges are
 disjoint), and all pointer values, with the exception of \pp|nil| and
 \pp|eof| must be positive.
 
-When reading a datafile, it has a positional data. The last 10 bits in this
+When reading a datafile, it has positional data. The last 10 bits in this
 file position identify the index within the block; this value must be
 between 32 and 1023. Other bits of the position identify the block in which
 the actual value can be found. This file position is stored internally, thus
@@ -1791,7 +1801,7 @@ which makes the final translation.
 The \g{dummy affix} \pp|\#| translates to nothing, thus it leaves an empty
 parameter location. Using some {\sf C} preprocessor tricks these empty
 arguments can be transformed to different {\sf C} procedure calls. To ease
-this work, the \A{} compiler makes some additional work. If the \g{string
+this work, the \A{} compiler does some additional work. If the \g{string
 denotation} of the external rule starts with a \pp|@|, then this character
 is discarded. For each out argument, depending on whether it is the \g{dummy
 symbol} or not, a \pp|0| or a \pp|1| character is appended to the remaining
@@ -1846,7 +1856,7 @@ C.H.A.Koster, J.G.Beney, P.A.Jones, M.Seutter,
 available as \url{https://ftp.science.ru.nl/cdl3/cdl3-manual-1.2.7.pdf}
 
 \bibitem{wijn}
-A.van Wijngaardeer,
+A.van Wijngaardeen,
 \emph{The generative power of two-level grammars}, in
 J.Loecks (Rd.), \emph{Automata, Languages and Programming},
 LNCS 14, Springer, 1974
