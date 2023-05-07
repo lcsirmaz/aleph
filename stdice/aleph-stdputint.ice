@@ -1,6 +1,6 @@
 $ ICE file, produced by ALEPH compiler v2.0
 'module' "stdlib" "stdlib putint" 32 
-3 48 "../../stdlib/aleph-stdputint.ale"
+3 48 "aleph-stdputint"
 49 80 "stdlib"
 81 319 "aleph-stdbase"
 320 349 "aleph-stdwordsize"

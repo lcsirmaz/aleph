@@ -159,7 +159,7 @@ $ data used in .ice files
    $ go over INPUT sources in increasing line number order
    (is+ptr;<<INPUT->ptr),(nxt:ptr>>>INPUT,-;
     nmin*INPUT[ptr]<0,next+INPUT+ptr,:nxt; $ head and duplicate
-   is input type+ptr+cpragmat,next+INPUT+ptr,:nxt;
+    is input type+ptr+cpragmat,next+INPUT+ptr,:nxt;
     is input type+ptr+cprarg,next+INPUT+ptr,:nxt;
     nmin*INPUT[ptr]->nmin,nmax*INPUT[ptr]->nmax,
         string*INPUT[ptr]->str,next+INPUT+ptr).

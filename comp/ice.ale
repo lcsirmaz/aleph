@@ -27,7 +27,7 @@ $ ************************************************************* $
 $ opening and closing
 'a'open ice file,close ice file,delete ice file.
 $ writing to ICE
-'a'W+>x,Wcons+>x,Wtag+>x,Wtype+>x,Wstring+>x,Wfstr+>x.
+'a'W+>x,Wcons+>x,Wtag+>x,Wtype+>x,Wstring+>x,Wfstr+>x,Wbase+>x.
 'a'Wspace,Wline.
 $   W+>symb      an entry to DSYMB, a NODE, or a NUMBER
 $   Wcons+>n     constant
@@ -40,8 +40,8 @@ $   Wline        new line
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'pragmat'require=("config","number","display","lexical","pragmats","disc",
-    "input","tags","types","buffer","path","selector","symbols").
+'pragmat'require=("config","number","display","lexical","disc",
+                  "tags","types","buffer","path").
 
 $ messages ---------------------------------------------------- $
 'table'MESSAGE=(
@@ -102,7 +102,13 @@ $ writing to the ICE file
 'a'Wfstr+>str: $ str is LEXT, converted to a target string
     was+LEXT+str,put char+ICE+/T/,put as string+ICE+LEXT+str;
     internal error+_rule_.
-
+'a'Wbase+>str-start-end-c:
+    was+LEXT+str,find file base+str+start+end,put char+ICE+/"/,
+      (nxt:start>=end;
+           string elem+LEXT+str+start+c,incr+start,
+                      put char+ICE+c,(c!=/"/;put char+ICE+c),:nxt;+),
+      put char+ICE+/"/;
+    internal error+_rule_.
 'a'Wnumber+>x-optr-ptr:
     >>BUFFER->optr->ptr,get number repr+x,(nxt:
        ptr<>>BUFFER,incr+ptr,put char+ICE+BUFFER[ptr],:nxt;

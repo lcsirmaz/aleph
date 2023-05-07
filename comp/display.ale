@@ -62,6 +62,8 @@ $
    $ print the next character of the source
 'a'DICT header+>tag,DICT item+>line,DICT tail.
    $ dictionary printing
+'f'find file base+>str+start>+end>.
+   $ the base of a source string
 
 $ BODY ********************************************************
 'pragmat'if=compile.
@@ -135,22 +137,21 @@ $ source printing $
    +.
 $ ************************************************************* 
 $ formated printing $
-'a'print base+>str-obuff-ptr-dots:
-   $ print the base of a source file at LEXT[str]
-   >>BUFFER->obuff,0->dots,unpack string+LEXT+str+BUFFER,
-   >>BUFFER->ptr,
-   $ go back until / \ :
-   (nxt: ptr<=obuff;
-         BUFFER[ptr]=///;
-         BUFFER[ptr]=/\/;
-         BUFFER[ptr]=/:/;
-         BUFFER[ptr]=/./,incr+dots,decr+ptr,:nxt;
-         decr+ptr,:nxt),incr+ptr,
-   $ print until the first dot
-   (nxt: >>BUFFER<ptr;
-         BUFFER[ptr]=/./,(dots>1,decr+dots,print char+/./,incr+ptr,:nxt;+);
-         print char+BUFFER[ptr],incr+ptr,:nxt),
-   unstack to+BUFFER+obuff.
+
+'q'has ale extension+>str+>n>-c:
+   $ does the string ends with .ale
+   decr+n,string elem+LEXT+str+n+c,c=/e/,
+   decr+n,string elem+LEXT+str+n+c,c=/l/,
+   decr+n,string elem+LEXT+str+n+c,c=/a/,
+   decr+n,string elem+LEXT+str+n+c,c=/./.
+'f'find file base+>str+start>+end>-c:
+   $ go back unitl / \ :
+   string length+LEXT+str+end,end->start,decr+start,
+     (nxt:string elem+LEXT+str+start+c,(c=///;c=/\/;c=/:/;decr+start,:nxt);+),
+     incr+start,(has ale extension+str+end;+).
+'a'print base+>str-start-end-c:
+   find file base+str+start+end,(nxt:start>=end;
+     string elem+LEXT+str+start+c,incr+start,print char+c,:nxt;+).
 'a'print source line+>n-str:
    $ print source file and line number
    n=-2,print char+/-/; $ permanent ID
@@ -281,7 +282,7 @@ $       >0: line number to be given
         add+level+/0/+level,print char+level;
     print char+/E/),        $ error
    (line=0;                 $ no line information
-    tab line+line col,print source line+line),
+    tab line+line col,print source line+line,print char+/ /),
    tab line+mess col.
 
 $'a'error+@+>mess:

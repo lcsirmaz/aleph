@@ -1,6 +1,6 @@
 $ ICE file, produced by ALEPH compiler v2.0
 'module' "stdlib" "stdlib waitfor" 32 
-3 37 "../../stdlib/aleph-stdwait.ale"
+3 37 "aleph-stdwait"
 38 69 "stdlib"
 70 308 "aleph-stdbase"
 309 338 "aleph-stdwordsize"

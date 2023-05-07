@@ -735,22 +735,22 @@ $ auxiliary rules -------------------------------------------------
    =BUFFER[ptr]= [Dnoarg;Dcolon],+;-.
 
 $ discarded call --------------------------------------------------
-$ this should be moved to rules, and simplfy the node structure
-$   (many further iterations ...
-$  rule is discarded if function without valid out affixes,
-$    or question with the same true and false label
-'q'is rule discarded+>ptr+>fnext+>tnext-n-cnt-type:
+$   rule is discarded here if the out affix is not used
+'q'has out affix+>ptr-n-cnt-type:
+    get number of formals+called rule+n,0->cnt,
+      (nxt:cnt>=n,-;
+           is dummy affix+ptr,incr+cnt,next affix+ptr,:nxt;
+           get formal+called rule+cnt+type,
+             ((type=Iformal out;type=Iformal inout;type=Iformal anchor);
+              incr+cnt,next affix+ptr,:nxt)).
+
+'q'is rule discarded+>ptr+>fnext+>tnext:
     is item flag+called rule+rside effect,-; $ it has a side effect
     is item flag+called rule+rno return,-;   $ it is exit
     is item flag+called rule+rvararg,-;      $ has @
+    has out affix+ptr,-;
     is item flag+called rule+rcan fail,fnext=tnext;
-    get number of formals+called rule+n,0->cnt,
-      (nxt:cnt=n;
-           is dummy affix+ptr,incr+cnt,next affix+ptr,:nxt;
-           get formal+called rule+cnt+type,
-             ((type=Iformal out;type=Iformal inout;type=Iformal anchor),-;
-              incr+cnt,next affix+ptr,:nxt)).
-$ builtin rules ---------------------------------------------------
+    +.
 'a'gen shiftaffix+>fnext+>tnext-w: $ shift affix block+@
    get anchor count+this rule+w,
     ((fnext=next node idx;

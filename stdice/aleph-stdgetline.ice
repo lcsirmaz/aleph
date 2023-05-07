@@ -1,6 +1,6 @@
 $ ICE file, produced by ALEPH compiler v2.0
 'module' "stdlib" "stdlib getline" 32 
-3 45 "../../stdlib/aleph-stdgetline.ale"
+3 45 "aleph-stdgetline"
 46 77 "stdlib"
 78 316 "aleph-stdbase"
 317 346 "aleph-stdwordsize"

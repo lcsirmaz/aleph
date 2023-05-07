@@ -1,6 +1,6 @@
 $ ICE file, produced by ALEPH compiler v2.0
 'module' "stdlib" "stdlib putstring" 32 
-3 36 "../../stdlib/aleph-stdputstring.ale"
+3 36 "aleph-stdputstring"
 37 68 "stdlib"
 69 307 "aleph-stdbase"
 308 337 "aleph-stdwordsize"

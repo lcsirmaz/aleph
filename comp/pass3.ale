@@ -72,7 +72,7 @@ $     start line, end line, source string
   Wspace,Wcons+target word size,Wline,
 
   0->ptr,(nxt:next input entry+ptr+nmin+nmax+str,
-                  Wcons+nmin,Wcons+nmax,Wstring+str,Wline,:nxt;
+                  Wcons+nmin,Wcons+nmax,Wbase+str,Wline,:nxt;
               W+Dpoint).
 
 $ ==============================================================

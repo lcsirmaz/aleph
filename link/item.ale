@@ -508,7 +508,7 @@ $ determine which modules should be kept
 
 'q'unequal types+>texp+>timp:
     texp=timp,-;
-    texp=Ipointer constant,timp=Iconstant,-;
+    (texp=Ipointer constant,timp=Iconstant),-;
     +.
 
 'q'incompatible types+>exp+>imp-type:

@@ -366,12 +366,22 @@ $   to determine if args are the same, travel backward
    (nxt:has node flag+n1+narg same,adm*NODE[n1]->n1,:nxt;+),
    (nxt:has node flag+n2+narg same,adm*NODE[n2]->n2,:nxt;+),
    n1=n2.
-'q'no question node+>n:
-   $ this is a question with the same yes and no branch
+
+'q'has out affix+>r-n-cnt-type:
+   get number of formals+r+n,0->cnt,
+      (nxt:cnt>=n,-;
+           get formal+r+cnt+type,
+             ((type=Iformal out;type=Iformal inout;type=Iformal anchor);
+              incr+cnt,:nxt)).
+'q'is node discarded+>n:
+   $ the node can be discarded: no out affix,
    has node flag+n+nrule,fnext*NODE[n]=tnext*NODE[n],
-   tag*NODE[n]->n,is item flag+n+rcan fail,
-   (is item flag+n+rside effect,-;+),
-   (is item flag+n+rvararg,-;+).
+     tag*NODE[n]->n,
+     (is item flag+n+rside effect,-;
+      is item flag+n+rno return,-;
+      is item flag+n+rvararg,-;
+      has out affix+n,-;+).
+   
 'a'replace labels+>from+>to-n:
    <<NODE->n,(nxt:n>>>NODE;
      (fnext*NODE[n]=from,to->fnext*NODE[n];+),
@@ -383,6 +393,7 @@ $   to determine if args are the same, travel backward
    $ figure out numbers corresponding to nodes n1,n2
    get node index+n1+n1,get node index+n2+n2,
    replace labels+n2+n1.
+
 'a'find equal nodes-yes-n1-n2:
    $ after this rule, a node with flag nsame is the same as
    $  adm*NODE (go down!). fnext and tnext entries in rule
@@ -390,7 +401,7 @@ $   to determine if args are the same, travel backward
    0->yes,<<NODE->n1,(nxt:n1>=>>NODE;
      has node flag+n1+nsame,next+NODE+n1,:nxt;
      has node flag+n1+nempty,next+NODE+n1,:nxt;
-     no question node+n1,put node flag+n1+nempty,
+     is node discarded+n1,put node flag+n1+nempty,
         get node index+n1+n2,replace labels+n2+tnext*NODE[n1],
         1->yes,next+NODE+n1,:nxt;
      n1->n2,next+NODE+n2,(nxt2:

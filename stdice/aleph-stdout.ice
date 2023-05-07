@@ -1,6 +1,6 @@
 $ ICE file, produced by ALEPH compiler v2.0
 'module' "stdlib" "charfile stdout" 32 
-3 36 "../../stdlib/aleph-stdout.ale"
+3 36 "aleph-stdout"
 37 68 "stdlib"
 69 307 "aleph-stdbase"
 308 337 "aleph-stdwordsize"
