@@ -132,8 +132,8 @@ void a_list_fill(int *fill){
       while((x=*fill)!=0){
         fill++;if(x>0){cnt=x;st->aupb+=cnt;
                while(x>0){*idx=*fill;idx++;fill++;x--;}}
-        else{while(x<0){x++;st->aupb+=cnt;
-           for(i=1;i<cnt;i++){*idx=idx[-cnt];idx++;}}}
+        else{while(x<-1){x++;st->aupb+=cnt;
+           for(i=0;i<cnt;i++){*idx=idx[-cnt];idx++;}}}
       } fill++;
   }
   #undef st

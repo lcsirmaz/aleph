@@ -528,7 +528,6 @@ $ declaration head  and tail *********************************
    BUFFER[locptr]=0,incr+minloc,incr+locptr,:declare locals;
    T+"%w a_L%d;"+minloc,incr+minloc,incr+locptr,:declare locals.
 'a'declare callargs+>item+>C1+>C2+>C3-cnt:
-   (C1=0;+),
    (C2=0;T+"%w a_P[%d];"+C2),
    (C3=0;get anchor count+item+cnt,$ even if cnt=1 $
         T+"%w *a_D=alloca(sizeof(%w)*(%d+%d*a_C));"+C3+cnt),

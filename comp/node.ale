@@ -303,7 +303,7 @@ $ actual rule --------------------------------------- $
          +)).
 'a'g match formal actual+>ftype+anchor>-tag-type:
   $ we are expecting an affix of type "ftype"
-  $ we can get the formal affix *
+  $ we can get the formal affix @
   =ftype=
   [Iformal file;Iformal table;Iformal stack], 
      must Qtag+tag,get type+tag+type,
@@ -630,18 +630,18 @@ $   (and warnings) are untractable
 $ **************************************************************
 $ code generation
 $ determining the size of the stack frame for each call:
-$  no * in the called rule:
+$  no @ in the called rule:
 $   C1: number of all affixes (if all affixes are set/retrieved from the stack)
 $   C2: number of out/inout affixes (if only these are passed by name)
-$  there is a * affix in the called rule:
-$   the above numbers are BEFORE *. Affixes after * are passed on the stack
+$  there is a @ affix in the called rule:
+$   the above numbers are BEFORE @. Affixes after @ are passed on the stack
 $   C3: total number of variable affixes passed; this can be zero
-$  rep: whether there is a * actual affix (if C3 is zero, this must be set)
-$ if rep=0 (no tailing * affix) or C3=0, then this call requires stack size
+$  rep: whether there is an @ actual affix (if C3 is zero, this must be set)
+$ if rep=0 (no tailing @ affix) or C3=0, then this call requires stack size
 $  C1+C3 // C2+C3 // zero
 $ if rep!=0 and C3!=0, the stack sizes are
 $  C1  //  C2  // C3 + dynamic
-$ If C3=0 no need to allocate dymamic stack even if there is a * formal.
+$ If C3=0 no need to allocate dymamic stack even if there is a @ formal.
 $ 
 $ ---------------------------------------------------- $
 $ traverse RULE and assign nodes to unassigned Unode entries
@@ -749,7 +749,7 @@ $ replacement for L*L[>>L], figure out the standard selector
        
 'a'w match formal actual+>ftype+anchor>-tag-type:
   $ we are expecting an affix of type "ftype"
-  $ we can get the formal affix *
+  $ we can get the formal affix @
   =ftype=
   [Iformal file;Iformal table;Iformal stack],
     must Qtag+tag,get type+tag+type,
