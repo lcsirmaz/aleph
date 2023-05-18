@@ -33,7 +33,7 @@ $ ==============================================================
 $ error messages and error handling
 
 'table'MESSAGE=(
-"%p: cannot be external (%l)"            :cannot be external,
+"%p %p: cannot be external (%l)"         :cannot be external,
 "%p %p: must be stack or table (%l)"     :must be of list type,
 "%p %p: different calibre (%l)"          :different calibre,
 "%p %p: different standard selector (%l)":different ssel,
@@ -47,8 +47,10 @@ $ error messages and error handling
 "'pragmat'macro=%p: ignored"             :macro ignored
 ).
 
-'a'no external+>tag:
-   is tag flag+tag+texternal,error+cannot be external+tag+defline*LADM[tag];+.
+'a'no external+>tag-type:
+   is tag flag+tag+texternal,get type+tag+type,
+       error+cannot be external+type+tag+defline*LADM[tag];
+   +.
 'a'check constant type+>tag-type:
     $ tag should be constant or pointer constant and not external
     $  expression, fill
@@ -293,10 +295,9 @@ $ list fill, see lists.ale
           (x=0;Dtag+x,use tag+x,check strict constant type+x)),:filler repeater;
     +.
 'a'filler initializer+>list-tag:
-    $ if 'table' and the initializer used, the 'table' is used.
-    $   it is not the case for a 'stack'
+    $ if the initializer used, the list is used.
     Q+Dcolon,D+Dcolon,must Qtag+tag,Dtag+tag,
-      put adm+tag+list,(is tag flag+tag+tused,use tag+tag;+),
+      put adm+tag+list,(is tag flag+tag+tused,use tag+list;+),
       :filler initializer;
    +.
 

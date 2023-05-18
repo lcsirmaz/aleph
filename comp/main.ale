@@ -33,12 +33,12 @@ $ *************************************************************
    read command line arguments,(was error,exit+1;+),
    $ open first disc for writing
    open disc+1+/t/, (was error,exit+4;+),
-   $ read all soruces, create token list in DISC1
+   $ read all sources, create token list in DISC1
    $   store all definitions (declaration, import prototype)
    first pass,      (was error,delete discs,exit+2;+),
    close discs,open disc+1+/r/,open disc+2+/t/,
                     (was error,delete discs,exit+4;+),
-   $ read token list, determine definiting occurrence for all tags
+   $ read token list, determine defining occurrence for all tags
    $   write the new token sequence to DISC2
    second pass,     (was error,delete discs,exit+2;+),
    close discs,open disc+2+/r/,open ice file,

@@ -31,12 +31,11 @@ $ BODY ********************************************************* $
         "input","tags","types","selector","symbols","pragmats","config").
 
 'table'MESSAGE=(
-"%p %p: not used"                     :type tag not used,
-"%p %p: not used, cannot have filling":cannot have filling,
 "filling %p: undefined selector %p"   :undefined selector,
 "filling %p: field %p duplicated"     :double selector,
-"filling %p: not consecutive fields"  :wrong fill block,
+"filling %p: wrong fill block"        :wrong fill block,
 $ warning
+"%p %p: not used"                     :type tag not used,
 "filling %p: block size %d is bigger than calibre (%d)":large block size,
 "filling %p: block size %d is smaller than calibre (%d)":small block size
 ).
@@ -272,7 +271,8 @@ $ initialilzer: Dcolon, <tag>.
        W+Dfill,Wtag+tag,get linenum+x,Wcons+x,
        (nxt:Q+Dpoint,W+Dpoint;
             filler item+tag,repeater,initializer,:nxt);
-    get type+tag+x,error+cannot have filling+x+tag,Qskip+Dpoint.
+    $ list not used, ignore the filling
+    Qskip+Dpoint.
 'a'filler item+>tag-x:
     Qtag+x,Wtag+x; $ constant type
     Qnumber+x,W+x;
@@ -280,10 +280,11 @@ $ initialilzer: Dcolon, <tag>.
     Q+Dopen,W+Dopen,filler block1+tag,W+Dclose;
     must Q+Dextension,W+Dopen,filler block2+tag,W+Dclose.
 'a'emit fill+>x:
-    $ either LADM or number
+    $ either LADM or NUMBER
     x=0;was+LADM+x,Wtag+x;W+x.
 'a'filler block1+>tag-optr-ptr-calibre-cnt-rep-x-repcnt:
-    >>BUFFER->optr,get calibre+tag+calibre,0->cnt->rep->repcnt,
+    >>BUFFER->optr,get calibre+tag+calibre,(calibre>0;1->calibre),
+    0->cnt->rep->repcnt,
     (nxt:Q+Dclose;
          Q+Dstar,cnt->rep,:nxt;
          Qnumber+x,extend BUFFER+x,incr+cnt,:nxt;

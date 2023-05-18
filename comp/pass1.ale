@@ -25,7 +25,7 @@ $ make some checks: one definition at each base; all modules
 $ have valid ID. Print dictionary if requested.
   
 'a'first pass.
-   $ reads all sources, creates the token stream, some checks
+   $ read all sources, create the token stream, do some checks
 'a'pass 1.
    $  called recursively to handle conditional pragmats
 

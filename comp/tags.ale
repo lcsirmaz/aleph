@@ -294,8 +294,8 @@ $ flags $
    $ tag is used; if Ipointer then mark the associated table
    $  @StringTable pointers have the LEXT string in the adm field
    bool or+flag*LADM[tag]+tused+flag*LADM[tag],
-   ((type*LADM[tag]=Ipointer constant,adm*LADM[tag]->tag,was+LADM+tag,
-      type*LADM[tag]=Itable),bool or+flag*LADM[tag]+tused+flag*LADM[tag];
+   ((type*LADM[tag]=Ipointer constant,adm*LADM[tag]->tag,was+LADM+tag),
+         bool or+flag*LADM[tag]+tused+flag*LADM[tag];
     +).
 
 $ ************************************************************** $

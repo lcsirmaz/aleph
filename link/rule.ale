@@ -595,8 +595,7 @@ $ scans *************************************************** $
                 +minloc+maxloc+local affix ptr+add cs,
    unstack to+BUFFER+obuff,
    restore input position,0->this node,scan iii,
-      (is+loop found,
-      error+loop in rule+tag*ITEM[rtag]+
+      (is+loop found,error+loop in rule+tag*ITEM[rtag]+
                              lineno*ITEM[rtag]+tag*ITEM[loop found];
    restore input position,0->this node,scan iv,
    rule declaration tail).
