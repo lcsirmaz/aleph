@@ -81,19 +81,21 @@ $ formatted printing $
    was+LEXT+ptr,get tag image+ptr+ptr,print+LEXT+ptr;
 $   was+BOLD+ptr,print+BOLD+ptr;
    internal error+_rule_.
-'a'print base+>str-obuff-ptr:
+'a'print base+>str-obuff-ptr-dots:
    >>BUFFER->obuff,
    (was+LEXT+str,get tag image+str+str,unpack string+LEXT+str+BUFFER;
     was+STDARG+str,unpack string+STDARG+str+BUFFER;
     str=0;
     internal error+_rule_),
-   >>BUFFER->ptr,
-   $ go back until / or \
+   >>BUFFER->ptr,0->dots,
+   $ go back until / \ :
    (nxt: ptr<=obuff;
+         BUFFER[ptr]=/./,incr+dots,decr+ptr,:nxt;
          BUFFER[ptr]=///;BUFFER[ptr]=/\/;BUFFER[ptr]=/:/;
          decr+ptr,:nxt),incr+ptr,
-   $ print until the first dot
-   (nxt: ptr>>>BUFFER;BUFFER[ptr]=/./;
+   $ print until the last dot
+   (nxt: ptr>>>BUFFER;
+         BUFFER[ptr]=/./,(dots<=1;decr+dots,print char+/./,incr+ptr,:nxt);
          print char+BUFFER[ptr],incr+ptr,:nxt),
    unstack to+BUFFER+obuff.
 'a'print item+>item-line-source-module:

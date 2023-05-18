@@ -163,8 +163,6 @@ $   adm:  pointer to the affixes if hashes are equal
 'a'clear node flag+>node+>flag:
    bool invert+flag+flag,bool and+flag+flag*NODE[node]+flag*NODE[node].
 'pragmat'macro=(is node flag,has node flag).
-$'a'clear node flag+>flag:
-$  bool invert+flag+flag,bool and+flag+flag*NODE[this node]+flag*NODE[this node].
 
 'a'create nodes-n:
   $ read number of NODEs and create them
@@ -373,9 +371,10 @@ $   to determine if args are the same, travel backward
            get formal+r+cnt+type,
              ((type=Iformal out;type=Iformal inout;type=Iformal anchor);
               incr+cnt,:nxt)).
-'q'is node discarded+>n:
+'p'is node discarded+>n:
    $ the node can be discarded: no out affix,
-   has node flag+n+nrule,fnext*NODE[n]=tnext*NODE[n],
+   has node flag+n+nrule,
+     (-f-t:find real label+fnext*NODE[n]+f,find real label+tnext*NODE[n]+t,f=t),
      tag*NODE[n]->n,
      (is item flag+n+rside effect,-;
       is item flag+n+rno return,-;
@@ -398,7 +397,7 @@ $   to determine if args are the same, travel backward
    $ after this rule, a node with flag nsame is the same as
    $  adm*NODE (go down!). fnext and tnext entries in rule
    $  nodes are changed. Repeat until there are no changes
-   0->yes,<<NODE->n1,(nxt:n1>=>>NODE;
+   0->yes,<<NODE->n1,(nxt:n1>>>NODE;
      has node flag+n1+nsame,next+NODE+n1,:nxt;
      has node flag+n1+nempty,next+NODE+n1,:nxt;
      is node discarded+n1,put node flag+n1+nempty,
@@ -410,17 +409,20 @@ $   to determine if args are the same, travel backward
         has node flag+n2+nempty,next+NODE+n2,:nxt2;
         (same nodes+n1+n2,1->yes,replace nlabels+n1+n2;+),
           next+NODE+n2,:nxt2)),
-   (yes=0;:find equal nodes).
+   (yes=0;is+loop found;:find equal nodes).
 'a'omit empty nodes-n-nx:
    <<NODE->n,(nxt:n>>>NODE;
      has node flag+n+nempty,get node index+n+nx,
-        (nx=tnext*NODE[n],n->loop found;replace labels+nx+tnext*NODE[n]),
+        (nx=tnext*NODE[n],tag*NODE[n]->loop found;replace labels+nx+tnext*NODE[n]),
         next+NODE+n,:nxt;
      next+NODE+n,:nxt).
+
+
 $ labels -------------------------------------------------- $
 $ mark nodes which have labels
 'a'find real label+>label+real>-steps-bound:
    label<=0,label->real;
+   is+loop found,label->real;
    index to node+label+label,list length+NODE+bound,0->steps,
      (nxt:has node flag+label+nsame,adm*NODE[label]->label,:nxt;
           steps>bound,$ it is an infinite loop for an ignored rule
@@ -556,7 +558,7 @@ $ scans *************************************************** $
         R+Dnode,advance node,
           skip rule head,check node hash,:nxt;
         must+Dpoint+#),
-   unstack to+BUFFER+obuff,find equal nodes.
+   unstack to+BUFFER+obuff.
 'a'scan iii:
    $ determine which nodes have labels
    R+Dbox,advance node,skip affix,area labels,
@@ -582,17 +584,19 @@ $ scans *************************************************** $
    >>BUFFER->obuff,          $ save buffer
    clear stack size,start local affix check+minloc+maxloc,
    save input position,0->this node,scan i,
-      0->do local affix check,omit empty nodes,
+      0->do local affix check,0->loop found,omit empty nodes,
       (is+store rule name;
        is item flag+rtag+rbounds,indexed affix->store rule name;
        +),
    (node hash different;     $ find identical nodes
     restore input position,0->this node,scan ii),
+   find equal nodes,
    rule declaration head+rtag+C1+C2+C3+store rule name
                 +minloc+maxloc+local affix ptr+add cs,
    unstack to+BUFFER+obuff,
-   restore input position,0->loop found,0->this node,scan iii,
-      (is+loop found,error+loop in rule+tag*ITEM[rtag]+
+   restore input position,0->this node,scan iii,
+      (is+loop found,
+      error+loop in rule+tag*ITEM[rtag]+
                              lineno*ITEM[rtag]+tag*ITEM[loop found];
    restore input position,0->this node,scan iv,
    rule declaration tail).

@@ -44,8 +44,6 @@ $ HEADER ****************************************************** $
 'a'must+>x+y>:x=inpt,inpt value->y,next symbol;corrupt ice file+_rule_.
 'pragmat'require="error".
 
-
-
 'pragmat'macro=(R,RR,must).
 $ save and restore input position
 'a'save input position,restore input position.
@@ -61,7 +59,6 @@ $ each entry has a data field (zero), and an image (string)
 'a'close source.
 
 'stack'BUFFER,(next,def)LEXT.
-$ 'table'BOLD.
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.

@@ -709,7 +709,7 @@ $ RULE CALL *****************************************************
    $           n>0   number of repeat blocks
    $           n<=0  star=1, -n blocks follow plus @
    tag->called rule,incr+ptr, $ BUFFER[ptr] is the first affix 
-   (is rule discarded+ptr+fnext+tnext,T+";%G%n"+tnext;
+   (is rule discarded+ptr+fnext+tnext,T+"/* %p */;%G%n"+tag+tnext;
     is waitfor item+tag,gen waitfor+ptr+tnext;
     is assign item+tag,gen assignment+rep+star+ptr+tnext;
     is builtin rule+tag+x,
