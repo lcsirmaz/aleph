@@ -143,9 +143,8 @@ void a_list_fill(int *fill){
  *  index error message
  */
 void a_index_error(int L,int idx,const char*rname){
-    fprintf(stderr,"rule %s: index %d of list %s is "
-     "out of bounds (%d,%d)\n",
-     rname,idx,to_LIST(L)->name,to_LIST(L)->alwb,to_LIST(L)->aupb);
+    fprintf(stderr,"rule %s: %s[%d] is out of bounds (%d,%d)\n",
+     rname,to_LIST(L)->name,idx,to_LIST(L)->alwb,to_LIST(L)->aupb);
 }
 
 /*******************************************************************
