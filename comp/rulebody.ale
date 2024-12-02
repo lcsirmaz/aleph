@@ -1,10 +1,10 @@
 $ rule body
-'pragmat'module=rulebody,title="rule body v2.0".
+'pragmat'module=rulebody,title="rule body v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -248,8 +248,10 @@ $         (ttag=Proot,error+cannot call+ttag;+),
 'a'special affix form+>tag-err:
    Dqtag+0+tag,D+Dplus,0->empty rule,clear local error+err,source+tag,
      (was local error+err;next symbol), $ skip -> or the relation
-     D+Dplus,source+tag,
-     (tag=Parrow,(nxt:R+Sarrow,D+Dplus,source+tag,:nxt;+);+).
+     (tag=Parrow, $ we might have @
+         (nxt:anchor affix;
+          D+Dplus,source+tag,(R+Sarrow,:nxt;+));
+      D+Dplus,source+tag).
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
 'a'to selectors+>tag+>loc-sel:
    R+Sarrow,(nxt:is ttag+sel,D+Dto,selector+sel+tag+loc,(R+Sarrow,:nxt;+);

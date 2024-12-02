@@ -1,10 +1,10 @@
 $ standard ALEPH library -- get int
-'pragmat' module=stdlib,title="stdlib getint".
+'pragmat'module=stdlib,title="stdlib get int".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -27,6 +27,7 @@ $   of the integer is returned in n, otherwise the rule fails.
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
+
 'p'get int+""f+n>-ch-sign-digit:
    (nxt:ahead char+f+ch,(=ch=
        [newline;newpage;/ /],(get char+f+#;+),:nxt;

@@ -1,9 +1,9 @@
 /* aleph core files */
 
 /**************************************************************
-*  This code is part of ALEPH-M (Modular ALEPH-v2)
+*  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 *
-*  (C) 2020-2023, L.Csirmaz
+*  (C) 2020-2024, L.Csirmaz
 *
 *  ALEPH-M is a free software, your can redistribute and/or
 *  modify it under the terms of the GNU General Public License
@@ -33,7 +33,7 @@
 *     additional allocated space above its actual upper bound. 
 *     Called for tables during initialization.
 */
-int a_requestspace(int ID,int n){
+int a_requestspace(a_word ID,a_word n){
   #define st    to_LIST(ID)
   if(n<=0){if(st->p){return 1;} // OK
            else{n=1;}}
@@ -52,20 +52,19 @@ int a_requestspace(int ID,int n){
 }
 /* a_extension(stack,size)
  *     calls a_requestspace and abort if no more space.
- *     set stack->top to be used in extension to fill the new
- *     block.
+ *     return the address of the first empty stack element
  */
-void a_extension(int ID,int n){
+a_word *a_extension(a_word ID,a_word n){
   #define st    to_LIST(ID)
   if(a_requestspace(ID,n)){
-     st->top=st->offset+st->aupb;
-     return;
+     return st->offset+(st->aupb+1);
   }
   fprintf(stderr,"list %s: extension by %d words, "
                  "out of %s\n",st->name,n,
                  st->aupb+n>st->vupb ?
                        "virtual space" : "memory");
   a_fatal(a_FATAL_memory);
+  return NULL;
   #undef st
 }
 /* auxiliary functions */
@@ -74,7 +73,7 @@ void a_extension(int ID,int n){
  *     compare the ALEPH string at ID[off] to a C string.
  *     used by a_waitfor() to compare requested module names
  */
-int a_extstrcmp(int ID,int off,const char *str){
+int a_extstrcmp(a_word ID,a_word off,const char *str){
   #define st    to_LIST(ID)
   int *ptr=st->offset+off; 
   return strcmp((char*)(ptr+1-*ptr),str);
@@ -83,7 +82,7 @@ int a_extstrcmp(int ID,int off,const char *str){
 /* a_area_failed(char *rule,int v)
  *   last area in a classification failed
  */
-void a_area_failed(const char *rule,int v){
+void a_area_failed(const char *rule,a_word v){
   fprintf(stderr,"rule %s: classification failed for value %d\n",
      rule,v);
   a_fatal(a_FATAL_area);
@@ -124,7 +123,7 @@ void a_setup_list(int kind __attribute__((unused)),int ID,
  *    after this call 'fill' can be discarded; the
  *    content could also come from an external file
  */
-void a_list_fill(int *fill){
+void a_list_fill(a_word*fill){
   int ID,x,i,cnt,*idx;
   #define st    to_LIST(ID)
   while((ID=*fill)>=0){
@@ -268,7 +267,7 @@ void a_trace_rule(const char *name,int affixno,...){
   fprintf(stderr," %s (",name);
   va_start(args,affixno);
   while(affixno>0){
-     affix=va_arg(args,int);fprintf(stderr,"%s%d",sep,affix);
+     affix=va_arg(args,a_word);fprintf(stderr,"%s%d",sep,affix);
      sep=",";affixno--;}
   va_end(args);
   fprintf(stderr,")\n");  

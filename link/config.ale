@@ -1,10 +1,10 @@
 $ version, general information
-'pragmat'module=config,title="config, v2.0".
+'pragmat'module=config,title="config, v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -20,13 +20,13 @@ $ *************************************************************
 
 $ HEADER ***************************************************** $
 'constant' version major = 2,
-           version minor = 0.
+           version minor = 1.
 'constant' target word size = 32.
-'constant' dir separator=///.
+'constant' path separator=/:/,		$ or /;/
+           dir separator=///.		$ or /\/
 'constant' std search path,		$ standard library search path
            stdlib file,			$ stadard library name
-           aleph front matter,		$ the aleph front matter
-           aleph word type.		$ the aleph word type
+           aleph front matter.		$ the aleph front matter
 
 'constant' max input files=200,		$ maximum number of .ice files
            max stack size=100 000,	$ maximal fixed stack size
@@ -41,18 +41,18 @@ $ BODY ******************************************************* $
 'pragmat'require=("error","lexical").
 
 'stack'(next,def)LEXT=(
-   "/usr/local/aleph/stdice",(0,0):std search path,
-   "stdlib"                 ,(0,0):stdlib file,
-   "16777216"               ,(0,0):min virtual address, $ 0x0100 0000
-   "2130706432"             ,(0,0):max virtual address, $ 0x7f00 0000
-   "#include ""aleph_core.h""",(0,0):aleph front matter,
-   "int"                    ,(0,0):aleph word type
+   "./aleph/stdice:/usr/local/aleph/stdice"
+   				,(0,0):std search path,
+   "stdlib"			,(0,0):stdlib file,
+   "16777216"			,(0,0):min virtual address, $ 0x0100 0000
+   "2130706432"			,(0,0):max virtual address, $ 0x7f00 0000
+   "#include ""aleph_core.h""",(0,0):aleph front matter
 ).
 
 'table'MESSAGE=( $ --help, --version
  "Link ALEPH-M .ice files to a C program.%n"
  "Usage: alink [--help |--version]%n"
- "   or: alink [options] file ...%n"
+ "   or: alink [options] file1 file2 ...%n"
  "Options:%n"
  "  -o <target>      the output .c file%n"
  "  -L <dir>         stdlib directory%n"
@@ -63,7 +63,7 @@ $ BODY ******************************************************* $
  "used with .c extension and generated in the current directory."
  : help message,
  "ALEPH-M linker version %d.%d%n"
- "Copyright (C) 2020-2023 Laszlo Csirmaz%n"
+ "Copyright (C) 2020-2024 Laszlo Csirmaz%n"
  "This is a free software, see the source at https://github.com/lcsirmaz/aleph%n"
  "for copyright information. There is NO WARRANTY; not even mechantibility or%n"
  "fitness for a particular purpose." 

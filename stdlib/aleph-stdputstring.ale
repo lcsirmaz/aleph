@@ -1,10 +1,10 @@
 $ standard ALEPH library -- put string
-'pragmat' module=stdlib, title="stdlib putstring".
+'pragmat'module=stdlib,title="stdlib put string".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -25,6 +25,7 @@ $ prints the string in t[] pointed by ptr
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
+
 'a'put string+""f+t[]+>ptr-y-z:
    0->y,
    (nxt:string elem+t+ptr+y+z,incr+y,put char+f+z,:nxt;+).

@@ -1,9 +1,9 @@
 /* aleph core header file */
 
 /*******************************************************************
-*  This code is part of ALEPH-M (Modular ALEPH-v2)
+*  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 *
-*  (C) 2020-2023, L.Csirmaz
+*  (C) 2020-2024, L.Csirmaz
 *
 *  ALEPH-M is a free software, your can redistribute and/or
 *  modify it under the terms of the GNU General Public License
@@ -41,38 +41,40 @@
 * 
 ********************************************************************/
 
+/* ALEPH word type */
+typedef int a_word;
+
 /* ALEPH stack and table */
 typedef struct {
   const char *name;	// list name
-  int *offset;          // offset for virtual index
-  int *p;               // pointer to the beginning
-  int *top;             // pointer to the top
-  int length;           // length of the block
-  int alwb,aupb;        // actual lower an upper bound
-  int vlwb,vupb;        // virtual lower and upped bound
-  int calibre;
+  a_word *offset;	// offset for virtual index
+  a_word *p;		// pointer to the beginning
+  a_word length;	// length of the block
+  a_word alwb,aupb;	// actual lower an upper bound
+  a_word vlwb,vupb;	// virtual lower and upped bound
+  a_word calibre;
 } a_LIST;
 
 /* ALEPH character file */
 typedef struct {
-  const char *name;	// file name
-  unsigned openflag;    // how was it opened
-  int fileError;        // last file error
-  int st1,st2;          // string pointers
+  const char *name;	// character file ALEPH name
+  unsigned openflag;	// how was it opened
+  a_word fileError;	// last file error
+  a_word st1,st2;	// string pointers
   FILE *f;              // stream handle
   int aheadchar;        // look ahead char
 } a_CHARFILE;
 
 /* ALEPH data file */
 typedef struct {
-  int lwb,upb,data;     // lower, upper bound, data
+  a_word lwb,upb,data;	// lower, upper bound, data
 } a_AREA;
 #define a_MAXIMAL_AREA  32
 typedef struct {
-  const char *name;	// file name
+  const char *name;	// data file ALEPH name
   unsigned openflag;    // how was it opened
-  int fileError;        // last file error
-  int st1,st2;          // string pointers
+  a_word fileError;	// last file error
+  a_word st1,st2;	// string pointers
   int fhandle;          // zero if not opened
   int fpos;             // filepos
   unsigned iflag;       // pointer/numerical flag
@@ -83,11 +85,11 @@ typedef struct {
 } a_DATAFILE;
 
 /* list, charfile, datafile structures are in */
-extern int a_DATABLOCK[];
+extern a_word a_DATABLOCK[];
 
-#define sizeof_LIST     (int)(sizeof(a_LIST)/sizeof(int))
-#define sizeof_DFILE    (int)(sizeof(a_DATAFILE)/sizeof(int))
-#define sizeof_CHFILE   (int)(sizeof(a_CHARFILE)/sizeof(int))
+#define sizeof_LIST     (a_word)(sizeof(a_LIST)/sizeof(int))
+#define sizeof_DFILE    (a_word)(sizeof(a_DATAFILE)/sizeof(int))
+#define sizeof_CHFILE   (a_word)(sizeof(a_CHARFILE)/sizeof(int))
 
 #define to_LIST(x)      ((a_LIST*)(a_DATABLOCK+(x)))
 #define to_DFILE(x)     ((a_DATAFILE*)(a_DATABLOCK+(x)))
@@ -95,18 +97,19 @@ extern int a_DATABLOCK[];
 
 /********************************************************************
 *  Memory management
-*  void a_extension(ID,n)
+*  a_word *a_extension(ID,n)
 *    ID       index in a_DATABLOCK for a list
 *    n        check, and if necessary add more memory to the list ID
-*             so it has at lest n more words at the top of actual size
+*             so it has at lest n more words at the top, return the
+*             address of the first empty slot
 *
 *  int a_requestspace(ID,n)
 *    ID       index in a_DATABLOCK for a list
 *    n        ask memory for n more words for list ID
 *
 ********************************************************************/
-extern void a_extension(int ID,int n);
-extern int a_requestspace(int ID,int n);
+extern a_word *a_extension(a_word ID,a_word n);
+extern int a_requestspace(a_word ID,a_word n);
 
 /********************************************************************
 *  Data structure initialization
@@ -120,7 +123,7 @@ extern int a_requestspace(int ID,int n);
 *    lwb,upb  virtual lower and upper bound for this list
 *    fill_size  allocate at least that much space (can be zero)
 *
-*  void a_list_fill(int *T)
+*  void a_list_fill(a_word *T)
 *    T        pointer to the integer array containing description
 *             of all table and stack filling
 *
@@ -148,7 +151,7 @@ extern int a_requestspace(int ID,int n);
 *    count    position starting from 1
 *
 ********************************************************************/
-extern int  a_virtual_min,a_virtual_max;
+extern a_word a_virtual_min,a_virtual_max;
 extern void a_setup_list(int kind,int ID,const char*name,
                              int cal,int lb,int up,int fill);
 extern void a_setup_charfile(int ID,const char*name,
@@ -156,7 +159,7 @@ extern void a_setup_charfile(int ID,const char*name,
 extern void a_setup_dfile(int ID,const char*name,int dir,
                              int sID,int soff,int narea);
 extern void a_add_filearea(int ID,int aID,int hash);
-extern void a_list_fill(int *fill);
+extern void a_list_fill(a_word *fill);
 
 /********************************************************************
 *  auxiliary functions
@@ -190,10 +193,10 @@ extern void a_list_fill(int *fill);
 #define a_FATAL_memory          6 /* memory problem */
 #define a_FATAL_index           7 /* index error */
 
-extern int a_extstrcmp(int table,int off,const char *str);
+extern int a_extstrcmp(a_word table,a_word off,const char *str);
 extern void a_fatal(int code);
-extern void a_area_failed(const char *rule,int v);
-extern void a_index_error(int L,int idx,const char*rule);
+extern void a_area_failed(const char *rule,a_word v);
+extern void a_index_error(a_word L,a_word idx,const char*rule);
 
 
 /********************************************************************
@@ -209,7 +212,7 @@ extern void a_index_error(int L,int idx,const char*rule);
 * a_addto_callstack_bottom()
 *  create the bottom call stack element in the main @root
 * a_backtrack(top,code)
-*  print the call stack starting at top; it code!=0 it is from exit
+*  print the call stack starting at top; if code!=0 it is from exit
 ********************************************************************/
 
 typedef struct a_CALL{
@@ -252,15 +255,16 @@ typedef struct a_PROFILE_ {
 void a_trace_rule(const char*rname,int affixno,...);
 
 /********************************************************************
-* waitfor("module") rule
+* waitfor+t[]+>ptr rule
 *
 *  During initialization all module roots are called. The waitfor rule
 *  makes sure that the root of the argument module is executed. 
 *  The macro
 *            a_MODROOT(module_root,"modulename")
-*  creates the procedure which is included in waitfor(): it checks if
-*  the request is for this module, and then executes the module root.
-*  Circular request is fatal.
+*  creates the snippet which is included in a_waitfor(a_F1,a_F2) for
+*  all modules with non-empty root. The snippet checks if the request
+*  is for this module, and then executes the  module root. Circular
+*  request is fatal.
 ********************************************************************/
 
 #ifdef a_CALL_STACK
@@ -290,8 +294,8 @@ void a_trace_rule(const char*rname,int affixno,...);
 ********************************************************************/
 
 #ifdef a_CALL_STACK
-inline static int a_listelem(a_CALLp bt,int L,register int idx,
-         const int off,const char *rname)
+inline static a_word a_listelem(a_CALLp bt,a_word L,register a_word idx,
+         const a_word off,const char *rname)
 {   if(idx-off<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
        idx > to_LIST(L)->aupb){
          a_index_error(L,idx,rname),a_backtrack(bt,-1);
@@ -299,7 +303,7 @@ inline static int a_listelem(a_CALLp bt,int L,register int idx,
     return idx-off;
 }
 #else /* no CALL_STACK */
-inline static int a_listelem(int L,register int idx,int off,
+inline static a_word a_listelem(a_word L,register a_word idx,a_word off,
              const char *rname)
 {   if(idx-off<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
        idx > to_LIST(L)->aupb){

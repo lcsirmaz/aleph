@@ -1,10 +1,10 @@
-$ standard ALEPH library
-'pragmat' module=stdlib,library=on,title="stdlib arguments".
+$ standard ALEPH library -- command-line arguments
+'pragmat'module=stdlib,title="stdlib stdarg".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -21,15 +21,16 @@ $ *************************************************************
 $ HEADER ****************************************************** $
 $ command line arguments
 'table'STDARG.
-$ STDARGS[] command line argument string in reverse order
+$ STDARG[] command line argument strings in reverse order
 
 $ BODY ******************************************************** $
-'pragmat'if=compile.
+'pragmat'if=compile,library mode=on.
 
 'pragmat'front matter="#include ""aleph_stdarg.h""".
 'x''table'STDARG="a_setup_stdarg".
 
 'root'+.
+
 'pragmat'endif=compile.
 'end'
 

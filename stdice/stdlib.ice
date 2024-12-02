@@ -1,4 +1,4 @@
-$ aleph standard ice files
+$ aleph standard files
 'include' "aleph-stdbase"
 'include' "aleph-stdgetint"
 'include' "aleph-stdgetline"
@@ -6,8 +6,7 @@ $ aleph standard ice files
 'include' "aleph-stdputint"
 'include' "aleph-stdputline"
 'include' "aleph-stdputstring"
-'include' "aleph-stdin"
-'include' "aleph-stdout"
 'include' "aleph-stdwait"
+'include' "aleph-stdin"
 'include' "aleph-stdarg"
-
+'include' "aleph-stdout"

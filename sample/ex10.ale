@@ -1,9 +1,0 @@
-$ built-in constants
-'pragmat'title="example-10".
-
-'root'put string+STDOUT+_file_,put int+STDOUT+_line_,put char+STDOUT+newline,
-      put string+STDOUT+_title_,put char+STDOUT+newline,
-      put string+STDOUT+_rule_,put char+STDOUT+newline.
-
-'end'
-

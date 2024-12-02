@@ -1,10 +1,10 @@
 $ program
-'pragmat'module=pass2,title="pass2, v2.0".
+'pragmat'module=pass2,title="pass2, v2.1".
 
 $ **************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -42,6 +42,7 @@ $ error messages and error handling
 "rule %p: different rule type (%l)"      :rule type error,
 "rule %p: different formal affixes (%l)" :formal affix error,
 "%p %p: exported tag must be qualified"  :only module can export,
+"%p %p: imported tag must be qualified"  :main import,
 "%p %p: not defined in this module (%l)" :cannot export,
 "%p %p: cannot be macro (%l)"            :cannot be a macro,
 "'pragmat'macro=%p: ignored"             :macro ignored
@@ -388,7 +389,11 @@ $ import prototype: handle list selectors
 'a'import prototype-list:
     $ Dimport,<tag>, Dpoint
     $ Dimport,<tag>,<selectors>,Dpoint.
-    must Qtag+list,
+    must Qtag+list, $ an imported tag must have a qualifier
+    (-x: is pragmat value+pgt module;
+         was+TTAG+scope*LADM[list];
+         (get base name+scope*LADM[list]+x,is+x);
+         error+main import+type*LADM[list]+list),
     (Q+Dpoint;
      is list type+list,read list selectors+0+list,Qskip+Dpoint;
      check list type+list,Qskip+Dpoint).

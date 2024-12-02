@@ -1,10 +1,10 @@
 $ identifiers
-'pragmat'module=identifier,title="identifier v2.0".
+'pragmat'module=identifier,title="identifier v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -192,27 +192,16 @@ $    M=> Q::T matching             N=> Q::T and Q=> T
 $
 'variable'BASE0=0. $ set to the lowest base by 'root'.
 
-'q'match tag below+>base+>bname+>tag+rank>-tb:
-    $ id to be searched is at base (with id bname), no qualifier
-    $     base is not BASE0
+'q'match tag below+>base+>qf+>tag+rank>-tb-tbname:
+    $ id to be searched is at base (with id bname);
+    $   qf is either the qualifier or base name
     $ tag is STRICLY below base, it must have M::T
-    is tag flag+tag+tdefined, $ must be a definition
-    scope*LADM[tag]->tb,is+tb,tb=bname,
-      get base from lineno+defline*LADM[tag]+tb,
-      find rank above+tb+base+rank,rank>0,
-      find rank above+BASE0+tb+rank.
-'q'match qtag below+>base+>qf+>tag+rank>-tb-tbname:
-    $ qf::id to be matched at base
-    $ either qf is the tag qualifier, or it is tag's module name
     is tag flag+tag+tdefined,  $ must be a definition
     scope*LADM[tag]->tb,is+tb, $ not predefined tag
-    (qf=tb,get base from lineno+defline*LADM[tag]+tb,
-           find rank above+tb+base+rank,rank>0,
-           find rank above+BASE0+tb+rank;
-     get base name+tb+tbname,tbname=qf,
-           find rank above+tb+base+rank,rank>0,
-           find rank above+BASE0+tb+rank).
-
+    (was+TTAG+tb,tb=qf,get base from lineno+defline*LADM[tag]+tb;
+       get base name+tb+tbname,tbname=qf),
+    find rank above+tb+base+rank,rank>0,
+     find rank above+BASE0+tb+rank.
 'q'match tag above+>base+>bname+>tag+rank>-tb:
     $ id to be searched is at base (with id bname), no qualifier
     $ if tag is a matching definition return the rank
@@ -229,15 +218,14 @@ $
     $ either qf is the tag qualifier, or it is tag's module name
     is tag flag+tag+tdefined,
     scope*LADM[tag]->tb,is+tb, $ predefined does not match
-    (qf=tb,get base from lineno+defline*LADM[tag]+tb,
-            find rank above+base+tb+rank,rank>=0;
-     get base name+tb+tbname,tbname=qf,
-            find rank above+base+tb+rank,rank>=0).
+    (was+TTAG+tb,tb=qf,get base from lineno+defline*LADM[tag]+tb;
+       get base name+tb+tbname,tbname=qf),
+    find rank above+base+tb+rank,rank>=0.
 
 
 'table'MESSAGE=(
-"%q%p: multiply defined (%l and %l)" :not unique definition,
-"%q%p: not defined"                  :ttag not defined
+"tag %q%p multiply defined (%l and %l)" :not unique definition,
+"tag %q%p not defined"                  :ttag not defined
 ).
 
 'p'find definition below+>base+>qf+>id+def1>-r-rank1-def2-rank2-ptr-bname:
@@ -245,12 +233,11 @@ $
     $   give error message for two minimal rank definitions
     base=BASE0,-; $ fail at the lowest level
     adm*TTAG[id]->ptr,-1->rank1->rank2,0->def1->def2,
-    get base name+base+bname,
+    (is+qf,qf->bname;get base name+base+bname),
     (nxt:ptr=0,rank1>=0,(rank2=-1;rank1<rank2;
              error+not unique definition+qf+id+defline*LADM[def1]+defline*LADM[def2],
                0->def1);
-         (is+qf,match qtag below+base+qf+ptr+r;
-          match tag below+base+bname+ptr+r), $ can be a definition
+         match tag below+base+bname+ptr+r,  $ r is >0
               ((rank1<0;r<=rank1),rank1->rank2,def1->def2,r->rank1,ptr->def1;+),
               get next tag+ptr+ptr,:nxt;
          get next tag+ptr+ptr,:nxt).

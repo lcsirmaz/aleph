@@ -19,10 +19,9 @@ $ permutation, "next perm" fails.
      mreq+p+q;swap+st+p+q,incr+p,decr+q,:invert perm tail).
 'action'swap+[]st[]+>i1+>i2-elem:
   st[i1]->elem,st[i2]->st[i1],elem->st[i2].
-'stack'[]st=(/1/,/2/,/3/,/4/).
-'root'display perms+st.
-'action'display perms+[]st[]:
-  put line+STDOUT+st+new line,
-    (next perm+<<st+st,:display perms;+).
+
+'stack'[]T=(/a/,/b/,/c/,/d/).
+'root'(nxt: put line+STDOUT+T+new line,
+              (next perm+<<T+T,:nxt;+)).
 'end'
 

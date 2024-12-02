@@ -1,10 +1,10 @@
 $ standard ALEPH library -- get line
-'pragmat' module=stdlib, title="stdlib getline".
+'pragmat'module=stdlib,title="stdlib get line".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -30,6 +30,7 @@ $    or EOF.
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
+
 'p'get line+""f+[]st[]+ctrl>-ch:
    get char+f+ch,
    (=ch= [newline;newpage],ch->ctrl;
@@ -38,6 +39,7 @@ $ BODY ******************************************************** $
         (=ch= [newline;newpage],+;
               (*ch->st*)st,(get char+f+#;+),:nxt);
     +).
+
 'root'+.
 'pragmat'endif=compile.
 'end'

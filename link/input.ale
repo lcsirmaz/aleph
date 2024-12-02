@@ -1,10 +1,10 @@
 $ source input
-'pragmat'module=input, title="input, v2.0".
+'pragmat'module=input, title="input, v2.1".
 
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH-v2)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -54,7 +54,7 @@ $ BODY ************************************************ $
 ).
 
 
-'stack'[1](flags,path)FILES.
+'stack'[1](flags,count,path)FILES.
 $ populate FILES as the sources are read. Files containing 'include'
 $   lines replace the top FILES entry and add additional entries.
 $   'include' files cannot be embedded (it won't be the top file).
@@ -62,7 +62,8 @@ $   'include' files cannot be embedded (it won't be the top file).
 $ FILES flags: how to open the file
 'constant'Fext =0x01,   $ add extension
           Fpath=0x02,   $ add -L path
-          Fstdp=0x04.   $ add standard path
+          Fstdp=0x04,   $ add standard path
+          Flast=0x08.	$ file was opened, count is set
 
 'variable'libdir=0,     $ the -L command line argument
           main file=0,  $ main program index
@@ -78,7 +79,7 @@ $ FILES flags: how to open the file
 'a'extend BUFFER+>x: (* x->BUFFER *)BUFFER.
 'a'extend FILES+>x:
     incr+file no,
-      (file no<max input files,(* 0->flags,x->path *)FILES;
+      (file no<max input files,(* 0->flags->count,x->path *)FILES;
        fatal error+maximum reached+max input files).
 $ -------------------------------------------------------------
 $ check argument list for options
@@ -151,39 +152,75 @@ $   Fstdp:  add built-in standard search path
    was+STDARG+str,unpack string+STDARG+str+BUFFER;
    internal error+_rule_.
 
-'a'open file as given+>ptr+res>:
+'q'nth path+>f+ptr>-n:
+   $ fint the n-th path in BUFFER starting from 1
+   <<BUFFER->ptr,count*FILES[f]->n,ptr<=>>BUFFER, $ cannot be empty
+   (nxt:n<=1;
+        ptr<=>>BUFFER,(BUFFER[ptr]=path separator,decr+n;+),incr+ptr,:nxt).
+'p'select path+>f-ptr-ptr1:
+   $ BUFFER contains "path1:path2:...:pathn", copy path<cnt> to the beginning;
+   $  if not empty, add dir separator
+  nth path+f+ptr,
+    (BUFFER[ptr]=path separator,scratch+BUFFER; $ empty path, delete
+     $ otherwise copy the path from ptr until the end or the next path separator
+     <<BUFFER->ptr1,
+         (nxt:BUFFER[ptr]->BUFFER[ptr1],incr+ptr,
+              (ptr>>>BUFFER;BUFFER[ptr]=path separator;incr+ptr1,:nxt)),
+         unstack to+BUFFER+ptr1,add dir separator).
+
+'a'open file first+>ptr+res>:
    $ open path*FILE[ptr] as specified by flags*FILES[ptr]
    $ res=0: OK, opened; res=1: not found; other errors: fatal
+   $ also search for the correct path
    scratch+BUFFER,
-   (is file flag+ptr+Fpath,string to BUFFER+libdir,add dir separator;+),
-   (is file flag+ptr+Fstdp,string to BUFFER+std search path,add dir separator;+),
+   (is file flag+ptr+Fpath,try open with path+ptr+libdir+res;
+    is file flag+ptr+Fstdp,try open with path+ptr+std search path+res;
+    try open+ptr+res).
+'a'try open with path+>ptr+>paths+res>-n:
+   1->count*FILES[ptr],
+     (nxt:(string to BUFFER+paths,select path+ptr),try open+ptr+res,
+                (res=0;incr+count*FILES[ptr],:nxt);
+          $ no more paths to try
+          1->res).
+'a'try open+>ptr+res>:
    string to BUFFER+path*FILES[ptr],
    (is file flag+ptr+Fext,add extension;+),
-   open BUFFER+res,(res>=0;fatal error+opening source+ptr).
+   open BUFFER+res,
+    (res=0,set file flag+ptr+Flast;res>0;fatal error+opening source+ptr).
+
+$ open file as the last time; it must succeed
+'a'open file as last+>ptr-res:
+   (is file flag+ptr+Flast;internal error+_rule_),
+   scratch+BUFFER,
+   (is file flag+ptr+Fpath,string to BUFFER+libdir,(select path+ptr;+);+),
+   (is file flag+ptr+Fstdp,string to BUFFER+std search path,(select path+ptr;+);+),
+   string to BUFFER+path*FILES[ptr],
+   (is file flag+ptr+Fext,add extension;+),
+   open BUFFER+res,(res=0;fatal error+opening source+ptr).
 
 'a'set source+>ptr: ptr->actual ptr.
 
-'a'open source+>ptr-res:
+'a'open source+>ptr:
    ptr=0,0->actual ptr;
-   ptr->actual ptr, open file as given+ptr+res,
-      (res=0;fatal error+opening source+ptr).
+   ptr->actual ptr,open file as last+ptr.
 
 'a'try file first+>ptr+res>:
    $ determine if path*FILE[ptr] can be opened; store how it was opened
-   (0->flags*FILES[ptr],open file as given+ptr+res,res=0);
-   (set file flag+ptr+Fext,open file as given+ptr+res,res=0);
+   (0->flags*FILES[ptr],open file first+ptr+res,res=0);
+   (set file flag+ptr+Fext,open file first+ptr+res,res=0);
    (is+libdir,Fpath->flags*FILES[ptr],
-         ((open file as given+ptr+res,res=0);
-          (set file flag+ptr+Fext,open file as given+ptr+res,res=0);
+         ((open file first+ptr+res,res=0);
+          (set file flag+ptr+Fext,open file first+ptr+res,res=0);
           -));
     Fstdp->flags*FILES[ptr],
-          ((open file as given+ptr+res,res=0);
-           (set file flag+ptr+Fext,open file as given+ptr+res,res=0);
+          ((open file first+ptr+res,res=0);
+           (set file flag+ptr+Fext,open file first+ptr+res,res=0);
            +).
 
 'a'handle source file+>ptr+res>:
     $ res=0: file opened OK
     $ res=1: 'include' lines are added; error if ptr!=>>FILES
+    is file flag+ptr+Flast,open file as last+ptr,0->res;
     try file first+ptr+res,
        (is+res,fatal error+opening source+ptr;
         $ check if it is 'main';

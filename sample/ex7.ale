@@ -3,38 +3,40 @@ $ formula manipulation $
 'stack'[=100=](ch,p)opt=((/+/,3),(/-/,3),(/*/,4),(///,4),(/^/,5)).
 
 'pred'next+>n:buff=n,next symbol.
-'pred'letter+l>:=buff= [/a/:/z/;/0/:/9/],buff->l,next symbol;-.
+'pred'letter+l>:=buff= [/a/:/z/;/A/:/Z/],buff->l,next symbol;-.
 'a'next symbol:
-  get char+STDIN+buff,(buff=/ /,:next symbol;+);
-  -1->buff.
+   get char+STDIN+buff,(buff=/ /,:next symbol;+);
+   -1->buff.
 'a'instructions:
-   put string+STDOUT+"Computing inverse Polish notation",
-   out+newline,
-   put string+STDOUT+"Type a formula using letters, brackets, operators:",
-   out+newline,
-   put string+STDOUT+" +, -, *, /, and ^; empty line to quit.",
-   out+newline.
+   message+"Computing inverse Polish notation",
+   message+"Type a formula using letters, brackets, operators:",
+   message+" +, -, *, /, and ^; empty line to quit.".
+'a'message+t[]+>ptr:
+   put string+STDOUT+t+ptr,out+newline.
 'a'out+>n:put char+STDOUT+n.
 'pred'optor+>prio+op>+p>-i:
-  >>opt->i,
-  (nxt: <<opt>i,-;
-   ch*opt[i]=buff,p*opt[i]>=prio,buff->op,
+   >>opt->i,
+   (nxt: <<opt>i,-;
+    ch*opt[i]=buff,p*opt[i]>=prio,buff->op,
         p*opt[i]->p,next symbol;
-   previous+opt+i,:nxt).
+    previous+opt+i,:nxt).
 'a'operand-l:
-  next+/(/,form+0,(next+/)/;put string+STDOUT+") expected",exit+1);
-  letter+l,out+l;
-  put string+STDOUT+"operand (letter or digit) expected",exit+2.
+   next+/(/,form+0,(next+/)/;message+" ) expected",exit+1);
+   letter+l,out+l;
+   message+" operand (a letter) expected",exit+2.
 'a'form+>prio:
-  operand,(nxt-op-p:
-    optor+prio+op+p,incr+p,form+p,out+op,:nxt;
-    +).
+   operand,(nxt-op-p:
+     optor+prio+op+p,incr+p,form+p,out+op,:nxt;
+     +).
 'a'inverse polish:
-  next+newline;
-  form+0,out+newline,out+/>/,out+/ /,next symbol,:inverse polish.
+   buff=newline;
+   form+0,out+newline,(buff=newline;message+"extra characters",exit+3),
+     $ next round
+     out+/>/,out+/ /,next symbol,:inverse polish.
 
 'root'instructions,out+/>/,out+/ /,next symbol,inverse polish.
 
 'end'
+
 
 

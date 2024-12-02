@@ -1,7 +1,7 @@
 $ quicksort
 'a'quicksort + >from +>to +[]a[]-left-middle-right-amiddle:
 $ this rule sorts all element is "a" from "from" to
-$ "tp" in ascending order. The algorith used is a 
+$ "to" in ascending order. The algorith used is a 
 $ variation of "quicksort"
 $
    from >= to;

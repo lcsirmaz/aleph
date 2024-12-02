@@ -1,10 +1,10 @@
 $ pragmats for ALEPH
-'pragmat'module=pragmats,title="pragmats, v2.0".
+'pragmat'module=pragmats,title="pragmats, v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -31,7 +31,7 @@ $   require = "string"    add to the required list
 $   title  = "string"     zero or LEXT ptr
 $   module = tag          switch to module compilation
 
-$   library = on/off      allow library extensions
+$   library mode = on/off allow library extensions
 $   prototype = public/import/none/reverse
 $                         how prototypes behave, 2, 1, 0
 
@@ -175,7 +175,7 @@ $ BODY ******************************************************** $
   [pgt libpath],   to->library path;        $ -L path
   [pgt ice],       to->ice name;            $ -o file
   [pgt require],   add required source+to;  $ -m source
-  [pgt addlib],    add required source+to;  $ -y source
+  [pgt addlib],    add library source+to;   $ -y source
   internal error+_rule_.
 $ ===================================================================== $
 $ tags used by pragmats
@@ -203,6 +203,7 @@ $  in fact, unique. If not, aborts the compiler.
  "include"         ,(0*):Pinclude,
  "module"          ,(0*):Pmodule,
  "library"         ,(0*):Plibrary,
+ "librarymode"     ,(0*):Plibrarymode,
  "frontmatter"     ,(0*):Pfrontmatter,
  "backmatter"      ,(0*):Pbackmatter,
  "macro"           ,(0*):Pmacro,
@@ -334,7 +335,7 @@ $ 100     other           X        100
   [Pdict],       dict on->z;
   [Pcompile],    in compile->z;
   [Pmodule],     in module->z;
-  [Plibrary],    in library->z;
+  [Plibrary;Plibrarymode],in library->z;
   $ further values: trace/bounds/count/etc
   error+wrong pragmat value+x+y,0->z.
 $ we are in 'pragmat' ifXXXX=<cond>
@@ -385,7 +386,8 @@ $  'pragmat'endif=<cond> is found, when 'pragmat' returns with err=2.
   [Pdict],          (y=Pon, 1->dict on;
                      y=Poff,0->dict on;
                      error+wrong pragmat value+x+y);
-  [Plibrary],       (y=Pon, 1->in library;
+  [Plibrary;Plibrarymode],
+                    (y=Pon, 1->in library;
                      y=Poff,0->in library;
                      error+wrong pragmat value+x+y);
   [Pproto],         (y=Pno,    0->proto level;
@@ -427,9 +429,11 @@ $  'pragmat'endif=<cond> is found, when 'pragmat' returns with err=2.
                   error+pragmat in library only+x);
   [Pbackmatter], (is+in library,add pragmat matter+2+y;
                   error+pragmat in library only+x);
-  $ include, require, title
+  $ include, require, library, title
   [Pinclude],    add included source+y;
   [Prequire],    add required source+y;
+  [Plibrary],    (in compile=0,warning+4+pragmat has no effect+x;
+                  add library source+y);
   [Ptitle],      set program title+x+y;
   forget string+y,error+unknown pragmat+x).
 

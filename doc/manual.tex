@@ -1,5 +1,4 @@
 \documentclass{article}
-\newcommand\A{{\sf ALEPH}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% grammar is typeset in \sf font.
@@ -109,6 +108,7 @@
 \makeatletter
 \setcounter{secnumdepth}{4}
 \newcounter{subsubsubsection}[subsubsection]
+\newcommand*\l@subsubsubsection{\@dottedtocline{4}{7.0em}{4.1em}}
 \renewcommand\thesubsubsubsection{\thesubsubsection.\@arabic\c@subsubsubsection}
 \newcommand\subsubsubsectionmark[1]{}
 \newcommand\subsubsubsection{%
@@ -131,6 +131,13 @@
 \makeatother
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% hyperref, restore \ref otherwise hyperref blows up
+\let\oref\ref
+\usepackage[hidelinks=true,bookmarks=false,hyperindex=false]{hyperref}
+\let\ref\oref
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand\A{{\sf ALEPH}}
+
 
 \title{{\A} Manual}
 \author{D. Grune \and R. Bosch \and L.G.L.T Meertens}
@@ -219,6 +226,12 @@ deleted.
 %The text of this manual was justified by a text justifier written in \A; it
 %is available on paper tape.
 
+
+\newpage
+\setcounter{tocdepth}{3}
+\tableofcontents
+
+\newpage
 \section{Informal introduction to \A}\label{1}
 
 In this chapter we shall gradually develop a small \A{} program and
@@ -788,6 +801,7 @@ and
 \end{program}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Introduction to the manual}\label{sec:2}
 
 \subsection{Interface with the outside world}\label{2.1}
@@ -857,6 +871,8 @@ Glandorf, D;~Grune and J.~Verhangen \cite{GGV78}.
 Constituents of the grammar are printed in \g{bold}; programs and program
 fragments are printed in \pp|script|.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Program logic}\label{sec:3}
 
 \subsection{General}\label{3.1}
@@ -1897,6 +1913,8 @@ An \g{alternative series} can fail if
 \g{member} or \g{terminator}, other than its key, that can fail.
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Data} \label{sec:4}
 
 The basic way of representing information in \A{} is through integers. There
@@ -2625,6 +2643,8 @@ $ for file = tagfile only %$
 Here the (imaginary) \pp|write data item+>val+>ind| would write a data-item
 consisting of \pp|val| and \pp|ind| on the file \pp|tagfile|.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Externals}\label{sec:5}
 
 External rules, tables and constants can be used in the same was as
@@ -3144,7 +3164,7 @@ beginning of the file.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % page 67
-
+\newpage
 \section{Pragmats}\label{sec:6}
 
 Pragmats are used to control certain aspect of the compilation
@@ -3290,6 +3310,8 @@ Pragmats not identified in \ref{6.1} are considered
 \emph{user-pragmats} and are transferred to the machine-dependent part of the
 compiler.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{The representation of program}\label{sec:7}
 
 \subsection{The program}\label{7.1}
@@ -3389,6 +3411,7 @@ table.
 \end{keywords}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{Examples}\label{sec:8}
 
 \subsection{Towers of Hanoi}\label{8.1}
@@ -3407,6 +3430,8 @@ table.
 \subsection{Permutations}\label{8.5}
 \begin{program}\input{ex6.ale}\end{program}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
 \section{References in the manual}
 \begin{thebibliography}{9}
 \bibitem{bohm77}

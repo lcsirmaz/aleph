@@ -1,10 +1,10 @@
 $ checking rule data flow
-'pragmat'module=dataflow,title="data flow, v2.0".
+'pragmat'module=dataflow,title="data flow, v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -983,7 +983,7 @@ $  check it, but don't generate code later
    $ if no side effect and exit then give a warning
    (is tag flag+rtag+rside effect;
     is tag flag+rtag+rno return;
-    is tag flag+rtag+rcallexit,warning+3+calls exit+rtag;
+    is tag flag+rtag+rcallexit,warning+5+calls exit+rtag;
     +),
    (nxt: >>LLOC < <<LLOC;
          (-check-tag: $ ftype*LLOC=Ilabel; $

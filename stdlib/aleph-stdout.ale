@@ -1,10 +1,10 @@
 $ standard ALEPH library -- standard character output
-'pragmat' module=stdlib,title="charfile stdout".
+'pragmat'module=stdlib,title="stdlib stdout".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -26,7 +26,7 @@ $ BODY ******************************************************** $
 $ this is a separate module so the it is not compiled in
 $  if not used
 'pragmat'if=compile.
-$
+
 'charfile'STDOUT="<<stdout>>">.
 
 'root'+.

@@ -1,5 +1,5 @@
 $ standard ALEPH library -- word size
-'pragmat' module=stdlib.
+'pragmat'module=stdlib,title="stdlib word size".
 
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH-v2)
@@ -24,7 +24,7 @@ $ the values here are for 32 bit word size
 'cons'word size=32,             $ word size in bits
       max int=0x7fffffff,       $ maximal integer value
       min int=-max int-1,       $ minimal integer value
-      int size=10.              $ number of difits in the decimal
+      int size=10.              $ number of digits in the decimal
                                 $  form of max int
 
 'end'

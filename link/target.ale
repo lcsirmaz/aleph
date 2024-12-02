@@ -1,10 +1,10 @@
 $ target.ale
-'pragmat'module=target,title="target, v2.0".
+'pragmat'module=target,title="target, v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -54,7 +54,7 @@ $ manipulate target file ********************************** $
 
 'charfile'TARGET="aleph.c">.
 'table'MESSAGE=(
- "cannot create target file %p, error code: %d" :cannot open target
+ "cannot create target file %x, error code: %d" :cannot open target
 ).
 
 'variable'target opened=0.
@@ -206,7 +206,7 @@ $   w: ALEPH word type
        [/r/],(shift affix block+@,print repr+fmt;print char+/?/),incr+ptr,:nxt;
        [/g/],(shift affix block+@,print goto+fmt;print char+/?/),incr+ptr,:nxt;
        [/G/],(shift affix block+@,print GOTO+fmt;print char+/?/),incr+ptr,:nxt;
-       [/w/],print ptr+aleph word type,incr+ptr,:nxt;
+       [/w/],print str+"a_word",incr+ptr,:nxt;
        [/n/],print char+newline,incr+ptr,:nxt;
        [/d/],(shift affix block+@,print int+fmt;print char+/?/),incr+ptr,:nxt;
        [/p/],(shift affix block+@,print ptr+fmt;print char+/?/),incr+ptr,:nxt;
@@ -634,19 +634,22 @@ $ BUFFER[ptr] starts an affix; generate code for it
 $ EXTENSION ******************************************************
 $  BUFFER[affix+1] is the stack, then width, followed by
 $  a linked list of affixes + target offsets
-'a'extension block+>w+>st+>ptr-offs-x:
+$    { register int r_1=a_extension(L,n);
+$         r_1[0]=affix; r_1[2]=r_1[1]=affix;
+$         to_LIST{L}->aupb+=n;}%n
+'a'extension block+>w+>ptr-offs-x:
    incr+ptr,$ affix $
    ptr->offs,(nxt:BUFFER[offs]=Dplus;incr+offs,:nxt),incr+offs,
    (nxt:BUFFER[offs]<0;
-        subtr+w+BUFFER[offs]+x,incr+x,incr+offs,
-        T+"to_LIST(%p)->top[%d]="+st+x,:nxt),
+        subtr+w+BUFFER[offs]+x,incr+offs,
+        T+"%p[%d]="+r1+x,:nxt),
    T affix+ptr,print char+/;/.
 'a'T extension+>ptr+>label-st-w:
-   incr+ptr,BUFFER[ptr]->w,incr+ptr,ptr->st,T+" a_extension(%p,%d);"+st+w,
-   $ now L->top[1,2,...,k] works
-   add+2+ptr+ptr, $ BUFFER[ptr] points to the affix; zero if no more $
-   (nxt:extension block+w+st+ptr,BUFFER[ptr]->ptr,(ptr=0;:nxt)),
-   T+"to_LIST(%p)->aupb+=%d;%n"+st+w,jump to label+label.
+   incr+ptr,BUFFER[ptr]->w,incr+ptr,ptr->st,
+     T+"{register %w *%p=a_extension(%p,%d);"+r1+st+w,
+     add+2+ptr+ptr, $ BUFFER[ptr] points to the affix; zero if no more
+     (nxt:extension block+w+ptr,BUFFER[ptr]->ptr,(ptr=0;:nxt)),
+     T+"to_LIST(%p)->aupb+=%d;}%n"+st+w,jump to label+label.
 
 $ CLASSIFICATION *************************************************
 $  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes areas
@@ -761,7 +764,7 @@ $   rule is discarded here if the out affix is not used
          T+"if(a_C<=1){%g} a_C--;a_V+=%d;%n"+fnext+w).
 'a'gen getaffixno+>n+>ptr+>tnext:
    n!=2,corrupt ice file+_rule_;
-   is dummy affix+ptr;
+   is dummy affix+ptr,T+"%G%n"+tnext;
    T affix+ptr,T+"=a_C;%G%n"+tnext.
 'a'gen waitfor+>ptr+>tnext-sep:
    T+" a_waitfor(",call trace call+sep,arg sep+sep,T affix+ptr,

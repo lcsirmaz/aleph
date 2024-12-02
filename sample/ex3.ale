@@ -2,63 +2,87 @@ $ symbolic differentiation, problem iii in "machine oriented
 $ languages bulletin", molb 3.1.2, (1973).
 'stack'[100](op,left,right)expr.
 'table'[]operator=("+":plus op,"-":min op,"*":tim op,"/":div op,
-     "ln": ln op $ ln(f) is represented as 0 "ln" f $,
-     "pow": pow op $ pow(f,g) is represented as f "pow" g $).
-'stack'[1]const=(0: c zero, 1: c one, 2: c two).
+     "log ": log op $ log(f) is represented as 0 "log" f $,
+     "^": pow op ).
+'stack'[10]const=(0: c zero, 1: c one, 2: c two).
 'stack'[1]var=("x": x var).
 'action'derivative+>e+de>-f-df-g-dg-n1-n2-n3:
    was+const+e, c zero->de;
-   was+var+e, c one->de;
-   left*expr[e]->f, right*expr[e]->g,
-   derivative+f+df, derivative+g+dg,
-     (=op*expr[e]=
-       [plus op], gen node+plus op+df+dg+de;
-       [min  op], gen node+min  op+df+dg+de;
-       [tim  op], gen node+tim op+f+dg+n1,
-                  gen node+tim op+df+g+n2,
-                  gen node+plus op+n1+n2+de;
-       [div  op], gen node+tim op+df+g+n1,
-                  gen node+tim op+f+dg+n2,
-                  gen node+min op+n1+n2+n1,
-                  gen node+pow op+g+c two+n2,
-                  gen node+div op+n1+n2+de;
-       [ln   op], gen node+div op+dg+g+de;
-       [pow  op], gen node+min op+g+c one+n1,
-                  gen node+pow op+f+n1+n1,
-                  gen node+tim op+df+g+n2,
-                  gen node+tim op+n2+n1+n1,
-                  gen node+ln op+c zero+f+n2,
-                  gen node+tim op+n2+dg+n2,
-                  gen node+pow op+f+g+n3,
-                  gen node+tim op+n2+n3+n2,
-                  gen node+plus op+n1+n2+de
+   was+var+e,   c one->de;
+   left*expr[e]->f,derivative+f+df,
+   right*expr[e]->g,derivative+g+dg,
+   (=op*expr[e]=
+      [plus op], M+df+plus op+dg+de;
+      [min  op], M+df+min  op+dg+de;
+      [tim  op], M+df+tim op+g+n1,M+f+tim op+dg+n2,
+                   M+n1+plus op+n2+de;
+      [div  op], M+df+tim op+g+n1,M+f+tim op+dg+n2,
+                   M+n1+min op+n2+n1,M+g+pow op+c two+n2,
+                   M+n1+div op+n2+de;
+      [log  op], M+dg+div op+g+de;
+      [pow  op], M+g+min op+c one+n1,M+f+pow op+n1+n1,
+                  M+df+tim op+g+n2,M+n2+tim op+n1+n1,
+                  M+c zero+log op+f+n2,M+n2+tim op+dg+n2,
+                  M+f+pow op+g+n3,M+n2+tim op+n3+n2,
+                  M+n1+plus op+n2+de
      ).
-'action'print expr+>e-zz:
-   was+const+e,put int+STDOUT+const[e];
+'action'M+>left+>op+>right+res>:
+   (* left->left,op->op,right->right*)expr, >>expr->res.
+$ simplify an expression
+'question'is zero+>e: was+const+e,const[e]=0.
+'question'is one+>e:  was+const+e,const[e]=1.
+'action'simplify+>e+f>-e1-e2:
+   was+const+e, e->f;
+   was+var+e,   e->f;
+   simplify+left*expr[e]+e1,simplify+right*expr[e]+e2,
+   (=op*expr[e]=
+    [plus op], (is zero+e1, e2->f;
+                is zero+e2, e1->f;
+                (was+const+e1,was+const+e2),
+                  add+const[e1]+const[e2]+e1,(* e1->const *)const, >>const->f;
+                M+e1+plus op+e2+f);
+    [min op],  (is zero+e2, e1->f;
+                (was+const+e1,was+const+e2),
+                   subtr+const[e1]+const[e2]+e1,(*e1->const *)const, >>const->f;
+                M+e1+min op+e2+f);
+    [tim op],  (is zero+e1, e1->f;
+                is one+e1, e2->f;
+                is zero+e2, e2->f;
+                is one+e2, e1->f;
+                M+e1+tim op +e2+f);
+    [pow op],  (is one+e2,e1->f;
+                is zero+e2,c one->f;
+                M+e1+pow op+e2+f);
+    [div op;log op],M+e1+op*expr[e]+e2+f).
+$ print in simplified form
+'action'print expr+>e:
+   simplify+e+e,print aux+e.
+'action'print aux+>e:
+   was+const+e,out+const[e];
    was+var+e,put string+STDOUT+var+e;
-   op*expr[e]->zz,
-   (= zz =
-     [plus op; min op; tim op; div op],
-        put char+STDOUT+/(/,print expr+left*expr[e],
-        put char+STDOUT+/)/,put string+STDOUT+operator+zz,
-        put char+STDOUT+/(/,print expr+right*expr[e],
-        put char+STDOUT+/)/;
-     put string+STDOUT+operator+zz,put char+STDOUT+/(/,
-        (equal+zz+pow op, print expr+left*expr[e],
-             put char+STDOUT+/,/; +),
-        print expr+right*expr[e], put char+STDOUT+/)/
-   ).
-'action'test-e1-e2-e3:
-   gen node+pow op+x var+x var+e1, $ pow(x,x) $
-      print expr+e1, nl,
-      derivative+e1+e2, print expr+e2, nl,
-      derivative+e2+e3, print expr+e3, nl,
-   gen node+div op+x var+x var+e1, $ x/x $
-      print expr+e1, nl,
-      derivative+e1+e2, print expr+e2, nl,
-      derivative+e2+e3, print expr+e3, nl.
-'action'gen node+>op+>left+>right+res>:
-   * op->op, left->left, right->right *expr, >>expr->res.
-'action' nl: put char+STDOUT+new line.
-'root'test.
+   put char+STDOUT+/(/,
+   (= op*expr[e] =
+     [plus op;min op;tim op;div op;pow op],print aux+left*expr[e];+),
+   put string+STDOUT+operator+op*expr[e],
+   print aux+right*expr[e],put char+STDOUT+/)/.
+$ print an integer in decimal form
+'action'out+>n-r:
+   n<0,put char+STDOUT+/-/,subtr+0+n+n,out+n;
+   divrem+n+10+n+r,add+r+/0/+r,(n=0;out+n),put char+STDOUT+r.
+'action'line:
+   put char+STDOUT+newline.
+$ derivating
+'root'-y1-y2:
+   $ 1/x $ M+c one+div op+x var+y1,
+      print expr+y1,line,derivative+y1+y2,print expr+y2,line,
+   $ x^2 $ M+x var+pow op+c two+y1,
+      print expr+y1,line,derivative+y1+y2,print expr+y2,line,
+   $ x^{-2} $ M+c zero+min op+c two+y1,M+x var+pow op+y1+y1,
+      print expr+y1,line,derivative+y1+y2,print expr+y2,line,
+   $ x^x $ M+x var+pow op+x var+y1,
+      print expr+y1,line,derivative+y1+y2,print expr+y2,line,
+   $ (x+1)/(x-1)$ M+x var+plus op+c one+y1,
+      M+x var+min op+c one+y2,M+y1+div op+y2+y1,
+      print expr+y1,line,derivative+y1+y2,print expr+y2,line.
+
 'end'

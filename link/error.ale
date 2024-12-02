@@ -1,10 +1,10 @@
 $ error handling rules
-'pragmat'module=error,title="error, v2.0".
+'pragmat'module=error,title="error, v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -119,6 +119,7 @@ $   was+BOLD+ptr,print+BOLD+ptr;
           incr+ptr,(>>BUFFER<ptr,print char+/%/;
                     (=BUFFER[ptr]=
                      [/p/],(shift affix block+@,print pointer+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/x/],(shift affix block+@,print+LEXT+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/i/],(shift affix block+@,print item+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/c/],(shift affix block+@,print char+fmt;print+"[?]"),incr+ptr,:nxt;
 $                     [/f/],(shift affix block+@,print form+fmt;print+"[?]"),incr+ptr,:nxt;

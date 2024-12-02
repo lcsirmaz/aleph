@@ -1,5 +1,5 @@
 ## aleph
-Modular ALEPH programming language v2
+Modular ALEPH programming language v2.1
 
 Aleph is a historical programming language; its name is an abbreviation for
 **A** **L**anguage **E**ncouraging **P**rogram **H**iearachy.

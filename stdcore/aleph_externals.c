@@ -1,9 +1,9 @@
 /* aleph external routines */
 
 /*******************************************************************
-*  This code is part of ALEPH-M (Modular ALEPH-v2)
+*  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 *
-*  (C) 2020-2023, L.Csirmaz
+*  (C) 2020-2024, L.Csirmaz
 *
 *  ALEPH-M is a free software, your can redistribute and/or
 *  modify it under the terms of the GNU General Public License
@@ -36,10 +36,10 @@
 */
 
 /* imported from aleph_core */
-int a_requestspace(int ID,int n);
-void a_extension(int ID,int n);
+int a_requestspace(a_word ID,a_word n);
+a_word *a_extension(a_word ID,a_word n);
 /* forward prototype */
-int a_openfile(int F1,int F2,int F3,int F4);
+int a_openfile(a_word F1,a_word F2,a_word F3,a_word F4);
 
 /*******************************************************************
 *  External lists and files
@@ -216,8 +216,8 @@ void a_packstring(int F1,int F2,int F3){
             ptr[i]<0x800 ? 2 : ptr[i]<0x10000 ? 3 :
             ptr[i]<0x110000 ? 4 : 0;
    }
-   width /= sizeof(int);a_extension(F3,width);
-   int *goal=to_LIST(F3)->offset+1+to_LIST(F3)->aupb;
+   width /= sizeof(int);
+   int *goal=a_extension(F3,width);
    char *chr=(char*)goal;len=0;
    for(i=0;i<F2;i++){
      if(ptr[i]<0||ptr[i]>0x110000) continue;
@@ -251,8 +251,7 @@ void a_unpackstring(int F1,int F2,int F3){
                   to_LIST(F1)->name,F2);
       a_fatal(a_FATAL_string);
    }
-   a_extension(F3,n);
-   unsigned *goal=(unsigned*)(to_LIST(F3)->offset+1+to_LIST(F3)->aupb);
+   unsigned *goal=(unsigned*)a_extension(F3,n);
    char *chr=(char*)(ptr+1-*ptr);
    for(i=0;i<n;i++,goal++){
      *goal=*chr;chr++;if(*goal==0){
@@ -289,8 +288,7 @@ void a_copystring(int F1,int F2,int F3){
                    to_LIST(F1)->name,F2);
        a_fatal(a_FATAL_string);
    }
-   a_extension(F3,n);
-   int *goal=to_LIST(F3)->offset+n+to_LIST(F3)->aupb;
+   int *goal=a_extension(F3,n)+(n-1);
    for(i=0;i<n;i++) goal[-i]=ptr[-i];
    to_LIST(F3)->aupb+=n;
 }
@@ -315,7 +313,7 @@ void a_copystring(int F1,int F2,int F3){
 #define ENOCHARFILE     10009   // character input/output on data file
 #define EREADEOF        10010   // getdata, getchar reads EOF
 #define ESEEKERROR      10011   // set file pos
-#define ELARGEFILE      10012   // set file pos
+#define ELARGEFILE      10012   // set file pos, put data
 
 /*******************************************************************
 * file structures
@@ -326,9 +324,10 @@ void a_copystring(int F1,int F2,int F3){
 *     0x0010      ahead character read (chfile only)
 *     0x0020      in direction is defined
 *     0x0040      out direction is defined
+*     0x0080      std stream, do not close
 *   the fileError field contains the last error code which can be
 *     retrieved by 'get file error"
-*   (st1,st2) fields store the ALEPH string given inthe declaration;
+*   (st1,st2) fields store the ALEPH string given in the declaration;
 *     it is used as the default file name when attempting a file
 *     operation on an unopened file
 *
@@ -362,6 +361,9 @@ void a_copystring(int F1,int F2,int F3){
 #define getfl_out(x)            getflag_general(x,0x40)
 #define setfl_out(x,y)          setflag_general(x,y,0x40)
 
+#define getfl_std(x)		getflag_general(x,0x80)
+#define setfl_std(x,y)		setflag_general(x,y,0x80)
+
 /*******************************************************************
 * character file input/output
 *
@@ -389,6 +391,7 @@ int a_getchar(int F1,int A[1]){
    if(getfl_data(ch)){ ch->fileError=ENOCHARFILE; return 0; }
    if(!ch->f){ if(!a_tryopen(F1,'r')) return 0; }
    if(getfl_rw(ch)){ch->fileError=EWRONGTYPE; return 0; }
+   ch->fileError=0;
    if(getfl_ahead(ch)){A[0]=ch->aheadchar;setfl_ahead(ch,0);return 1; }
 again:
    A[0]=getc(ch->f);if(A[0]<0){ch->fileError=EREADEOF;return 0;} // EOF
@@ -421,7 +424,7 @@ int a_aheadchar(int F1,int A[1]){
    A[0]=-1;if(getfl_data(ch)){ch->fileError=ENOCHARFILE; return 0; }
    if(!ch->f){ if(!a_tryopen(F1,'r')) return 0; }
    if(getfl_rw(ch)){ch->fileError=EWRONGTYPE; return 0; }
-   if(getfl_ahead(ch)){A[0]=ch->aheadchar; return 1; }
+   if(getfl_ahead(ch)){A[0]=ch->aheadchar;ch->fileError=0; return 1; }
    if(a_getchar(F1,A)){ch->aheadchar=A[0];setfl_ahead(ch,1);return 1;}
    return 0;
    #undef ch
@@ -503,6 +506,7 @@ int a_putdatap(int F1,int F2,int F3)
    if(!getfl_data(df)){ df->fileError=ENODATAFILE; return 0;}
    if(df->fhandle<=0){ if(!a_tryopen(F1,'w')) return 0;}
    if(!getfl_rw(df)){ df->fileError=EWRONGTYPE; return 0; }
+   if(df->fpos>0x7FFF0000){ df->fileError=ELARGEFILE; return 0; }
    if(F3!=0 && F2!=0 && F2!=-1 ){ // pointer
       // check if F2 is within the bounds
       for(cnt=0;cnt<df->outarea &&
@@ -547,13 +551,13 @@ int a_openfile(int F1,int F2,int F3,int F4){
     // special cases: <<stdin>>, <<stdout>>, <<stderr>>
     if(strcmp((char*)(arg3+1-*arg3),"<<stdin>>")==0){
       if(F2!='r'){ch->fileError=EBADARG; return 0; }
-      ch->f=stdin;setfl_rw(ch,0); return 1;
+      ch->f=stdin;setfl_rw(ch,0); setfl_std(ch,1); return 1;
     } else if(strcmp((char*)(arg3+1-*arg3),"<<stdout>>")==0){
       if(F2!='w'&& F2!='a'){ch->fileError=EBADARG; return 0;}
-      ch->f=stdout; setfl_rw(ch,1); return 1;
+      ch->f=stdout; setfl_rw(ch,1); setfl_std(ch,1); return 1;
     } else if(strcmp((char*)(arg3+1-*arg3),"<<stderr>>")==0){
       if(F2!='w'&& F2!='a'){ch->fileError=EBADARG; return 0;}
-      ch->f=stderr; setfl_rw(ch,1); return 1;
+      ch->f=stderr; setfl_rw(ch,1); setfl_std(ch,1); return 1;
     } else if(F2=='w'||F2=='a'){
       ch->f=fopen((char*)(arg3+1-*arg3),F2=='w'?"w":"a");
       if(!ch->f){ch->fileError=errno; return 0; }
@@ -577,21 +581,6 @@ int a_openfile(int F1,int F2,int F3,int F4){
     setfl_rw(df,1);setfl_eof(df,0);
     df->fhandle=creat((char*)(arg3+1-*arg3),0644);
     if(df->fhandle<0){df->fileError=errno; return 0; }
-    for(j=0;j<1024;j++){df->buffer[j]=0;}
-    df->buffer[0]=ALEPH_BINARY_MAGIC;
-    buf=&(df->buffer[32]);
-    *buf=df->outarea;buf++;
-    df->fpos=32+3*df->outarea; // last filepos
-    df->iflag=0u;              // all numerical so far
-    for(cnt=0;cnt<df->outarea;cnt++){
-      *buf = df->out[cnt].lwb; buf++;
-      *buf = df->out[cnt].upb; buf++;
-      *buf = df->out[cnt].data; buf++;
-    }
-  } else if(F2=='t'){ // create temp file for writing, replace file name
-    setfl_rw(df,1);setfl_eof(df,0);
-    df->fhandle=mkstemp((char*)(arg3+1-*arg3));
-    if(df->fhandle<0){df->fileError=errno;return 0;}
     for(j=0;j<1024;j++){df->buffer[j]=0;}
     df->buffer[0]=ALEPH_BINARY_MAGIC;
     buf=&(df->buffer[32]);
@@ -639,7 +628,7 @@ int a_openfile(int F1,int F2,int F3,int F4){
   #undef df
 }
 /* 'p'open temp file+""f+[]st[]+>ptr */
-int a_opentempfile(int F1,int F3,int F4){
+int a_opentempfile(a_word F1,a_word F3,a_word F4){
    int *arg3;int fd,cnt,j;int *buf;
    #define df	to_DFILE(F1)
    if(F3<0||F3>0x10000||F4==0){df->fileError=EBADARG; return 0;}
@@ -681,21 +670,23 @@ int a_closefilep(int F1){
   if(!getfl_data(df)){ // not a datafile
   #define ch to_CHFILE(F1)
     if(!ch->f){ch->fileError=ENOTOPENED;return 1; } // not opened
+    setfl_ahead(ch,0);
+    if(getfl_std(ch)){setfl_std(ch,0);ch->fileError=0;ch->f=0; return 1;}
     if(fclose(ch->f)){ch->fileError=errno;ch->f=0;return 0; }
-    ch->f=0; return 1;
+    ch->fileError=0;ch->f=0; return 1;
   #undef ch
   }
   if(df->fhandle<=0){df->fileError=ENOTOPENED; return 1; } // not opened
   if(getfl_rw(df)){ // opened for write
-    ret=a_putdatap(F1,-1,1);
+    ret=a_putdatap(F1,-1,1); // clears fileError
     while(ret && (df->fpos&31)!=31){ret = a_putdatap(F1,-1,1);}
     df->buffer[(df->fpos>>5)&31]=df->iflag;
     if(ret && a_write_databuffer(df)){ ret=0; }
     if(close(df->fhandle)){df->fileError=errno; ret=0;}
     df->fhandle=0;
   } else{ // opened for read
-    close(df->fhandle);
-    df->fhandle=0;setfl_eof(df,0); ret=1;
+    if(close(df->fhandle)!=0){;}
+    df->fileError=0;df->fhandle=0;setfl_eof(df,0); ret=1;
   }
   return ret;
   #undef df
@@ -737,6 +728,7 @@ int a_getdata(int F1,int A[2]){
     } else {
        df->fpos++; df->iflag<<=1;
     }
+    df->fileError=0;
     A[0]=df->buffer[df->fpos&1023];
     A[1]=0; // numerical value
     if(df->iflag & 0x80000000u ){ // pointer
@@ -765,7 +757,7 @@ int a_getdata(int F1,int A[2]){
 /* 'f'get file pos + ""f + pos> */
 void a_getfilepos(int F1,int A[1]){
 #   define df   to_DFILE(F1)
-    A[0]=0;
+    A[0]=-1;
     if(!getfl_data(df)){ // charfile
 #   define ch   to_CHFILE(F1)
       long offset;
@@ -773,29 +765,29 @@ void a_getfilepos(int F1,int A[1]){
       offset=ftell(ch->f);
       if(offset<=-1l){ ch->fileError=errno; }
       else if( offset>0x7fff0000l){ ch->fileError=ELARGEFILE; }
-      else { A[0]=(int)offset; }
+      else { ch->fileError=0;A[0]=(int)offset; }
     return;
 #   undef ch
     }
-    if(df->fhandle<=0 ) return;
-    A[0]=df->fpos;
+    if(df->fhandle<=0 ){df->fileError=ENOTOPENED; return;}
+    A[0]=df->fpos;df->fileError=0;
     return;
 #   undef df
 }
 /* 'a'set file pos + ""f + >pos */
 void a_setfilepos(int F1,int F2){
     off_t offset;
-#   define df   to_DFILE(F1)
-    df->fileError=ESEEKERROR;
 #   define ch   to_CHFILE(F1)
-    if(!getfl_data(df)){ // chafile
-       if(F2<0 || !ch->f) return;
+    if(!getfl_data(ch)){ // charfile
+       if(F2<0 || !ch->f){ch->fileError=ESEEKERROR; return;}
        if(fseek(ch->f,(long)F2,SEEK_SET)){
          ch->fileError=errno;
-       }
+       } else {setfl_ahead(ch,0);ch->fileError=0;}
        return;
     }
 #   undef ch
+#   define df   to_DFILE(F1)
+    df->fileError=ESEEKERROR;
     if(df->fhandle<=0 || getfl_rw(df) || F2<0 ) return;
     if(getfl_eof(df) && F2>= df->fpos) return;
     if(F2==0){F2=32+3*df->inarea; } // special case
@@ -807,10 +799,10 @@ void a_setfilepos(int F1,int F2){
       offset=(off_t)(F2 & ~1023)*sizeof(int);
       if((F2&1023)==1023) offset += 1024*sizeof(int);
       if(lseek(df->fhandle,offset,SEEK_SET)<0){ // error
-         df->fileError=ESEEKERROR; return;
+         df->fileError=errno; return;
       }
       if((F2&1023)==1023){ // done
-          df->fpos=F2; return; 
+          df->fpos=F2;df->fileError=0; return;
       }
       if(a_read_databuffer(df)){ // i/o error
          return;
@@ -818,6 +810,7 @@ void a_setfilepos(int F1,int F2){
     } // we have the current block
     df->fpos=F2;
     df->iflag=(unsigned)(df->buffer[(df->fpos>>5)&31]) << (df->fpos&31);
+    df->fileError=0;
 #   undef df
 }
 /*******************************************************************
@@ -831,25 +824,25 @@ void a_setfilepos(int F1,int F2){
 void a_stringhash(int F1,int F2,int A[1]){
   int *ptr=to_LIST(F1)->offset+F2;
   unsigned char *v=(unsigned char*)&ptr[1-ptr[0]];
-  unsigned v1=0x135345+47*(*v), v2=0xeca864+107*(*v<<3);
+  unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v);
   while(*v){
-     v1=(29*v1+17*v2+1259*(*v^v2)) % 0x1010309;
-     v2=(23*v2+257*v1+1237*(*v^v1)) % 0x1010507;
+     v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;
+     v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;
      v++;
   }
-  A[0]=(int)(v1<<16|v2);
+  A[0]=(int)((v1<<16)^v2);
 }
 /* 'f'block hash+T[]+>p+res> */
 void a_blockhash(int F1,int F2,int A[1]){
   unsigned char *v=(unsigned char*)(to_LIST(F1)->offset+F2+1);
-  unsigned v1=0x135345+47*(*v), v2=0xeca864+107*(*v<<3);
+  unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v);
   int cnt=sizeof(int)*(to_LIST(F1)->aupb-F2);
   for(;cnt>0;cnt--){
-     v1=(29*v1+17*v2+1259*(*v^v2)) % 0x1010309;
-     v2=(23*v2+257*v1+1237*(*v^v1)) % 0x1010507;
+     v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;
+     v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;
      v++;
   }
-  A[0]=(int)(v1<<16|v2);
+  A[0]=(int)((v1<<16)^v2);
 }
 
 /* EOF */

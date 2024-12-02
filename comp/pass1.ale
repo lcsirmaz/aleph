@@ -1,10 +1,10 @@
 $ program
-'pragmat'module=pass1,title="pass1, v2.0".
+'pragmat'module=pass1,title="pass1, v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -46,8 +46,10 @@ $ error messages
 
 'a'first pass:
    $ call pass1 for each source; handles conditional pragmats
-   read sources,(is+root scanned;Xerror+0+no root),
-   (was error; read libraries, check all ttags, check source modules),
+   read sources,(was error;is+root scanned;Xerror+0+no root),
+   (was error; 
+    read user libraries, (was error; 
+          read standard library, check all ttags, check source modules)),
    print dictionary.
 
 

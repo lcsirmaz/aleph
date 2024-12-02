@@ -1,10 +1,10 @@
 $ standard ALEPH library -- basic externals and constants
-'pragmat' library=on,module=stdlib,title="stdlib base".
+'pragmat'module=stdlib,title="stdlib base",library mode=on.
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2024, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -69,8 +69,8 @@ $   request space+st+n  the stack has at least n additional words over the top
 $ Strings
 $   string length+t+p+n   number of characters in the string (zero or more)
 $   string width+t+p+n    number of words occupied by the string
-$   previous string+t+p   decrease b by the width of the string
-$   compare string        the returned value >0, =0, <0 indicates the relationshif
+$   previous string+t+p   decrease p by the width of the string
+$   compare string        the returned value >0, =0, <0 indicates the relationship
 $   compare string n      compares the first n characters only
 $   string elem           return the n-th characters of the string starting at
 $                            zero. Fail is n<0 or >= string length
@@ -95,14 +95,14 @@ $ File input/output
 $   character values
 'cons'newline=10,newpage=12.
 'cons'same line=-1,rest line=-2.
-$   open file             open the file given by the string. 
-$                            mode is /r/ for read and /w/ for write
-$   open temp file        create a temp file
-$   close file            close the file
-$   unlink file           delete the file given by the string
-$   get file error        retrieve the last error code associated with the file
-$   get file pos          retrieve file position dureing reading
-$   set file pos          set file position - only if opened for read
+$   open file         open the file given by the string; mode is /r/
+$                         for read, /w/ for write, /a/ for append (char only)
+$   open temp file    create a temp file
+$   close file        close the file
+$   unlink file       delete the file given by the string
+$   get file error    retrieve the last error code associated with the file
+$   get file pos      retrieve file position, -1 on error
+$   set file pos      set file position - only if opened for read
 'p' open file+""f+>mode+t[]+>p.
 'p' open temp file+""f+[]st[]+>p.
 'a' close file+""f.
@@ -119,7 +119,7 @@ $   ahead char+""f+char> peek to the next character
 'a' put char+""f+>char.
 $ Data transput
 'cons'numerical=0,pointer=1.
-$   get data+""F+D>=>T   read the next word from the data file F
+$   get data+""F+D>+T>   read the next word from the data file F
 $   put data+""f+>D+>T   put word D of type T to the data file, abort if error
 $   put datap+""f+>D+>T  same as put data; fail if F is not datafile, or D is a
 $                            pointer not in the list.
@@ -134,7 +134,7 @@ $   backtrack            if linked with -g, prints the calls; otherwise nop
 'a'backtrack.
 
 $ BODY ******************************************************** $
-'pragmat'if=compile.
+'pragmat'if=compile,library mode=on.
 $
 $ external rule string first character:
 $   letter:  use the string as a procedure name to be called
@@ -147,6 +147,7 @@ $      no prototypes are generated
 $   @ symbol: for each out affix a 0/1 appended depending on whether it is
 $      a dummy affix or not; dummy affixes are skipped; otherwise use
 $      pidgin syntax (no prototypes)
+$   @@make and @@waitfor: special handling
 $
 $ functions with dummy out affixes are optimized out.
 
