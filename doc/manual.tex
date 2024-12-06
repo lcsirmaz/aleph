@@ -152,14 +152,14 @@
 {\A} (acronym for ``\underline{\sf A} \underline{\sf L}anguage
 \underline{\sf E}ncouraging \underline{\sf P}rogram \underline{\sf
 H}ierarcy'') is a high-level language designed to provide the programmer
-with a tool that will effectively aid him in structuring his program is a
+with a tool that will effectively aid him in structuring his program in a
 hierarchical fashion. The syntactic and semantic simplicity of {\A} leads to
 efficient object code \cite{wichmann77}, so that the loss
 of efficiency usually incurred in structured programming is avoided. {\A} is
 suitable for any problem that suggests top-down analysis (parsers, search
 algorithms, combinatorial problems, artificial intelligence problems, etc.).
 
-Chapter one of this Manual gives a tutorial introduction into the way of
+\hyperref[1]{Chapter one} of this Manual gives a tutorial introduction into the way of
 thinking that is used in \A. It addresses itself to computer users that have
 some experience with algorithms and grammars, though not necessarily with
 high-level languages. It must not be concluded from these prerequisites
@@ -171,15 +171,17 @@ languages.
 %UNCOL concept}, in: Proc. of IFIP working Conf.~on Machine Oriented High
 %Level Languages, Trondheim, 1973).
 
-Chapter two treats the \A{} program is general terms. Chapter three through
+\hyperref[sec:2]{Chapter two} treats the \A{} program is general terms. Chapter three through
 six contain a complete description of \A.
 
-Chapter three treats the flow-of-control. Chapter four treats the data-types.
+\hyperref[sec:3]{Chapter three} treats the flow-of-control.
+\hyperref[sec:4]{Chapter four} treats the data-types.
 Externals, i.e., standard-operations and communication with the outside
-world, are treated in chapter five. Chapter six describes the pragmats.
+world, are treated in \hyperref[sec:5]{chapter five}. \hyperref[sec:6]{Chapter
+six} describes the pragmats.
 
-The representation of \g{symbols} and example programs are given in chapters 
-seven and eight.
+The representation of \g{symbols} and example programs are given in
+\hyperref[sec:7]{chapter seven} and \hyperref[sec:8]{chapter eight}.
 
 An \A{} compiler exists, which translates \A{} programs in {\sf ALICE}
 program in a machine-independent fashion. {\sf ALICE}\cite{bohm77} is a
@@ -261,7 +263,7 @@ exactly which symbol we will accept in which position.
 \item empty: .
 \end{grammar}
 The rule for \g{input} can be read as: \g{input} is an \g{expression}
-followed by and \g{input-tail}, whereas the rule for \g{primary} can bead
+followed by and \g{input-tail}, whereas the rule for \g{primary} can be read
 as: a \g{primary} is either
 \begin{list}{}{%
 \setlength\parskip{-5pt}%
@@ -579,8 +581,9 @@ given the value \pp|stop|, which is defined in a \g{constant-declaration} to be
 
 If \pp|get char| does yield a symbol and if this is a space or a new-line,
 \pp|get char| is called again. We use nested parenthesizing here.
-This definition of \pp|get next symbol|\footnote{In the manuscript {\tft
-get char}.} implies we have decided that spaces and
+This definition of \pp|get next symbol|
+%\footnote{In the manuscript {\tft get char}.}
+implies we have decided that spaces and
 new-lines are allowed in the input in all positions (a decision that was not
 yet present in the initial grammar).
 
@@ -1986,7 +1989,7 @@ The result of an integer division \pp|n=p/q| (\pp|q|${}\not={}$\pp|0|) is a
 value \pp|n| such that \pp|p-n*q| is non-negative and minimal
 (so, e.g., \pp|7/3=2|, \pp|7/(-3)=-2|, \pp|(-7)/3=-3| and \pp|(-7)/(-3)=3|).
 
-A \g{constant-tag} defined in a user=defined
+A \g{constant-tag} defined in a user-defined
 \g{external-constant-declaration} cannot be used in an \g{expression}.
 
 The \g{list-tag} in a \g{min-limit} or \g{max-limit} (see \ref{4.1.7} used
@@ -3361,7 +3364,7 @@ except the new-line control character. A \g{non-quote-item} has as its
 representation any representation of \g{character} with the exception of the
 representation of the \g{quote-symbol}.
 
-The representations of the other terminal symbols can found in the following
+The representations of the other terminal symbols can be found in the following
 table.
 
 \begin{keywords}
