@@ -13,7 +13,6 @@
 \newcommand\I{\textsf{ALICE}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% grammar is typeset in \sf font.
-\newcommand\g[1]{\textsf{#1}}
 \newcommand\no[1]{}
 \def\cc{\kern-0.6pt:\kern-1pt:\kern-0.5pt}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,7 +69,7 @@
 \newenvironment{program}{%
 \ignorespaces
 \par\vskip 3pt plus 2pt minus 2pt\par
-\parindent=0pt\tt
+\parindent=0pt\color{green!30!black}\tt
 \catcode`\$=12\catcode`\^=12
 \mkbold
 \obeylines
@@ -90,7 +89,7 @@
 \catcode`\<\active\def<{\char60\relax}%
 \catcode`\>\active\def>{\char62\relax}%
 \catcode`\#=12\catcode`\^=12%
-\tt
+\color{green!30!black}\tt
 }%
 }
 {\catcode`\[=\active\catcode`\]=\active\catcode`\*=\active%
@@ -98,6 +97,7 @@
 \catcode`\]\active\def]{\kern0.1em\char93\kern0.05em\relax}%
 \catcode`\*\active\def*{\kern 0.05em\raisebox{-0.5ex}{\char42}\relax}
 }}%
+%% grammar: blue
 \newenvironment{grammar}{%
 \begin{list}{}{%
 \setlength\leftmargin{18pt}%
@@ -106,8 +106,11 @@
 \setlength\itemsep{1pt plus0.2ex}%
 \setlength\parsep{0pt plus 2pt}%
 \setlength\labelsep{-5pt}%
-}\sf\mkoptions%
+}\color{blue!90!black}\sf\mkoptions%
 }{\end{list}}
+\newcommand\g[1]{\textsf{\color{blue!90!black}#1}}
+
+
 \def\remark#1{{\normalfont #1}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % subsection title font
@@ -404,11 +407,11 @@ The public part of a module may contain genuine declarations next to the
 list of export prototypes, and may require additional modules. These public
 declarations are compiled into the invoking program locally.
 
-If an \A{} module, say \pp|modA|, requests another module, say \pp|modB|,
-then the terminology ``\pp|modB| is directly visible from \pp|modA|'', or
-``\pp|modB| is immediately above \pp|modA|'' is used. The module \pp|modB|
-is \emph{above} \pp|modA| if there is such a visibility chain from \pp|modA|
-to \pp|modB|. Resources provided by a module are available to every other
+If an \A{} module, say \pp|A|, requests another module, say \pp|B|,
+then the terminology ``\pp|B| is directly visible from \pp|A|'', or
+``\pp|B| is immediately above \pp|A|'' is used. The module \pp|B|
+is \emph{above} \pp|A| if there is such a visibility chain from \pp|A|
+to \pp|B|. Resources provided by a module are available to every other
 module which are below it, except for those resources which are redefined by
 some intermediate module. The original resource can still be reached using
 \emph{qualifiers}. In general, the same resource can be provided by several
@@ -418,8 +421,8 @@ provider.
 
 Requested modules are processed only once, thus no special measures should be
 taken when the visibility is circular. This is the case, for example, when
-module \pp|modA| requires \pp|modB|, and module \pp|modB| requires
-\pp|modA|. For a more detailed description on \A{} modules see Section
+module \pp|A| requires \pp|B|, and module \pp|B| requires
+\pp|A|. For a more detailed description on \A{} modules see Section
 \ref{section:module}.
  
 \subsection{User libraries}\label{subsec:user-library}
@@ -428,15 +431,15 @@ An \A{} module can be designated as a \emph{user library}. Resources
 provided by such a library module are available to all non-library modules,
 but only as a last resort if no other definition was found.
 
-In general, resources provided by a plain module \pp|modA| are not
-automatically avaiable for all other modules: \pp|modA| must be required
-explicitly (possibly through a request chain). In contrast, designating
-\pp|modA| as a user library, any module can use resources provided by
-\pp|modA| without requesting it. A user library can request other modules;
+In general, resources provided by a plain module \pp|A| are not
+automatically avaiable for other modules, only if \pp|A| is required
+(possibly through a request chain) explicitly. In contrast, designating
+\pp|A| as a user library, any module can use resources provided by
+\pp|A| without requesting it. A user library can request other modules;
 these requests determine another visibility structure which is independent
-of, and above, the visibility structure of the plain modules. Resources
-provided by the collection of user libraries are those provided by the
-lowest rank modules in the library visibility structure.
+of, and is above, the visibility structure of the plain modules. Resources
+provided by the collection of user libraries are those provided by all
+modules in the library visibility structure.
 
 There is another library layer above the user libraries starting with a
 single \emph{standard} \A{} \emph{library} module. This extra layer provides
@@ -480,16 +483,17 @@ related languages); using an initial escape character and whitespace at
 the end (e.g., leaving out the closing apostrophe); and so on. This choice
 reflects the influence of {\sf ALGOL \!68} \cite{a68} on \A{} and on its relatives.
 
-Characters in \A{} are not necessarily restricted to single byte ones as
-strings cannot be manipulated directly. This implementation allows any
+Characters in \A{} are not necessarily restricted to single byte characters as
+\A{} strings cannot be manipulated directly. This implementation allows any
 unicode character as a string character. According to the \A{} Manual
 \pp|newline| and \pp|newpage| are not characters. This implementation
 relaxes this restriction. A newline character (with code \pp|10|) can be
 part of a string, but not of a \g{string denotation} (a string appearing in
 the program text). In the program text all strings should be closed in the
-same line they start. Two separate consecutive strings (even if they are on
+same line they start. Two separate consecutive strings separated by white
+spaces (even if they are on
 different lines) are concatenated, thus strings can be continued on the next
-line, but cannot contain newline characters. There are no escape characters
+line, but cannot contain newline characters. There is no escape character
 either, and presenting a quotation mark in the string it should be doubled
 forming a \g{quote image}. Thus
 
@@ -508,9 +512,11 @@ in particular the code for the slash character is written as \pp|///|.
 
 \subsection{Hexadecimal constants}
 
-Wherever an \g{integer denotation} is accepted, hexadecimal constants are
+Wherever an \g{integer denotation} is accepted, a hexadecimal constant is
 recognized and accepted as well. An example is \pp|0x1234abcd|. The
-minus sign can also appear before a hexadecimal constant: \pp|-0xffff|.
+minus sign can also appear before a hexadecimal constant, such as \pp|-0xffff|.
+While no white space is allowed inside a constant, there can be spaces
+after the minus sign.
 
 % ----------------------------------------------------------------------
 
@@ -522,9 +528,9 @@ Similar shorthands are added for other comparison operators:
 
 \smallskip
 
-\HH\pp|x!=y| and \pp|x-=y|\HE  for \pp|x| and \pp|y| differ;
+\HH\pp|x!=y|\HE  for \pp|x| and \pp|y| differ;
 
-\HH\pp|x<=y|\HE               for \pp|x| is less than or equal to \pp|y|;
+\HH\pp|x<=y|\HE  for \pp|x| is less than or equal to \pp|y|;
 
 \HH\pp|x<y|\HE  for \pp|x| is smaller than \pp|y|;
 
@@ -553,10 +559,10 @@ add + a*L[>>L] + b*L[>>L] + c*L[>>L].
 Using this extension a stack looks---and behaves---like a variable, which
 makes writing and comprehending stack operations easier.
 %
-This extension comes handy when the content of a newly added block on
-the top of a stack is to be manipulated. The drawback is that it
-prevents the compiler reporting a parameter type mismatch when the list is
-used by mistake. This extension causes, quite unexpectedly, extra
+This extension comes handy when the content of a newly added block on the
+top of a stack is to be manipulated. The drawback is that it prevents the
+compiler reporting a parameter type mismatch when a list is used for a plain
+value by mistake. This extension causes, quite unexpectedly, extra
 complications during macro substitution, see Section \ref{sec:macro} for
 details.
 
@@ -574,24 +580,24 @@ purpose, while the official representation \pp|?| is also accepted.
 
 \subsection{String as actual affix}
 
-A \g{string denotation} can be used as an actual affix. This extension
+A \g{string denotation} can be used as an \g{actual affix}. This extension
 simplifies writing program texts as the actual string can appear where it is
 used. Without this feature strings are to be put into a table with a pointer
 constant pointing to them, and then the string is identified by the table
 name and the string pointer together:
 \begin{program}
 'table'MESSAGE=("unknown identifier":unknown tag).
-'action'tag error:error+MESSAGE+unknown tag.
+'action'tag error: error+MESSAGE+unknown tag.
 \end{program}
 \noindent
 With this extension the string can appear directly as an actual affix:
 \begin{program}
-'action'tag error:error+"unknown identifier".
+'action'tag error: error+"unknown identifier".
 \end{program}
 \noindent
-The string denotation translates into two affixes: first,
-a special internal table, and second, a pointer which points to the string in
-that table.
+The string denotation translates into two affixes: first, a special internal
+table (which is not available in any other way), and second, a pointer which
+points to the string in that table.
 
 % ----------------------------------------------------------------------
 
@@ -625,7 +631,7 @@ in
 
 An \g{extension} adds a new block to the top of a (formal or global) stack.
 An extension is specified as a sequence of assignments where the
-destinations are selectors of the block to be added; this list is enclosed
+destinations are selectors of the block to be added. This list is enclosed
 between \pp|*| symbols and followed by the list tag. If the \g{stack}
 \pp|st| has three selectors \pp|sel|, \pp|ect|, and \pp|ors|, then the
 \g{extension}
@@ -712,7 +718,7 @@ pending affix blocks. This number is always positive and it is
 \pp|1| if and only if \pp|shift affix block+@| would fail.
 
 The main application of variable number of arguments is formatted printing.
-In \A{} the compiler this feature has been used mainly to format error messages,
+In the \A{} compiler this feature has been used mainly to format error messages,
 but it also turned out to be useful in code generation. Rudimentary
 formatted printing can start with the format string passed by two affixes:
 the table and the string pointer. Format characters starting with \pp|\%|
@@ -727,7 +733,7 @@ passed to the rule \pp|handle format char|, as is done in the program snippet
                                      shift affix block+@),
             handle format char+ch+arg,:nxt;
           put char+STDOUT+ch,:nxt);
-       put char+STDOUT+newline).
+   +).
 \end{program}
 \noindent
 Another application could be pushing and popping an unspecified number of
@@ -773,20 +779,19 @@ global (not formal) lists; no expressions are allowed. A global list stands
 for its complete virtual address range. All values within the area are determined
 during compilation. It is an error if some of the alternatives cannot be
 reached (this would happen if the first two \g{area}s in the above example
-are swapped); and the compiler gives a warning if it could happen that none
+were swapped); and the compiler gives a warning if it could happen that none
 of the alternatives are chosen. When running the program and none of the
-alternatives succeeds the program aborts with an error message. An
-``otherwise'' case must be specified explicitly as in the example above.
+alternatives succeeds then the program aborts with an error message. The
+last ``otherwise'' case can omit the \g{area} \pp|[:]| matching every possible
+value.
 
 % ----------------------------------------------------------------------
 
 \subsection{Expressions}\label{subsec:expression}
 
 In \A{} all \g{expression}s are evaluated during compilation. Originally
-\g{expression}s could be used at several places; this implementation
-restricts them to \g{constant} and \g{variable declaration}s only. It is not
-an essential restriction as new constant tags can be declared with the
-desired value whenever necessary.
+\g{expression}s could be used at several places, this implementation
+restricts them to \g{constant} and \g{variable declaration}s only.
 
 An \g{expression} evaluates to a constant value. It may contain
 constant tags declared later (or even in another module), but cannot depend
@@ -812,11 +817,11 @@ the following Boolean operators can also be used:
 \g{or},
 \item[\textbullet] \pp|x^y| for the bitwise xor (modulo 2 addition) operator.
 \end{itemize}
-The Boolean operators have lower priorities than the arithmetic ones.
+Boolean operators have lower priorities than the arithmetic ones.
 
 In an expression integer denotations (both decimal and hexadecimal),
 character denotations (a character between \pp|/| symbols), constant tags,
-pointer constants (defined in fillings), virtual bounds and block size
+pointer constants (defined in fillings), virtual bounds, and block size
 (calibre) can be used. List size estimates and repeat numbers (see Section
 \ref{subsec:filling}) are evaluated before the virtual bounds are
 determined, thus these values cannot depend on virtual bounds.
@@ -826,8 +831,8 @@ determined, thus these values cannot depend on virtual bounds.
 \subsection{Root rule}\label{subsec:root-rule}
 
 The only executable command of an \A{} program is its \g{root}.
-It can have local affixes and a \g{rule body}. As the \g{root} is
-executed only once there is no need to designate a separate rule for this
+It can have local affixes and a \g{rule body}. The \g{root} is
+executed only once, and there is no need to designate a separate rule for this
 purpose. Example:
 \begin{program}
 'root'(rep:put line+STDOUT+V+newline,
@@ -867,9 +872,9 @@ program. Pointers refer to a list element using its virtual address.
 The virtual address space of different lists are disjoint, thus a
 pointer uniquely identifies the list it points into.
 
-A stack typically does not occupy its virtual space completely. Existing
-locations (which correspond to locations in the machine memory) form a
-presumably much smaller continuous \emph{actual memory space}. Stacks can be
+A stack typically does not occupy its virtual space completely. The existing
+locations for this stack form a presumably much smaller continuous part of
+its virtual space, the \emph{actual memory space}. Stacks can be
 extended to the right (upwards) until the end of their virtual memory parts,
 or until there is enough physical memory available. They can shrink from the
 right when their actual upper limits are lowered; the released virtual
@@ -877,28 +882,40 @@ memory can be reclaimed again. Stacks can also shrink from the left
 (behaving like queues), but in this case the released virtual space is lost
 (for the rest of the program run) and cannot be reclaimed again.
 
-Thus the \emph{actual memory space} of a \g{stack} changes when the stack
-is extended or shrunken For a list \pp|L| the constructs \pp|<<L| and
-\pp|>>L| return the actual lower and actual upper bound of \pp|L|,
-respectively. To obtain the fixed \emph{virtual} limits of the same list,
-use \pp|<L| and \pp|>L| (with a single \g{left symbol} and \g{right
-symbol}). In expressions only the fixed virtual limits can be used as only
-these are available during compilation.
-
+The \emph{actual memory space} of a \g{stack} changes when the stack is
+extended or shrunken For a list \pp|L| the constructs \pp|<<L| and \pp|>>L|
+return the actual lower and actual upper bound of \pp|L|, respectively,
+within the virtual memory space. To obtain the fixed \emph{virtual} limits
+of the same list, use \pp|<L| and \pp|>L| (with a single \g{left symbol} and
+\g{right symbol}). In expressions only the fixed virtual limits can be used
+as only these are available during compilation.
+%
 For \g{table}s the actual and virtual limits are always equal. In case of
 \g{stack}s actual limits are always within the virtual limits. Fixed stacks
 (i.e. stacks with an exact size estimate or no size estimate) have
 equal actual and virtual limits.
 
+This implementation restricts the virtual address space to positive values.
+The null pointer, denoted by the \A{} constant \pp|nil|, has value
+\pp|0|, and guaranteed to be distinct from any valid virtual address.
+When transmitting data using data files (see Section \ref{subsec:datafiles})
+the null pointer is always accepted and transmitted correctly.
+
+When a \g{stack} shrinks, either at the top or at the bottom, the actual
+allocated actual memory is not touched. Only the complete allocated memory
+can be released (freed) which also automatically empties the stack, see
+Section \ref{subsec:stdlib-stack}.
+
 % ----------------------------------------------------------------------
 
 \subsection{Size estimate}\label{subsec:size-estimate}
 
-The \g{size estimate} in a \g{stack declaration} specifies how much 
-virtual address space this stack requires. The estimate is given between
-square brackets, and can be \emph{fixed}, \emph{relative}, or
-\emph{empty}. In the first two cases the limit must be either an integer
-denotation or a constant tag; no expression is allowed.
+The \g{size estimate} in a \g{stack declaration} specifies how much virtual
+address space this stack requires. The estimate is given between square
+brackets, and can be \emph{fixed}, \emph{relative}, or \emph{empty}. (This
+last one is not allowed in the original \A{}.) In the first two cases the
+limit must be either an integer denotation or a constant tag; no expressions
+are allowed.
 \begin{itemize}
 \item[\textbullet] Fixed size is written between \pp|=| symbols and the value
 cannot be larger than 1,000,000 (and, of course, must be positive). The
@@ -957,10 +974,10 @@ separated by an equal sign as in the \g{stack declaration}:
 'stack'[1](s1,s2=t1,s3=t2)stack.
 \end{program}
 \noindent
-To emphasize which selectors are used together, multiple selector packs are
-accepted. Each pack must have the same number of selectors, the
+To emphasize which selectors are used together, multiple \g{selector pack}s
+are accepted. Each pack must have the same number of selectors, the
 \g{dummy symbol} \pp|\#| can be used as a placeholder. Thus the previous
-declaration can also be written as
+\g{declaration} can also be written as
 \begin{program}
 'stack'[1](s1,s2,s3)(\#,t1,t2)stack.
 \end{program} 
@@ -975,7 +992,8 @@ which accumulate: any of the specified selectors can be used.
 
 \subsection{Matching formal and actual lists}\label{subsec:list-block}
 
-The block sizes of the formal and the actual lists are compared as follows.
+The block sizes of the formal and the corresponding actual lists are
+compared as follows.
 \begin{itemize}
 \item[\textbullet] The formal list has no selectors.
 
@@ -1019,7 +1037,7 @@ same as in the definition; the selector names, however, can be different.
 
 The \g{filling} itself is enclosed in parentheses, and is  a sequence of
 integer denotations, constant tags (including constant pointers), strings,
-and blocks; no expression is allowed. Each item, except for strings, can be
+and blocks; no expressions are allowed. Each item, except for strings, can be
 followed by the \g{repeat symbol} \pp|*| and either an integer or a constant
 tag specifying how many times this item should be repeated. Then the
 optional \g{pointer initialization} sequence follows: a colon and a
@@ -1038,13 +1056,13 @@ representation of the string \pp|"string"| to \pp|T|. It also declares both
 \pp|tzero| and \pp|tz1| to be the (virtual) address of the lastly added
 \pp|0|, and \pp|tstring| to be the (virtual) address of the last element of
 the representation of \pp|"string"| (which, if no further filling is added
-to \pp|T|, is the same as \pp|>>T|).
+to \pp|T|, is the same as \pp|>>T| at the start of the program run).
 
 In the \g{filling} a \g{compound block} defines the content of a list block.
 The \g{compound block} must have exactly as many elements as the block size
 (\g{calibre}) of the list; violating this requirement results in a warning.
 A block element must be either an integer denotation or a constant tag
-(possibly a pointer constant), but not a string. In the block the constant
+(possibly a pointer constant), but not a string. In the block this
 value is followed by an \g{arrow symbol} \pp|->| and the selector where it
 will be stored. The filling in the example
 
@@ -1143,7 +1161,7 @@ opened by the external rule
 \end{program}
 \noindent
 where \pp|mode| is \pp|/r/| for reading, \pp|/w/| for writing, and \pp|/a/|
-for appending (for character files only); the last two arguments
+for appending (appending is for character files only); the last two arguments
 specify the string containing the file name (with possible path information)
 to be opened.
 
@@ -1152,7 +1170,7 @@ it. The \g{string denotation} in the file declaration gives the file name
 (with possible path information), and the \g{direction} restricts the
 access: the file opens automatically for reading only if there is a \pp|>|
 \emph{before} the string, and for writing if there is a \pp|>| \emph{after}
-the path string. A file cannot be opened for reading and writing
+the path string. No file can be opened for reading and writing
 simultaneously.
 
 For a character file the following special filenames identify the standard
@@ -1325,7 +1343,8 @@ The default value of some of the pragmats is the following:
 Pragmats \pp|front matter="code"|  and \pp|back matter="code"| are accepted
 in library mode only; the specified string is copied verbatim to the front
 (to the back, respectively) of the generated code with the exception that
-the sequence \pp|\char37 n| is replaced by a newline. The pragmat \pp|std
+the character sequence \pp|\char37 n| is replaced by a single newline. The
+pragmat \pp|std
 library=off| inhibits processing of the standard library, while
 \pp|library="file"| designates the module \pp|file| as a library module
 (which can request other modules). The latter two pragmats are not accepted
@@ -1526,7 +1545,7 @@ are printed to \pp|stderr|, and the program is aborted.
 \emph{Profiling}.
 The \pp|count=on| pragmat adds instructions which count how many times the
 rule is called. After a normal program termination the name of profiled
-rules and the number of calls to them are printed to \pp|stderr|. The list
+rules and the number of calls are printed to \pp|stderr|. The list
 starts with the largest calling numbers, and ends with rules which were not
 called at all.
 
@@ -1535,10 +1554,12 @@ called at all.
 \emph{Tracing}.
 If the pragmat \pp|trace=on| is in effect when a rule is declared, the rule
 is compiled with instructions that print out to \pp|stderr| the rule name,
-followed by the values of its \g{in} and \g{inout} affixes. As this would
+followed by the values of its incoming \g{in} and \g{inout} affixes. As this would
 produce a huge volume output, tracing information is printed only when the
 compiled binary is executed with the \pp|-T| switch as the first
-command-line argument. Without this switch only the lastly executed 30
+command-line argument. (This switch is swallowed and not passed to the \A{}
+program.)
+Without this switch only the lastly executed 30
 rulenames (without arguments) are printed when the program terminates
 (normally or with an error).
 
@@ -1546,28 +1567,29 @@ rulenames (without arguments) are printed when the program terminates
 
 \emph{Call stack}.
 Tracing provides the lastly executed 30 rule calls.
-Frequently the \emph{call stack}, the hierarchy of the pending rule calls
+Frequently the \emph{call stack}, the hierarchy of pending rule calls
 gives more information. When adding the \pp|-g| switch to the linker it
-produces an \A{} binary which keeps track of the call stack, and prints it
-to \pp|stderr| when the program terminates either normally or with an error.
+produces an \A{} binary which keeps track of this call stack, and prints it
+to \pp|stderr| when the program terminates either normally, or with an error.
 This feature adds some overhead to all rule calls, and increases the size of
-the compiled program. The library routine
+the compiled program, but requires no change in the source. The library routine
 \begin{program}
 'action'backtrack.
 \end{program}
 \noindent
-prints out the complete, actual call stack starting with the
-rule containing this rule. In the case the program is \emph{not} linked
+prints out the actual call stack to \pp|stderr| starting with the
+rule containing this rule and ending with the program root. In the case the program is \emph{not} linked
 with the \pp|-g| switch, \pp|backtrack| behaves as a no-op and does nothing.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Modular Aleph}\label{section:module}
 
-A module is an incomplete program part, which can be compiled independently,
+In general, a module is an incomplete program part which can be compiled independently,
 and which provides resources to be used by the other parts of the
-program. Modules are frequently written so that it can be reused by other
-programs. The first non-comment line in an \A{} module is usually a pragmat
+program. Modules are frequently written so that it can be reused by several
+programs. In an \A{} module the first non-comment line is usually a
+\g{pragmat}
 specifying both the \emph{name} and the \emph{namespace} of the module:
 
 \begin{program}
@@ -1575,16 +1597,16 @@ specifying both the \emph{name} and the \emph{namespace} of the module:
 \end{program}
 
 \noindent
-The module name \pp|XXX| must be a valid \A{} identifier; it must be written
-without quotation marks. According to the best practice, the name of the
-file containing the module and the module name should resemble each other.
-It is particularly important in \A{} as \A{} modules are invoked by
-specifying file names, and not module names. While not recommended,
-different modules (that is, modules in different files) can share
-the same module name, and, consequently, the namespace.
+The module name \pp|XXX| must be a valid \A{} identifier; it is written
+without quotation marks. According to the best practice the name of the
+file containing the module source and the module name should resemble each other.
+It is particularly important as \A{} modules are invoked by
+specifying source file names, and not module names. While not recommended,
+different modules (that is, modules in different source files) can share
+the same module name, and, consequently, the same namespace.
 
 In the module the initial \pp|module| pragmat is followed by the public
-part, or \emph{head} of the module. It contains the prototypes of the
+part, called the \emph{head} of the module. The head contains the prototypes of the
 (public) tags exported by, and defined in, this module. Next to the public
 part is the private part, called \emph{body}, which defines the exported
 items together with the optional auxiliary, unexported items. The body is
@@ -1592,7 +1614,7 @@ enclosed between \pp|ifdef=compile| and \pp|endif=compile| pragmats.
 
 An \A{} module is invoked, or required, by a \pp|require="FFF"| pragmat
 specifying the file name (possibly with path information, enclosed within
-quotation marks) of the module. When required only the public part---the
+quotation marks) of the module. When required, only the public part---the
 module head---is processed from the module text. Prototypes in the head are
 considered to be external definitions which define items to be imported from
 the defining module. In contrast, when the module is compiled, both the head
@@ -1617,7 +1639,7 @@ module name is \pp|sample| and it is stored in the file \pp|"fsample"|.
 \end{program}
 
 \noindent
-When the module is compiled, the file is read with the initial implicit
+When the module is compiled, the source file is read with the initial implicit
 instruction \pp|'pragmat'compile=on.| The \pp|module=sample| pragmat in the
 first line defines both the name and the namespace of the module to be
 \pp|sample|, and it also sets the \pp|prototype| pragmat to \pp|public|.
@@ -1627,7 +1649,7 @@ see Section \ref{subsec:prototype}),
 which also means that the prototyped tags must have a definition somewhere
 in the module body. The condition in the \pp|if=compile| pragmat holds, thus
 the material in the module body is processed: the \g{stack} and \g{rule}
-declarations are parsed and executed. The empty root rule (Section
+\g{declaration}s are parsed and executed. The empty root rule (Section
 \ref{subsec:root-rule}) indicates that the module does not require any
 initialization. At the end of the module items to be exported are checked
 against the prototypes and are prepared for export using the module namespace.
@@ -1638,10 +1660,11 @@ provided by this module, it \emph{requires} it by issuing
 'pragmat'require="fsample".
 \end{program}
 \noindent
-specifying the file name (between quotation marks) of the module text. 
+specifying the file name (between quotation marks) of the module source.
 Before reading the \pp|"fsample"| file, an initial implicit
 \pp|compile=off| pragmat is executed. The first line in the module text sets
-again the name and the namespace (for the duration of \pp|fsample|), but sets the
+again the name and the namespace for the duration of processing \pp|fsample|, 
+but sets the
 \pp|prototype| differently, to \pp|import|. Subsequent prototypes are scanned
 and marked as ``to be imported''. The compiler will use this information to
 check that these items are used properly in the rest of the invoking
@@ -1657,7 +1680,7 @@ module \pp|B|, while the body of module \pp|B| requires module \pp|A|.
 Next to prototypes the public part of a module may also contain additional
 \A{} constructs. A \pp|require| pragmat in the head automatically re-exports
 the imported items (using their original namespace), while declarations in
-the head are compiled into the invoking program using the module's
+the head are compiled into the invoking program locally, using the module's
 namespace.
 
 % -----------------------------------------------------------------------
@@ -1668,28 +1691,28 @@ An \A{} compilation unit (the main program or a module) may require several
 modules. Any module may also require other modules in its head, which
 modules may also require additional modules, and so on. The ``\pp|X|
 required module \pp|Y|'' relation defines a hierarchy among the involved
-units. In this hierarchy \pp|B| is \emph{above} \pp|A| if there is a
-``required'' chain from \pp|A| to \pp|B|, see also the discussion in Section
+units. In this hierarchy \pp|A| is \emph{below} \pp|B| if there is a
+``require'' chain from \pp|A| to \pp|B|, see also the discussion in Section
 \ref{subsec:general-modules}. Resources provided by module \pp|B| are
-automatically available for every unit \pp|A| below \pp|B| in
-this hierarchy, that is, those units \pp|A| for which \pp|B| is above \pp|A|.
+automatically available for every unit below \pp|B| in this hierarchy, that
+is, for those units \pp|A| which are below \pp|B|.
 
 When \pp|A| needs a resource, that resource might be provided by several
-modules. In the basic case among the potential offers that module is chosen
+modules above it. In the basic case among the potential offers that module is chosen
 which is equal to or above \pp|A|, and has the \emph{smallest rank}, that
-is, which requires the smallest number of ``required'' hops to reach from
+is, which requires the smallest number of ``require'' hops to reach from
 \pp|A|. By default, \pp|A| has rank zero above itself.
 
-The same module can be required by different modules many times, when this
-module appears in the hierarchy at several places. Nevertheless, it is still
-processed only once. The modules added as \emph{user library} (Section
-\ref{subsec:user-library}) using either the command-line argument \pp|-y| or
-the \pp|library| pragmat, and the modules required recursively by these
-library modules, form a second hierarchy. Elements of this hierarchy are
-\emph{above} the elements of the first one by a very high hop number. Using
-this arrangement, resources defined by a library module are available to
-every plain module, but only as a last resort: if no other definition can be
-found, then consult the offers in library modules. On the top of the user
+The same module can be required by different modules many times, in which
+case this module appears in the hierarchy at several places. Nevertheless,
+it is still processed only once. The modules added as \emph{user library}
+(Section \ref{subsec:user-library}) using either the command-line argument
+\pp|-y| or the \pp|library| pragmat, and the modules required recursively by
+these library modules, form a second hierarchy. Elements of this hierarchy
+are \emph{above} the elements of the first one by a very high hop number.
+Using this arrangement, resources defined by a library module are available
+to every plain module, but only as a last resort: if no other definition can
+be found, then consult the offers in library modules. On the top of the user
 library hierarchy there is still another hierarchy: the standard \A{}
 library providing the realization of \A{} primitives.
 
@@ -1715,7 +1738,7 @@ the main program, the implicit qualifier is empty.) First check modules
 which are \emph{strictly below} \pp|A|. If some of them defines \pp|q{\cc}x|
 (where the qualifier in the definition can be either explicit or implicit),
 then the one with the \emph{smallest absolute rank} (which has the minimal
-number of ``required'' hops from the main program, see Section
+number of ``require'' hops from the main program, see Section
 \ref{subsec:hierarchy}) is chosen.
 
 If this step does not give result, then consider \pp|A| and the modules
@@ -1729,7 +1752,7 @@ Naturally, this search must yield a unique definition.
 This procedure is illustrated in the picture below. Modules in files
 \pp|"f1"| and \pp|"f2"| set their name to \pp|t|, \pp|"f2"| is required by
 the module in \pp|"f1"|, and \pp|"f1"| is required by the main program. Tags
-(with the indicated qualifier) in the ``define'' column are defined in the
+(with the indicated explicit qualifier) in the ``define'' column are defined in the
 module head. Tags in the ``use'' column are connected to their identified
 definitions.
 
@@ -1771,7 +1794,7 @@ modules matches the definition of \pp|t{\cc}x| in the main program, but not
 the definition of \pp|x| (without qualifier) there. Both \pp|b| and
 \pp|t{\cc}b| in the main program identifies the single definition of \pp|b|
 in \pp|"f2"|. Observe that the definition of \pp|v| in \pp|"f2"| is not used
-at all.
+at all; \pp|v| in \pp|"f2"| uses the definition in \pp|"f1"|.
 
 % -----------------------------------------------------------------------
 
@@ -1802,12 +1825,12 @@ specified.
 As discussed at the beginning of Section \ref{section:module}, when a source
 is processed as a required module, an implicit \pp|compile=off| pragmat is
 executed before reading its first character. When the source is to be
-compiled (specified the file name in the command line), an implicit
+compiled (the file name is specified in the command line), an implicit
 \pp|compile=on| pragmat is executed before processing. The effect of a
 \pp|module=XXX| pragmat depends on whether \pp|compile| is on or off. If
 \pp|compile=on|, then the \pp|module| pragmat switches to module compilation
-and sets \pp|prototype=public|. If \pp|compile=off|, then it reads a module
-head, and sets \pp|prototype=import|.
+and sets \pp|prototype=public|. If \pp|compile=off|, then it 
+sets \pp|prototype=import| as it reads a module head.
 
 % -----------------------------------------------------------------------
 
@@ -1815,8 +1838,8 @@ head, and sets \pp|prototype=import|.
 
 A module can have ``call-back'' rules whose definition must be provided by
 the invoking program. An example could be a module which provides a sorting
-algorithm without defining the rule which compares the elements. The 
-skeleton of this module can be
+algorithm without defining the rule which compares the elements to be sorted.
+The skeleton of this module can be
 
 \begin{program}
 'pragmat'module=sort.        $ module name\no$
@@ -1851,7 +1874,7 @@ it can be omitted if there are no additional prototypes in the module.
 
 When requiring the \pp|qsort| module the rule \pp|qless| must be specified
 by the invoking program. Since declarations there use a different namespace,
-\pp|qless| must be declared with a qualifier:
+\pp|qless| must be declared with an explicit qualifier:
 
 \begin{program}
 'pragmat'require="sort".     $ require the sorting module\no$
@@ -1863,7 +1886,7 @@ by the invoking program. Since declarations there use a different namespace,
 
 \noindent
 When compiling the \pp|sort| module the rule \pp|qless| is left unspecified,
-and it is the linker's responsibility to replace it by the rule defined in
+and it is the linker's responsibility to replace it by the rule declared in
 the main program. Since there is a single compiled instance of \pp|qsort| (in
 which calls to \pp|qless| become hard-coded after linking) in the whole
 program, only a single instance of \pp|qsort| can exist. This means that one
@@ -1891,7 +1914,7 @@ invoking unit locally, but keeping the module status and namespace. Thus the
 comparison rule \pp|qless| still must be defined with a qualifier:
 
 \begin{program}
-'pragmat'require="isort".    $ request the module\no$
+'pragmat'require="isort".    $ require the module\no$
 'question'isort::qless+>x+>y: x>y.
 'stack'[]A=(3,4,7,1,0).
       ... qsort+A ...        $ this is a reverse sort A\no$
@@ -2009,7 +2032,7 @@ rather be \pp|stdlib{\cc}@equal+eq+0|, as now this \pp|@equal| calls itself.
 (Fortunately \pp|eq| is not an \pp|STR| pointer thus it won't fall into an infinite
 recursion.) In the module where this definition appears all equality tests
 will use this rule. To improve efficiency one might consider declaring this
-\pp|@equal| to be a macro.
+\pp|@equal| to be a macro, Section \ref{sec:macro}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2017,7 +2040,7 @@ will use this rule. To improve efficiency one might consider declaring this
 
 Elements of the standard \A{} library can be used without further notice,
 and can be redeclared in a user library (Section \ref{subsec:user-library})
-or in the main text; see and example in Section \ref{subsec:redef-library}.
+or in the main text; see an example in Section \ref{subsec:redef-library}.
 The \A{} Manual \cite{A-manual} specifies many standard items, called
 \emph{standard externals}, which should be available for the programmer. In
 this implementation most of them, but not all, are defined in the standard
@@ -2026,20 +2049,21 @@ arithmetic, while there are many additions. The complete list can be
 found in the \A{} standard library source of the implementation with
 extensive comments. A few of the standard library items are discussed below.
 
-\subsection{Stacks}
+\subsection{Stacks}\label{subsec:stdlib-stack}
 
 Calling \pp|unstack+st| discards the rightmost block of the stack \pp|st| by
 decreasing the actual upper bound of the stack by its \emph{calibre}.
-The calibre of the declared stack is used even if \pp|st| is a formal affix.
+The calibre of the declared stack is used even if \pp|st| is a formal affix
+with or without an explicit selector block.
 %
-The rule \pp|scratch+st| discards all elements of the stack \pp|st|, but
+The rule \pp|scratch+st| discards all elements of the stack \pp|st| but
 keeps the allocated memory. It is implemented by moving the upper bound of
 \pp|st| to its minimal value. The rule \pp|release+st| additionally releases
-the memory allocated to the stack \pp|st|, which will be reallocated again
+the memory allocated to the stack \pp|st|; physical memory will be reallocated again
 when \pp|st| is expanded. This rule replaces \pp|delete+st| from the Manual
-using the established terminology. Additional memory can be requested in
+using the more standard terminology. Additional memory can be requested in
 bulk by calling \pp|request space+st+n|. After a successful return the
-actual bounds do not change, but there are
+actual bounds of the stact \pp|st| do not change, but there are
 at least \pp|n| additional words of allocated memory above the top of
 \pp|st|. This rule fails if the requested additional memory is not available.
 
@@ -2058,9 +2082,9 @@ It is the counterpart of the {\sf C} function \pp|strncmp|.
 
 \subsection{File operations}
 
-Each \A{} file has an associated error code, and ecah file operation sets
+Each \A{} file has an associated error code, and each file operation sets
 this code. If the operation succeeds, the code is zero, otherwise it
-indicates the reason of the error.
+indicates the reason of the error. The function
 
 \pp|'f'get file error+""f+err>|
 
@@ -2068,13 +2092,13 @@ indicates the reason of the error.
 recovers the error code from file \pp|f|. It is zero if the last file
 operation preformed by \pp|f| succeeded. Otherwise it is either the
 \pp|errno| value set by the underlying {\sf C} or system file operation, or
-a value above 10000 when it was set by the \A{} file interface.
+is a value above 10000 when it was set by the \A{} file interface.
 
 \pp|'p'open file+""f+>mode+t[]+>p|
 
 \noindent
 opens a file and associates it with the \A{} file \pp|f|. The string given
-as the last two affixes specify the file name with possible path
+by the last two affixes specify the file name with possible path
 information. The \pp|mode| specifies how the file is opened; it is \pp|/r/|,
 \pp|/w/| or \pp|/a/| for reading, writing, and appending. Only character
 files can be opened for appending, for details see Section
@@ -2098,7 +2122,7 @@ the data file \pp|f|, aborting the program in case of an error (for example
 when a non-zero pointer data doesn't point into one of the lists specified
 in the declaration of \pp|f|). To handle errors use the predicate \pp|put
 datap+f+x+type| which fails in case of an error. The error code can be
-retrieved by \pp|get file error|,
+retrieved by \pp|get file error|.
 
 \pp|'a'close file+""f|
 
@@ -2147,19 +2171,19 @@ Section \ref{subsec:exit}. It can be written equivalently as the
 
 \smallskip
 
-The \pp|wait for| rule can be used to synchronize module initializations.
+The \pp|wait for+"xxx"| rule can be used to synchronize module initializations.
 The root of each module is executed before the root of the main program is
 called. The \pp|wait for+"xxx"| call checks whether all modules with name
 \pp|xxx| has finished executing their roots. If yes, it returns immediately.
-If not, calls those roots and waits until they return, see Section
+If not, calls those roots and waits until they return. For details see Section
 \ref{subsec:root-rule}.
 
 \smallskip
 
-The rule \pp|backtrack| prints out the complete call stack starting with the
-rule containing this call and ending with the program root if the \A{}
-program was linked with the \pp|-g| switch. Consult Section
-\ref{subsec:debug} from more details.
+If the \A{} program is linked with the \pp|-g| switch, the
+rule \pp|backtrack| prints out the complete call stack starting with the
+rule containing this call and ending with the program root.
+Consult Section \ref{subsec:debug} from more details.
 \ignore
 If the \A{} program is linked with the \pp|-g| switch, rules are modified to
 keep track of the caller--callee relation. When running a program linked
@@ -2181,8 +2205,8 @@ library rules
 \end{program}
 \noindent
 The first rule returns the hash of the string specified; the second rule
-computes the hash of a block of words starting at the element \pp|p| and ending at
-\pp|>>t| (the last element of the list \pp|t|). This hash serves only as a tool to
+computes the hash of a block of words starting at the list element pointed
+by \pp|p| and ending at \pp|>>t| (the last element of the list \pp|t|). This hash serves only as a tool to
 speed up checking whether two strings or two blocks are the same when
 many such comparisons should be made: they are definitely not equal if their
 hash is different.
@@ -2228,12 +2252,13 @@ or \pp|'module'|, where the latter one is followed by the \g{module string}
 which is the module name (as specified by the \pp|module| pragmat) in
 quotation marks. It is followed by the title as given by the \pp|title|
 pragmat, or \pp|"aleph"| if no title was specified. The target word size is the
-number of bits in an \A{} word, which is 32 for this implementation. The
+number of bits in an \A{} word, which is \pp|32| for this implementation. The
 next block of three items each assigns file names to line numbers for
 determining the 
-location in error and warning messages. Source lines are numbered consecutively
+location in an error or an warning message. Source lines are numbered consecutively
 starting from one, not resetting when opening a new source. This list
-contains the first and last number associated with a file. This way the
+contains, for each source file, the first and last number associated with
+that file. This way the 
 relative line number and corresponding file name appearing in error and
 warning messages can be determined from the line number only.
 
@@ -2274,7 +2299,7 @@ The \g{flags} entry is a decimal number which gives the following flags
 
 \g{Lineno} is an integer which defines the source line of the item for error
 reporting. \g{Type specific info} gives additional information for lists
-(\g{table}, \g{stack}, and their static versions) and rules. For lists this
+(\g{table}, \g{stack}, and their static versions) and \g{rule}s. For lists this
 part consists of two integers: calibre (block size), and the index of the
 standard selector (\pp|-1| if none, otherwise this number is at least 1).
 For rules the \g{type specific into} specifies the number of affixes
@@ -2643,7 +2668,7 @@ realized as a sequence of blocks of size \pp|1024*sizeof(int)|, and each block
 \smallskip
 
 \noindent
-In the bitmap part there is a signle indicator bit for each word of the
+In the bitmap part there is a single indicator bit for each word of the
 block at index
 $32\le \mbox{\tt i} \le 1023$. This bit is at word \pp|B[int(i/32)]| and
 bit position \pp|(i\&31)| where zero is the most significant bit and 31 is the
@@ -2838,10 +2863,10 @@ external declaration depends on the type of the defined tag.
 
 \subsubsection{External constant and variable}
 
-External constants cannot be used in expressions or other places where a 
-constant tag is required. In the {\sf C} external variables and constants 
-can appear as rule parameters; they are replaced by the string specified in 
-the \g{external declaration}.
+External constants cannot be used in expressions or other places where a
+constant tag is required. External variables and constants can appear as
+rule parameters; in the {\sf C} code they are replaced by the string
+specified in the \g{external declaration}.
 
 \subsubsection{External table and stack}
 
@@ -2850,13 +2875,13 @@ as explained in Section \ref{subsec:tables-stacks}. The string in the
 external declaration is used as the name of a {\sf C} procedure which is
 responsible for initializing this structure. The routine is called with
 three arguments: the index of the associated structure, a constant string
-with the name of the list, and the calibre.
-The routine must fill the actual and virtual limits and the calibre.
-There is a (relatively small) virtual address space set aside for external
-lists. The first free virtual address is in \pp|a\_extlist\_virtual|; the
-address can go up to \pp|max int|. The routine should update this value to
-reflect its reservation. The routine is also responsible for allocating memory
-and initializing the content of external tables.
+with the name of the list, and the calibre. The routine must fill in this
+structure the actual and virtual limits as well as the calibre. There is a
+(relatively small) virtual address space set aside for external lists. The
+first free virtual address is in \pp|a\_extlist\_virtual|; the address can
+go up to \pp|max int|. The routine should update this value to reflect its
+reservation. The routine is also responsible for allocating memory and
+initializing the content of external tables.
 
 \subsubsection{External files}
 
@@ -2867,6 +2892,31 @@ external declaration is used as the name of a {\sf C} procedure which is
 responsible for
 initializing the structure. The procedure is called with two arguments:
 the index of the structure and the name as a character string.
+
+\subsection{Assignment}\label{subsec:assignment}
+
+An \A{} \g{transput} has strict semantics: it is evaluated from left
+to right using the newly assigned values when necessary. The \g{transput}
+\begin{program}
+>>ST -> n -> ST[n]
+\end{program}
+
+\noindent
+sets first \pp|n| to the address of the top of the stack \pp|ST|, and then
+stores this value at the top element of \pp|ST|, using the newly assigned
+value of \pp|n|. The semantics of the corresponding {\sf C} construct
+\pp|ST->offs[n]=(n=ST->upb)| is \emph{undefined} as the {\sf C} compiler is
+free to choose the order in which the two sides of the assigment are
+evaluated. It can compute first the address of \pp|ST[n]|, and then execute
+the assignment to \pp|n|, or the other way around. To avoid the ambiguity,
+the \A{} compiler generates successive {\sf C} assignments, storing the
+source in a temporary place when any of the destinations is indexed. The
+genereted {\sf C} code for the above example is
+
+\begin{program}
+\{int tmp=ST->upb; n=tmp; ST->offs[n]=tmp;\}
+\end{program}
+ 
 
 \subsubsection{External rules}
 
@@ -2910,7 +2960,7 @@ parameter \pp|a\_divrem00| when no result is requested at all.
 
 The external rule strings \pp|@@make| and \pp|@@waitfor| are exceptions;
 these rules are handled internally by the linker when generating code for
-transput (assignment) and for the \pp|wait for| rule.
+transput (Section \ref{subsec:assignment}) and for the \pp|wait for| rule.
 
 If all out arguments of a function are discarded, then the rule is not
 called at all. Similarly, if the returned value of a question is not used,
