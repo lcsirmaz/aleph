@@ -28,7 +28,7 @@ $ BODY ******************************************************** $
 'pragmat'require=("tags","pragmats","display").
 
 
-'stack'[35] DICT.
+'stack'[35] DICT [].
 
 $ lastline*TTAG contains the last added line number defaults to -1
 $ tag line numbers are linked through entries in DICT.

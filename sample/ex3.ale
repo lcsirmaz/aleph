@@ -1,11 +1,11 @@
 $ symbolic differentiation, problem iii in "machine oriented
 $ languages bulletin", molb 3.1.2, (1973).
-'stack'[100](op,left,right)expr.
-'table'[]operator=("+":plus op,"-":min op,"*":tim op,"/":div op,
+'stack'[100](op,left,right)expr[].
+'table'operator[]=("+":plus op,"-":min op,"*":tim op,"/":div op,
      "log ": log op $ log(f) is represented as 0 "log" f $,
      "^": pow op ).
-'stack'[10]const=(0: c zero, 1: c one, 2: c two).
-'stack'[1]var=("x": x var).
+'stack'[10]const[]=(0: c zero, 1: c one, 2: c two).
+'stack'[1]var[]=("x": x var).
 'action'derivative+>e+de>-f-df-g-dg-n1-n2-n3:
    was+const+e, c zero->de;
    was+var+e,   c one->de;
@@ -59,18 +59,18 @@ $ print in simplified form
    simplify+e+e,print aux+e.
 'action'print aux+>e:
    was+const+e,out+const[e];
-   was+var+e,put string+STDOUT+var+e;
-   put char+STDOUT+/(/,
+   was+var+e,print string+var+e;
+   print char+/(/,
    (= op*expr[e] =
      [plus op;min op;tim op;div op;pow op],print aux+left*expr[e];+),
-   put string+STDOUT+operator+op*expr[e],
-   print aux+right*expr[e],put char+STDOUT+/)/.
+   print string+operator+op*expr[e],
+   print aux+right*expr[e],print char+/)/.
 $ print an integer in decimal form
 'action'out+>n-r:
-   n<0,put char+STDOUT+/-/,subtr+0+n+n,out+n;
-   divrem+n+10+n+r,add+r+/0/+r,(n=0;out+n),put char+STDOUT+r.
+   n<0,print char+/-/,subtr+0+n+n,out+n;
+   divrem+n+10+n+r,add+r+/0/+r,(n=0;out+n),print char+r.
 'action'line:
-   put char+STDOUT+newline.
+   print char+newline.
 $ derivating
 'root'-y1-y2:
    $ 1/x $ M+c one+div op+x var+y1,

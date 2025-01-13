@@ -51,7 +51,7 @@ $ BODY ********************************************************
 'pragmat'if=compile.
 'pragmat'require=("config","display").
 
-'stack'[1]REGISTER.
+'stack'[1]REGISTER[].
 $ a target word occupies one or more consecutive words in REGISTER
 $  the block is pointed by the *first* word in the block
 $  'read register' gets the address of the last word in the block

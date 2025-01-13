@@ -238,7 +238,7 @@ $        ^---- dict def col
 
 $ ************************************************************* 
 $ messages, errors, warnings $
-'table'[]MESSAGE=(
+'table'MESSAGE[]=(
   "too many errors, further messages are suppressed": too many errors,
   "internal error in rule %p%n"
   "   ***** Please report the offending program and the error. *****%n"

@@ -1,8 +1,8 @@
 $ version, general information
-'pragmat'module=config,title="config v2.1".
+'pragmat'module=config,title="config v2.2".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
 $
 $  (C) 2020-2024, L.Csirmaz
 $
@@ -20,7 +20,7 @@ $ *************************************************************
 
 $ HEADER ****************************************************** $
 'constant' version major = 2,
-           version minor = 1.
+           version minor = 2.
 'constant' target word size = 32,
            max string length=8192.
 'constant' path separator=/:/,            $ or /;/ for MS 

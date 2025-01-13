@@ -49,7 +49,7 @@ $ BODY ********************************************************
 'pragmat'require=("number","arithm","error","item","lexical","config").
 
 'variable'link expr=0. $ link all expressions
-'stack'[7]EXPRESSION.  $ store all expressions
+'stack'[7]EXPRESSION[].  $ store all expressions
 'a'push EXPR+>x: (* x->EXPRESSION *)EXPRESSION.
 
 'f'get item def+>item>:

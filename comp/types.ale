@@ -44,7 +44,7 @@ $ BODY ******************************************************** $
 
 'pragmat'require="buffer".
 
-'table'[]INDICATOR=(
+'table'INDICATOR[]=(
   "undefined"		:Iempty,
   "constant"		:Iconstant,
   "variable"		:Ivariable,

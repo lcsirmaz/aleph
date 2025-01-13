@@ -144,7 +144,7 @@ $    adm          zero, or pointer to LADM or LLOC
 $    lastline     the last source line, or -1 (directory)
 $    text         zero or pointer to DICT (directory)
 
-'stack'[40](left, right, adm, lastline, text ) TTAG = (
+'stack'[40](left, right, adm, lastline, text ) TTAG[] = (
  "" :first tag      ,(0*),         $ top of the search tree
 $ variable affixes
  "shiftaffixblock"  ,(0*):Pshift affx,
@@ -236,7 +236,7 @@ $    link:     next selector
 'stack'[39](next,scope,defline,flag,type,repr,adm,tag)  $ tag $
            (#,#,#,#,                dpos,dnum,adm,tag)  $ macro rule entry
            (#,#,#,#,#,               alen,awidth,link)  $ affix list header
-           LADM = (
+           LADM[] = (
 $         flag       type       tag
   (0,0,-2,tpermanent,Itable,0,0,Pstdstr)    :Xstring table,
   (0,0,-2,tpermanent,Irule, 0,0,Proot)      :Xroot,
@@ -253,7 +253,7 @@ $   flag:    used in later rounds
 $   ftype:   formal type, Ilocal, Ilabel
 $   repr:    first pass: content of old adm*TTAG
 $   ttag:    pointer to TTAG (for error messages)
-'stack'[2]( calibre,ssel,flag,ftype,repr,ttag)LLOC.
+'stack'[2]( calibre,ssel,flag,ftype,repr,ttag)LLOC[].
 
 'a'create local affix+>type+>tag:
   (* type->ftype,tag->ttag,0->calibre->ssel->flag->repr *)LLOC.

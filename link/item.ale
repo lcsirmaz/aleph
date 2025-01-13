@@ -114,7 +114,7 @@ $ BODY *************************************************** $
 'pragmat'require=("lexical","input","error","config").
 
 $ ITEM stack --------------------------------------------- $
-'stack'[20](flag,type,scope,tag,lineno,adm,repr)ITEM.
+'stack'[20](flag,type,scope,tag,lineno,adm,repr)ITEM[].
 $
 $ type:  Irule      adm => AUX(formals)
 $        variable   adm => expression (to be evaluated)
@@ -211,7 +211,7 @@ $
            (#,#,#,            minn,maxn,link)
            (#,#,#,           scope,item,link)
            (#,#,#,           count,tble,data)
-           (#,#,#,#,#,                   AUX)AUX.
+           (#,#,#,#,#,                   AUX)AUX[].
 
 'a'push AUX+>x: (* x->data *)AUX.
 

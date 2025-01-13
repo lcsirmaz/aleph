@@ -81,7 +81,7 @@ $ symbols
 $ BODY ********************************************************
 'pragmat'if=compile.
 
-'table'[]DSYMB=( $ disk symbols
+'table'DSYMB[]=( $ disk symbols
 $ maintain proper line numbering
   "%n"		:Dline,		"%n%n"        :Dlines, 
   "@"		:Danchor,	"&"           :Dand,
@@ -211,7 +211,7 @@ $   values are correct.)
   Qposition=0,	$ disc position we are looking at
   Qlinenum=0.	$ next line number to be restored
 
-'stack'[1] QBUFFER. $ replacement text is stored here
+'stack'[1] QBUFFER []. $ replacement text is stored here
 'variable'
   Qbuffer ptr=0,$ where to read from QBUFFER
   Qshift=0,	$ LLOC pointers are shifted by this amount

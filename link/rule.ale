@@ -44,7 +44,7 @@ $  lower bounds increasing; lw, up are registers.
 $  (lw,up) of the head is ignored
 $  if the last zone succeeds, mark this node as nzone (no jump)
 $
-'stack'[1](lw,up,next)ZONE.
+'stack'[1](lw,up,next)ZONE[].
 
 'a'find interval pair+>set+>up-ni:
    $ up >= up*ZONE[set]; drop intervals until up
@@ -137,7 +137,7 @@ $   fnext,tnext: false, true node number (0: none, -1: true, -2: false)
 $   hash: for a rule, the hash of affixes
 $   adm:  pointer to the affixes if hashes are equal
 
-'stack'[10](hash,flag,tag,adm,fnext,tnext)NODE.
+'stack'[10](hash,flag,tag,adm,fnext,tnext)NODE[].
 
 'constant' $ node flags $
   nrule		= 0x0001, $ node

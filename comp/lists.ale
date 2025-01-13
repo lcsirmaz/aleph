@@ -63,24 +63,25 @@ $ ======================================================== $
    $ the list qualifier,tag,calibre and standard selector
 
 'table'MESSAGE=(
-"%p: selector lists calibre mismatch"  :different calibre,
-"%p: selector list syntax error"       :wrong selector,
-"%p: selector tag expected"            :selector tag expected,
-"%p: list tag is missing"              :list tag missing,
-"%p: syntax error in size estimator"   :wrong size estimator,
+"%p: selector lists calibre mismatch"	:different calibre,
+"%p: selector list syntax error"	:wrong selector,
+"%p: selector tag expected"		:selector tag expected,
+"%p: list tag is missing"		:list tag missing,
+"%p: syntax error in size estimator"	:wrong size estimator,
 
-"%p %p: only one * in a filling block" :only one repeater,
-"%p %p: in filling selector expected"  :filling selector expected,
-"%p %p: filling block syntax"          :filling list expected,
-"%p %p: syntax error in filling"       :error in filling,
+"%p %p: only one * in a filling block"	:only one repeater,
+"%p %p: in filling selector expected"	:filling selector expected,
+"%p %p: filling block syntax"		:filling list expected,
+"%p %p: syntax error in filling"	:error in filling,
 "%p %p: repeat constant %d out of range (1..%d)":repeat constant out of range,
-"%p %p: no repeat for a string"        :no string repeat,
-"%p %p: repeat constant expected"      :repeat constant expected,
-"%p %p: missing tag after :"           :missing tag initializer,
+"%p %p: no repeat for a string"		:no string repeat,
+"%p %p: repeat constant expected"	:repeat constant expected,
+"%p %p: missing tag after :"		:missing tag initializer,
 
-"external %p %p: missing string"       :no external string,
-"mixing %p declaration and prototype"  :mixing proto,
+"external %p %p: missing string"	:no external string,
+"mixing %p declaration and prototype"	:mixing proto,
 $ warning $
+"%p declaration syntax error"		:list declaration error,
 "%p: size estimator %d is out of allowed range" :size estimator range
 
 ).
@@ -117,7 +118,9 @@ $ size estimator: [XXX] or [=XXX=]
 'p'size estimator+etype>+eqf>+esize>:
    $ estimate:   []    [number] [=number=] [qtag] [=qtag=]
    $ etype:       0     1        2          3      4
-   R+Ssub,(ltype=Itable,0->etype->eqf->esize,must+Sbus;
+   R+Ssub,(
+     ltype=Itable,0->etype->eqf->esize,must+Sbus,
+       error+list declaration error+ltype; $ warning+8+
      (R+Sbox,1->etype;0->etype),
        (is number+#+esize,0->eqf,incr+etype,
           (=esize=
@@ -250,49 +253,63 @@ $ after 'external'<TYPER>  <fields> tag = "string"
 
 $ <TYPER><fields>tag=      fill
 $ <TYPER><fields>tag       prototype
+$ <TYPER><fields>tag[]     declaration
 $     ext: 0/3 prototype, 0/4 fill
 'a'prototype or fill+>dl+>ext>-err:
    get list tag+err,
-   (is+err,skip all;
+     (is+err,skip all;prototype or fill body+dl+ext).
+'a'prototype or fill body+>dl+>ext>:
     R+Sequals,(ext=3,error+mixing proto+ltype,skip all;
                4->ext,list fill);
     ext=4,must+Sequals,list fill;
-    3->ext,list prototype+dl).
+    3->ext,list prototype+dl.
 
-$ 'stack'[](fields) tag with size estimato
-$ 'table'[](fields) tag
+$ 'stack'[](fields)[]tag with size estimator
+$ 'table'(fields)[]tag
 'a'declarer+>dl+>etype+>eqf+>esize-err-res:
    get list tag+err, $ read selectors
-   (is+err,skip all; $ error
+     (is+err,skip all;declarer body+dl+etype+eqf+esize).
+'a'declarer body+>dl+>etype+>eqf+>esize-res:
+    (R+Ssub,must+Sbus;error+list declaration error+ltype),
     create tag definition+lqf+ltag+ltype+dl+res,
-       create list extension+res+lcalibre+lssel,
-       set tag flag+res+tdefined,check tag definition+res,
-       D+Dlist,Dtag+res,Dcons+etype,
-       (=etype= [0],+;[1;2],Dcons+esize;Dqtag+eqf+esize),
-       dump temp selectors+lcalibre+lssel,
-       D+Dpoint,
-       (R+Sequals,list fill;+)).
+    create list extension+res+lcalibre+lssel,
+    set tag flag+res+tdefined,check tag definition+res,
+    D+Dlist,Dtag+res,Dcons+etype,
+    (=etype= [0],+;[1;2],Dcons+esize;Dqtag+eqf+esize),
+    dump temp selectors+lcalibre+lssel,
+    D+Dpoint,
+    (R+Sequals,list fill;+).
     
 $ 'x''stack'<fields>tag=    external declaration
-$ 'stack'[]<fields>tag      declaration
-$ 'stack'[]<fileds>tag=     declaration+fill
+$ 'stack'[]<fields>[]tag    declaration
+$ 'stack'[]<fileds>[]tag=   declaration+fill
 $ 'stack'<fields>tag        prototype
 $ 'stack'<fileds>tag=       fill
+$ 'table'<fields>[]tag      declaration
+$ 'table'<fields>[]tag=     deflaration+fill
+$ 'table'<fields>tag        prototype
+$ 'table'<fields>tag=       fill
 $  ext=1: external;
-$  0/2: declarer with size estimator
+$  0/2: declarer
 $  0/3: prototype  (no size estimator)
 $  0/4: fill       (no size estimator)
-'a'declaration+>ext>-l-etype-eqf-esize:
+'a'declaration+>ext>-l-etype-eqf-esize-err:
    get linenum+l,
      (ext=1,external declarer+l;
+      ext=2,(size estimator+etype+eqf+esize,declarer+l+etype+eqf+esize;
+             ltype=Itable,declarer+l+0+0+0;
+             error+mixing proto+ltype,skip all);
       size estimator+etype+eqf+esize,
-        (ext>=3,error+mixing proto+ltype,skip all;
-         2->ext,declarer+l+etype+eqf+esize);
+        (ext=0,2->ext,declarer+l+etype+eqf+esize;
+         error+mixing proto+ltype,skip all);
       $ no size estimator
-      ext=2,error+mixing proto+ltype,skip all;
+      ext=0,get list tag+err,
+        (is+err,skip all;
+         (ltype=Itable,ahead+Ssub),2->ext,declarer body+l+0+0+0;
+         prototype or fill body+l+ext);
       prototype or fill+l+ext).
 
-$ ext changes reflecting thw type
+$ ext changes reflecting the declaration
 'a'declaration series+>ext+>typer:
    typer->ltype,declaration+ext,
       (nxt:R+Scomma,declaration+ext,:nxt;

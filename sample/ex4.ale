@@ -33,6 +33,6 @@ $
 
 'f'random+>lb+>up+v>: add+lb+up+v,div+v+2+v.
 
-'stack'[]A=(/3/,/1/,/4/,/7/,/5/,/3/,/2/).
+'stack'[]A[]=(/3/,/1/,/4/,/7/,/5/,/3/,/2/).
 'root'quicksort+<<A+>>A+A,put line+STDOUT+A+newline.
 

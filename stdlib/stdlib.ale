@@ -2,9 +2,9 @@ $ standard ALEPH library
 'pragmat' module=stdlib.
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.3)
 $
-$  (C) 2020-2024, L.Csirmaz
+$  (C) 2020-2025, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -80,11 +80,25 @@ $ *************************************************************
 'a'put line+""f+t[]+>ch.	$ aleph-stdputline
 'a'put string+""f+t[]+>ptr.	$ aleph-stdputstring
 'a'put as string+""f+t[]+>ptr.	$ aleph-stdputasstring
+'a'printf+t[]+@+>ptr.		$ aleph-stdformatprint
+'a'fprintf+""f+t[]+@+>ptr.	$ aleph-stdformatprint
 'p'get int+""f+n>.		$ aleph-stdgetint
 'p'get line+""f+[]st[]+ctrl>.	$ aleph-stdgetline
 'a'wait for+t[]+>p.		$ aleph-stdwait
 'charfile'STDIN.		$ aleph-stdin
 'charfile'STDOUT.		$ aleph-stdout
 $ *************************************************************
-
+'pragmat'macro=(
+   $ rules for STDIN and STDOUT 
+   getc,putc,print char,print string,
+   $ alias
+   fgetc,fputc,fprint char,fprint string).
+'p'getc+c>:		get char+STDIN+c.
+'p'fgetc+""f+c>:	get char+f+c.
+'a'putc+>c:		put char+STDOUT+c.
+'a'fputc+""f+>c:	put char+f+c.
+'a'print char+>c:	put char+STDOUT+c.
+'a'fprint char+""f+>c:	put char+f+c.
+'a'print string+t[]+>p: put string+STDOUT+t+p.
+'a'fprint string+""f+t[]+>p: put string+f+t+p.
 'end'

@@ -37,8 +37,8 @@ $ BODY ********************************************************* $
   "symbol %p is expected after %p" :expected after,
   "tag expected after %p"          :tag expected after,
   "tag expected"                   :tag expected,
-$  "cannot call %p"                 :cannot call,
   "source or tag expected"         :source or tag expected,
+  "use (* .. *) for extensions"    :extension syntax,
   "in extension selector expected" :selector tag expected,
   "after extension tag expected"   :stack tag expected,
   "wrong affix form"               :wrong affix form,
@@ -279,7 +279,8 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
                 is+simple,extension+qf+tag;
                 compound member);
             compound member);
-   ahead+Sasterisk,skip over extension+0+qf+tag+#+err,
+   ahead+Sasterisk,warning+8+extension syntax,
+          skip over extension+0+qf+tag+#+err,
           (is+err;extension+qf+tag);
    peek after source+tag+err,
           (is+err;is+tag,special affix form+tag;affix form).

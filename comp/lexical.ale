@@ -79,14 +79,14 @@ $ *************************************************************
 'charfile' SOURCE=>"<<stdin>>".	$ input file
 
 $ stacks for strings
-'stack'[16] LEXT =(
+'stack'[16] LEXT[] =(
   ""		:Squote image   $ empty string
 ).
 
 $ ************************************************************* 
 
 $ Symbol names $
-'table'[]SPECIAL =
+'table'SPECIAL[] =
 ("<dummy>"      :Sdummy symb,     "'end'"        :Sendsymb,
  "'action'"     :Saction,         "'function'"   :Sfunction,	
  "'predicate'"  :Spredicate,      "'question'"   :Squestion,
@@ -265,10 +265,9 @@ $ COMPOSITE SYMBOLS *******************************************
   char=/>/, next char, Scalibre->x;
   Svlwb->x.
 'a'read minus+x>:
-  $ look ahead after -: ->, -=, -123
+  $ look ahead after -, ->, -123
   =char=
   [/>/], next char, Sarrow->x;
-  [/=/], next char, Snot equal->x;
   read minus with spaces+x.
 'a'read minus with spaces+x>:
   $ look ahead after - skipping spaces
@@ -281,7 +280,6 @@ $ CONSTANTS ***************************************************
 'a'read zero+>sign+x>:
   $ we are after a zero
   =char=
-  [/ /], next char, :read zero; $ skip spaces
   [/0/:/9/], read const+sign+x; $ a constant
   [/x/;/X/], next char, read hex+sign+x;
   get number zero+x.
@@ -357,7 +355,7 @@ $ COMMENTS ****************************************************
 
 $ BOLD SYMBOLS ************************************************ 
 $ allowed bold symbols are stored in a binary search table
-'table'[](left,right,adm)BOLD =
+'table'(left,right,adm)BOLD[] =
 ("a"           :B1        ,(   0,   0,Saction    ),
  "act"         :B2        ,(  B1,  B3,Saction    ),
  "action"      :B3        ,(   0,   0,Saction    ),

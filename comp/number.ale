@@ -51,7 +51,7 @@ $ BODY ******************************************************** $
 'variable'last digit=0. $ the last digit value in decimal repr.
 'variable'zero ptr=0.   $ target zero
 
-'stack'[2]NUMBER.
+'stack'[2]NUMBER[].
 
 'table'MESSAGE=(
    "integer denotation is out of range": number overflow,

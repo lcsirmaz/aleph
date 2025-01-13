@@ -1,5 +1,5 @@
 $ towers of hanoi $
-'charfile'print="output">.
+'charfile'print="output.txt">.
 'action'move tower+>length+>from+>via+>to:
    length=0;
    decr+length,move tower+length+from+to+via,

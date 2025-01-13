@@ -32,7 +32,7 @@ $ BODY ************************************************* $
 'pragmat'if=compile.
 'pragmat'require=("input","lexical","item","target").
 
-'table'[]MESSAGE=(
+'table'MESSAGE[]=(
   "too many errors, further messages are suppressed" :too many errors,
   "internal error at rule "   :fatal head,
   ", aborted"                 :fatal tail,

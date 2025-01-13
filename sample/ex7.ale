@@ -1,6 +1,6 @@
 $ formula manipulation $
 'variable'buff=/ /.
-'stack'[=100=](ch,p)opt=((/+/,3),(/-/,3),(/*/,4),(///,4),(/^/,5)).
+'stack'[=100=](ch,p)opt[]=((/+/,3),(/-/,3),(/*/,4),(///,4),(/^/,5)).
 
 'pred'next+>n:buff=n,next symbol.
 'pred'letter+l>:=buff= [/a/:/z/;/A/:/Z/],buff->l,next symbol;-.
@@ -8,12 +8,10 @@ $ formula manipulation $
    get char+STDIN+buff,(buff=/ /,:next symbol;+);
    -1->buff.
 'a'instructions:
-   message+"Computing inverse Polish notation",
-   message+"Type a formula using letters, brackets, operators:",
-   message+" +, -, *, /, and ^; empty line to quit.".
-'a'message+t[]+>ptr:
-   put string+STDOUT+t+ptr,out+newline.
-'a'out+>n:put char+STDOUT+n.
+   printf+"Computing inverse Polish notation%n"
+          "Type a formula using letters, brackets, operators:%n"
+          " +, -, *, /, and ^; empty line to quit.%n".
+'a'out+>n:print char+n.
 'pred'optor+>prio+op>+p>-i:
    >>opt->i,
    (nxt: <<opt>i,-;
@@ -21,16 +19,16 @@ $ formula manipulation $
         p*opt[i]->p,next symbol;
     previous+opt+i,:nxt).
 'a'operand-l:
-   next+/(/,form+0,(next+/)/;message+" ) expected",exit+1);
+   next+/(/,form+0,(next+/)/; printf+" ) expected%n",exit+1);
    letter+l,out+l;
-   message+" operand (a letter) expected",exit+2.
+   printf+" operand (a letter) expected%n",exit+2.
 'a'form+>prio:
    operand,(nxt-op-p:
      optor+prio+op+p,incr+p,form+p,out+op,:nxt;
      +).
 'a'inverse polish:
    buff=newline;
-   form+0,out+newline,(buff=newline;message+"extra characters",exit+3),
+   form+0,out+newline,(buff=newline;printf+" extra characters%n",exit+3),
      $ next round
      out+/>/,out+/ /,next symbol,:inverse polish.
 

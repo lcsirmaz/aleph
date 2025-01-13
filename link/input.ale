@@ -54,7 +54,7 @@ $ BODY ************************************************ $
 ).
 
 
-'stack'[1](flags,count,path)FILES.
+'stack'[1](flags,count,path)FILES[].
 $ populate FILES as the sources are read. Files containing 'include'
 $   lines replace the top FILES entry and add additional entries.
 $   'include' files cannot be embedded (it won't be the top file).

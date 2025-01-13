@@ -24,8 +24,8 @@ $ HEADER ****************************************************** $
 'a'extend RULE+>flag+>data: (* flag->flag,data->data*)RULE.
 $ BODY ******************************************************** $
 'pragmat'if=compile.
-'stack'[1]BUFFER,
-       [1](flag,data)RULE.
+'stack'[1]BUFFER[],
+       [1](flag,data)RULE[].
 
 'root'+.
 'pragmat'endif=compile.

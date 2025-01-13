@@ -10,3 +10,4 @@ $ aleph standard files
 'include' "aleph-stdin"
 'include' "aleph-stdarg"
 'include' "aleph-stdout"
+'include' "aleph-stdformatprint"

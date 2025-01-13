@@ -64,7 +64,7 @@ $ BODY ******************************************************** $
 'pragmat'if=compile.
 'pragmat'require=("error","item","number").
 
-'stack'[2]BUFFER.
+'stack'[2]BUFFER[].
 'a'extend BUFFER+>x: (* x->BUFFER *)BUFFER.
 
 'variable'inpt=0,inpt value=0,source line=1.
@@ -152,9 +152,9 @@ $   of this tag (global definitons are unique).
 'variable'
   HASH size=HASH increment-1, $current HASH size $
   HASH entries=1.       $ string entries in LEXT table
-'stack'[20](next,def)LEXT=
+'stack'[20](next,def)LEXT[]=
   (""      ,(0,0):Squote image).
-'stack'[2]HASH.
+'stack'[2]HASH[].
 
 'f'get tag data+>tag+def>:   def*LEXT[tag]->def.
 'f'get tag image+>tag+ptr>:  subtr+tag+<>LEXT+ptr.
@@ -208,7 +208,7 @@ $   of this tag (global definitons are unique).
 
 $ BOLD ************************************ $
 
-'table'[]BOLD = (
+'table'BOLD[] = (
  "area"		:Darea:first BOLD,
  "back"		:Dbackmatter,
  "box"		:Dbox,

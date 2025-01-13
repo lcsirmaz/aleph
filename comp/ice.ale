@@ -50,7 +50,7 @@ $ messages ---------------------------------------------------- $
 ).
 $ stacks ------------------------------------------------------ $
 $ no actual memory is needed, only the virtual space is used
-'stack'[10]NODE.
+'stack'[10]NODE[].
 
 $ ice file ==================================================== $
 'charfile' ICE="aleph.ice">.

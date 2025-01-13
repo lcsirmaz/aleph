@@ -138,7 +138,7 @@ $     if in=out, return false (nothing is in RESTORE)
 $     advance out, and set inpt from RESTORE
 $      if not "do restore", decrease restore count
 
-'stack'[=restore size=]RESTORE=(0*restore size).
+'stack'[=restore size=]RESTORE[]=(0*restore size).
 
 'table'MESSAGE=(
  "symbol %p is inserted"                    :inserted,

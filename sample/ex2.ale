@@ -2,7 +2,7 @@ $ towers of hanoi, full printing of the towers
 $ when linked with -g the "backtrack" rule prints out the
 $          the complete call stack
 
-'stack'[1]A,[1]B,[1]C.
+'stack'[1]A[],[1]B[],[1]C[].
 'constant'total=4.
 'pragmat'macro=(print disc,full disc).
 
@@ -14,10 +14,10 @@ $          the complete call stack
 'action'disc+[]from[]+[]to[]:
    (*from->to*)to, unstack+from.
 'action'print towers-row:
-   total->row,put char+STDOUT+newline,
+   total->row,print char+newline,
    (nxt: row=0;
          decr+row,print disc+A+row, print disc+B+row,
-           print disc+C+row,put char+STDOUT+newline, :nxt).
+           print disc+C+row,print char+newline, :nxt).
 'action'print disc+st[]+>row-idx:
    add+row+<<st+idx,
      (was+st+idx,full disc+st[idx];empty disc).
@@ -28,7 +28,7 @@ $          the complete call stack
 'action'empty disc:
    print chars+total+/ /,print chars+1+/*/,print chars+total+/ /.
 'action'print chars+>n+>chr:
-   n=0;put char+STDOUT+chr,decr+n,:print chars.
+   n=0;print char+chr,decr+n,:print chars.
 'root'-n:
    total->n,
      (fill: n=0; (*n->A*)A,decr+n,:fill),

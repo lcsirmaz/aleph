@@ -218,7 +218,7 @@ void a_packstring(int F1,int F2,int F3){
    }
    width /= sizeof(int);
    int *goal=a_extension(F3,width);
-   char *chr=(char*)goal;len=0;
+   char *chr=(char*)goal;goal[width-3]=0;len=0;
    for(i=0;i<F2;i++){
      if(ptr[i]<0||ptr[i]>0x110000) continue;
      len++;

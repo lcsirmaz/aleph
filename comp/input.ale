@@ -88,7 +88,7 @@ $   the implicit qualifier
 ).
 
 $ sources 
-'stack'[1](type,rank,parent,module=flag,nmin,nmax,string)INPUT=(
+'stack'[1](type,rank,parent,module=flag,nmin,nmax,string)INPUT[]=(
   (csource ->type,srchead->parent,0->module->rank,-1->nmin->nmax,0->string):srchead,
   (clibrary->type,libhead->parent,0->module->rank,-1->nmin->nmax,0->string):libhead,
   (cstdlib ->type,stdhead->parent,0->module->rank,-1->nmin->nmax,0->string):stdhead
@@ -118,7 +118,7 @@ $ string:    LEXT link of the file
   cpath mask   = 0x08,      $ don't use path 0/1
   ccmd flag    = ccomp mask|cpath mask. $ command line argument flag
 
-'stack'[1](next,base,rank)RANK.
+'stack'[1](next,base,rank)RANK[].
 $ The directed graph among all bases is defined as follows:
 $  B -> D if there is a require="D" pragmat in base B. 
 $  The rank is the length of the shortest directed path from B to D

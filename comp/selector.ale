@@ -48,7 +48,7 @@ $ BODY ********************************************************* $
 'pragmat'require=("display","tags","disc").
 
 $ temporary selectors. Used for formal affixes and in first pass
-'stack'[1](list,sel,offset) TMPSEL.
+'stack'[1](list,sel,offset) TMPSEL [].
 
 'a'reset temp selector stack:
    scratch+TMPSEL.
