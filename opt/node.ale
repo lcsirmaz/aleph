@@ -1,0 +1,178 @@
+$ node.ale
+'pragmat'module=item,title="optimizer node v2.2".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ *************************************************************
+
+$ HEADER ************************************************* $
+$ This optimization replaces identical nodes by a single
+$ instance. The same optimization is also done by the linker.
+$ One can try to rearrange the nodes for a more favorable
+$ execution order.
+
+'a'start rule+>cnt,	$ start a new rule
+   start node+>type+>no,$ start a new node
+   enter node.		$ finish the node, store it
+'a'NN+>inpt+>v,N+>inpt.	$ store node content
+
+'a'dump rule.		$ write the optimized rule
+
+$ BODY *************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("error","lexical").
+
+'stack'[10](type,repr,same,len,hash,link,fl,tl)NODE[].
+'stack'[10]AUX[].
+
+'variable'
+    nnode=0,	$ code counter, starts at 1
+    thisnode=0,	$ actual node pointer
+    xnode=0.	$ the new node number
+'constant'nonode=-1000. $ a no node value
+
+'a'push AUX+>x:
+   (* x->AUX *)AUX.
+
+'a'start rule+>cnt: $ number of nodes in this rule, can be zero
+    scratch+NODE,scratch+AUX,0->nnode,<<NODE->thisnode,(nxt:
+      cnt<=0;
+      (* 0->type->repr->same->len->hash->link,nonode->fl->tl *)NODE, decr+cnt,:nxt).
+'q'same content+>p1+>p2-cnt: $ body of nodes are equal
+    type*NODE[p1]=type*NODE[p2],
+    len*NODE[p1]=len*NODE[p2],
+    len*NODE[p1]->cnt,link*NODE[p1]->p1,link*NODE[p2]->p2,
+    (nxt:cnt<0;AUX[p1]=AUX[p2],incr+p1,incr+p2,decr+cnt,:nxt).
+
+'a'start node+>type+>cnt: $ start next node, its given number is in cnt
+    incr+nnode,
+    (nnode=cnt;corrupt ice file+_rule_),
+    (thisnode<=>>NODE;corrupt ice file+_rule_),
+    push AUX+0, $ start of node content
+    type->type*NODE[thisnode],cnt->repr*NODE[thisnode],
+    >>AUX->link*NODE[thisnode].
+'a'NN+>x+>y: $ copy the next entry to AUX
+    =x=
+    [Titem;Tconst;Tlocal;Tformal;TTnum],
+       push AUX+x,push AUX+y;
+    [Tnode],corrupt ice file+_rule_;
+    [Dout], (=type*NODE[thisnode]=
+             [Dbox],push AUX+x,push AUX+y;
+             [Dextension],(tl*NODE[thisnode]=nonode,y->tl*NODE[thisnode];
+                           corrupt ice file+_rule_);
+             $[Dnode]$    (fl*NODE[thisnode]=nonode,y->fl*NODE[thisnode];
+                           tl*NODE[thisnode]=nonode,y->tl*NODE[thisnode];
+                           corrupt ice file+_rule_));
+    corrupt ice file+_rule_.
+'a'N+>x:    $ copy the next entry to AUX
+    push AUX+x.
+'a'enter node-ptr:
+    $ checking that the next node number is there
+    (type*NODE[thisnode]=Dbox; 
+     tl*NODE[thisnode]!=nonode;
+     corrupt ice file+_rule_),
+    $ computing the hash and number of items in AUX
+    subtr+>>AUX+link*NODE[thisnode]+len*NODE[thisnode],
+    block hash+AUX+link*NODE[thisnode]+hash*NODE[thisnode],
+    $ check if it has the same body as some previous node
+    thisnode->ptr,previous+NODE+ptr,(nxt:
+      ptr<<<NODE; $ not the same
+      same content+ptr+thisnode,
+$ DEBUG, can be deleted
+         (same*NODE[ptr]=0;internal error+_rule_),
+         thisnode->same*NODE[ptr],
+         unstack to+AUX+link*NODE[thisnode],unstack+AUX,
+         link*NODE[ptr]->link*NODE[thisnode];
+      previous+NODE+ptr,:nxt),
+    next+NODE+thisnode.
+
+$ ======================================================================
+$ the same*NODE field links identical nodes increasingly
+$ if ptr1<ptr2 are identical and have the same fl and tl fields, then
+$  ptr2 is replaced by ptr1; ptr2 is unlinked from the "same" list
+$
+'f'get node repr+>num+repr>:
+    num<=0,num->repr;
+    decr+num,mult+num+<>NODE+num,add+num+<<NODE+num,
+      repr*NODE[num]->repr.
+'a'replace node+>n1+>n2-ptr-oldn-newn:
+$ DEBUG, can be deleted
+    (n1<n2;internal error+_rule_),
+    repr*NODE[n2]->oldn,repr*NODE[n1]->newn->repr*NODE[n2],
+    1->hash*NODE[n2], $ node n2 is deleted, unlink from the chain
+    n1->ptr,(nxt:ptr=0,internal error+_rule_;
+                 same*NODE[ptr]=n2,same*NODE[n2]->same*NODE[ptr];
+                 same*NODE[ptr]->ptr,:nxt),
+    $ replace all oldn node numbers with repr*NODE[n1]
+    <<NODE->ptr,(nxt:
+      ptr>>>NODE;
+      (fl*NODE[ptr]=oldn,newn->fl*NODE[ptr];+),
+      (tl*NODE[ptr]=oldn,newn->tl*NODE[ptr];+),
+      next+NODE+ptr,:nxt).
+
+'p'check node+>node-n2: $ check if something later is equal to this node
+    same*NODE[node]->n2,
+    (nxt: n2=0,-;
+          (fl*NODE[node]=fl*NODE[n2],tl*NODE[node]=tl*NODE[n2]),
+                 replace node+node+n2;
+          same*NODE[n2]->n2,:nxt).
+
+'a'replace all-node:
+    <<NODE->node,(nxt:
+       node>>>NODE; $ done
+       check node+node,:replace all; $ restart from the beginning
+       next+NODE+node,:nxt).         $ check next
+
+'a'renumber nodes-node: $ give new repr values
+   <<NODE->node,0->xnode,(nxt:
+     node>>>NODE;
+     hash*NODE[node]=0, $ it is kept, put the new value
+        incr+xnode,xnode->repr*NODE[node],next+NODE+node,:nxt;
+     $ otherwise store the new repr of the replaced node
+     get node repr+repr*NODE[node]+repr*NODE[node],
+        next+NODE+node,:nxt).
+
+$ ================================================================
+$ write the optimized rule. Keep the original order of the nodes
+$
+'a'dump AUX+>ptr+>cnt-x:
+    incr+ptr, $ this is zero
+    (nxt:cnt<=0;
+         AUX[ptr]->x,incr+ptr,decr+cnt, (=x=
+         [Titem;Tconst;Tlocal;Tformal;TTnum],
+             WW+x+AUX[ptr],incr+ptr,decr+cnt,:nxt;
+         [Dout],get node repr+AUX[ptr]+x,WW+Dout+x,incr+ptr,decr+cnt,:nxt;
+         W+x,:nxt)).
+'a'dump rule-ptr-r:
+    $ clear the hash field, now it indicates whether the node is deleted
+    <<NODE->ptr,(nxt:ptr>>>NODE;0->hash*NODE[ptr],next+NODE+ptr,:nxt),
+    replace all,renumber nodes,
+    WW+Tconst+xnode,
+    <<NODE->ptr,(nxt:
+     ptr>>>NODE,W+Dpoint,W+Dnewline;
+     is+hash*NODE[ptr],next+NODE+ptr,:nxt;
+     W+type*NODE[ptr],WW+Tnode+repr*NODE[ptr],
+       dump AUX+link*NODE[ptr]+len*NODE[ptr],
+       (fl*NODE[ptr]=nonode;get node repr+fl*NODE[ptr]+r,WW+Dout+r),
+       (tl*NODE[ptr]=nonode;get node repr+tl*NODE[ptr]+r,WW+Dout+r),
+       W+Dcomma,
+       next+NODE+ptr,:nxt).
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+

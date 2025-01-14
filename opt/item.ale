@@ -1,0 +1,433 @@
+$ item.ale
+'pragmat'module=item,title="optimizer item v2.2".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ *************************************************************
+
+$ HEADER *********************************************** $
+$ item flags $
+'constant'
+  tpublic	= 0x0004, $ public 
+  timported	= 0x0008, $ imported
+  texternal	= 0x0010, $ external
+$ rule flags
+  rside effect	= 0x0100, $ 'a','p'
+  rcan fail	= 0x0200, $ 'q','p'
+  rno return	= 0x0400, $ 'e'
+  rempty        = 0x4000, $ empty body
+  rvararg	= 0x8000, $ has formal @
+  routvararg	=0x10000, $ has out formal vararg
+  rtrace      =0x1000000, $ trace=on, print when enter the rule
+  rcount      =0x2000000, $ count=on, profiling
+  rbounds     =0x4000000, $ bound checks
+  rtype		=rside effect|rcan fail|rno return,
+$ not in the ICE file:
+  Mdone		= 0x0040, $ item is traversed
+  Mrequested	= 0x0080. $ item requested
+  
+'q'is item flag+>item+>flag.
+
+'stack'(flag,type,scope,tag,lineno,adm,repr)ITEM.
+
+'f'convert to item+>val>.
+'f'get item repr+>item+repr>.
+
+'a'head section,item section,data section,rule section.
+'a'copy head section,copy item section,copy data section,
+   copy rule section.
+'a'traverse items.
+
+'variable'node optimization.
+
+$ BODY *************************************************** $
+'pragmat'if=compile.
+
+'pragmat'require=("error","lexical").
+
+$ ITEM stack --------------------------------------------- $
+'stack'[20](flag,type,scope,tag,lineno,adm,repr)ITEM[].
+$
+$ type:  Irule
+$        variable
+$        list
+$        pointer
+$        file
+$ scope: LEXT entry, the qualifier (can be Squote image)
+$ tag:   LEXT entry; data*tag is the global definition
+$ lineno:definition line in this module 
+$ repr:  the new serial number
+$ adm:   AUX pointer for pulled items
+$
+
+$ AUX stack ---------------------------------------------- $
+$ store pulled items
+'stack'[10](item,link)AUX[].
+
+$ item pulls new, add to its list
+'q'is pulled item+>item+>new-link:
+    adm*ITEM[item]->link,(nxt:
+       link=0,-;
+       item*AUX[link]=new;
+       link*AUX[link]->link,:nxt).
+'a'add pull+>item+>new:
+    is pulled item+item+new;
+    (* new->item,adm*ITEM[item]->link *)AUX, >>AUX->adm*ITEM[item].
+
+'variable'nextitem=0.
+'a'expand ITEM:
+  incr+nextitem,
+  (* 0->flag->type->scope->tag->lineno->adm,nextitem->repr *) ITEM.
+
+'q'is item flag+>item+>flag-x:
+  bool and+flag*ITEM[item]+flag+x,is+x.
+'a'set item flag+>item+>flag:
+  bool or+flag*ITEM[item]+flag+flag*ITEM[item].
+  
+'constant'itemshift=<<ITEM-<>ITEM.
+
+'f'convert to item+>x>:
+   addmult+x+<>ITEM+itemshift+x.
+'f'get item repr+>item+repr>:
+   repr*ITEM[item]->repr.
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - -  $
+'constant'
+  tglobal	= tpublic|timported|texternal,
+  titem mask	= tglobal|rtype|rvararg|routvararg|rempty|
+                        rtrace|rcount|rbounds.
+$ head section ***************************************************
+$ built-in tags:
+'stack'(next,def)LEXT=(
+  "@root", (0,0):Sroot
+).
+'a'head section:
+   R+Dpoint;next symbol,:head section.
+
+'a'copy head section:
+   (Dpoint=inpt,W+Dnewline,toggle out+0,next symbol;
+    next symbol,:copy head section).
+
+$ item section **************************************************
+'a'mark if requested+>item:
+    $ is it is exported or it is the @root rule
+    is item flag+item+tpublic,set item flag+item+Mrequested;
+    (type*ITEM[item]=Irule,tag*ITEM[item]=Sroot),
+       set item flag+item+Mrequested;
+    +.
+
+$ read items
+'a'skip formal affixes-cnt-type:
+    must+Tconst+cnt,(nxt:
+     cnt=0;
+     decr+cnt,must+Ttype+type,
+       (=type=
+        [Iformal stack;Iformal table],must+Tconst+#,must+Tconst+#,:nxt;
+        [Iformal in;Iformal out;Iformal inout;
+         Iformal file;Iformal anchor;Iformal shift],:nxt;
+        corrupt ice file+_rule_)).
+
+'a'skip list bounds:
+    must+Tconst+#,must+Tconst+#.
+
+'a'read item-ID-flag:
+    $ read the next idem
+    expand ITEM,
+    must+Ttype+type*ITEM,must+Titem+ID,(ID=>>ITEM;corrupt ice file+_rule_),
+    must+Tconst+flag,bool and+flag+titem mask+flag*ITEM,
+    must+Tconst+lineno*ITEM,
+    (=type*ITEM=
+     [Irule],skip formal affixes;
+     [Istack;Itable;Istatic stack],skip list bounds;
+     +),
+    must+Tstring+scope*ITEM,must+Tstring+tag*ITEM,
+    mark if requested+ID.
+
+'a'item section: $ read all items and populate the ITEM stack
+    R+Dpoint; read item,:item section.
+
+$ copy items - - - - - - - - - - - - - - - - - - - - - - - -
+'a'copy formal affixes-cnt-type-val:
+    must+Tconst+cnt,WW+Tconst+cnt,(nxt:
+     cnt=0;
+     decr+cnt,must+Ttype+type,WW+Ttype+type,
+       (=type=
+        [Iformal stack;Iformal table],must+Tconst+val,
+             WW+Tconst+val,must+Tconst+val,WW+Tconst+val,:nxt;
+        :nxt)).
+
+'a'copy list bounds-val:
+    must+Tconst+val,WW+Tconst+val,must+Tconst+val,WW+Tconst+val.
+
+'a'skip item+>item-type-ID:
+    must+Ttype+type,must+Titem+ID,(ID=item;internal error+_rule_),
+    must+Tconst+#,must+Tconst+#,
+    (=type=
+     [Irule],skip formal affixes;
+     [Istack;Itable;Istatic stack],skip list bounds;
+     +),
+    must+Tstring+#,must+Tstring+#.
+
+'a'copy item+>item-type-ID-val:
+    must+Ttype+type,WW+Ttype+type,must+Titem+ID,
+    (ID=item;internal error+_rule_),WW+Titem+ID,
+    must+Tconst+val,WW+Tconst+val,must+Tconst+val,WW+Tconst+val,
+    (=type=
+     [Irule],copy formal affixes;
+     [Istack;Itable;Istatic stack],copy list bounds;
+     +),
+    must+Tstring+val,WW+Tstring+val,must+Tstring+val,WW+Tstring+val,
+    W+Dnewline.
+
+'a'copy item section-item: $ either inpt=Dpoint, or <type> has been read
+    <<ITEM->item,(nxt:
+       R+Dpoint,W+Dpoint,W+Dnewline;
+       is item flag+item+Mrequested,copy item+item,next+ITEM+item,:nxt;
+       skip item+item,next+ITEM+item,:nxt).
+     
+$ data section **************************************************
+$ read data entry
+'a'skip entry:
+    R+Dpoint;
+    R+Dend,corrupt ice file+_rule_;
+    next symbol,:skip entry.
+$ --- 'file'
+'a'file areas+>item-lst:
+    R+Dsub,(nxt: R+Dbus;
+      must+Titem+lst,add pull+item+lst,:nxt);
+    +.
+'a'file entry-item-lst:
+    $ <item> <direction> <str> <ptr> Dsub lists Dbus Dpoint
+    must+Titem+item, must+Tconst+#, $ direction
+    must+Titem+lst,add pull+item+lst, $ @StringTable
+    must+Titem+lst,add pull+item+lst, $ offset
+    file areas+item,must+Dpoint+#.
+$ --- 'fill'
+'a'fill entry-list:
+    must+Titem+list, must+Tconst+#, $ lineno
+    (nxt:R+Dpoint;
+         fill item pack+list,fill repeater+list,
+               fill initializers+list,:nxt).
+'a'fill item pack+>list:
+    R+Dopen,(nxt:R+Dclose; fill item+list,:nxt);
+    fill item+list.
+'a'fill item+>list-item:
+    R+TTnum;
+    R+TTstring;
+    must+Titem+item,add pull+list+item.
+'a'fill repeater+>list-item:
+    R+Dstar,(R+Tconst;must+Titem+item,add pull+list+item);
+    +.
+'a'fill initializers+>list-item:
+    R+Dcolon,must+Titem+item,add pull+item+list,:fill initializers;
+    +.
+$ --- 'expression'
+    $ I5 X12 *(X3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+X-3 *'calibre'I3 &X-12 .
+'a'read expression-item-lst:
+    must+Titem+item,(nxt:=inpt=
+     [Dpoint],next symbol;
+     [TTnum], next symbol,:nxt;
+     [Titem], add pull+item+inpt value,next symbol,:nxt;
+     [Dlwb;Dupb;Dcalibre],next symbol,must+Titem+lst,add pull+item+lst,:nxt;
+     [Dplus;Dminus;Dstar;Ddiv;Dand;Dor;Dxor;Dcompl;Dopen;Dclose],
+         next symbol,:nxt;
+     corrupt ice file+_rule_).
+$ --- list entry:  <item> <etype> <esize>
+'a'list entry-item-val:
+    must+Titem+item,must+Tconst+#,
+      (RR+Tconst+#;must+Titem+val,add pull+item+val),
+    must+Dpoint+#.
+
+'a'data section:(nxt:
+    R+Dfile,file entry,:nxt;
+    R+Dfill,fill entry,:nxt;
+    R+Dexpression,read expression,:nxt;
+    R+Dlist,list entry,:nxt;
+    R+Dbackmatter, skip entry,:nxt;
+    R+Dfrontmatter,skip entry,:nxt;
+    R+Dexternal, skip entry,:nxt;
+    inpt=Drule;
+    corrupt ice file+_rule_).
+$ copy data section - - - - - - - - - - - - - - - - - - - - - - -
+$ --- copy 'file'
+'a'copy file entry+>item-val:
+    W+Dfile,WW+Titem+item,must+Tconst+val,WW+Tconst+val,
+      must+Titem+val,WW+Titem+val,must+Titem+val,WW+Titem+val,
+      copy file areas,must+Dpoint+#,W+Dpoint,W+Dnewline.
+'a'copy file areas-val:
+    R+Dsub,W+Dsub,(nxt:R+Dbus,W+Dbus;
+       must+Titem+val,WW+Titem+val,:nxt);
+    +.
+$ --- copy 'fill'
+'a'copy fill entry+>item-val:
+    W+Dfill,WW+Titem+item,must+Tconst+val,WW+Tconst+val, $ lineno
+    (nxt:R+Dpoint,W+Dpoint,W+Dnewline;
+         copy fill item pack,copy fill repeater,copy initializers,:nxt).
+'a'copy fill item pack:
+    R+Dopen,W+Dopen,(nxt: R+Dclose,W+Dclose; copy fill item,:nxt);
+    copy fill item.
+'a'copy fill item-val:
+    RR+TTnum+val,WW+TTnum+val;
+    RR+TTstring+val,WW+TTstring+val;
+    must+Titem+val,WW+Titem+val.
+'a'copy fill repeater-val:
+    R+Dstar,W+Dstar,(RR+Tconst+val,WW+Tconst+val;
+         must+Titem+val,WW+Titem+val);
+    +.
+'a'copy initializers-val:
+    R+Dcolon,must+Titem+val,
+       (is item flag+val+Mrequested,W+Dcolon,WW+Titem+val;+),
+       :copy initializers;
+    +.
+$ --- copy expression
+'a'copy expression+>item-val:
+    W+Dexpression,WW+Titem+item,(nxt:=inpt=
+     [Dpoint],next symbol,W+Dpoint,W+Dnewline;
+     [TTnum],WW+TTnum+inpt value,next symbol,:nxt;
+     [Titem],WW+Titem+inpt value,next symbol,:nxt;
+     [Dlwb;Dupb;Dcalibre],W+inpt,next symbol,must+Titem+val,WW+Titem+val,:nxt;
+     W+inpt,next symbol,:nxt).
+$ --- copy list <item> <etype> <esize
+'a'copy list entry+>item-val:
+    W+Dlist,WW+Titem+item,must+Tconst+val,WW+Tconst+val,
+      (RR+Tconst+val,WW+Tconst+val;
+       must+Titem+val,WW+Titem+val),
+    must+Dpoint+#,W+Dpoint,W+Dnewline.
+$ --- front and back matter
+'a'copy matter+>bold-str:
+    W+bold,must+Tstring+str,WW+Tstring+str,must+Dpoint+#,W+Dpoint,W+Dnewline.
+$ --- copy external
+'a'copy external+>item-str:
+    W+Dexternal,WW+Titem+item,must+Tstring+str,must+Dpoint+#,
+      WW+Tstring+str,W+Dpoint,W+Dnewline.
+$
+'a'copy data section-item:(nxt:
+    R+Dfile,must+Titem+item,
+       (is item flag+item+Mrequested,copy file entry+item,:nxt;skip entry,:nxt);
+    R+Dfill,must+Titem+item,
+       (is item flag+item+Mrequested,copy fill entry+item,:nxt;skip entry,:nxt);
+    R+Dexpression,must+Titem+item,
+       (is item flag+item+Mrequested,copy expression+item,:nxt;skip entry,:nxt);
+    R+Dlist,must+Titem+item,
+       (is item flag+item+Mrequested,copy list entry+item,:nxt;skip entry,:nxt);
+    R+Dbackmatter,copy matter+Dbackmatter,:nxt;
+    R+Dfrontmatter,copy matter+Dfrontmatter,:nxt;
+    R+Dexternal,must+Titem+item,
+       (is item flag+item+Mrequested,copy external+item,:nxt;skip entry,:nxt);
+    +).
+
+$ rule section **************************************************
+'a'read rule-r:
+    must+Titem+r,must+Tconst+#,must+Tconst+#,must+Tconst+#,
+    (nxt:R+Dbox,read node+r,:nxt;
+     R+Dextension, read node+r,:nxt;
+     R+Dnode, read node+r,:nxt;
+     must+Dpoint+#).
+'a'read node+>rule:
+    =inpt=
+    [Titem],add pull+rule+inpt value,next symbol,:read node;
+    [Dsub;Dbus;Darea;Dcolon;Dsemicolon;Danchor;Dto;Dnoarg;
+     Dupb;Dlwb;Dvupb;Dvlwb;Dcalibre],next symbol,:read node;
+    [Tconst;Tlocal;Tformal;Tnode;Dout;TTnum],next symbol,:read node;
+    must+Dcomma+#.
+'a'rule section:
+    R+Drule,read rule,:rule section;
+    R+Dend;
+    corrupt ice file+_rule_.
+$ ===============================================================
+$ copy rule section
+'variable'node optimization=1. $ do node optimization
+
+'a'copy rule section:
+    is+node optimization, copy rules with optimization;
+    copy rules without optimization.
+
+$ no optimization  - - - - - - - - - - - - - - - - - - - - - - -
+'a'copy rule+>rule-val:
+    W+Drule,WW+Titem+rule,
+    must+Tconst+val,WW+Tconst+val,must+Tconst+val,WW+Tconst+val,
+    must+Tconst+val,WW+Tconst+val,(nxt:
+      R+Dbox,W+Dbox,copy node,:nxt;
+      R+Dextension,W+Dextension,copy node,:nxt;
+      R+Dnode,W+Dnode,copy node,:nxt;
+      must+Dpoint+#,W+Dpoint,W+Dnewline).
+'a'copy node:
+   =inpt=
+   [Titem;Tconst;Tlocal;Tformal;Tnode;Dout;TTnum],
+      WW+inpt+inpt value,next symbol,:copy node;
+   [Dsub;Dbus;Darea;Dcolon;Dsemicolon;Danchor;Dto;Dnoarg;
+     Dupb;Dlwb;Dvupb;Dvlwb;Dcalibre],W+inpt,next symbol,:copy node;
+   must+Dcomma+#,W+Dcomma.
+'a'copy rules without optimization-r:
+    R+Drule,must+Titem+r,
+      (is item flag+r+Mrequested,copy rule+r,:copy rules without optimization;
+       skip entry,:copy rules without optimization);
+    R+Dend;
+    corrupt ice file+_rule_.
+
+$ with optimization  - - - - - - - - - - - - - - - - - - - - - - -
+'pragmat'require="node".
+
+'a'handle rule+>rule-val:
+    W+Drule,WW+Titem+rule,
+    must+Tconst+val,WW+Tconst+val,must+Tconst+val,WW+Tconst+val,
+    must+Tconst+val,start rule+val,(nxt:
+      R+Dbox,must+Tnode+val,start node+Dbox+val,handle node,:nxt;
+      R+Dextension,must+Tnode+val,start node+Dextension+val,handle node,:nxt;
+      R+Dnode,must+Tnode+val,start node+Dnode+val,handle node,:nxt;
+      must+Dpoint+#,dump rule).
+'a'handle node:
+   =inpt=
+   [Titem;Tconst;Tlocal;Tformal;Tnode;Dout;TTnum],
+      NN+inpt+inpt value,next symbol,:handle node;
+   [Dsub;Dbus;Darea;Dcolon;Dsemicolon;Danchor;Dto;Dnoarg;
+     Dupb;Dlwb;Dvupb;Dvlwb;Dcalibre],N+inpt,next symbol,:handle node;
+   must+Dcomma+#,enter node.
+
+'a'copy rules with optimization-r:
+   R+Drule,must+Titem+r,
+      (is item flag+r+Mrequested,handle rule+r,:copy rules with optimization;
+       skip entry,:copy rules with optimization);
+   R+Dend;
+   corrupt ice file+_rule_.
+
+$ traverse items *******************************************************
+$ Go over all items with Mrequested=1 and Mdone=0.
+$  for each dependent items check if Mrequested is on.
+$  If not, set it on, and mark "work not done yet".
+$  Set Mdone=1.
+
+'a'traverse item+>item+>not done yet>-link:
+    is item flag+item+Mdone; $ if yes, do nothing
+    is item flag+item+Mrequested,set item flag+item+Mdone,
+        adm*ITEM[item]->link,(nxt:
+        link=0; $ done
+        is item flag+item*AUX[link]+Mrequested,link*AUX[link]->link,:nxt;
+        1->not done yet,set item flag+item*AUX[link]+Mrequested,
+                  link*AUX[link]->link,:nxt);
+    +.
+'a'traverse once+not done yet>-item:
+    0->not done yet,<<ITEM->item,
+    (nxt:item>>>ITEM;
+     traverse item+item+not done yet,next+ITEM+item,:nxt).
+
+'a'traverse items-repeat:
+    traverse once+repeat,(repeat=0,release+AUX;:traverse items).
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+

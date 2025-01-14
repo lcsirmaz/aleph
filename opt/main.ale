@@ -1,0 +1,97 @@
+$ ALEPH ice optimizer main module
+'pragmat'title="ALEPH optimizer, v2.2".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+'pragmat'require=("lexical","item","error").
+
+'constant'version major = 1,  $ optimizer version
+          version minor = 1.
+'table'MESSAGE=( $ --help, --version
+  "Optimize an ALEPH-M .ice file%n"
+  "Usage: aopt [--help | --version]%n"
+  "   or: aopt [--no-ruleopt] --replace <input>%n"
+  "   or: aopt [--no-ruleopt] <input> <output>%n"
+  "With ""--replace"" <input> is replaced with the optimized version.%n"
+  "The flag ""--no-ruleopt"" inhibits rule compression."
+   :help message,
+  "ALEPH-M .ice optimizer version %d.%d%n"
+  "Copyright (C) 2020-2025 Laszlo Csirmaz%n"
+  "This is a free software, see the source at https://github.com/lcsirmaz/aleph%n"
+  "for copyright information. There is NO WARRANTY; not even mechantibility or%n"
+  "fitness for a particular purpose." 
+   :version message,
+  "Missing argument, use --help for a short help" :no input,
+  "Missing <output>, use --help for a short help" :missing output,
+  "Too many arguments, use --help for a short help" :too many arguments,
+  "/tmp/aleph-XXXXXX" :tmpfile
+).
+
+$ =====================================================================
+'variable'arg top=0,	$ next command line argument
+          replace arg=0,$ replace argument
+          ifile=0,	$ input file in STDARG
+          ofile=0.	$ output file in STDARG, or zero
+          
+'q'is first arg+T[]+>str-eq:
+    compare string+STDARG+arg top+T+str+eq,eq=0.
+'a'parse STDARG:
+    >>STDARG->arg top,(nxt:
+      arg top< <<STDARG;
+      is first arg+"--help",error+eINF+help message;
+      is first arg+"--version",
+         error+eINF+version message+version major+version minor;
+      is first arg+"--replace",previous string+STDARG+arg top,
+           1->replace arg,:nxt;
+      is first arg+"--no-ruleopt",previous string+STDARG+arg top,
+           0->node optimization,:nxt;
+      is+ofile,error+eINF+too many arguments;
+      is+ifile,arg top->ofile,previous string+STDARG+arg top,:nxt;
+      arg top->ifile,previous string+STDARG+arg top,:nxt).
+'a'check command line arguments:
+   parse STDARG,
+     (ifile=0,error+eINF+no input;
+      ofile=0,(is+replace arg;error+eINF+missing output);
+      is+replace arg,error+eINF+too many arguments;
+      +).
+
+$ --------------------------------------------------------------
+
+'variable'nextID=1.
+'a'setrepr+>item:
+    is item flag+item+Mrequested, nextID->repr*ITEM[item],incr+nextID;
+    +.
+
+'a'renumber items-item:
+    <<ITEM->item,
+    (nxt:item>>>ITEM; 
+     setrepr+item,next+ITEM+item,:nxt).
+
+'a'first pass:
+    head section, item section,data section,rule section.
+'a'second pass:
+    copy head section,copy item section,copy data section,copy rule section.
+
+'root' check command line arguments,
+       open source+ifile, first pass, 
+       traverse items, renumber items,
+       rewind source+ofile+tmpfile, second pass, close source.
+
+'end'
+
+

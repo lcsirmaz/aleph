@@ -660,19 +660,19 @@ static void a_1007(a_word a_F1,a_word a_F2,a_word a_A[1]){ /* enterconststring+>
 a_word a_L4;a_word a_L5;a_word a_P[1];
 a_1375(0,a_P);a_L4=a_P[0];
 a_G2:a_incr(a_F2);
-if(a_more(a_F2,to_LIST(a_1447)->aupb)){ goto a_G20;}
+if(a_more(a_F2,to_LIST(a_1447)->aupb)){ goto a_G13;}
 a_1010(a_F2,a_P);a_L5=a_P[0];
-if(!a_1378(21,a_L4,a_1018)){ goto a_G8;}
+if(!a_1378(21,a_L4,a_1018)){ goto a_G7;}
 a_G6:a_1006(a_L4,a_L5); goto a_G2;
-a_G8:if(!a_1378(21,a_L4,a_1018)){ goto a_G10;}
-a_G9:a_1422(a_1001,2130705096); return;
-a_G10:if(a_less(a_L5,a_1016)){ goto a_G6;}
-if(a_less(a_L5,a_1016)){ goto a_G9;}
-if(!a_is(a_F1)){ goto a_G9;}
-if(a_equal(a_F2,to_LIST(a_1447)->aupb)){ goto a_G6;} goto a_G9;
-a_G20:if(!a_is(a_F1)){ goto a_G22;}
+a_G7:if(!a_1378(21,a_L4,a_1018)){ goto a_G9;}
+a_G8:a_1422(a_1001,2130705096); return;
+a_G9:if(a_less(a_L5,a_1016)){ goto a_G6;}
+if(a_less(a_L5,a_1016)){ goto a_G8;}
+if(!a_is(a_F1)){ goto a_G8;}
+if(a_equal(a_F2,to_LIST(a_1447)->aupb)){ goto a_G6;} goto a_G8;
+a_G13:if(!a_is(a_F1)){ goto a_G15;}
 a_1379(5,a_L4,a_L4);
-a_G22:a_1024(a_L4,a_P);a_A[0]=a_P[0]; return;
+a_G15:a_1024(a_L4,a_P);a_A[0]=a_P[0]; return;
 } /* enterconststring */
 static void a_1011(a_word a_F1){ /* getnumberrepr+>a */
 a_word a_L2;a_word a_P[1];
@@ -816,17 +816,17 @@ if(!a_equal(a_L5,0)){ goto a_G6;}
 a_A[0]=1;
 {register a_word *a_r1=a_extension(a_1033,3);a_r1[0]=a_F2;a_r1[1]=a_F3;a_r1[2]=0;to_LIST(a_1033)->aupb+=3;}
 a_G5:to_LIST(a_1033)->offset[a_F1]=to_LIST(a_1033)->aupb; return;
-a_G6:if(!a_1378(21,a_F2,to_LIST(a_1033)->offset[a_L5-2])){ goto a_G13;}
+a_G6:if(!a_1378(21,a_F2,to_LIST(a_1033)->offset[a_L5-2])){ goto a_G12;}
 a_A[0]=1;
-if(!a_1378(21,a_F3,to_LIST(a_1033)->offset[a_L5-2])){ goto a_G11;}
+if(!a_1378(21,a_F3,to_LIST(a_1033)->offset[a_L5-2])){ goto a_G10;}
 {register a_word *a_r1=a_extension(a_1033,3);a_r1[0]=a_F2;a_r1[1]=a_F3;a_r1[2]=a_L5;to_LIST(a_1033)->aupb+=3;}
   goto a_G5;
-a_G11:to_LIST(a_1033)->offset[a_L5-2]=a_F2;
-a_G12:a_1051(a_L5,a_F3); return;
-a_G13:if(!a_1378(22,a_F2,to_LIST(a_1033)->offset[a_L5-1])){ goto a_G17;}
+a_G10:to_LIST(a_1033)->offset[a_L5-2]=a_F2;
+a_G11:a_1051(a_L5,a_F3); return;
+a_G12:if(!a_1378(22,a_F2,to_LIST(a_1033)->offset[a_L5-1])){ goto a_G15;}
 if(a_1378(22,a_F3,to_LIST(a_1033)->offset[a_L5-1])){ return;}
-a_A[0]=1; goto a_G12;
-a_G17:a_F1=a_L5; goto a_G1;
+a_A[0]=1; goto a_G11;
+a_G15:a_F1=a_L5; goto a_G1;
 } /* addinterval */
 static void a_1072(a_word a_F1){ /* mergeintervals+>a */
 a_word a_L2;
@@ -850,17 +850,17 @@ if(!a_equal(16777459,a_1461)){ goto a_G6;}
 a_A[0]=a_1462;
 a_1468();
 a_G4:a_A[1]=a_A[0];
-a_L4=1; goto a_G28;
-a_G6:if(!a_equal(16777471,a_1461)){ goto a_G25;}
+a_L4=1; goto a_G26;
+a_G6:if(!a_equal(16777471,a_1461)){ goto a_G23;}
 a_L3=a_1462;
 a_1468();
 a_P[0]=a_L3;a_1060(a_P);a_L3=a_P[0];
 {register a_word a_r1=to_LIST(a_1288)->offset[a_L3-5];
  if(a_r1==16777304||a_r1==16777335){ goto a_G11;}
- if(a_r1==16777322||a_r1==16777318||a_r1==16777328){  goto a_G14;}
-  goto a_G24;}
+ if(a_r1==16777322||a_r1==16777318||a_r1==16777328){  goto a_G12;}
+  goto a_G22;}
 a_G11:a_A[0]=to_LIST(a_1288)->offset[a_L3]; goto a_G4;
-a_G14:a_1320(a_L3,a_P);a_A[0]=a_P[0];
+a_G12:a_1320(a_L3,a_P);a_A[0]=a_P[0];
 a_1017(0,a_A[0],a_P);a_L5=a_P[0];
 a_1310(a_L3,a_P);a_A[1]=a_P[0];
 a_1017(1,a_A[1],a_P);a_L6=a_P[0];
@@ -869,29 +869,29 @@ a_1017(1,1,a_P);a_L6=a_P[0];
 a_1379(6,a_L6,a_L5);
 a_1024(a_L5,a_P);a_A[0]=a_P[0];
 a_1321(a_L3,a_P);a_A[1]=a_P[0];
-a_L4=2; goto a_G28;
-a_G24:a_1422(a_1001,2130705132); return;
-a_G25:a_1012(a_P);a_A[0]=a_P[0];
+a_L4=2; goto a_G26;
+a_G22:a_1422(a_1001,2130705132); return;
+a_G23:a_1012(a_P);a_A[0]=a_P[0];
 a_1012(a_P);a_A[1]=a_P[0];
 a_L4=0;
-a_G28:if(!a_equal(16777409,a_1461)){ goto a_G45;}
+a_G26:if(!a_equal(16777409,a_1461)){ goto a_G41;}
 a_1468();
-if(!a_equal(a_L4,0)){ goto a_G32;}
-a_A[0]=a_1026; goto a_G34;
-a_G32:if(!a_equal(a_L4,1)){ goto a_G24;}
-a_G34:if(!a_equal(16777459,a_1461)){ goto a_G37;}
+if(!a_equal(a_L4,0)){ goto a_G30;}
+a_A[0]=a_1026; goto a_G31;
+a_G30:if(!a_equal(a_L4,1)){ goto a_G22;}
+a_G31:if(!a_equal(16777459,a_1461)){ goto a_G34;}
 a_A[1]=a_1462;
 a_1468(); return;
-a_G37:if(!a_equal(16777471,a_1461)){ goto a_G44;}
+a_G34:if(!a_equal(16777471,a_1461)){ goto a_G40;}
 a_L3=a_1462;
 a_1468();
 a_P[0]=a_L3;a_1060(a_P);a_L3=a_P[0];
 {register a_word a_r1=to_LIST(a_1288)->offset[a_L3-5];
- if(!(a_r1==16777304||a_r1==16777335)){ goto a_G24;}
+ if(!(a_r1==16777304||a_r1==16777335)){ goto a_G22;}
 }
 a_A[1]=to_LIST(a_1288)->offset[a_L3]; return;
-a_G44:a_A[1]=a_1025; return;
-a_G45:if(!a_equal(a_L4,0)){ return;} goto a_G24;
+a_G40:a_A[1]=a_1025; return;
+a_G41:if(!a_equal(a_L4,0)){ return;} goto a_G22;
 } /* readareainterval */
 static void a_1038(a_word a_F1,a_word a_A[1]){ /* checkarea+>a+a> */
 a_word a_L3;a_word a_L4;a_word a_L5;a_word a_L6;a_word a_L7;a_word a_P[4];
@@ -999,13 +999,13 @@ a_1468();
 if(!a_equal(16777455,a_1461)){ goto a_G4;}
 a_L4=a_1462;
 a_1468();
-if(a_1326(a_L1,12288)){ goto a_G25;}
-if(!a_1326(a_L1,16384)){ goto a_G22;}
-a_1088(8); goto a_G25;
-a_G22:a_max(a_L2,a_1029);
+if(a_1326(a_L1,12288)){ goto a_G22;}
+if(!a_1326(a_L1,16384)){ goto a_G19;}
+a_1088(8); goto a_G22;
+a_G19:a_max(a_L2,a_1029);
 a_max(a_L3,a_1030);
 a_max(a_L4,a_1031);
-a_G25:a_booland(to_LIST(a_1032)->offset[a_1103-4],8,a_L5);
+a_G22:a_booland(to_LIST(a_1032)->offset[a_1103-4],8,a_L5);
 if(a_noteq(a_L5,0)){ return;}
 if(a_1338(a_L1)){ return;}
 a_1034=1; return;
@@ -1071,16 +1071,15 @@ a_G2:a_1468(); return 1;
 a_G3:if(a_equal(16777269,a_1461)){ goto a_G2;}
 if(a_equal(16777291,a_1461)){ goto a_G2;}
 if(a_equal(16777295,a_1461)){ goto a_G2;}
-if(!a_equal(16777299,a_1461)){ return 0;}
-a_1468(); return 1;
+if(!a_equal(16777299,a_1461)){ return 0;} goto a_G2;
 } /* islimit */
 static void a_1091(void){ /* skiplist */
 
 if(!a_equal(16777475,a_1461)){ goto a_G3;}
 a_G2:a_1468(); return;
-a_G3:if(!a_equal(16777471,a_1461)){ goto a_G6;}
+a_G3:if(!a_equal(16777471,a_1461)){ goto a_G5;}
  goto a_G2;
-a_G6:a_1422(a_1001,2130705105); return;
+a_G5:a_1422(a_1001,2130705105); return;
 } /* skiplist */
 static void a_1090(void){ /* skipaffix */
 a_word a_L1;
@@ -1095,20 +1094,20 @@ a_1070(a_L1); return;
 a_G9:if(a_equal(16777471,a_1461)){ goto a_G4;}
 if(a_equal(16777424,a_1461)){ goto a_G4;}
 if(a_equal(16777459,a_1461)){ goto a_G4;}
-if(!a_1065()){ goto a_G17;}
+if(!a_1065()){ goto a_G14;}
 a_1091(); return;
-a_G17:if(!a_equal(16777448,a_1461)){ goto a_G30;}
+a_G14:if(!a_equal(16777448,a_1461)){ goto a_G25;}
 a_1468();
 a_1063=1;
 a_1091();
 a_1090();
-if(!a_equal(16777403,a_1461)){ goto a_G25;}
+if(!a_equal(16777403,a_1461)){ goto a_G22;}
 
-a_1468(); goto a_G26;
-a_G25:a_1422(a_1001,2130705105); return;
-a_G26:if(!a_equal(16777455,a_1461)){ goto a_G25;}
+a_1468(); goto a_G23;
+a_G22:a_1422(a_1001,2130705105); return;
+a_G23:if(!a_equal(16777455,a_1461)){ goto a_G22;}
  goto a_G4;
-a_G30:a_1422(a_1001,2130705110); return;
+a_G25:a_1422(a_1001,2130705110); return;
 } /* skipaffix */
 static void a_1076(a_word a_C,a_word *a_V){ /* pushBUFFER+@+>a */
 
@@ -1167,7 +1166,7 @@ a_G14:if(!a_equal(16777459,a_1461)){ goto a_G18;}
 a_L1=a_1462;
 a_1468();
 a_P[0]=16777459;a_P[1]=a_L1;a_1076(2,a_P); return;
-a_G18:if(!a_equal(16777448,a_1461)){ goto a_G31;}
+a_G18:if(!a_equal(16777448,a_1461)){ goto a_G30;}
 a_1468();
 a_1099(16777448);
 a_1097();
@@ -1179,7 +1178,7 @@ a_G26:if(!a_equal(16777455,a_1461)){ goto a_G25;}
 a_L1=a_1462;
 a_1468();
 a_P[0]=16777403;a_P[1]=a_L1;a_1076(2,a_P); return;
-a_G31:a_1098(); return;
+a_G30:a_1098(); return;
 } /* storeaffix */
 static void a_1100(a_word a_A[1]){ /* storeruleaffix+a> */
 a_word a_L2;a_word a_P[2];
@@ -1187,7 +1186,7 @@ if(!a_equal(16777409,a_1461)){ goto a_G6;}
 a_1468();
 a_A[0]=16777409;
 a_P[0]=16777409;a_1076(1,a_P);
-a_1097(); return;
+a_G5:a_1097(); return;
 a_G6:if(!a_equal(16777424,a_1461)){ goto a_G10;}
 a_1468();
 a_A[0]=16777424;
@@ -1200,35 +1199,34 @@ a_L2=a_1462;
 a_1468(); goto a_G17;
 a_G16:a_L2=0;
 a_G17:a_P[0]=16777397;a_P[1]=a_L2;a_1076(2,a_P); return;
-a_G18:a_A[0]=0;
-a_1097(); return;
+a_G18:a_A[0]=0; goto a_G5;
 } /* storeruleaffix */
 static void a_1101(void){ /* storeruleaffixes */
 a_word a_L1;a_word a_P[2];
 a_G1:{ if(a_1461==16777479){ goto a_G2;}
  if(a_1461==16777471){ goto a_G5;}
  if(a_1461==16777475||a_1461==16777459||a_1461==16777455){ goto a_G3;}
- if(a_1461==16777448){ goto a_G10;}
- if(a_1461==16777269||a_1461==16777291||a_1461==16777295||a_1461==16777299||a_1461==16777231||a_1461==16777424||a_1461==16777403||a_1461==16777397||a_1461==16777409){  goto a_G15;}
-  goto a_G17;}
+ if(a_1461==16777448){ goto a_G6;}
+ if(a_1461==16777269||a_1461==16777291||a_1461==16777295||a_1461==16777299||a_1461==16777231||a_1461==16777424||a_1461==16777403||a_1461==16777397||a_1461==16777409){  goto a_G11;}
+  goto a_G12;}
 a_G2:a_1070(a_1462);
 a_G3:a_P[0]=a_1461;a_P[1]=a_1462;a_1076(2,a_P);
 a_G4:a_1468(); goto a_G1;
 a_G5:a_P[0]=a_1462;a_1060(a_P);a_1462=a_P[0]; goto a_G3;
-a_G10:a_P[0]=a_1461;a_1076(1,a_P);
+a_G6:a_P[0]=a_1461;a_1076(1,a_P);
 a_1468();
 a_booland(to_LIST(a_1032)->offset[a_1103-4],8,a_L1);
 if(a_noteq(a_L1,0)){ goto a_G1;}
 a_1063=1; goto a_G1;
-a_G15:a_P[0]=a_1461;a_1076(1,a_P); goto a_G4;
-a_G17:if(!a_equal(16777433,a_1461)){ goto a_G20;}
+a_G11:a_P[0]=a_1461;a_1076(1,a_P); goto a_G4;
+a_G12:if(!a_equal(16777433,a_1461)){ goto a_G15;}
 to_LIST(a_1032)->offset[a_1103-1]=a_1462;
-a_1468(); goto a_G21;
-a_G20:a_1422(a_1001,2130705105); return;
-a_G21:if(!a_equal(16777433,a_1461)){ goto a_G20;}
+a_1468(); goto a_G16;
+a_G15:a_1422(a_1001,2130705105); return;
+a_G16:if(!a_equal(16777433,a_1461)){ goto a_G15;}
 to_LIST(a_1032)->offset[a_1103]=a_1462;
 a_1468();
-if(!a_equal(16777412,a_1461)){ goto a_G20;}
+if(!a_equal(16777412,a_1461)){ goto a_G15;}
 
 a_1468(); return;
 } /* storeruleaffixes */
@@ -1286,17 +1284,17 @@ a_L4=0;
 to_LIST(a_1032)->offset[a_1103-2]=a_L2;
 a_1088(8192); goto a_G13;
 a_G12:a_next(a_1032,a_L2); goto a_G4;
-a_G13:if(a_equal(a_L4,0)){ goto a_G22;}
+a_G13:if(a_equal(a_L4,0)){ goto a_G21;}
 a_L4=0;
 a_G15:a_next(a_1032,a_L2);
-if(a_more(a_L2,to_LIST(a_1032)->aupb)){ goto a_G22;}
+if(a_more(a_L2,to_LIST(a_1032)->aupb)){ goto a_G21;}
 a_booland(to_LIST(a_1032)->offset[a_L2-4],1,a_L5);
 if(!a_noteq(a_L5,0)){ goto a_G15;}
 if(!a_equal(to_LIST(a_1032)->offset[a_L2-5],a_L3)){ goto a_G15;}
 a_L4=1;
-a_G22:if(!a_equal(a_L4,0)){ goto a_G24;}
+a_G21:if(!a_equal(a_L4,0)){ goto a_G23;}
 a_unstackto(a_1447,a_F1); return;
-a_G24:a_1088(4096); return;
+a_G23:a_1088(4096); return;
 } /* comparetostoredaffixes */
 static void a_1040(void){ /* checknodehash */
 a_word a_L1;a_word a_P[1];
@@ -1372,28 +1370,28 @@ static void a_1050(void){ /* findequalnodes */
 a_word a_L1;a_word a_L2;a_word a_L3;a_word a_L4;a_word a_P[1];
 a_G1:a_L1=0;
 a_L2=to_LIST(a_1032)->alwb;
-a_G3:if(a_more(a_L2,to_LIST(a_1032)->aupb)){ goto a_G30;}
+a_G3:if(a_more(a_L2,to_LIST(a_1032)->aupb)){ goto a_G24;}
 a_booland(to_LIST(a_1032)->offset[a_L2-4],16384,a_L4);
 if(!a_noteq(a_L4,0)){ goto a_G7;}
 a_G6:a_next(a_1032,a_L2); goto a_G3;
 a_G7:a_booland(to_LIST(a_1032)->offset[a_L2-4],8,a_L4);
 if(a_noteq(a_L4,0)){ goto a_G6;}
-if(!a_1066(a_L2)){ goto a_G16;}
+if(!a_1066(a_L2)){ goto a_G14;}
 a_1077(a_L2,8);
 a_1061(a_L2,a_P);a_L3=a_P[0];
 a_1079(a_L3,to_LIST(a_1032)->offset[a_L2]);
 a_L1=1; goto a_G6;
-a_G16:a_L3=a_L2;
-a_G17:a_next(a_1032,a_L3);
+a_G14:a_L3=a_L2;
+a_G15:a_next(a_1032,a_L3);
 if(a_more(a_L3,to_LIST(a_1032)->aupb)){ goto a_G6;}
 a_booland(to_LIST(a_1032)->offset[a_L3-4],16384,a_L4);
-if(a_noteq(a_L4,0)){ goto a_G17;}
+if(a_noteq(a_L4,0)){ goto a_G15;}
 a_booland(to_LIST(a_1032)->offset[a_L3-4],8,a_L4);
-if(a_noteq(a_L4,0)){ goto a_G17;}
-if(!a_1083(a_L2,a_L3)){ goto a_G17;}
+if(a_noteq(a_L4,0)){ goto a_G15;}
+if(!a_1083(a_L2,a_L3)){ goto a_G15;}
 a_L1=1;
-a_1080(a_L2,a_L3); goto a_G17;
-a_G30:if(a_equal(a_L1,0)){ return;}
+a_1080(a_L2,a_L3); goto a_G15;
+a_G24:if(a_equal(a_L1,0)){ return;}
 if(a_is(a_1068)){ return;} goto a_G1;
 } /* findequalnodes */
 static void a_1075(void){ /* omitemptynodes */
@@ -1416,17 +1414,17 @@ a_G3:if(a_is(a_1068)){ goto a_G2;}
 a_1064(a_F1,a_P);a_F1=a_P[0];
 a_listlength(a_1032,a_L4);
 a_L3=0;
-a_G8:a_booland(to_LIST(a_1032)->offset[a_F1-4],16384,a_L5);
-if(!a_noteq(a_L5,0)){ goto a_G11;}
-a_F1=to_LIST(a_1032)->offset[a_F1-2]; goto a_G8;
-a_G11:if(!a_more(a_L3,a_L4)){ goto a_G14;}
+a_G7:a_booland(to_LIST(a_1032)->offset[a_F1-4],16384,a_L5);
+if(!a_noteq(a_L5,0)){ goto a_G10;}
+a_F1=to_LIST(a_1032)->offset[a_F1-2]; goto a_G7;
+a_G10:if(!a_more(a_L3,a_L4)){ goto a_G13;}
 a_1041(a_F1,8);
-a_1068=to_LIST(a_1032)->offset[a_F1-3]; goto a_G18;
-a_G14:a_booland(to_LIST(a_1032)->offset[a_F1-4],8,a_L5);
-if(!a_noteq(a_L5,0)){ goto a_G18;}
+a_1068=to_LIST(a_1032)->offset[a_F1-3]; goto a_G17;
+a_G13:a_booland(to_LIST(a_1032)->offset[a_F1-4],8,a_L5);
+if(!a_noteq(a_L5,0)){ goto a_G17;}
 a_1064(to_LIST(a_1032)->offset[a_F1],a_P);a_F1=a_P[0];
-a_incr(a_L3); goto a_G8;
-a_G18:a_1061(a_F1,a_P);a_A[0]=a_P[0]; return;
+a_incr(a_L3); goto a_G7;
+a_G17:a_1061(a_F1,a_P);a_A[0]=a_P[0]; return;
 } /* findreallabel */
 static void a_1052(a_word a_A[1]){ /* findnextnode+a> */
 a_word a_L2;a_word a_L3;a_word a_P[1];
@@ -1510,21 +1508,21 @@ if(!a_equal(16777455,a_1461)){ goto a_G4;}
 a_1468();
 a_L7=to_LIST(a_1447)->aupb;
 a_L2=0;a_L5=0;a_L6=0;
-a_G19:if(!a_equal(16777433,a_1461)){ goto a_G25;}
+a_G16:if(!a_equal(16777433,a_1461)){ goto a_G21;}
 a_1468();
 if(!a_equal(16777433,a_1461)){ goto a_G4;}
 
-a_1468(); goto a_G34;
-a_G25:a_1100(a_P);a_L1=a_P[0];
+a_1468(); goto a_G30;
+a_G21:a_1100(a_P);a_L1=a_P[0];
 a_P[0]=16777436;a_1076(1,a_P);
 a_incr(a_L2);
-if(!a_is(a_L5)){ goto a_G30;}
+if(!a_is(a_L5)){ goto a_G26;}
 a_incr(a_L5);
-a_G30:if(!a_equal(a_L1,16777397)){ goto a_G19;}
-if(!a_is(a_L5)){ goto a_G33;}
-a_L6=1; goto a_G19;
-a_G33:a_L5=1; goto a_G19;
-a_G34:a_1053(to_LIST(a_1032)->offset[a_1103-1],a_P);a_L3=a_P[0];
+a_G26:if(!a_equal(a_L1,16777397)){ goto a_G16;}
+if(!a_is(a_L5)){ goto a_G29;}
+a_L6=1; goto a_G16;
+a_G29:a_L5=1; goto a_G16;
+a_G30:a_1053(to_LIST(a_1032)->offset[a_1103-1],a_P);a_L3=a_P[0];
 a_1053(to_LIST(a_1032)->offset[a_1103],a_P);a_L4=a_P[0];
 a_1116(to_LIST(a_1032)->offset[a_1103-3],a_L2,a_L3,a_L4,a_L5,a_L6,a_L7);
 a_unstackto(a_1447,a_L7); return;
@@ -1543,21 +1541,21 @@ a_P[0]=0;a_1076(1,a_P);
 a_L3=to_LIST(a_1447)->aupb;
 a_G11:a_1097();
 a_P[0]=16777436;a_1076(1,a_P);
-a_G13:if(!a_equal(16777288,a_1461)){ goto a_G20;}
+a_G13:if(!a_equal(16777288,a_1461)){ goto a_G19;}
 a_1468();
 if(!a_equal(16777455,a_1461)){ goto a_G6;}
 a_L2=a_1462;
 a_1468();
 a_P[0]=a_L2;a_1076(1,a_P); goto a_G13;
-a_G20:if(!a_equal(16777433,a_1461)){ goto a_G26;}
+a_G19:if(!a_equal(16777433,a_1461)){ goto a_G25;}
 a_L4=a_1462;
 a_1468();
 a_1053(a_L4,a_P);a_L4=a_P[0];
 a_P[0]=-1;a_1076(1,a_P);
-a_1110(a_L1,a_L4); goto a_G28;
-a_G26:a_P[0]=-1;a_P[1]=0;a_1076(2,a_P);
+a_1110(a_L1,a_L4); goto a_G27;
+a_G25:a_P[0]=-1;a_P[1]=0;a_1076(2,a_P);
 {register a_word a_r1=to_LIST(a_1447)->aupb;to_LIST(a_1447)->offset[a_L3]=a_r1;a_L3=a_r1;} goto a_G11;
-a_G28:a_unstackto(a_1447,a_L1); return;
+a_G27:a_unstackto(a_1447,a_L1); return;
 } /* generateextension */
 static void a_1054(void){ /* generatearea */
 a_word a_L1;a_word a_L2;a_word a_P[2];
@@ -1578,9 +1576,9 @@ a_G6:if(!a_equal(16777455,a_1461)){ goto a_G5;}
 
 a_1468();
 a_P[0]=0;a_1076(1,a_P);
-if(a_equal(a_L1,0)){ goto a_G13;}
+if(a_equal(a_L1,0)){ goto a_G12;}
 to_LIST(a_1447)->offset[a_L1]=to_LIST(a_1447)->aupb;
-a_G13:a_L1=to_LIST(a_1447)->aupb;
+a_G12:a_L1=to_LIST(a_1447)->aupb;
 a_P[0]=0;a_1076(1,a_P);
 a_L2=to_LIST(a_1447)->aupb;
 a_1054();
@@ -1588,14 +1586,14 @@ if(!a_equal(16777433,a_1461)){ goto a_G5;}
 a_L3=a_1462;
 a_1468();
 a_1053(a_L3,a_P);to_LIST(a_1447)->offset[a_L2]=a_P[0];
-if(!a_equal(16777220,a_1461)){ goto a_G25;}
+if(!a_equal(16777220,a_1461)){ goto a_G23;}
 a_1468();
 a_P[0]=16777436;a_1076(1,a_P); goto a_G6;
-a_G25:a_booland(to_LIST(a_1032)->offset[a_1103-4],2048,a_L4);
-if(!a_noteq(a_L4,0)){ goto a_G29;}
+a_G23:a_booland(to_LIST(a_1032)->offset[a_1103-4],2048,a_L4);
+if(!a_noteq(a_L4,0)){ goto a_G27;}
 a_unstackto(a_1447,a_L2);
 a_P[0]=a_1026;a_P[1]=a_1025;a_P[2]=16777436;a_1076(3,a_P); return;
-a_G29:a_P[0]=16777436;a_1076(1,a_P); return;
+a_G27:a_P[0]=16777436;a_1076(1,a_P); return;
 } /* generateareas */
 static void a_1056(void){ /* generatebox */
 a_word a_L1;a_word a_L2;a_word a_P[1];
@@ -1642,16 +1640,16 @@ a_G3:a_1468();
 a_1036();
 a_1094(); goto a_G2;
 a_G6:if(a_equal(16777241,a_1461)){ goto a_G3;}
-if(!a_equal(16777281,a_1461)){ goto a_G15;}
+if(!a_equal(16777281,a_1461)){ goto a_G12;}
 a_1468();
 a_1036();
 a_1093();
 a_1040(); goto a_G2;
-a_G15:if(!a_equal(16777439,a_1461)){ goto a_G18;}
+a_G12:if(!a_equal(16777439,a_1461)){ goto a_G15;}
 
-a_1468(); goto a_G19;
-a_G18:a_1422(a_1001,2130705105); return;
-a_G19:a_unstackto(a_1447,a_L1); return;
+a_1468(); goto a_G16;
+a_G15:a_1422(a_1001,2130705105); return;
+a_G16:a_unstackto(a_1447,a_L1); return;
 } /* scanii */
 static void a_1086(void){ /* scaniii */
 
@@ -1664,16 +1662,16 @@ a_G6:if(!a_equal(16777412,a_1461)){ goto a_G9;}
 
 a_1468(); goto a_G1;
 a_G9:a_1422(a_1001,2130705105); return;
-a_G10:if(!a_equal(16777241,a_1461)){ goto a_G18;}
+a_G10:if(!a_equal(16777241,a_1461)){ goto a_G14;}
 a_1468();
 a_1036();
 a_1049(); goto a_G6;
-a_G18:if(!a_equal(16777281,a_1461)){ goto a_G23;}
+a_G14:if(!a_equal(16777281,a_1461)){ goto a_G19;}
 a_1468();
 a_1036();
 a_1081();
 a_1094(); goto a_G1;
-a_G23:if(!a_equal(16777439,a_1461)){ goto a_G9;}
+a_G19:if(!a_equal(16777439,a_1461)){ goto a_G9;}
 
 a_1468(); return;
 } /* scaniii */
@@ -1687,20 +1685,20 @@ a_G5:if(!a_equal(16777412,a_1461)){ goto a_G8;}
 
 a_1468(); goto a_G1;
 a_G8:a_1422(a_1001,2130705105); return;
-a_G9:if(!a_equal(16777241,a_1461)){ goto a_G17;}
+a_G9:if(!a_equal(16777241,a_1461)){ goto a_G13;}
 a_1468();
 a_1058();
 a_1057(); goto a_G5;
-a_G17:if(!a_equal(16777281,a_1461)){ goto a_G31;}
+a_G13:if(!a_equal(16777281,a_1461)){ goto a_G22;}
 a_1468();
 a_1058();
 a_booland(to_LIST(a_1032)->offset[a_1103-4],16384,a_L1);
-if(!a_noteq(a_L1,0)){ goto a_G23;}
-a_G22:a_1094(); goto a_G1;
-a_G23:a_booland(to_LIST(a_1032)->offset[a_1103-4],8,a_L1);
-if(a_noteq(a_L1,0)){ goto a_G22;}
+if(!a_noteq(a_L1,0)){ goto a_G19;}
+a_G18:a_1094(); goto a_G1;
+a_G19:a_booland(to_LIST(a_1032)->offset[a_1103-4],8,a_L1);
+if(a_noteq(a_L1,0)){ goto a_G18;}
 a_1059(); goto a_G5;
-a_G31:if(!a_equal(16777439,a_1461)){ goto a_G8;}
+a_G22:if(!a_equal(16777439,a_1461)){ goto a_G8;}
 
 a_1468(); return;
 } /* scaniv */
@@ -1716,14 +1714,14 @@ a_1468();
 if(!a_equal(16777455,a_1461)){ goto a_G4;}
 a_L4=a_1462;
 a_1468();
-if(!a_1326(a_L1,16384)){ goto a_G15;}
+if(!a_1326(a_L1,16384)){ goto a_G13;}
 a_1092(); return;
-a_G15:a_1046();
+a_G13:a_1046();
 a_1034=0;a_1063=0;
-if(!a_1326(a_L1,16777216)){ goto a_G19;}
-a_1102=1; goto a_G20;
-a_G19:a_1102=0;
-a_G20:a_L2=to_LIST(a_1447)->aupb;
+if(!a_1326(a_L1,16777216)){ goto a_G17;}
+a_1102=1; goto a_G18;
+a_G17:a_1102=0;
+a_G18:a_L2=to_LIST(a_1447)->aupb;
 a_1042();
 a_1096(a_L3,a_L4);
 a_1478();
@@ -1732,22 +1730,22 @@ a_1084();
 a_1047=0;
 a_1068=0;
 a_1075();
-if(a_is(a_1102)){ goto a_G32;}
-if(!a_1326(a_L1,67108864)){ goto a_G32;}
+if(a_is(a_1102)){ goto a_G30;}
+if(!a_1326(a_L1,67108864)){ goto a_G30;}
 a_1102=a_1063;
-a_G32:if(a_1073()){ goto a_G36;}
+a_G30:if(a_1073()){ goto a_G34;}
 a_1477();
 a_1103=0;
 a_1085();
-a_G36:a_1050();
+a_G34:a_1050();
 a_1199(a_L1,a_1029,a_1030,a_1031,a_1102,a_L3,a_L4,a_1067,a_1034);
 a_unstackto(a_1447,a_L2);
 a_1477();
 a_1103=0;
 a_1086();
-if(!a_is(a_1068)){ goto a_G44;}
+if(!a_is(a_1068)){ goto a_G42;}
 a_P[0]=2047260052;a_P[1]=to_LIST(a_1288)->offset[a_L1-3];a_P[2]=to_LIST(a_1288)->offset[a_L1-2];a_P[3]=to_LIST(a_1288)->offset[a_1068-3];a_1423(4,a_P); return;
-a_G44:a_1477();
+a_G42:a_1477();
 a_1103=0;
 a_1087();
 a_1200(); return;
@@ -1784,11 +1782,10 @@ a_1175(2147483647);
 a_putchar(a_1106,45);
 a_putchar(a_1106,49);
 a_putchar(a_1106,41); return;
-a_G8:if(!a_less(a_F1,0)){ goto a_G12;}
+a_G8:if(!a_less(a_F1,0)){ goto a_G11;}
 a_putchar(a_1106,45);
 a_getabs(a_F1,a_F1);
-a_1176(a_F1,48); return;
-a_G12:a_1176(a_F1,48); return;
+a_G11:a_1176(a_F1,48); return;
 } /* printint */
 static void a_1176(a_word a_F1,a_word a_F2){ /* printint1+>a+>a */
 a_word a_L3;a_word a_L4;
@@ -1857,11 +1854,11 @@ static void a_1173(a_word a_F1){ /* printexternalrepr+>a */
 {register a_word a_r1=to_LIST(a_1288)->offset[a_F1-5];
  if(a_r1==16777304||a_r1==16777309){ goto a_G2;}
  if(a_r1==16777349){  goto a_G3;}
-  goto a_G6;}
+  goto a_G5;}
 a_G2:a_1183(to_LIST(a_1288)->offset[a_F1]); return;
 a_G3:if(!a_1326(a_F1,12288)){ goto a_G2;}
 a_1182(a_F1); return;
-a_G6:a_putchar(a_1106,97);
+a_G5:a_putchar(a_1106,97);
 a_putchar(a_1106,95);
 a_1175(to_LIST(a_1288)->offset[a_F1]); return;
 } /* printexternalrepr */
@@ -1941,7 +1938,7 @@ a_G12:a_1427(a_1001,2130706028); return;
 } /* printptr */
 static void a_1180(a_word a_F1){ /* printnlptr+>a */
 a_word a_L2;a_word a_L3;a_word a_P[1];
-if(!a_was(a_1451,a_F1)){ goto a_G16;}
+if(!a_was(a_1451,a_F1)){ goto a_G15;}
 a_1460(a_F1,a_P);a_F1=a_P[0];
 {register a_word a_r1=to_LIST(a_1447)->aupb;a_L2=a_r1;a_L3=a_r1;}
 a_unpackstring(a_1451,a_F1,a_1447);
@@ -1955,7 +1952,7 @@ if(a_less(to_LIST(a_1447)->aupb,a_L3)){ goto a_G5;}
 if(!a_equal(to_LIST(a_1447)->offset[a_L3],110)){ goto a_G14;}
 a_putchar(a_1106,10); goto a_G5;
 a_G14:a_putchar(a_1106,37); goto a_G9;
-a_G16:a_1183(a_F1); return;
+a_G15:a_1183(a_F1); return;
 } /* printnlptr */
 static void a_1181(a_word a_F1){ /* printnumber+>a */
 a_word a_L2;a_word a_L3;
@@ -1971,50 +1968,44 @@ a_word a_L2;a_word a_L3;
 a_L3=to_LIST(a_1447)->aupb;
 a_unpackstring(a_F1,a_V[0],a_1447);
 a_add(a_L3,1,a_L2);
-a_G4:if(a_less(to_LIST(a_1447)->aupb,a_L2)){ goto a_G46;}
+a_G4:if(a_less(to_LIST(a_1447)->aupb,a_L2)){ goto a_G29;}
 if(!a_noteq(to_LIST(a_1447)->offset[a_L2],37)){ goto a_G8;}
 a_G6:a_putchar(a_1106,to_LIST(a_1447)->offset[a_L2]);
 a_G7:a_incr(a_L2); goto a_G4;
 a_G8:a_incr(a_L2);
 if(!a_more(a_L2,to_LIST(a_1447)->aupb)){ goto a_G11;}
-a_putchar(a_1106,37); goto a_G46;
+a_putchar(a_1106,37); goto a_G29;
 a_G11:{register a_word a_r1=to_LIST(a_1447)->offset[a_L2];
  if(a_r1==114){ goto a_G12;}
- if(a_r1==103){ goto a_G16;}
- if(a_r1==71){ goto a_G20;}
- if(a_r1==119){ goto a_G24;}
- if(a_r1==110){ goto a_G26;}
- if(a_r1==100){ goto a_G28;}
- if(a_r1==112){ goto a_G32;}
- if(a_r1==115){ goto a_G36;}
- if(a_r1==116){  goto a_G40;}
+ if(a_r1==103){ goto a_G15;}
+ if(a_r1==71){ goto a_G17;}
+ if(a_r1==119){ goto a_G19;}
+ if(a_r1==110){ goto a_G20;}
+ if(a_r1==100){ goto a_G21;}
+ if(a_r1==112){ goto a_G23;}
+ if(a_r1==115){ goto a_G25;}
+ if(a_r1==116){  goto a_G27;}
   goto a_G6;}
 a_G12:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1184(a_V[0]); goto a_G7;
 a_G14:a_putchar(a_1106,63); goto a_G7;
-a_G16:if(a_C<=1){ goto a_G18;} a_C--;a_V+=1;
+a_G15:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1174(a_V[0]); goto a_G7;
-a_G18:a_putchar(a_1106,63); goto a_G7;
-a_G20:if(a_C<=1){ goto a_G22;} a_C--;a_V+=1;
+a_G17:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1172(a_V[0]); goto a_G7;
-a_G22:a_putchar(a_1106,63); goto a_G7;
-a_G24:a_1490(a_1106,a_1001,2130706023); goto a_G7;
-a_G26:a_putchar(a_1106,10); goto a_G7;
-a_G28:if(a_C<=1){ goto a_G30;} a_C--;a_V+=1;
+a_G19:a_1490(a_1106,a_1001,2130706023); goto a_G7;
+a_G20:a_putchar(a_1106,10); goto a_G7;
+a_G21:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1175(a_V[0]); goto a_G7;
-a_G30:a_putchar(a_1106,63); goto a_G7;
-a_G32:if(a_C<=1){ goto a_G34;} a_C--;a_V+=1;
+a_G23:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1183(a_V[0]); goto a_G7;
-a_G34:a_putchar(a_1106,63); goto a_G7;
-a_G36:if(a_C<=1){ goto a_G38;} a_C--;a_V+=1;
+a_G25:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1180(a_V[0]); goto a_G7;
-a_G38:a_putchar(a_1106,63); goto a_G7;
-a_G40:if(a_C<=1){ goto a_G42;} a_C--;a_V+=1;
+a_G27:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1181(a_V[0]); goto a_G7;
-a_G42:a_putchar(a_1106,63); goto a_G7;
-a_G46:if(a_C<=1){ goto a_G48;} a_C--;a_V+=1;
+a_G29:if(a_C<=1){ goto a_G31;} a_C--;a_V+=1;
 a_1490(a_1106,a_1001,2130706019);
-a_G48:a_unstackto(a_1447,a_L3); return;
+a_G31:a_unstackto(a_1447,a_L3); return;
 } /* T */
 static void a_1128(a_word a_A[1]){ /* calltracearg+a> */
 a_word a_P[1];
@@ -2144,7 +2135,7 @@ static void a_1134(void){ /* datadeclaration */
 a_word a_L1;a_word a_L2;a_word a_L3;a_word a_L4;a_word a_P[4];
 a_L1=to_LIST(a_1288)->alwb;
 a_L2=0;a_L3=0;
-a_G3:if(a_more(a_L1,to_LIST(a_1288)->aupb)){ goto a_G19;}
+a_G3:if(a_more(a_L1,to_LIST(a_1288)->aupb)){ goto a_G18;}
 if(!a_1326(a_L1,8)){ goto a_G6;}
 a_G5:a_next(a_1288,a_L1); goto a_G3;
 a_G6:{register a_word a_r1=to_LIST(a_1288)->offset[a_L1-5];
@@ -2165,13 +2156,13 @@ a_G14:a_1124(a_L1,a_L2,a_L3);
 a_L2=a_L1;
 a_L3=2047260083; goto a_G5;
 a_G17:a_1201(a_L1); goto a_G5;
-a_G19:a_L4=0;
-a_G20:a_P[0]=a_L4;if(!a_1316(2,a_P)){ goto a_G22;}a_L4=a_P[0];a_L1=a_P[1];
-a_1197(a_L1); goto a_G20;
-a_G22:if(!a_equal(a_L2,0)){ goto a_G24;}
-a_P[0]=2130705851;a_P[1]=2047260088;a_1105(a_1001,2,a_P); goto a_G25;
-a_G24:a_P[0]=2130705845;a_P[1]=2047260088;a_P[2]=a_L2;a_P[3]=a_L3;a_1105(a_1001,4,a_P);
-a_G25:a_P[0]=2130705837;a_P[1]=2047260088;a_1105(a_1001,2,a_P); return;
+a_G18:a_L4=0;
+a_G19:a_P[0]=a_L4;if(!a_1316(2,a_P)){ goto a_G21;}a_L4=a_P[0];a_L1=a_P[1];
+a_1197(a_L1); goto a_G19;
+a_G21:if(!a_equal(a_L2,0)){ goto a_G23;}
+a_P[0]=2130705851;a_P[1]=2047260088;a_1105(a_1001,2,a_P); goto a_G24;
+a_G23:a_P[0]=2130705845;a_P[1]=2047260088;a_P[2]=a_L2;a_P[3]=a_L3;a_1105(a_1001,4,a_P);
+a_G24:a_P[0]=2130705837;a_P[1]=2047260088;a_1105(a_1001,2,a_P); return;
 } /* datadeclaration */
 static void a_1187(a_word a_F1){ /* pushBUFFER+>a */
 
@@ -2281,18 +2272,18 @@ a_incr(a_1145);
 a_P[0]=2130705798;a_P[1]=a_L1;a_P[2]=a_L1;a_1105(a_1001,3,a_P);
 a_L2=to_LIST(a_1447)->aupb;
 a_L3=0;
-a_G15:if(!a_equal(16777439,a_1461)){ goto a_G17;}
-a_1468(); goto a_G26;
-a_G17:a_1141(a_P);a_L4=a_P[0];
-if(!a_1142(a_P)){ goto a_G24;}a_L5=a_P[0];
+a_G14:if(!a_equal(16777439,a_1461)){ goto a_G16;}
+a_1468(); goto a_G25;
+a_G16:a_1141(a_P);a_L4=a_P[0];
+if(!a_1142(a_P)){ goto a_G23;}a_L5=a_P[0];
 a_1146(a_L3,a_L4,a_L2);
 a_P[0]=2130705792;a_P[1]=a_L5;a_1105(a_1001,2,a_P);
 a_incr(a_1145);
 a_unstackto(a_1447,a_L2);
-a_L3=0; goto a_G25;
-a_G24:a_add(a_L3,a_L4,a_L3);
-a_G25:a_1204(); goto a_G15;
-a_G26:a_1146(a_L3,0,a_L2);
+a_L3=0; goto a_G24;
+a_G23:a_add(a_L3,a_L4,a_L3);
+a_G24:a_1204(); goto a_G14;
+a_G25:a_1146(a_L3,0,a_L2);
 a_unstackto(a_1447,a_L2);
 a_incr(a_1145);
 a_P[0]=2130705788;a_1105(a_1001,1,a_P); return;
@@ -2358,7 +2349,7 @@ a_word a_L1;a_word a_P[3];
 a_P[0]=2130705716;a_1105(a_1001,1,a_P);
 a_P[0]=2130705705;a_P[1]=183666532;a_P[2]=183666539;a_1105(a_1001,3,a_P);
 a_L1=to_LIST(a_1288)->alwb;
-a_G4:if(a_more(a_L1,to_LIST(a_1288)->aupb)){ goto a_G11;}
+a_G4:if(a_more(a_L1,to_LIST(a_1288)->aupb)){ goto a_G10;}
 if(!a_1326(a_L1,8)){ goto a_G7;}
 a_G6:a_next(a_1288,a_L1); goto a_G4;
 a_G7:{register a_word a_r1=to_LIST(a_1288)->offset[a_L1-5];
@@ -2367,17 +2358,17 @@ a_G7:{register a_word a_r1=to_LIST(a_1288)->offset[a_L1-5];
   goto a_G6;}
 a_G8:a_1159(0,a_L1); goto a_G6;
 a_G9:a_1159(1,a_L1); goto a_G6;
-a_G11:a_L1=to_LIST(a_1288)->alwb;
-a_G12:if(a_more(a_L1,to_LIST(a_1288)->aupb)){ goto a_G19;}
-if(!a_1326(a_L1,8)){ goto a_G15;}
-a_G14:a_next(a_1288,a_L1); goto a_G12;
-a_G15:{register a_word a_r1=to_LIST(a_1288)->offset[a_L1-5];
- if(a_r1==16777340){ goto a_G16;}
- if(a_r1==16777345){  goto a_G17;}
-  goto a_G14;}
-a_G16:a_1130(a_L1); goto a_G14;
-a_G17:a_1135(a_L1); goto a_G14;
-a_G19:a_P[0]=2130705693;a_1105(a_1001,1,a_P); return;
+a_G10:a_L1=to_LIST(a_1288)->alwb;
+a_G11:if(a_more(a_L1,to_LIST(a_1288)->aupb)){ goto a_G17;}
+if(!a_1326(a_L1,8)){ goto a_G14;}
+a_G13:a_next(a_1288,a_L1); goto a_G11;
+a_G14:{register a_word a_r1=to_LIST(a_1288)->offset[a_L1-5];
+ if(a_r1==16777340){ goto a_G15;}
+ if(a_r1==16777345){  goto a_G16;}
+  goto a_G13;}
+a_G15:a_1130(a_L1); goto a_G13;
+a_G16:a_1135(a_L1); goto a_G13;
+a_G17:a_P[0]=2130705693;a_1105(a_1001,1,a_P); return;
 } /* datainitialization */
 static void a_1185(void){ /* procwaitfor */
 a_word a_L1;a_word a_L2;a_word a_L3;a_word a_P[3];
@@ -2552,14 +2543,14 @@ a_word a_L2;a_word a_P[3];
 {register a_word a_r1=to_LIST(a_1447)->offset[a_A[0]];
  if(a_r1==16777475||a_r1==16777479||a_r1==16777471){ goto a_G2;}
  if(a_r1==16777459){ goto a_G2;}
- if(a_r1==16777448){  goto a_G8;}
-  goto a_G10;}
+ if(a_r1==16777448){  goto a_G5;}
+  goto a_G7;}
 a_G2:a_P[0]=2130705462;a_P[1]=a_A[0];a_1105(a_1001,2,a_P);
 a_G3:a_incr(a_A[0]);
 a_incr(a_A[0]); return;
-a_G8:a_incr(a_A[0]);
+a_G5:a_incr(a_A[0]);
 a_P[0]=a_A[0];a_1112(a_P);a_A[0]=a_P[0]; return;
-a_G10:a_1115(to_LIST(a_1447)->offset[a_A[0]],a_P);a_L2=a_P[0];
+a_G7:a_1115(to_LIST(a_1447)->offset[a_A[0]],a_P);a_L2=a_P[0];
 a_incr(a_A[0]);
 a_P[0]=2130705459;a_P[1]=a_A[0];a_P[2]=a_L2;a_1105(a_1001,3,a_P); goto a_G3;
 } /* Taffixinner */
@@ -2880,23 +2871,21 @@ a_subtr(0,a_L5,a_L7); goto a_G9;
 a_G8:a_L7=a_L5;
 a_G9:a_1309(a_1126,a_P);a_L6=a_P[0];
 a_mult(a_L7,a_L6,a_L7);
-a_G11:if(a_equal(a_L7,0)){ goto a_G27;}
+a_G11:if(a_equal(a_L7,0)){ goto a_G25;}
 a_1314(a_1126,a_L9,a_P);a_L8=a_P[0];
-if(a_equal(a_L8,16777376)){ goto a_G21;}
+if(a_equal(a_L8,16777376)){ goto a_G19;}
 if(!a_more(a_L5,0)){ goto a_G18;}
 a_P[0]=2130705240;a_P[1]=a_F4;a_1105(a_1001,2,a_P);
-a_1107(a_F1);
-a_putchar(a_1106,59); goto a_G21;
-a_G18:a_P[0]=2130705235;a_P[1]=a_F4;a_1105(a_1001,2,a_P);
-a_1107(a_F1);
-a_putchar(a_1106,59);
-a_G21:a_incr(a_L9);
-if(a_less(a_L9,a_F2)){ goto a_G24;}
+a_G16:a_1107(a_F1);
+a_putchar(a_1106,59); goto a_G19;
+a_G18:a_P[0]=2130705235;a_P[1]=a_F4;a_1105(a_1001,2,a_P); goto a_G16;
+a_G19:a_incr(a_L9);
+if(a_less(a_L9,a_F2)){ goto a_G22;}
 a_L9=a_F3;
-a_G24:a_decr(a_L7);
+a_G22:a_decr(a_L7);
 a_incr(a_F4);
 a_P[0]=a_F1;a_1162(a_P);a_F1=a_P[0]; goto a_G11;
-a_G27:if(a_mreq(a_L5,0)){ return;}
+a_G25:if(a_mreq(a_L5,0)){ return;}
 a_P[0]=2130705230;a_P[1]=a_F4;a_P[2]=a_L6;a_1105(a_1001,3,a_P); return;
 } /* repeatblockpreload */
 static void a_1192(a_word a_F1){ /* regularcallpreload+>a */
@@ -2909,12 +2898,12 @@ a_incr(a_L3);
 if(!a_equal(a_L5,16777376)){ goto a_G9;}
 a_incr(a_L4);
 a_G8:a_P[0]=a_F1;a_1162(a_P);a_F1=a_P[0]; goto a_G3;
-a_G9:if(!a_equal(a_L5,16777382)){ goto a_G15;}
+a_G9:if(!a_equal(a_L5,16777382)){ goto a_G14;}
 a_P[0]=2130705240;a_P[1]=a_L4;a_1105(a_1001,2,a_P);
 a_incr(a_L4);
 a_1107(a_F1);
 a_putchar(a_1106,59); goto a_G8;
-a_G15:if(!a_equal(a_L5,16777388)){ goto a_G8;}
+a_G14:if(!a_equal(a_L5,16777388)){ goto a_G8;}
 a_1196(a_F1,a_L2,a_L3,a_L4); return;
 } /* regularcallpreload */
 static void a_1194(a_word a_F1,a_word a_F2,a_word a_F3){ /* repeatblockcall+>a+>a+>a */
@@ -3123,12 +3112,12 @@ static void a_1222(a_word a_F1,a_word a_F2){ /* checkconstanttype+>a+>a */
 {register a_word a_r1=to_LIST(a_1288)->offset[a_F1-5];
  if(a_r1==16777335){ goto a_G2;}
  if(a_r1==16777304){ goto a_G3;}
- if(a_r1==16777309||a_r1==16777314){  goto a_G5;}
-  goto a_G7;}
-a_G2:if(a_equal(a_F2,1)){ goto a_G7;}
-a_G3:if(!a_1326(a_F1,24)){ return;} goto a_G7;
-a_G5:if(!a_equal(a_F2,0)){ goto a_G3;}
-a_G7:a_1422(a_1001,2130706092); return;
+ if(a_r1==16777309||a_r1==16777314){  goto a_G4;}
+  goto a_G5;}
+a_G2:if(a_equal(a_F2,1)){ goto a_G5;}
+a_G3:if(!a_1326(a_F1,24)){ return;} goto a_G5;
+a_G4:if(!a_equal(a_F2,0)){ goto a_G3;}
+a_G5:a_1422(a_1001,2130706092); return;
 } /* checkconstanttype */
 static void a_1240(void){ /* readexpression */
 a_word a_L1;a_word a_L2;a_word a_P[1];
@@ -3147,9 +3136,9 @@ to_LIST(a_1288)->offset[a_L1-1]=to_LIST(a_1216)->aupb;
 a_G13:{ if(a_1461==16777439){ goto a_G14;}
  if(a_1461==16777459){ goto a_G16;}
  if(a_1461==16777471){ goto a_G19;}
- if(a_1461==16777269||a_1461==16777291){ goto a_G24;}
- if(a_1461==16777231){ goto a_G33;}
- if(a_1461==16777436||a_1461==16777421||a_1461==16777445||a_1461==16777418||a_1461==16777400||a_1461==16777430||a_1461==16777451||a_1461==16777415||a_1461==16777427||a_1461==16777406){  goto a_G42;}
+ if(a_1461==16777269||a_1461==16777291){ goto a_G23;}
+ if(a_1461==16777231){ goto a_G31;}
+ if(a_1461==16777436||a_1461==16777421||a_1461==16777445||a_1461==16777418||a_1461==16777400||a_1461==16777430||a_1461==16777451||a_1461==16777415||a_1461==16777427||a_1461==16777406){  goto a_G39;}
   goto a_G7;}
 a_G14:a_1468();
 a_1239(16777439); return;
@@ -3160,7 +3149,7 @@ a_G19:a_L1=a_1462;
 a_P[0]=a_L1;a_1231(a_P);a_L1=a_P[0];
 a_1239(a_L1);
 a_1222(a_L1,0); goto a_G18;
-a_G24:a_1239(a_1461);
+a_G23:a_1239(a_1461);
 a_1468();
 if(!a_equal(16777471,a_1461)){ goto a_G4;}
 a_L1=a_1462;
@@ -3168,7 +3157,7 @@ a_1468();
 a_P[0]=a_L1;a_1231(a_P);a_L1=a_P[0];
 a_1239(a_L1);
 a_1223(a_L1); goto a_G13;
-a_G33:a_1239(a_1461);
+a_G31:a_1239(a_1461);
 a_1468();
 if(!a_equal(16777471,a_1461)){ goto a_G4;}
 a_L1=a_1462;
@@ -3176,7 +3165,7 @@ a_1468();
 a_P[0]=a_L1;a_1231(a_P);a_L1=a_P[0];
 a_1239(a_L1);
 a_1221(a_L1); goto a_G13;
-a_G42:a_1239(a_1461); goto a_G18;
+a_G39:a_1239(a_1461); goto a_G18;
 } /* readexpression */
 static a_word a_1215(a_word a_F1){ /* E+>a */
 
@@ -3194,20 +3183,20 @@ static a_word a_1218(a_word a_F1,a_word a_A[2]){ /* Eop+>a+a>+a> */
 a_A[0]=to_LIST(a_1216)->offset[a_1225];
 { if(a_A[0]==16777451){ goto a_G3;}
  if(a_A[0]==16777400){ goto a_G6;}
- if(a_A[0]==16777430){ goto a_G9;}
- if(a_A[0]==16777436||a_A[0]==16777421){ goto a_G12;}
- if(a_A[0]==16777418||a_A[0]==16777445){  goto a_G15;}
+ if(a_A[0]==16777430){ goto a_G8;}
+ if(a_A[0]==16777436||a_A[0]==16777421){ goto a_G10;}
+ if(a_A[0]==16777418||a_A[0]==16777445){  goto a_G12;}
   return 0;}
 a_G3:if(!a_equal(a_F1,0)){ return 0;}
 a_A[1]=1;
 a_G5:a_incr(a_1225); return 1;
 a_G6:if(!a_lseq(a_F1,1)){ return 0;}
 a_A[1]=2; goto a_G5;
-a_G9:if(!a_lseq(a_F1,2)){ return 0;}
+a_G8:if(!a_lseq(a_F1,2)){ return 0;}
 a_A[1]=3; goto a_G5;
-a_G12:if(!a_lseq(a_F1,3)){ return 0;}
+a_G10:if(!a_lseq(a_F1,3)){ return 0;}
 a_A[1]=4; goto a_G5;
-a_G15:if(!a_lseq(a_F1,4)){ return 0;}
+a_G12:if(!a_lseq(a_F1,4)){ return 0;}
 a_A[1]=5; goto a_G5;
 } /* Eop */
 static void a_1238(a_word a_F1,a_word a_F2,a_word a_F3){ /* optor+>a+>a+>a */
@@ -3243,10 +3232,10 @@ a_1379(4,a_A[0],a_A[0]); return 1;
 a_G10:if(!a_1215(16777421)){ goto a_G13;}
 if(!a_1233(a_P)){ return 0;}a_A[0]=a_P[0];
 a_1379(5,a_A[0],a_A[0]); return 1;
-a_G13:if(!a_1215(16777231)){ goto a_G17;}
+a_G13:if(!a_1215(16777231)){ goto a_G16;}
 a_1310(to_LIST(a_1216)->offset[a_1225],a_P);a_A[0]=a_P[0];
 a_1017(1,a_A[0],a_P);a_A[0]=a_P[0]; goto a_G6;
-a_G17:if(!a_1217(a_P)){ return 0;}a_A[0]=a_P[0];
+a_G16:if(!a_1217(a_P)){ return 0;}a_A[0]=a_P[0];
 a_P[0]=a_A[0];a_1231(a_P);a_A[0]=a_P[0];
 if(!a_equal(to_LIST(a_1288)->offset[a_A[0]-5],16777304)){ return 0;}
 a_1234(a_A[0]);
@@ -3319,18 +3308,18 @@ a_1379(4,a_A[0],a_A[0]); return;
 a_G10:if(!a_1215(16777421)){ goto a_G13;}
 a_1226(a_P);a_A[0]=a_P[0];
 a_1379(5,a_A[0],a_A[0]); return;
-a_G13:if(!a_1215(16777231)){ goto a_G17;}
+a_G13:if(!a_1215(16777231)){ goto a_G16;}
 a_1310(to_LIST(a_1216)->offset[a_1225],a_P);a_A[0]=a_P[0];
 a_1017(1,a_A[0],a_P);a_A[0]=a_P[0]; goto a_G6;
-a_G17:if(!a_1215(16777269)){ goto a_G20;}
+a_G16:if(!a_1215(16777269)){ goto a_G18;}
 a_1230(16777269,to_LIST(a_1216)->offset[a_1225],a_P);a_A[0]=a_P[0]; goto a_G6;
-a_G20:if(!a_1215(16777291)){ goto a_G23;}
+a_G18:if(!a_1215(16777291)){ goto a_G20;}
 a_1230(16777291,to_LIST(a_1216)->offset[a_1225],a_P);a_A[0]=a_P[0]; goto a_G6;
-a_G23:if(!a_1217(a_P)){ goto a_G27;}a_A[0]=a_P[0];
+a_G20:if(!a_1217(a_P)){ goto a_G24;}a_A[0]=a_P[0];
 a_P[0]=a_A[0];a_1231(a_P);a_A[0]=a_P[0];
 a_1227(a_A[0]);
 a_1017(0,to_LIST(a_1288)->offset[a_A[0]],a_P);a_A[0]=a_P[0]; return;
-a_G27:a_1422(a_1001,2130706074); return;
+a_G24:a_1422(a_1001,2130706074); return;
 } /* finalbase */
 static void a_1229(a_word a_F1,a_word a_A[1]){ /* finalexpr+>a+a> */
 a_word a_L3;a_word a_L4;a_word a_L5;a_word a_P[2];
@@ -3488,10 +3477,10 @@ static void a_1247(a_word a_F1,a_word a_F2){ /* checkconstanttype+>a+>a */
 {register a_word a_r1=to_LIST(a_1288)->offset[a_F1-5];
  if(a_r1==16777335){ goto a_G2;}
  if(a_r1==16777304){  goto a_G3;}
-  goto a_G5;}
-a_G2:if(a_equal(a_F2,1)){ goto a_G5;}
+  goto a_G4;}
+a_G2:if(a_equal(a_F2,1)){ goto a_G4;}
 a_G3:if(!a_1326(a_F1,24)){ return;}
-a_G5:a_1422(a_1001,2130706166); return;
+a_G4:a_1422(a_1001,2130706166); return;
 } /* checkconstanttype */
 static void a_1249(a_word a_F1){ /* checkfillconstanttype+>a */
 
@@ -3520,22 +3509,22 @@ a_G5:a_1248(a_L1);
 if(!a_equal(16777455,a_1461)){ goto a_G4;}
 a_L2=a_1462;
 a_1468();
-if(a_equal(a_L2,1)){ goto a_G12;}
-if(!a_equal(a_L2,3)){ goto a_G13;}
-a_G12:a_1358(a_L1,32);
-a_G13:if(a_equal(a_L2,2)){ goto a_G15;}
-if(!a_equal(a_L2,3)){ goto a_G16;}
-a_G15:a_1358(a_L1,64);
-a_G16:a_1346(a_L1);
+if(a_equal(a_L2,1)){ goto a_G11;}
+if(!a_equal(a_L2,3)){ goto a_G12;}
+a_G11:a_1358(a_L1,32);
+a_G12:if(a_equal(a_L2,2)){ goto a_G14;}
+if(!a_equal(a_L2,3)){ goto a_G15;}
+a_G14:a_1358(a_L1,64);
+a_G15:a_1346(a_L1);
 if(!a_equal(16777439,a_1461)){ goto a_G4;}
 
 a_1468();
 a_L3=0;
-a_G22:a_incr(a_L3);
+a_G20:a_incr(a_L3);
 a_1311(a_L1,a_L3,a_P);a_L2=a_P[0];
 if(a_equal(a_L2,0)){ return;}
 a_P[0]=a_L2;a_1264(a_P);a_L2=a_P[0];
-a_1251(a_L2); goto a_G22;
+a_1251(a_L2); goto a_G20;
 } /* fileentry */
 static void a_1282(void){ /* skipfill */
 a_word a_L1;a_word a_P[1];
@@ -3549,11 +3538,11 @@ if(!a_equal(16777455,a_1461)){ goto a_G4;}
 
 a_1468();
 a_1275(a_L1);
-a_G12:if(!a_equal(16777439,a_1461)){ goto a_G14;}
+a_G11:if(!a_equal(16777439,a_1461)){ goto a_G13;}
 a_1468(); return;
-a_G14:a_1284();
+a_G13:a_1284();
 a_1285(a_L1);
-a_1283(a_L1); goto a_G12;
+a_1283(a_L1); goto a_G11;
 } /* skipfill */
 static void a_1250(void){ /* checkfillitem */
 a_word a_L1;
@@ -3621,18 +3610,18 @@ a_G5:a_1251(a_L1);
 if(!a_equal(16777455,a_1461)){ goto a_G4;}
 a_L2=a_1462;
 a_1468();
-{ if(a_L2==0||a_L2==1||a_L2==2){ goto a_G11;}
- if(a_L2==3||a_L2==4){  goto a_G15;}
-  goto a_G20;}
-a_G11:if(!a_equal(16777455,a_1461)){ goto a_G4;}
+{ if(a_L2==0||a_L2==1||a_L2==2){ goto a_G10;}
+ if(a_L2==3||a_L2==4){  goto a_G13;}
+  goto a_G17;}
+a_G10:if(!a_equal(16777455,a_1461)){ goto a_G4;}
 a_L3=a_1462;
-a_1468(); goto a_G21;
-a_G15:if(!a_equal(16777471,a_1461)){ goto a_G4;}
+a_1468(); goto a_G18;
+a_G13:if(!a_equal(16777471,a_1461)){ goto a_G4;}
 a_L3=a_1462;
 a_1468();
-a_1247(a_L3,1); goto a_G21;
-a_G20:a_1422(a_1001,2130706138); return;
-a_G21:a_1344(a_L1,a_L2);
+a_1247(a_L3,1); goto a_G18;
+a_G17:a_1422(a_1001,2130706138); return;
+a_G18:a_1344(a_L1,a_L2);
 a_1343(a_L1,a_L3);
 a_1275(a_L1);
 if(!a_equal(16777439,a_1461)){ goto a_G4;}
@@ -3702,16 +3691,16 @@ a_G6:a_1468();
 a_1281(); goto a_G2;
 a_G8:if(a_equal(16777266,a_1461)){ goto a_G6;}
 if(a_equal(16777250,a_1461)){ goto a_G6;}
-if(!a_equal(16777224,a_1461)){ goto a_G17;}
+if(!a_equal(16777224,a_1461)){ goto a_G13;}
 a_1468();
 a_1273(0); goto a_G2;
-a_G17:if(!a_equal(16777258,a_1461)){ goto a_G20;}
+a_G13:if(!a_equal(16777258,a_1461)){ goto a_G16;}
 a_1468();
 a_1273(1); goto a_G2;
-a_G20:if(!a_equal(16777246,a_1461)){ goto a_G23;}
+a_G16:if(!a_equal(16777246,a_1461)){ goto a_G19;}
 a_1468();
 a_1258(); goto a_G2;
-a_G23:if(a_equal(a_1461,16777285)){ return;}
+a_G19:if(a_equal(a_1461,16777285)){ return;}
 a_1427(a_1001,2130706133); return;
 } /* datasectionii */
 static void a_1258(void){ /* externalentry */
@@ -3726,17 +3715,17 @@ a_1468();
 if(!a_equal(16777439,a_1461)){ goto a_G4;}
 
 a_1468();
-if(a_1326(a_L1,16)){ goto a_G15;}
-a_G14:a_1422(a_1001,2130706127); return;
-a_G15:if(a_1326(a_L1,8)){ goto a_G14;}
+if(a_1326(a_L1,16)){ goto a_G13;}
+a_G12:a_1422(a_1001,2130706127); return;
+a_G13:if(a_1326(a_L1,8)){ goto a_G12;}
 {register a_word a_r1=to_LIST(a_1288)->offset[a_L1-5];
- if(a_r1==16777349||a_r1==16777304||a_r1==16777309){ goto a_G18;}
- if(a_r1==16777340||a_r1==16777345){ goto a_G19;}
- if(a_r1==16777318||a_r1==16777322){  goto a_G20;}
-  goto a_G14;}
-a_G18:to_LIST(a_1288)->offset[a_L1]=a_L2; return;
-a_G19:to_LIST(a_1288)->offset[a_L1-1]=a_L2; return;
-a_G20:a_1343(a_L1,a_L2); return;
+ if(a_r1==16777349||a_r1==16777304||a_r1==16777309){ goto a_G15;}
+ if(a_r1==16777340||a_r1==16777345){ goto a_G16;}
+ if(a_r1==16777318||a_r1==16777322){  goto a_G17;}
+  goto a_G12;}
+a_G15:to_LIST(a_1288)->offset[a_L1]=a_L2; return;
+a_G16:to_LIST(a_1288)->offset[a_L1-1]=a_L2; return;
+a_G17:a_1343(a_L1,a_L2); return;
 } /* externalentry */
 static void a_1273(a_word a_F1){ /* readmatter+>a */
 a_word a_L2;
@@ -3759,16 +3748,16 @@ a_G5:a_P[0]=a_L1;a_1264(a_P);a_L1=a_P[0];
 if(!a_equal(16777455,a_1461)){ goto a_G4;}
 a_L2=a_1462;
 a_1468();
-a_G10:if(!a_equal(16777439,a_1461)){ goto a_G12;}
+a_G9:if(!a_equal(16777439,a_1461)){ goto a_G11;}
 a_1468(); return;
-a_G12:a_1269(a_P);a_L3=a_P[0];
+a_G11:a_1269(a_P);a_L3=a_P[0];
 a_add(a_L3,a_1260,a_1260);
 a_1271(a_L1,a_L2,a_L3);
-a_1270(a_L1); goto a_G10;
+a_1270(a_L1); goto a_G9;
 } /* loosefill */
 static void a_1269(a_word a_A[1]){ /* loosefillitem+a> */
 
-if(!a_equal(16777427,a_1461)){ goto a_G14;}
+if(!a_equal(16777427,a_1461)){ goto a_G12;}
 a_1468();
 a_A[0]=0;
 a_G4:if(!a_equal(16777406,a_1461)){ goto a_G6;}
@@ -3776,14 +3765,14 @@ a_1468(); return;
 a_G6:if(!a_equal(16777459,a_1461)){ goto a_G9;}
 a_G7:a_1468();
 a_incr(a_A[0]); goto a_G4;
-a_G9:if(!a_equal(16777471,a_1461)){ goto a_G12;}
+a_G9:if(!a_equal(16777471,a_1461)){ goto a_G11;}
  goto a_G7;
-a_G12:a_1422(a_1001,2130706109); return;
-a_G14:if(!a_equal(16777459,a_1461)){ goto a_G17;}
-a_G15:a_1468();
+a_G11:a_1422(a_1001,2130706109); return;
+a_G12:if(!a_equal(16777459,a_1461)){ goto a_G15;}
+a_G13:a_1468();
 a_A[0]=1; return;
-a_G17:if(!a_equal(16777471,a_1461)){ goto a_G12;}
- goto a_G15;
+a_G15:if(!a_equal(16777471,a_1461)){ goto a_G11;}
+ goto a_G13;
 } /* loosefillitem */
 static void a_1276(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_A[1]){ /* repeatervalue+>a+>a+>a+a> */
 a_word a_P[6];
@@ -3853,9 +3842,9 @@ a_1313(a_L3,a_P);a_L4=a_P[0];
 a_1321(a_L3,a_P);a_L5=a_P[0];
 if(!a_mreq(a_L5,0)){ goto a_G11;}
 a_max(a_L5,a_L4);
-a_G10:a_add(a_L4,a_A[0],a_A[0]); goto a_G13;
+a_G10:a_add(a_L4,a_A[0],a_A[0]); goto a_G12;
 a_G11:a_subtr(a_A[1],a_L5,a_A[1]); goto a_G10;
-a_G13:a_1315(a_L3,a_P);a_L3=a_P[0]; goto a_G3;
+a_G12:a_1315(a_L3,a_P);a_L3=a_P[0]; goto a_G3;
 } /* collectlistsizeclaims */
 static void a_1277(void){ /* setlistbounds */
 a_word a_L1;a_word a_L2;a_word a_L3;a_word a_L4;a_word a_L5;a_word a_L6;a_word a_P[2];
@@ -4076,7 +4065,7 @@ a_G6:a_1422(a_1001,2130706193); return;
 a_G7:a_1340(a_L5);
 { if(a_L5==16777355||a_L5==16777361){ goto a_G9;}
  if(a_L5==16777371||a_L5==16777376||a_L5==16777382||a_L5==16777366||a_L5==16777388||a_L5==16777394){  goto a_G1;}
-  goto a_G22;}
+  goto a_G20;}
 a_G9:if(!a_equal(16777455,a_1461)){ goto a_G6;}
 a_L3=a_1462;
 a_1468();
@@ -4088,7 +4077,7 @@ a_incr(to_LIST(a_1287)->offset[a_F1-1]);
 a_1340(a_L3);
 a_incr(to_LIST(a_1287)->offset[a_F1-1]);
 a_1340(a_L4); return;
-a_G22:a_1422(a_1001,2130706226); return;
+a_G20:a_1422(a_1001,2130706226); return;
 } /* formalaffixes */
 static void a_1362(a_word a_A[1]){ /* storeformalaffixes+a> */
 a_word a_L2;a_word a_L3;a_word a_P[1];
@@ -4149,18 +4138,18 @@ a_booland(a_L2,117557020,to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-6]);
 if(!a_equal(16777455,a_1461)){ goto a_G5;}
 a_L3=a_1462;
 a_1468();
-if(a_lseq(a_L3,0)){ goto a_G24;}
-if(!a_more(a_L3,a_1336)){ goto a_G23;}
-a_G22:a_1422(a_1001,2130706215); return;
-a_G23:to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-2]=a_L3;
-a_G24:{register a_word a_r1=to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-5];
- if(a_r1==16777349){ goto a_G25;}
- if(a_r1==16777322||a_r1==16777318||a_r1==16777328){ goto a_G26;}
- if(a_r1==16777304||a_r1==16777309||a_r1==16777314||a_r1==16777335||a_r1==16777340||a_r1==16777345){  goto a_G28;}
-  goto a_G22;}
-a_G25:a_1362(a_P);to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-1]=a_P[0]; goto a_G28;
-a_G26:a_1363(a_P);to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-1]=a_P[0];
-a_G28:if(!a_equal(16777483,a_1461)){ goto a_G5;}
+if(a_lseq(a_L3,0)){ goto a_G21;}
+if(!a_more(a_L3,a_1336)){ goto a_G20;}
+a_G19:a_1422(a_1001,2130706215); return;
+a_G20:to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-2]=a_L3;
+a_G21:{register a_word a_r1=to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-5];
+ if(a_r1==16777349){ goto a_G22;}
+ if(a_r1==16777322||a_r1==16777318||a_r1==16777328){ goto a_G23;}
+ if(a_r1==16777304||a_r1==16777309||a_r1==16777314||a_r1==16777335||a_r1==16777340||a_r1==16777345){  goto a_G24;}
+  goto a_G19;}
+a_G22:a_1362(a_P);to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-1]=a_P[0]; goto a_G24;
+a_G23:a_1363(a_P);to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-1]=a_P[0];
+a_G24:if(!a_equal(16777483,a_1461)){ goto a_G5;}
 to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-4]=a_1462;
 a_1468();
 if(!a_equal(16777483,a_1461)){ goto a_G5;}
@@ -4279,13 +4268,13 @@ a_1468();
 {register a_word a_r1=to_LIST(a_1287)->aupb;a_L2=a_r1;to_LIST(a_1288)->offset[a_F1-1]=a_r1;}
 if(!a_equal(16777448,a_1461)){ return;}
 a_1468();
-a_G13:if(!a_equal(16777403,a_1461)){ goto a_G15;}
+a_G12:if(!a_equal(16777403,a_1461)){ goto a_G14;}
 a_1468(); return;
-a_G15:if(!a_equal(16777471,a_1461)){ goto a_G4;}
+a_G14:if(!a_equal(16777471,a_1461)){ goto a_G4;}
 a_L3=a_1462;
 a_1468();
 a_1340(a_L3);
-a_incr(to_LIST(a_1287)->offset[a_L2-2]); goto a_G13;
+a_incr(to_LIST(a_1287)->offset[a_L2-2]); goto a_G12;
 } /* readfileinfo */
 static void a_1312(a_word a_F1,a_word a_A[2]){ /* getfiledata+>a+a>+a> */
 a_word a_L4;
@@ -4316,16 +4305,16 @@ a_G4:a_1422(a_1001,2130706193); return;
 a_G5:if(!a_equal(16777455,a_1461)){ goto a_G4;}
 a_L2=a_1462;
 a_1468();
-if(!a_mreq(a_L2,a_1336)){ goto a_G11;}
-a_1336=a_L2; goto a_G12;
-a_G11:a_1422(a_1001,2130706210); return;
-a_G12:if(!a_equal(16777483,a_1461)){ goto a_G4;}
+if(!a_mreq(a_L2,a_1336)){ goto a_G10;}
+a_1336=a_L2; goto a_G11;
+a_G10:a_1422(a_1001,2130706210); return;
+a_G11:if(!a_equal(16777483,a_1461)){ goto a_G4;}
 a_L3=a_1462;
 a_1468();
 {register a_word *a_r1=a_extension(a_1287,3);a_r1[0]=a_L1;a_r1[1]=a_L2;a_r1[2]=a_L3;to_LIST(a_1287)->aupb+=3;}
-if(!a_equal(to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-1],0)){ goto a_G19;}
+if(!a_equal(to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-1],0)){ goto a_G17;}
 to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-1]=to_LIST(a_1287)->aupb;
-a_G19:if(!a_equal(16777439,a_1461)){ goto a_G1;}
+a_G17:if(!a_equal(16777439,a_1461)){ goto a_G1;}
 a_1468(); return;
 } /* readdefinitionlist */
 static void a_1332(void){ /* linkmoduleheader */
@@ -4344,7 +4333,7 @@ a_1332(); return;
 a_G5:a_1303();
 to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-5]=a_F1;
 to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-6]=1;
-if(!a_equal(16777277,a_1461)){ goto a_G19;}
+if(!a_equal(16777277,a_1461)){ goto a_G18;}
 a_1468();
 a_1358(to_LIST(a_1288)->aupb,2);
 if(!a_equal(16777483,a_1461)){ goto a_G14;}
@@ -4353,22 +4342,22 @@ a_1468(); goto a_G15;
 a_G14:a_1422(a_1001,2130706193); return;
 a_G15:if(!a_equal(16777483,a_1461)){ goto a_G14;}
 to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-4]=a_1462;
-a_1468(); goto a_G28;
-a_G19:if(!a_equal(16777273,a_1461)){ goto a_G27;}
+a_1468(); goto a_G26;
+a_G18:if(!a_equal(16777273,a_1461)){ goto a_G25;}
 a_1468();
 a_1358(to_LIST(a_1288)->aupb,4);
 if(!a_equal(16777483,a_1461)){ goto a_G14;}
 to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-4]=a_1462;
 a_1468();
-a_1296(); goto a_G28;
-a_G27:a_1422(a_1001,2130706203); return;
-a_G28:a_1332();
+a_1296(); goto a_G26;
+a_G25:a_1422(a_1001,2130706203); return;
+a_G26:a_1332();
 if(!a_equal(16777455,a_1461)){ goto a_G14;}
 a_L2=a_1462;
 a_1468();
-if(a_equal(a_L2,32)){ goto a_G35;}
+if(a_equal(a_L2,32)){ goto a_G32;}
 a_P[0]=2047260265;a_1423(1,a_P);
-a_G35:a_1336=0;
+a_G32:a_1336=0;
 a_1345();
 to_LIST(a_1288)->offset[to_LIST(a_1288)->aupb-2]=a_1336; return;
 } /* headsection */
@@ -4656,24 +4645,24 @@ static void a_1379(a_word a_F1,a_word a_F2,a_word a_F3){ /* regoperator+>a+>a+>a
 
 { if(a_F1==1){ goto a_G2;}
  if(a_F1==2){ goto a_G4;}
- if(a_F1==3){ goto a_G6;}
- if(a_F1==6){ goto a_G8;}
- if(a_F1==7){ goto a_G10;}
- if(a_F1==8){ goto a_G12;}
- if(a_F1==9){ goto a_G14;}
- if(a_F1==4){ goto a_G16;}
- if(a_F1==5){  goto a_G17;}
+ if(a_F1==3){ goto a_G5;}
+ if(a_F1==6){ goto a_G6;}
+ if(a_F1==7){ goto a_G7;}
+ if(a_F1==8){ goto a_G8;}
+ if(a_F1==9){ goto a_G9;}
+ if(a_F1==4){ goto a_G10;}
+ if(a_F1==5){  goto a_G11;}
   return;}
 a_G2:a_boolxor(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]);
 a_G3:a_1369(a_F2); return;
 a_G4:a_booland(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
-a_G6:a_boolor(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
-a_G8:a_add(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
-a_G10:a_subtr(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
-a_G12:a_mult(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
-a_G14:a_div(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
-a_G16:a_boolinvert(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F3]); return;
-a_G17:a_subtr(0,to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F3]); return;
+a_G5:a_boolor(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
+a_G6:a_add(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
+a_G7:a_subtr(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
+a_G8:a_mult(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
+a_G9:a_div(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F2],to_LIST(a_1367)->offset[a_F3]); goto a_G3;
+a_G10:a_boolinvert(to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F3]); return;
+a_G11:a_subtr(0,to_LIST(a_1367)->offset[a_F3],to_LIST(a_1367)->offset[a_F3]); return;
 } /* regoperator */
 static a_word a_1377(a_word a_F1,a_word a_F2){ /* regcompare+>a+>a */
 
@@ -4752,19 +4741,19 @@ a_P[0]=2047260496;a_P[1]=2;a_P[2]=1;a_1428(3,a_P); return;
 a_G9:if(!a_1400(a_1001,2130706268)){ goto a_G12;}
 a_1389=0;
 a_G11:a_previousstring(a_1493,a_1390); goto a_G3;
-a_G12:if(!a_1400(a_1001,2130706263)){ goto a_G18;}
+a_G12:if(!a_1400(a_1001,2130706263)){ goto a_G17;}
 a_previousstring(a_1493,a_1390);
 if(!a_less(a_1390,to_LIST(a_1493)->alwb)){ goto a_G16;}
 a_P[0]=2047260521;a_P[1]=111;a_1423(2,a_P); return;
 a_G16:a_1414=a_1390; goto a_G11;
-a_G18:if(!a_1400(a_1001,2130706260)){ goto a_G24;}
+a_G17:if(!a_1400(a_1001,2130706260)){ goto a_G22;}
 a_previousstring(a_1493,a_1390);
-if(!a_less(a_1390,to_LIST(a_1493)->alwb)){ goto a_G22;}
+if(!a_less(a_1390,to_LIST(a_1493)->alwb)){ goto a_G21;}
 a_P[0]=2047260521;a_P[1]=76;a_1423(2,a_P); return;
-a_G22:a_1401=a_1390; goto a_G11;
-a_G24:if(!a_1400(a_1001,2130706257)){ goto a_G27;}
+a_G21:a_1401=a_1390; goto a_G11;
+a_G22:if(!a_1400(a_1001,2130706257)){ goto a_G24;}
 a_1349(); goto a_G11;
-a_G27:if(!a_1400(a_1001,2130706254)){ return;}
+a_G24:if(!a_1400(a_1001,2130706254)){ return;}
 a_1211(); goto a_G11;
 } /* checkcommandlinearguments */
 static a_word a_1396(a_word a_A[1]){ /* getnextsource+a> */
@@ -4776,10 +4765,10 @@ a_G4:a_A[0]=a_1385;
 a_G5:if(!a_lseq(a_A[0],to_LIST(a_1384)->aupb)){ goto a_G8;}
 a_G6:a_1398(a_A[0],a_P);a_L2=a_P[0];
 if(a_equal(a_L2,0)){ return 1;} goto a_G5;
-a_G8:if(!a_lseq(to_LIST(a_1493)->alwb,a_1390)){ goto a_G13;}
+a_G8:if(!a_lseq(to_LIST(a_1493)->alwb,a_1390)){ goto a_G11;}
 a_1393(a_1390);
 a_previousstring(a_1493,a_1390); goto a_G6;
-a_G13:if(!a_is(a_1389)){ return 0;}
+a_G11:if(!a_is(a_1389)){ return 0;}
 a_1393(183666525);
 a_1402=to_LIST(a_1384)->aupb;
 a_1389=0; goto a_G6;
@@ -4975,24 +4964,24 @@ a_G6:a_L1=to_LIST(a_1447)->aupb;
 a_1413(a_L2);
 a_L4=to_LIST(a_1447)->aupb;
 a_L6=1;
-a_G10:if(a_lseq(a_L4,a_L1)){ goto a_G22;}
+a_G10:if(a_lseq(a_L4,a_L1)){ goto a_G21;}
 {register a_word a_r1=to_LIST(a_1447)->offset[a_L4];
  if(a_r1==46){ goto a_G12;}
  if(a_r1==47||a_r1==92||a_r1==58){  goto a_G19;}
-  goto a_G21;}
+  goto a_G20;}
 a_G12:if(!a_equal(a_L5,0)){ goto a_G15;}
 a_L5=2;
-a_G14:a_L4=a_L1; goto a_G22;
+a_G14:a_L4=a_L1; goto a_G21;
 a_G15:a_decr(a_L4);
 if(!a_is(a_L6)){ goto a_G10;}
 a_L6=0;
 a_unstackto(a_1447,a_L4); goto a_G10;
-a_G19:if(a_equal(a_L5,1)){ goto a_G22;} goto a_G14;
-a_G21:a_decr(a_L4); goto a_G10;
-a_G22:if(a_equal(a_L5,2)){ goto a_G25;}
+a_G19:if(a_equal(a_L5,1)){ goto a_G21;} goto a_G14;
+a_G20:a_decr(a_L4); goto a_G10;
+a_G21:if(a_equal(a_L5,2)){ goto a_G24;}
 a_1392(46);
 a_1392(99);
-a_G25:a_subtr(to_LIST(a_1447)->aupb,a_L4,a_L3);
+a_G24:a_subtr(to_LIST(a_1447)->aupb,a_L4,a_L3);
 a_packstring(a_1447,a_L3,a_1451);
 a_unstackto(a_1447,a_L1); return;
 } /* gettargetfile */
@@ -5021,11 +5010,10 @@ if(!a_equal(a_F1,(-1-2147483647))){ goto a_G5;}
 a_1433(45);
 a_subtr(-1,a_F1,a_F1);
 a_1437(a_F1,49); return;
-a_G5:if(!a_less(a_F1,0)){ goto a_G9;}
+a_G5:if(!a_less(a_F1,0)){ goto a_G8;}
 a_1433(45);
 a_getabs(a_F1,a_F1);
-a_1437(a_F1,48); return;
-a_G9:a_1437(a_F1,48); return;
+a_G8:a_1437(a_F1,48); return;
 } /* printint */
 static void a_1437(a_word a_F1,a_word a_F2){ /* printint1+>a+>a */
 a_word a_L3;a_word a_L4;
@@ -5081,21 +5069,21 @@ a_G7:if(a_equal(a_F1,0)){ goto a_G9;}
 a_1427(a_1001,2130706298); return;
 a_G9:a_L3=to_LIST(a_1447)->aupb;
 a_L4=0;
-a_G11:if(a_lseq(a_L3,a_L2)){ goto a_G19;}
+a_G11:if(a_lseq(a_L3,a_L2)){ goto a_G18;}
 if(!a_equal(to_LIST(a_1447)->offset[a_L3],46)){ goto a_G15;}
 a_incr(a_L4);
 a_G14:a_decr(a_L3); goto a_G11;
-a_G15:if(a_equal(to_LIST(a_1447)->offset[a_L3],47)){ goto a_G19;}
-if(a_equal(to_LIST(a_1447)->offset[a_L3],92)){ goto a_G19;}
+a_G15:if(a_equal(to_LIST(a_1447)->offset[a_L3],47)){ goto a_G18;}
+if(a_equal(to_LIST(a_1447)->offset[a_L3],92)){ goto a_G18;}
 if(!a_equal(to_LIST(a_1447)->offset[a_L3],58)){ goto a_G14;}
-a_G19:a_incr(a_L3);
-if(a_more(a_L3,to_LIST(a_1447)->aupb)){ goto a_G28;}
-if(!a_equal(to_LIST(a_1447)->offset[a_L3],46)){ goto a_G26;}
-if(a_lseq(a_L4,1)){ goto a_G28;}
+a_G18:a_incr(a_L3);
+if(a_more(a_L3,to_LIST(a_1447)->aupb)){ goto a_G25;}
+if(!a_equal(to_LIST(a_1447)->offset[a_L3],46)){ goto a_G24;}
+if(a_lseq(a_L4,1)){ goto a_G25;}
 a_decr(a_L4);
-a_1433(46); goto a_G19;
-a_G26:a_1433(to_LIST(a_1447)->offset[a_L3]); goto a_G19;
-a_G28:a_unstackto(a_1447,a_L2); return;
+a_1433(46); goto a_G18;
+a_G24:a_1433(to_LIST(a_1447)->offset[a_L3]); goto a_G18;
+a_G25:a_unstackto(a_1447,a_L2); return;
 } /* printbase */
 static void a_1438(a_word a_F1){ /* printitem+>a */
 a_word a_L2;a_word a_L3;a_word a_L4;a_word a_P[3];
@@ -5125,39 +5113,39 @@ a_word a_L2;a_word a_L3;
 a_L2=to_LIST(a_1447)->aupb;
 a_unpackstring(a_1420,a_V[0],a_1447);
 a_add(a_L2,1,a_L3);
-a_G4:if(a_less(to_LIST(a_1447)->aupb,a_L3)){ goto a_G40;}
+a_G4:if(a_less(to_LIST(a_1447)->aupb,a_L3)){ goto a_G26;}
 if(!a_noteq(to_LIST(a_1447)->offset[a_L3],37)){ goto a_G8;}
 a_G6:a_1433(to_LIST(a_1447)->offset[a_L3]);
 a_G7:a_incr(a_L3); goto a_G4;
 a_G8:a_incr(a_L3);
 if(!a_less(to_LIST(a_1447)->aupb,a_L3)){ goto a_G11;}
-a_1433(37); goto a_G40;
+a_1433(37); goto a_G26;
 a_G11:{register a_word a_r1=to_LIST(a_1447)->offset[a_L3];
  if(a_r1==112){ goto a_G12;}
- if(a_r1==120){ goto a_G16;}
- if(a_r1==105){ goto a_G20;}
- if(a_r1==99){ goto a_G24;}
- if(a_r1==108){ goto a_G28;}
- if(a_r1==100){ goto a_G32;}
- if(a_r1==110){  goto a_G36;}
+ if(a_r1==120){ goto a_G15;}
+ if(a_r1==105){ goto a_G17;}
+ if(a_r1==99){ goto a_G19;}
+ if(a_r1==108){ goto a_G21;}
+ if(a_r1==100){ goto a_G23;}
+ if(a_r1==110){  goto a_G25;}
   goto a_G6;}
 a_G12:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1440(a_V[0]); goto a_G7;
 a_G14:a_1431(a_1001,2130706288); goto a_G7;
-a_G16:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
+a_G15:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1431(a_1451,a_V[0]); goto a_G7;
-a_G20:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
+a_G17:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1438(a_V[0]); goto a_G7;
-a_G24:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
+a_G19:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1433(a_V[0]); goto a_G7;
-a_G28:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
+a_G21:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1439(a_V[0]); goto a_G7;
-a_G32:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
+a_G23:if(a_C<=1){ goto a_G14;} a_C--;a_V+=1;
 a_1436(a_V[0]); goto a_G7;
-a_G36:a_1433(10); goto a_G7;
-a_G40:if(a_C<=1){ goto a_G42;} a_C--;a_V+=1;
+a_G25:a_1433(10); goto a_G7;
+a_G26:if(a_C<=1){ goto a_G28;} a_C--;a_V+=1;
 a_1431(a_1001,2130706285);
-a_G42:a_unstackto(a_1447,a_L2); return;
+a_G28:a_unstackto(a_1447,a_L2); return;
 } /* formatprint */
 static a_word a_1444(void){ /* waserror */
 
@@ -5287,7 +5275,7 @@ a_word a_L2;
 { if(a_1454==78){ goto a_G2;}
  if(a_1454==48){ goto a_G15;}
  if(a_1454==45){  goto a_G17;}
-  goto a_G30;}
+  goto a_G28;}
 a_G2:a_1467();
 { if(!((48<=a_1454 && a_1454<=57))){ goto a_G8;}
 }
@@ -5310,15 +5298,15 @@ a_G17:a_1467();
 }
 a_subtr(a_1454,48,a_A[0]);
 a_1467();
-if(a_more(a_A[0],0)){ goto a_G24;}
+if(a_more(a_A[0],0)){ goto a_G23;}
 if(!a_equal(1,0)){ goto a_G8;}
-a_G24:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G28;}
+a_G23:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G27;}
 }
 a_subtr(a_1454,48,a_L2);
 a_1467();
-a_addmult(a_A[0],10,a_L2,a_A[0]); goto a_G24;
-a_G28:if(!a_is(1)){ return;} goto a_G14;
-a_G30:a_1422(a_1001,2130706350); return;
+a_addmult(a_A[0],10,a_L2,a_A[0]); goto a_G23;
+a_G27:if(!a_is(1)){ return;} goto a_G14;
+a_G28:a_1422(a_1001,2130706350); return;
 } /* readdestination */
 static void a_1473(a_word a_A[1]){ /* readtargetnumber+a> */
 a_word a_L2;a_word a_L3;a_word a_P[1];
@@ -5326,11 +5314,11 @@ a_L2=to_LIST(a_1447)->aupb;
 a_L3=0;
 a_G3:{ if(a_1454==45){ goto a_G4;}
  if((48<=a_1454 && a_1454<=57)){  goto a_G6;}
-  goto a_G8;}
+  goto a_G7;}
 a_G4:a_L3=1;
 a_G5:a_1467(); goto a_G3;
 a_G6:a_1458(a_1454); goto a_G5;
-a_G8:a_1007(a_L3,a_L2,a_P);a_A[0]=a_P[0];
+a_G7:a_1007(a_L3,a_L2,a_P);a_A[0]=a_P[0];
 a_unstackto(a_1447,a_L2); return;
 } /* readtargetnumber */
 static void a_1459(a_word a_F1,a_word a_A[1]){ /* gettagdata+>a+a> */
@@ -5383,16 +5371,16 @@ to_LIST(a_1448)->offset[a_L1]=0;
 a_previous(a_1448,a_L1); goto a_G3;
 a_G6:a_subtr(to_LIST(a_1448)->aupb,to_LIST(a_1448)->alwb,a_L2);
 a_G7:a_incr(a_L2);
-if(a_mreq(a_L2,a_1450)){ goto a_G11;}
+if(a_mreq(a_L2,a_1450)){ goto a_G10;}
 {register a_word *a_r1=a_extension(a_1448,1);a_r1[0]=0;to_LIST(a_1448)->aupb+=1;}
   goto a_G7;
-a_G11:a_L1=to_LIST(a_1451)->aupb;
-a_G12:if(a_less(a_L1,to_LIST(a_1451)->alwb)){ return;}
+a_G10:a_L1=to_LIST(a_1451)->aupb;
+a_G11:if(a_less(a_L1,to_LIST(a_1451)->alwb)){ return;}
 a_1457(a_L1,a_P);a_L2=a_P[0];
-if(!a_equal(a_L2,a_L1)){ goto a_G17;}
+if(!a_equal(a_L2,a_L1)){ goto a_G16;}
 a_previous(a_1451,a_L1);
-a_previousstring(a_1451,a_L1); goto a_G12;
-a_G17:a_1427(a_1001,2130706344); return;
+a_previousstring(a_1451,a_L1); goto a_G11;
+a_G16:a_1427(a_1001,2130706344); return;
 } /* rehash */
 static void a_1472(a_word a_A[1]){ /* readstring+a> */
 a_word a_L2;a_word a_L3;a_word a_P[1];
@@ -5446,10 +5434,10 @@ a_G12:a_packstring(a_1447,a_L2,a_1451);
 a_unstackto(a_1447,a_L3);
 a_A[0]=16777299;
 a_G15:a_comparestring(a_1446,a_A[0],a_1451,to_LIST(a_1451)->aupb,a_P);a_L2=a_P[0];
-if(a_equal(a_L2,0)){ goto a_G20;}
+if(a_equal(a_L2,0)){ goto a_G19;}
 if(a_equal(a_A[0],16777220)){ goto a_G11;}
 a_previousstring(a_1446,a_A[0]); goto a_G15;
-a_G20:a_unstackstring(a_1451); return;
+a_G19:a_unstackstring(a_1451); return;
 } /* readbold */
 static void a_1475(a_word a_A[1]){ /* readtype+a> */
 a_word a_L2;a_word a_L3;a_word a_L4;a_word a_P[1];
@@ -5473,10 +5461,10 @@ a_G16:a_packstring(a_1447,a_L2,a_1451);
 a_unstackto(a_1447,a_L3);
 a_A[0]=16777394;
 a_G19:a_comparestring(a_1446,a_A[0],a_1451,to_LIST(a_1451)->aupb,a_P);a_L2=a_P[0];
-if(a_equal(a_L2,0)){ goto a_G24;}
+if(a_equal(a_L2,0)){ goto a_G23;}
 if(a_equal(a_A[0],16777304)){ goto a_G15;}
 a_previousstring(a_1446,a_A[0]); goto a_G19;
-a_G24:a_unstackstring(a_1451); return;
+a_G23:a_unstackstring(a_1451); return;
 } /* readtype */
 static void a_1468(void){ /* nextsymbol */
 a_word a_L1;a_word a_P[2];
@@ -5488,35 +5476,35 @@ a_G4:{ if(a_1454==32||a_1454==10){ goto a_G5;}
  if(a_1454==48){ goto a_G7;}
  if((49<=a_1454 && a_1454<=57)){ goto a_G10;}
  if(a_1454==70){ goto a_G23;}
- if(a_1454==73){ goto a_G37;}
- if(a_1454==76){ goto a_G52;}
- if(a_1454==78){ goto a_G66;}
- if(a_1454==88){ goto a_G80;}
- if(a_1454==84){ goto a_G83;}
- if(a_1454==39){ goto a_G86;}
- if(a_1454==60){ goto a_G87;}
- if(a_1454==34){ goto a_G89;}
- if(a_1454==38){ goto a_G91;}
- if(a_1454==93){ goto a_G93;}
- if(a_1454==41){ goto a_G95;}
- if(a_1454==58){ goto a_G97;}
- if(a_1454==44){ goto a_G99;}
- if(a_1454==126){ goto a_G101;}
- if(a_1454==47){ goto a_G103;}
- if(a_1454==45){ goto a_G105;}
- if(a_1454==35){ goto a_G122;}
- if(a_1454==40){ goto a_G124;}
- if(a_1454==124){ goto a_G126;}
- if(a_1454==62){ goto a_G128;}
- if(a_1454==43){ goto a_G131;}
- if(a_1454==46){ goto a_G133;}
- if(a_1454==59){ goto a_G135;}
- if(a_1454==42){ goto a_G137;}
- if(a_1454==91){ goto a_G139;}
- if(a_1454==94){ goto a_G141;}
- if(a_1454==64){ goto a_G143;}
- if(a_1454==1){  goto a_G145;}
-  goto a_G146;}
+ if(a_1454==73){ goto a_G34;}
+ if(a_1454==76){ goto a_G48;}
+ if(a_1454==78){ goto a_G59;}
+ if(a_1454==88){ goto a_G70;}
+ if(a_1454==84){ goto a_G73;}
+ if(a_1454==39){ goto a_G76;}
+ if(a_1454==60){ goto a_G77;}
+ if(a_1454==34){ goto a_G79;}
+ if(a_1454==38){ goto a_G81;}
+ if(a_1454==93){ goto a_G82;}
+ if(a_1454==41){ goto a_G83;}
+ if(a_1454==58){ goto a_G84;}
+ if(a_1454==44){ goto a_G85;}
+ if(a_1454==126){ goto a_G86;}
+ if(a_1454==47){ goto a_G87;}
+ if(a_1454==45){ goto a_G88;}
+ if(a_1454==35){ goto a_G103;}
+ if(a_1454==40){ goto a_G104;}
+ if(a_1454==124){ goto a_G105;}
+ if(a_1454==62){ goto a_G106;}
+ if(a_1454==43){ goto a_G109;}
+ if(a_1454==46){ goto a_G110;}
+ if(a_1454==59){ goto a_G111;}
+ if(a_1454==42){ goto a_G112;}
+ if(a_1454==91){ goto a_G113;}
+ if(a_1454==94){ goto a_G114;}
+ if(a_1454==64){ goto a_G115;}
+ if(a_1454==1){  goto a_G116;}
+  goto a_G117;}
 a_G5:a_1467(); goto a_G1;
 a_G6:a_1456(); goto a_G1;
 a_G7:a_1461=16777455;
@@ -5543,106 +5531,106 @@ a_1467();
 }
 a_subtr(a_1454,48,a_1462);
 a_1467();
-if(a_more(a_1462,0)){ goto a_G31;}
+if(a_more(a_1462,0)){ goto a_G30;}
 if(!a_equal(0,0)){ goto a_G16;}
-a_G31:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G21;}
+a_G30:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G21;}
 }
 a_subtr(a_1454,48,a_L1);
 a_1467();
-a_addmult(a_1462,10,a_L1,a_1462); goto a_G31;
-a_G37:a_1461=16777471;
+a_addmult(a_1462,10,a_L1,a_1462); goto a_G30;
+a_G34:a_1461=16777471;
 a_1467();
 { if(!((48<=a_1454 && a_1454<=57))){ goto a_G16;}
 }
 a_subtr(a_1454,48,a_1462);
 a_1467();
-if(a_more(a_1462,0)){ goto a_G45;}
+if(a_more(a_1462,0)){ goto a_G41;}
 if(!a_equal(0,0)){ goto a_G16;}
-a_G45:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G49;}
+a_G41:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G45;}
 }
 a_subtr(a_1454,48,a_L1);
 a_1467();
-a_addmult(a_1462,10,a_L1,a_1462); goto a_G45;
-a_G49:if(!a_is(0)){ goto a_G51;}
+a_addmult(a_1462,10,a_L1,a_1462); goto a_G41;
+a_G45:if(!a_is(0)){ goto a_G47;}
 a_subtr(0,a_1462,a_1462);
-a_G51:a_P[0]=a_1462;a_1300(a_P);a_1462=a_P[0]; return;
-a_G52:a_1461=16777479;
+a_G47:a_P[0]=a_1462;a_1300(a_P);a_1462=a_P[0]; return;
+a_G48:a_1461=16777479;
 a_1467();
 { if(!((48<=a_1454 && a_1454<=57))){ goto a_G16;}
 }
 a_subtr(a_1454,48,a_1462);
 a_1467();
-if(a_more(a_1462,0)){ goto a_G60;}
+if(a_more(a_1462,0)){ goto a_G55;}
 if(!a_equal(0,0)){ goto a_G16;}
-a_G60:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G21;}
+a_G55:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G21;}
 }
 a_subtr(a_1454,48,a_L1);
 a_1467();
-a_addmult(a_1462,10,a_L1,a_1462); goto a_G60;
-a_G66:a_1461=16777467;
+a_addmult(a_1462,10,a_L1,a_1462); goto a_G55;
+a_G59:a_1461=16777467;
 a_1467();
 { if(!((48<=a_1454 && a_1454<=57))){ goto a_G16;}
 }
 a_subtr(a_1454,48,a_1462);
 a_1467();
-if(a_more(a_1462,0)){ goto a_G74;}
+if(a_more(a_1462,0)){ goto a_G66;}
 if(!a_equal(0,0)){ goto a_G16;}
-a_G74:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G21;}
+a_G66:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G21;}
 }
 a_subtr(a_1454,48,a_L1);
 a_1467();
-a_addmult(a_1462,10,a_L1,a_1462); goto a_G74;
-a_G80:a_1461=16777459;
+a_addmult(a_1462,10,a_L1,a_1462); goto a_G66;
+a_G70:a_1461=16777459;
 a_1467();
 a_1473(a_P);a_1462=a_P[0]; return;
-a_G83:a_1461=16777459;
+a_G73:a_1461=16777459;
 a_1467();
 a_1474(a_P);a_1481=a_P[0];a_1462=a_P[1]; return;
-a_G86:a_1470(a_P);a_1461=a_P[0]; return;
-a_G87:a_1461=16777463;
+a_G76:a_1470(a_P);a_1461=a_P[0]; return;
+a_G77:a_1461=16777463;
 a_1475(a_P);a_1462=a_P[0]; return;
-a_G89:a_1461=16777483;
+a_G79:a_1461=16777483;
 a_1472(a_P);a_1462=a_P[0]; return;
-a_G91:a_1461=16777400; goto a_G9;
-a_G93:a_1461=16777403; goto a_G9;
-a_G95:a_1461=16777406; goto a_G9;
-a_G97:a_1461=16777409; goto a_G9;
-a_G99:a_1461=16777412; goto a_G9;
-a_G101:a_1461=16777415; goto a_G9;
-a_G103:a_1461=16777418; goto a_G9;
-a_G105:a_1467();
-{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G120;}
+a_G81:a_1461=16777400; goto a_G9;
+a_G82:a_1461=16777403; goto a_G9;
+a_G83:a_1461=16777406; goto a_G9;
+a_G84:a_1461=16777409; goto a_G9;
+a_G85:a_1461=16777412; goto a_G9;
+a_G86:a_1461=16777415; goto a_G9;
+a_G87:a_1461=16777418; goto a_G9;
+a_G88:a_1467();
+{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G101;}
 }
 a_1461=16777455;
 { if(!((48<=a_1454 && a_1454<=57))){ goto a_G16;}
 }
 a_subtr(a_1454,48,a_1462);
 a_1467();
-if(a_more(a_1462,0)){ goto a_G114;}
+if(a_more(a_1462,0)){ goto a_G96;}
 if(!a_equal(1,0)){ goto a_G16;}
-a_G114:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G118;}
+a_G96:{ if(!((48<=a_1454 && a_1454<=57))){ goto a_G100;}
 }
 a_subtr(a_1454,48,a_L1);
 a_1467();
-a_addmult(a_1462,10,a_L1,a_1462); goto a_G114;
-a_G118:if(!a_is(1)){ return;} goto a_G22;
-a_G120:a_1461=16777421;
+a_addmult(a_1462,10,a_L1,a_1462); goto a_G96;
+a_G100:if(!a_is(1)){ return;} goto a_G22;
+a_G101:a_1461=16777421;
 a_1462=0; return;
-a_G122:a_1461=16777424; goto a_G9;
-a_G124:a_1461=16777427; goto a_G9;
-a_G126:a_1461=16777430; goto a_G9;
-a_G128:a_1461=16777433;
+a_G103:a_1461=16777424; goto a_G9;
+a_G104:a_1461=16777427; goto a_G9;
+a_G105:a_1461=16777430; goto a_G9;
+a_G106:a_1461=16777433;
 a_1467();
 a_1471(a_P);a_1462=a_P[0]; return;
-a_G131:a_1461=16777436; goto a_G9;
-a_G133:a_1461=16777439; goto a_G9;
-a_G135:a_1461=16777442; goto a_G9;
-a_G137:a_1461=16777445; goto a_G9;
-a_G139:a_1461=16777448; goto a_G9;
-a_G141:a_1461=16777451; goto a_G9;
-a_G143:a_1461=16777397; goto a_G9;
-a_G145:a_1461=16777486; return;
-a_G146:a_1422(a_1001,2130706318); return;
+a_G109:a_1461=16777436; goto a_G9;
+a_G110:a_1461=16777439; goto a_G9;
+a_G111:a_1461=16777442; goto a_G9;
+a_G112:a_1461=16777445; goto a_G9;
+a_G113:a_1461=16777448; goto a_G9;
+a_G114:a_1461=16777451; goto a_G9;
+a_G115:a_1461=16777397; goto a_G9;
+a_G116:a_1461=16777486; return;
+a_G117:a_1422(a_1001,2130706318); return;
 } /* nextsymbol */
 static void a_1445(void){ /* @root */
 
@@ -5721,9 +5709,9 @@ a_1228();
 if(a_1444()){ goto a_G7;}
 a_1246();
 a_1165();
-if(!a_1444()){ goto a_G30;}
+if(!a_1444()){ goto a_G24;}
 a_exit(4); return;
-a_G30:a_1208();
+a_G24:a_1208();
 a_1134();
 a_1486();
 a_1136();
