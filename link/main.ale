@@ -18,7 +18,6 @@ $  the GNU General Public License for more details.
 $
 $ ************************************************************* 
 
-$ 'pragmat'require=("input","item","data","error","target").
 'pragmat'require=("rule","input","item","error","lexical","data","expr","target").
 
 'a'pass1-ptr:

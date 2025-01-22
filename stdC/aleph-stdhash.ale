@@ -1,0 +1,64 @@
+$ standard ALEPH library -- hash routines
+'pragmat'module=stdlib,title="stdlib stdhash".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ hash functions
+$ Simple hash producing a word size hash
+$   string hash+t+p+hash  computes a hash value for the string
+$   block hash+t+p+hash   computes a hash from t[p] until the end of the table
+'f' string hash+t[]+>p+hash>,
+    block hash+t[]+>p+hash>.
+$ BODY ******************************************************** $
+'pragmat'if=compile,library mode=on.
+$ hashing
+'x''f'string hash+t[]+>p+hash>       ="a_stringhash",
+      block hash+t[]+>p+hash>        ="a_blockhash".
+'pragmat'front matter=
+"static void a_stringhash(int,int,int[1]);"
+"static void a_blockhash(int,int,int[1]);".
+'pragmat'back matter=
+"static void a_stringhash(int F1,int F2,int A[1]){"
+" int *ptr=to_LIST(F1)->offset+F2;"
+" unsigned char *v=(unsigned char*)&ptr[1-ptr[0]];"
+" unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v);"
+" while(*v){"
+"  v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;"
+"  v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;"
+"  v++;"
+" }"
+" A[0]=(int)((v1<<16)^v2);"
+"}%n"
+"void a_blockhash(int F1,int F2,int A[1]){"
+" unsigned char *v=(unsigned char*)(to_LIST(F1)->offset+F2+1);"
+" unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v);"
+" int cnt=sizeof(int)*(to_LIST(F1)->aupb-F2);"
+" for(;cnt>0;cnt--){"
+"  v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;"
+"  v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;"
+"  v++;"
+" }"
+" A[0]=(int)((v1<<16)^v2);"
+"}".
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+

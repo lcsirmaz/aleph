@@ -54,6 +54,7 @@ $ BODY *************************************************** $
 'q'same content+>p1+>p2-cnt: $ body of nodes are equal
     type*NODE[p1]=type*NODE[p2],
     len*NODE[p1]=len*NODE[p2],
+    hash*NODE[p1]=hash*NODE[p2],
     len*NODE[p1]->cnt,link*NODE[p1]->p1,link*NODE[p2]->p2,
     (nxt:cnt<0;AUX[p1]=AUX[p2],incr+p1,incr+p2,decr+cnt,:nxt).
 

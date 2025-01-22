@@ -1,0 +1,210 @@
+$ standard ALEPH library, verbose version
+'pragmat' module=stdlib.
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.3)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+'pragmat'if=compile,
+    error="Aleph standard library. Do not compile",
+    endif=compile.
+
+'pragmat'library mode=on.
+$ *************************************************************
+$ architecture dependent values, these are for 32 bit word size
+'cons'word size=32,
+      max int=0x7fffffff,
+      min int=-max int-1,
+      int size=10.	   $ number of digits in max int
+$ *************************************************************
+$ Arithmetic Functions
+$   return the result of the operation without checking overflow
+'f' add+>x+>y+z>, subtr+>x+>y+z>,
+    mult+>x+>y+z>,addmult+>x+>y+>z+u>,
+    div+>x+>y+z>,divrem+>x+>y+z>+u>,incr+>x>,decr+>x>,
+    getabs+>x+y>,max+>x+>y>,min+>x+>y>.
+$ Arithmetic Comparisons including built-in ones, such as
+$   a=b    is replaced by    @equal+a+b
+$   a<=b   is replaced by    @lseq+a+b
+$   a!=b   is replaced by    @noteq+a+b
+'q' equal+>x+>y,not equal+>x+>y,less+>x+>y,lseq+>x+>y,
+    more+>x+>y,mreq+>x+>y,
+    @equal+>x+>y,@noteq+>x+>y,@less+>x+>y,@lseq+>x+>y,
+    @more+>x+>y,@mreq+>x+>y.
+$ Assignment
+$   src -> t1 -> t2 -> t2  is replaced by    @make+src+t1+t2+t3
+'f' @make+>from+@+to>.
+$ *************************************************************
+$ Boolean Operations
+$   false, true
+'cons'false=0,true=1.
+$   is+x        true if x is not zero,
+$   is true+x   true if x is not zero
+$   is false+x  true if x is zero
+'q' is+>x,is true+>x,is false+>x.
+$ Bitwise operations: invert, and, or and xor, plus shifts
+$   left clear+>x>+>n   shifts x by n>=0 positions to the left including
+$         the sign bit; zeroes enter from the low bits
+$   right clear+>x>+>n  shifts x by n>=0 position to the right,
+$         zeroes enter from left, clears the sign bit
+'f' bool invert+>x+y>,bool and+>x+>y+z>,bool or+>x+>y+z>,
+    bool xor+>x+>y+z>,left clear+>x>+>n,right clear+>x>+>n.
+$ *************************************************************
+$ Stacks and Tables
+$   the null pointer. It is checked as is+ptr, so it MUST be zero.
+'cons'nil=0.
+$   was+t+p         true if p points to the actual address space of t
+$   next+t+p        increase p by the calibre of t (next block)
+$   previous+t+p    decrease p by the calibre of t (previous block)
+$   list length+t+p number of actual elements in t (in words, not blocks)
+$   unstack+st      the rightmost block of st is deleted
+$   unstask to+st+p the top of the stack is moved to p 
+$   scratch+st      all elements of st are removed, allocate memory is kept
+$   release+st      elements of st are removed, the memory is released
+$   request space+st+n  ensures that the stack has at least n additional
+$                   allocated words over its top
+'q' was+t[]+>p.
+'f' next+t[]+>p>,previous+t[]+>p>,list length+t[]+n>.
+'a' unstack+[]st[],unstack to+[]st[]+>p,
+    scratch+[]st[],release+[]st[].
+'p' request space+[]st[]+>n.
+$ Strings
+$   string length+t+p+n   number of characters in the string (zero or more)
+$   string width+t+p+n    number of words occupied by the string
+$   previous string+t+p   decrease p by the width of the string
+$   compare string        the returned value >0, =0, <0 indicates the relationship
+$   compare string n      compares the first n characters only
+$   string elem           return the n-th characters of the string starting at
+$                            zero. Fail is n<0 or n>=string length
+$   unstack string+st     the topmost string is removed
+$   pack string+t+n+to    the top n elements of t[] are characters, which are
+$                            packed to a string stored at the top of stack 'to'.
+$   unpack string+t+p+to  characters of the string are added to the top of 
+$                            the stack 'to'
+$   copy string+t+p+to    the string is copied to the top of stack 'to'.
+'f' string length+t[]+>p+n>,string width+t[]+>p+n>,
+    previous string+t[]+>p>,
+    compare string+t1[]+>p1+t2[]+>p2+comp>,
+    compare string n+t1[]+>p1+t2[]+>p2+>n+comp>.
+'q' string elem+t[]+>p+>n+chr>.
+'a' unstack string+[]st[],pack string+from[]+>p+[]to[],
+    unpack string+from[]+>p+[]to[],copy string+from[]+>p+[]to[].
+$ Simple hash producing a word size hash
+$   string hash+t+p+hash  compute a hash value for the string
+$   block hash+t+p+hash   compute a hash from t[p+1] until the end of t[]
+'f' string hash+t[]+>p+hash>,
+    block hash+t[]+>p+hash>.
+$ *************************************************************
+$ File input/output
+$   open file         open the file specified by the string; mode is /r/
+$                      for read, /w/ for write, /a/ for append (char only)
+$   open temp file    create a temp file and open for writing, The specified
+$                       string must end with six XXXXXX characters, these are
+$                       replaced by some random characters
+$   close file        close the file
+$   unlink file       delete the specified file
+$   get file error    retrieve the last error code associated with the file
+$   get file pos      retrieve file position, -1 on error
+$   set file pos      set file position; only if opened for read
+'p' open file+""f+>mode+t[]+>p,open temp file+""f+[]st[]+>p.
+'a' close file+""f,unlink file+t[]+>p.
+'f' get file error+""f+err>,get file pos+""f+pos>.
+'a' set file pos+""f+>pos.
+$ ------------------------------------------------------------
+$ Character input/output
+$   character values
+'cons'newline=10,newpage=12.
+'cons'same line=-1,rest line=-2.
+
+$ General character input:
+$   get char          read the next character from the file
+$   fgetc             same as 'get char'
+$   ahead char        peek at the next character
+$   get line          fail if there are no more characters. If the 
+$       next character is newline, it is skipped and the control char
+$       is 'newline', otherwise it is 'restline'. The following chars
+$       are appended to the stack until the next newline of EOF.
+$   get int           skip white spaces, read an optional sign, then
+$       digits of an integer. Fail if cannot find a digit.
+'p' get char+""f+char>,ahead char+""f+char>,
+    get line+""f+[]st[]+ctrl>,get int+""f+n>.
+'p' fgetc+""f+c>:	get char+f+c.
+'pragmat'macro=fgetc.
+
+$ General character output:
+$   put char          put the character to the file
+$   fputc,fprint char equivalent to 'put char'
+$   put line          print elements (as characters) of t[] followed by a
+$       control char, typically 'newline'.
+$   put int           print a number in decimal formal 'int size'+1 positions
+$   put string        print the string
+$   put as string     print string between quotation marks, doubling " inside
+$   fprint string     same as 'put string'
+$   fprintf           q rudimentary formatted printing. The first
+$       argument is a string containing format characters:
+$       %d  print next argument as a decimal number
+$       %x  print next argument in hexadecimal
+$       %c  print next argument as a character
+$       %n  print a newline
+$       %%  print a %
+'a' put char+""f+>char,put line+""f+t[]+>ch,
+    put int+""f+>n,put string+""f+t[]+>ptr,
+    put as string+""f+t[]+>ptr,fprintf+""f+t[]+@+>ptr.
+'a' fputc+""f+>c:	put char+f+c.
+'a' fprint char+""f+>c:	put char+f+c.
+'a' fprint string+""f+t[]+>p: put string+f+t+p.
+'pragmat'macro=(fputc,fprint char,fprint string).
+
+$ Standard input and standard output streams
+'charfile'STDIN,STDOUT.
+
+$ Character input from STDIN
+$   getc              read a single character from STDIN
+'pragmat'macro=getc.
+'p' getc+c>:		 get char+STDIN+c.
+
+$ Character output to STDOUT
+$   putc, print char  put a character to STDOUT
+$   print string      print a string to STDOUT
+$   printf            formatted printing to STDOUT
+'pragmat'macro=(putc,print char,print string,printf).
+'a' putc+>c:		 put char+STDOUT+c.
+'a' print char+>c:	 put char+STDOUT+c.
+'a' print string+t[]+>p: put string+STDOUT+t+p.
+'a' printf+t[]+@+>ptr:	 fprintf+STDOUT+t+@.
+$ ------------------------------------------------------------
+$ Data input/output
+'cons'numerical=0,pointer=1.
+$   get data          read the next word from the data file f together with
+$                       the indicator whether it is pointer or numerical
+$   put data          put a word of specified type to the data file,
+$                        abort if there are some errors.
+$   put datap         same as put data but fail in case of an error.
+'p' get data+""f+data>+type>.
+'a' put data+""f+>data+>type.
+'p' put datap+""f+>data+>type.
+$ *************************************************************
+$ Miscellaneous
+$   exit              terminate program execution with code "code".
+$   backtrack         if linked with -g, prints the calls; otherwise nop
+$   STDARG            command line arguments
+$   wait for          synchronize execution of module roots.
+'e' exit+>code,@exit+>code.
+'a' backtrack.
+'table'STDARG.
+'a' wait for+t[]+>p.
+$ *************************************************************
+'end'

@@ -76,7 +76,7 @@ $     start line, end line, source string
 
 $ ==============================================================
 $ ICE item list
-$ for each imported, ecported, used tag there is an item line:
+$ for each imported, exported, used tag there is an item line:
 $ <typer> <item> <flag> <defline> <type-specific> <qf> <ttag>
 $   <typer>    Iconstant, Ivariable, Istack, etc;
 $   <item>     I1234 (grows by one)

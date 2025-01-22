@@ -115,9 +115,6 @@ extern int a_stringelem(int a_F1,int a_F2,int a_F3,int a_A[1]); /* stringelem */
 extern void a_packstring(int a_F1,int a_F2,int a_F3); /* packstring */
 extern void a_unpackstring(int a_F1,int a_F2,int a_F3); /* unpackstring */
 extern void a_copystring(int a_F1,int a_F2,int a_F3); /* copystring */
-/* hash */
-extern void a_stringhash(int a_F1,int a_F2,int a_A[1]); /* stringhash */
-extern void a_blockhash(int a_F1,int a_F2,int a_A[1]); /* blockhash */
 /* file */
 extern int a_openfile(int a_F1,int a_F2,int a_F3,int a_F4); /* openfile */
 extern int a_opentempfile(int a_F1,int a_F2,int a_F3); /* opentempfile */

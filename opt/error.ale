@@ -1,0 +1,87 @@
+$ error rules
+'pragmat'module=error,title="optimizer error v2.2".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER *********************************************** $
+'e'error+>exitv+@+>msg.
+'e'internal error+T[]+>rule.
+'e'corrupt ice file+T[]+>rule.
+$ exit values
+'constant'eINF=1,	$ --version,--help, error in header
+	  eERR=2,	$ some error
+          eMOVE=3.	$ error for --replace
+'table'MESSAGE.
+$ BODY ************************************************* $
+'pragmat'if=compile.
+'pragmat'require="lexical".
+
+'table'MESSAGE[]=(
+ "Corrupt source .ice file, line %d (rule %p)"
+        :corrupt file msg,
+ "internal error at line %d of source .ice (rule %p)"
+        :internal error msg
+).
+
+$ messages go here
+'charfile'ERRFILE="<<stdout>>">.
+
+'a'print char+>ch: put char+ERRFILE+ch.
+'a'nlcr: print char+newline.
+'a'printnum+>n:
+   n=min int,print char+/-/,subtr+-1+n+n,printnum1+n+/1/;
+   n<0,print char+/-/,get abs+n+n,printnum1+n+/0/;
+   printnum1+n+/0/.
+'a'printnum1+>n+>c-q-r:
+   divrem+n+10+q+r,(q=0;printnum1+q+/0/),
+     add+r+c+r,print char+r.
+'a'print+T[]+>p: put string+ERRFILE+T+p.
+
+
+'a'format print+T[]+@+>fmt-optr-ptr:
+    >>BUFFER->optr,unpack string+MESSAGE+fmt+BUFFER,add+optr+1+ptr,
+    (nxt:>>BUFFER<ptr;
+     BUFFER[ptr]!=/%/,print char+BUFFER[ptr],incr+ptr,:nxt;
+     (incr+ptr,>>BUFFER<ptr),print char+/%/;
+     (=BUFFER[ptr]=
+      [/p/],(shift affix block+@,print+T+fmt;+),incr+ptr,:nxt;
+      [/s/],(shift affix block+@,print+STDARG+fmt;+),incr+ptr,:nxt;
+      [/x/],(shift affix block+@,print+LEXT+fmt;+),incr+ptr,:nxt;
+      [/d/],(shift affix block+@,printnum+fmt;+),incr+ptr,:nxt;
+      [/n/],nlcr,incr+ptr,:nxt;
+      print char+BUFFER[ptr],incr+ptr,:nxt)),
+    unstack to+BUFFER+optr.
+
+'e'error+>exitv+@+>msg:
+   format print+MESSAGE+@,nlcr,exit+exitv.
+
+$'a'error+T[]+>msg:
+$   print+"Error: ",print+T+msg,
+$   print+", source line ",printnum+source line, nlcr.
+
+'e'corrupt ice file+T[]+>rule:
+   format print+T+corrupt file msg+source line+rule,
+   nlcr,exit+1.
+'e'internal error+T[]+>rule:
+   format print+T+internal error msg+source line+rule,
+   nlcr,exit+15.
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'

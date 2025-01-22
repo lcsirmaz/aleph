@@ -356,10 +356,10 @@ $ Command line arguments
   (string elem+LEXT+string+0+eq,eq=/-/,string elem+LEXT+string+1+eq,eq=/-/), $ --
      -1->pid,0->twoarg,0->value.
 
-'a'add command line arg+>string+>twoarg>-pid:
+'a'add command line arg+>string+>twoarg>:
    $ fill the INPUT stack with command line parameters
    is+twoarg,0->twoarg,add input entry+cprarg+0+string;
-   is cmdline pragmat+string+twoarg+pid+#,
+   is cmdline pragmat+string+twoarg+#+#,
         add input entry+cpragmat+srchead+string;
    add input entry+cinclude+this base+string,ccmd flag->flag*INPUT.
 

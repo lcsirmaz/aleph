@@ -1,0 +1,51 @@
+$ standard ALEPH library -- get int
+'pragmat'module=stdlib,title="jslib get int".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ get int
+'p'get int+""f+n>.
+$ read and skip spaces and newline characters. Read an optional
+$   sign (plus or minus), then digits of an integer. The value
+$   of the integer is returned in n, otherwise the rule fails.
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+
+'p'get int+""f+n>-ch-sign-digit:
+   (nxt:ahead char+f+ch,(=ch=
+       [newline;newpage;/ /],(get char+f+#;+),:nxt;
+       [/+/],    1->sign,(get char+f+#;+);
+       [/-/],   -1->sign,(get char+f+#;+);
+       [/0/:/9/],1->sign;
+       -);
+     -),
+   0->n->digit,
+   (nxt:ahead char+f+ch,(=ch=
+       [/0/:/9/],1->digit,subtr+ch+/0/+ch,addmult+n+10+ch+n,
+                     (get char+f+#;+),:nxt;
+       +);
+     +),
+   digit=1, $ fail if there are no digits
+   (sign>0;subtr+0+n+n).
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+

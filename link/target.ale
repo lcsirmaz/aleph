@@ -38,7 +38,7 @@ $ rule section
 'a'profiling declaration.
    $ declare a_profiles at the end.
 
-'a'rule declaration head+>item+>C1+>C2+>C3+>rulehead
+'a'rule declaration head+>item+>C2+>C3+>rulehead
                       +>minloc+>maxloc+>locptr+>cstack.
 'a'rule declaration tail.
 'a'Tlabel+>this+>next.
@@ -527,12 +527,12 @@ $ declaration head  and tail *********************************
    minloc>maxloc;
    BUFFER[locptr]=0,incr+minloc,incr+locptr,:declare locals;
    T+"%w a_L%d;"+minloc,incr+minloc,incr+locptr,:declare locals.
-'a'declare callargs+>item+>C1+>C2+>C3-cnt:
+'a'declare callargs+>item+>C2+>C3-cnt:
    (C2=0;T+"%w a_P[%d];"+C2),
    (C3=0;get anchor count+item+cnt,$ even if cnt=1 $
         T+"%w *a_D=alloca(sizeof(%w)*(%d+%d*a_C));"+C3+cnt),
    print char+newline.
-'a'rule declaration head+>rule+>C1+>C2+>C3+>rn+>minloc+>maxloc
+'a'rule declaration head+>rule+>C2+>C3+>rn+>minloc+>maxloc
               +>locptr+>cst-sep:
    $ rule declaration head, prototype, trace and count
    rule->this rule,add profiling def,
@@ -540,7 +540,7 @@ $ declaration head  and tail *********************************
      T+"{ /* %p"+tag*ITEM[rule],
      show formals as comment+rule,T+" */%n",
      add+minloc+locptr+locptr,declare locals+minloc+maxloc+locptr,
-     declare callargs+rule+C1+C2+C3,
+     declare callargs+rule+C2+C3,
      $ trace and count: store rule name as static string
      (call stack=0;1->rn),
      (rn=0;T+" static const char *a_rulename=""%p"";%n"+rule),

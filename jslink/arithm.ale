@@ -1,0 +1,179 @@
+$ target size arithmetic for ALEPH
+'pragmat'module=arithmetic,title="js linker arithmetic v1.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ******************************************************
+$ Target machine arithmetic.
+$ Target arithmetic is realized by a simple register machine which
+$ operates on targe words. Target registers are stored in the
+$ stack REGISTER; some values are there permanently, others should
+$ be freed when not in use.
+$ Target numbers are stored permanently in another stack from where
+$ they can be recovered as a string.
+
+'a'get register+>type+t[]+>x+reg>.
+   $ create a new register from the specified content
+   $  type=0: target number stored at t[x]
+   $  type=1: the actual value of x (should be small positive)
+   $  type=2: value from REGISTER[x]
+   $  type=3: target max int
+   $  type=4: target min int
+'a'put register+>reg+[]st[].
+   $ create a new entry in the stack with the value in REGISTER[reg],
+   $  and then free register reg.
+'a'pop register+>reg>+[]st[].
+   $ same as put register, with updating the register
+'a'put register value+>reg+val>.
+   $ put the value, if possible, and then release the register
+'a'free register+>reg.          $ free register "reg"
+   $ free register reg, not to be used anymore
+'f'mark registers+mark>.	$ mark top of registers
+   $ remember the top of register stack
+'a'free registers from mark+>mark.
+   $ free all registers from the given mark
+
+$ basic REGISTER machine operations
+'a'reg operator+>op+>reg1+>reg2.
+   $ perform op, store the result in reg2 and free reg1
+   $ unary operators do not use reg1 (and do not release it)
+   $ operators are: Axor,Aand,Aor,Acomp,Aneg,Aplus, etc.
+'q'reg compare+>op+>reg.
+   $ compare REGISTER[reg] to zero
+'q'reg compare2+>op+>reg1+>reg2.
+   $ compare two registers
+
+'constant'Axor=1,Aand=2,Aor=3,Acomp=4,
+   Aneg=5,Aplus=6,Aminus=7,Atimes=8,Adiv=9,
+   $ register operators, Acomp: binary complement, Aneg: negate (both unary)
+   Aeq0=10,Alt0=11,Agt0=12, $ compare to zero
+   Adiff1=20,Alt=21,Ale=22,Aeq=23. $ compare two registers
+   $ Adiff1 means reg1+1=reg2   
+
+$ conversions
+'a'put decimal form+>reg+[]st[].
+   $ return a decimal form of the register and free it.
+   $ return (-1-maxint) for minint value
+'a'get decimal form+t[]+>ptr+>sign+reg>.
+   $ convert the decimal number into a target number using 'sign'
+   $  starting from t[ptr+1]
+'a'pack string to registers+t[]+>ptr+width>+reg>.
+   $ the character string is packed into "width" many registers
+   $  ending with 'reg'. Use 'pop register' to retrieve register
+   $  contents. The first string character is in t[ptr+1], the
+   $  last one is in t[>>t], the string can be empty.
+
+$ BODY ********************************************************
+'pragmat'if=compile.
+'pragmat'require=("config","error").
+'pragmat'macro=(free register).
+$ This module is for the case when both the compiler and the
+$  target has word size 32 bit. Each target word occupies a
+$  single entry in the stack REGISTER.
+
+'stack'[1]REGISTER[].
+$ a target word occupies one or more consecutive words in REGISTER
+$  the block is pointed by the *first* word in the block
+$  'read register' gets the address of the last word in the block
+
+'a'get register+>type+t[]+>x+reg>:
+   $ create a new register
+   $   type=0: target number at t[x]
+   $   type=1: actual value
+   $   type=2: another register
+   (* 0->REGISTER *)REGISTER,>>REGISTER->reg,
+   (=type=
+    [0],t[x]->REGISTER;
+    [1],x->REGISTER;
+    [2],REGISTER[x]->REGISTER;
+    [3],max int->REGISTER;
+    [4],min int->REGISTER ).
+'a'put register+>reg+[]st[]:
+   (* REGISTER[reg]->st *)st,free register+reg.
+'a'pop register+>reg>+[]st[]:
+   (* REGISTER[reg]->st *)st,free register+reg,>>REGISTER->reg.
+'a'put register value+>reg+val>:
+   REGISTER[reg]->val,free register+reg.
+'a'free register+>reg:
+   reg!=>>REGISTER; unstack+REGISTER.
+'f'mark registers+mark>: >>REGISTER->mark.
+'a'free registers from mark+>mark:unstack to+REGISTER+mark.
+
+$ *********************************************************************
+'a'reg operator+>op+>reg2+>reg1:
+   =op=
+   $ binary operators
+   [Axor],bool xor+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Aand],bool and+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Aor], bool or+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Aplus],add+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Aminus],subtr+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Atimes],mult+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   [Adiv],div+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+                free register+reg2;
+   $ unary operators
+   [Acomp],bool invert+REGISTER[reg1]+REGISTER[reg1];
+   [Aneg],subtr+0+REGISTER[reg1]+REGISTER[reg1].
+'q'reg compare+>op+>reg: $ compare to zero
+   =op=
+   [Aeq0],REGISTER[reg]=0;
+   [Alt0],REGISTER[reg]<0;
+   [Agt0],REGISTER[reg]>0.
+'q'reg compare2+>op+>reg1+>reg2: $ binary comparison,
+   =op=
+   [Adiff1],(-tmp:REGISTER[reg1]->tmp,incr+tmp,tmp=REGISTER[reg2]);
+   [Alt],REGISTER[reg1]<REGISTER[reg2];
+   [Ale],REGISTER[reg1]<=REGISTER[reg2];
+   [Aeq],REGISTER[reg1]=REGISTER[reg2].
+
+$ *********************************************************************
+'a'put decimal form+>reg+[]st[]-v:
+   $ use (-1-maxint) for minint
+   REGISTER[reg]->v,free register+reg,
+   (v=min int, $ use (-1-maxint)
+       (*/(/->st*)st,put int1+-1+st,incr+v,put int1+v+st,(*/)/->st*)st;
+    put int1+v+st).
+'a'put int1+>v+[]st[]-q-r:
+   v<0,(*/-/->st*)st,subtr+0+v+v,:put int1;
+   divrem+v+10+q+r,(q=0;put int1+q+st),add+/0/+r+r,
+      (*r->st*)st.
+'a'get decimal form+t[]+>ptr+>sign+reg>-v-d:
+   incr+ptr,0->v,(nxt:ptr>>>t;
+      subtr+t[ptr]+/0/+d,addmult+v+10+d+v,incr+ptr,:nxt),
+   (is+sign,subtr+0+v+v;+),
+   get register+1+t+v+reg.
+'a'pack string to registers+t[]+>ptr+width>+reg>-oldp-n:
+   $ pack the string at t[ptr+1] as a sequence of width many
+   $ registers ending with reg
+   >>REGISTER->oldp,subtr+>>t+ptr+n,pack string+t+n+REGISTER,
+   >>REGISTER->reg,subtr+reg+oldp+width.
+
+$ *********************************************************************
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+
+
+

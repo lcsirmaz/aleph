@@ -29,9 +29,8 @@
 *
 * a_release, a_requestspace, a_comparestring, a_comparestringn
 * a_stringelem, a_packstring, a_unpackstring, a_copystring,
-* a_stringhash, a_blockhash, a_openfile, a_opentempfile,
-* a_closefile, a_unlinkfile, a_getfilepos, a_setfilepos, 
-* a_getchar,a_aheadchar,a_putchar,
+* a_opentempfile, a_closefile, a_unlinkfile, a_getfilepos,
+* a_setfilepos, a_getchar,a_aheadchar,a_putchar,
 * a_getdata, a_putdata, a_putdatap, a_setup_stdarg, 
 */
 
@@ -57,68 +56,11 @@ int a_openfile(a_word F1,a_word F2,a_word F3,a_word F4);
 *
 *******************************************************************/
 
-/*  a_push_string_to(list,char *chr)
- *     internal routine used by a_setup_stdarg()
- *     stores a C text string as an ALEPH list with check for correct
- *     UTF-8 encoding
- *  return value: 1: OK, 0: out of memory
- */
-static int a_push_string_to(int F1,const char *ptr){
-  int n,w; int *goal; char *to;
-  #define st    to_LIST(F1)
-  n=strlen(ptr);if(a_requestspace(F1,3+(n/4))==0){ return 0; }
-  n=0;goal=&(st->offset[1+st->aupb]);to=(char*)goal;
-  while(*ptr){ if((*ptr & 0x80)==0){ *to++=*ptr++;n++;}
-      else if((*ptr&0xC0)!=0xC0){ ptr++; } // ignore
-      else if((*ptr&0xE0)==0xC0){ /* two byte */
-        *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
-        else{*to++=*ptr++;}}
-      else if((*ptr&0xF0)==0xE0){ /* three byte */
-        *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
-        else{*to++=*ptr++;if((*ptr&0xC0)!=0x80){to-=2;}
-        else{*to++=*ptr++;}}}
-      else if((*ptr&0xF8)==0xF0){ /* four byte */
-        *to++=*ptr++;n++;if((*ptr&0xC0)!=0x80){n--;to--;}
-        else{*to++=*ptr++;if((*ptr&0xC0)!=0x80){to-=2;}
-        else{*to++=*ptr++;if((*ptr&0xC0)!=0x80){to-=3;}
-        else{*to++=*ptr++;}}}}
-      else{ptr++;}}
-  *to=0;w=1+(to-((char*)goal))/4;goal[w]=n;goal[w+1]=w+2;st->aupb+=w+2;
-  return 1;
-}
-
-extern int a_argc; extern char **a_argv;
-extern int a_virtual_min,a_virtual_max;
-
-/* a_setup_stdarg(ID,calibre)
- *    setup routine for the standard external table STDARG, fills the
- *    table with the comomand line arguments found at a_argc,a_argv
- */
-void a_setup_stdarg(int F1,const char*name,int F2){
-  int i;
-  #define st    to_LIST(F1)
-  st->name=name;
-  st->offset=0;st->p=0;st->length=0;
-  st->vlwb=a_virtual_max+16;a_virtual_max+=64536;
-  if(a_virtual_max<=0){
-      fprintf(stderr,"Out of virtual space for command line arguments\n");
-      a_fatal(a_FATAL_memory); 
-  }
-  st->vupb=a_virtual_max-1;st->calibre=F2;
-  st->alwb=st->vlwb;st->aupb=st->alwb-st->calibre;
-  for(i=a_argc-1;i>0;i--){ /* add string a_argv[i] */
-    if(a_push_string_to(F1,a_argv[i])==0){
-      fprintf(stderr,"out of memory for command line arguments\n");
-      a_fatal(a_FATAL_memory);}
-  }
-  #undef st
-}
-
 /*******************************************************************
 * release memory allocated by a stack
 *
 *******************************************************************/
-/* 'a'releasr+[]st[] */
+/* 'a'release+[]st[] */
 void a_release(int F1){
 #  define st    to_LIST(F1)
    st->aupb=st->alwb-st->calibre;
@@ -178,7 +120,7 @@ void a_comparestringn(int F1,int F2,int F3,int F4,int F5,int A[1]){
 /* 'q' string elem+t[]+>p+>n+c> */
 int a_stringelem(int F1,int F2,int F3,int A[1]){
   int *ptr=to_LIST(F1)->offset+F2;
-  const char *chr=(char*)(ptr+1-*ptr);
+  const unsigned char *chr=(unsigned char*)(ptr+1-*ptr);
   int c;
   if(F3<0 || F3>=ptr[-1]) return 0;
   for(;F3>=0;F3--){
@@ -189,6 +131,7 @@ int a_stringelem(int F1,int F2,int F3,int A[1]){
     if((c&0xF0)==0xE0){ // three byte
        c &= 0x0F; goto out2;}
     if((c&0xF8)==0xF0){ // four byte
+       c &= 0x0F;
        if((*chr&0xC0)!=0x80) return 0;
        c<<=6; c|= *chr&0x3F; chr++;
 out2:  if((*chr&0xC0)!=0x80) return 0;
@@ -265,6 +208,7 @@ void a_unpackstring(int F1,int F2,int F3){
      if((*goal&0xF0)==0xE0){ // three byte
        *goal &=0x0F; goto out2; }
      if((*goal&0xF8)==0xF0){ // four byte 
+       *goal &=0x0F;
        if((*chr&0xC0)!=0x80) return;
        *goal<<=6; *goal |= *chr&0x3F; chr++;
 out2:  if((*chr&0xC0)!=0x80) return;
@@ -401,7 +345,7 @@ again:
    if((A[0]&0xF0)==0xE0){ // three byte sequence
         A[0] &=0x0F; goto out2; }
    if((A[0]&0xF8)==0xF0){ // four byte sequence
-        A[0] &=0x07;
+        A[0] &=0x0F;
         c=getc(ch->f); if(c<0){ ch->fileError=EREADEOF; return 0; }
         if((c&0xC0)!=0x80) goto again;
         A[0]<<=6; A[0]|= c&0x3F;
@@ -452,19 +396,7 @@ void a_putchar(int F1,int F2){
       putc((F2&0x3F)|0x80,ch->f)<0) ch->fileError=errno;
    #undef ch
 }
-/* 'a'put string+""f+T[]+>ptr. 
- *      write a string to a character file
- */
-//void a_putstring(int F1,int F2,int F3){
-//  #define ch    to_CHFILE(F1)
-//  if(getfl_data(ch)){ch->fileError=EWRONGTYPE; return;}
-//  if(!ch->f){ if(!a_tryopen(F1,'w')) return; }
-//  ch->fileError=0;
-//  int *ptr=&(to_LIST(F2)->offset[F3]);
-//  char *chr=(char*)(ptr+1-*ptr);
-//  while(*chr){ if(putc(*chr,ch->f)<0){ch->fileError=errno; return;} chr++;}
-//  #undef ch
-//}
+
 /*******************************************************************
 * binary file input/output
 *
@@ -812,37 +744,6 @@ void a_setfilepos(int F1,int F2){
     df->iflag=(unsigned)(df->buffer[(df->fpos>>5)&31]) << (df->fpos&31);
     df->fileError=0;
 #   undef df
-}
-/*******************************************************************
-*  hash functions
-*
-*  simple (not cryptopgrahic) hash function which is fast and works
-*  well. It can be used to compute hash of a string or a consecutive
-*  block of integers.
-*******************************************************************/
-/* 'f'simple hash+T[]+>p+res> */
-void a_stringhash(int F1,int F2,int A[1]){
-  int *ptr=to_LIST(F1)->offset+F2;
-  unsigned char *v=(unsigned char*)&ptr[1-ptr[0]];
-  unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v);
-  while(*v){
-     v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;
-     v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;
-     v++;
-  }
-  A[0]=(int)((v1<<16)^v2);
-}
-/* 'f'block hash+T[]+>p+res> */
-void a_blockhash(int F1,int F2,int A[1]){
-  unsigned char *v=(unsigned char*)(to_LIST(F1)->offset+F2+1);
-  unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v);
-  int cnt=sizeof(int)*(to_LIST(F1)->aupb-F2);
-  for(;cnt>0;cnt--){
-     v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;
-     v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;
-     v++;
-  }
-  A[0]=(int)((v1<<16)^v2);
 }
 
 /* EOF */

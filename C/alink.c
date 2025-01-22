@@ -17,8 +17,10 @@
 // stdlib "stdlib put string"
 // stdlib "stdlib wait for"
 // stdlib "stdlib stdarg"
+// stdlib "stdlib stdhash"
 #include "aleph_core.h"
-#include "aleph_stdarg.h"
+static void a_stringhash(int,int,int[1]);static void a_blockhash(int,int,int[1]);
+static void a_setup_stdarg(int,const char*,int);
 #include "aleph_stdlib.h"
 #define a_1001 (0) /* @StringTable */
 #define a_1005 (a_1001+sizeof_LIST) /* NUMBER */
@@ -151,7 +153,7 @@ static void a_1133(a_word a_F1,a_word a_A[1]); /* countfilearea */
 static void a_1134(void); /* datadeclaration */
 static void a_1135(a_word a_F1); /* datafileinitialization */
 static void a_1136(void); /* datainitialization */
-static void a_1137(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_F4); /* declarecallargs */
+static void a_1137(a_word a_F1,a_word a_F2,a_word a_F3); /* declarecallargs */
 static void a_1138(a_word a_F1,a_word a_F2,a_word a_F3); /* declarelocals */
 static void a_1139(void); /* deletetarget */
 static void a_1140(a_word a_F1,a_word a_F2); /* extensionblock */
@@ -213,7 +215,7 @@ static void a_1195(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_F4); /* repeatbl
 static void a_1196(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_F4); /* repeatblockpreload */
 static void a_1197(a_word a_F1); /* rootprototype */
 static void a_1198(a_word a_F1,a_word a_F2); /* ruleargs */
-static void a_1199(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_F4,a_word a_F5,a_word a_F6,a_word a_F7,a_word a_F8,a_word a_F9); /* ruledeclarationhead */
+static void a_1199(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_F4,a_word a_F5,a_word a_F6,a_word a_F7,a_word a_F8); /* ruledeclarationhead */
 static void a_1200(void); /* ruledeclarationtail */
 static void a_1201(a_word a_F1); /* ruleprototype */
 static void a_1202(a_word a_F1,a_word a_A[1]); /* ruletyper */
@@ -1738,7 +1740,7 @@ a_1477();
 a_1103=0;
 a_1085();
 a_G34:a_1050();
-a_1199(a_L1,a_1029,a_1030,a_1031,a_1102,a_L3,a_L4,a_1067,a_1034);
+a_1199(a_L1,a_1030,a_1031,a_1102,a_L3,a_L4,a_1067,a_1034);
 a_unstackto(a_1447,a_L2);
 a_1477();
 a_1103=0;
@@ -2444,32 +2446,32 @@ a_G4:a_incr(a_F1);
 a_incr(a_F3); goto a_G1;
 a_G6:a_P[0]=2130705575;a_P[1]=a_F1;a_1105(a_1001,2,a_P); goto a_G4;
 } /* declarelocals */
-static void a_1137(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_F4){ /* declarecallargs+>a+>a+>a+>a */
-a_word a_L5;a_word a_P[3];
-if(a_equal(a_F3,0)){ goto a_G3;}
-a_P[0]=2130705570;a_P[1]=a_F3;a_1105(a_1001,2,a_P);
-a_G3:if(a_equal(a_F4,0)){ goto a_G6;}
-a_1309(a_F1,a_P);a_L5=a_P[0];
-a_P[0]=2130705565;a_P[1]=a_F4;a_P[2]=a_L5;a_1105(a_1001,3,a_P);
+static void a_1137(a_word a_F1,a_word a_F2,a_word a_F3){ /* declarecallargs+>a+>a+>a */
+a_word a_L4;a_word a_P[3];
+if(a_equal(a_F2,0)){ goto a_G3;}
+a_P[0]=2130705570;a_P[1]=a_F2;a_1105(a_1001,2,a_P);
+a_G3:if(a_equal(a_F3,0)){ goto a_G6;}
+a_1309(a_F1,a_P);a_L4=a_P[0];
+a_P[0]=2130705565;a_P[1]=a_F3;a_P[2]=a_L4;a_1105(a_1001,3,a_P);
 a_G6:a_putchar(a_1106,10); return;
 } /* declarecallargs */
-static void a_1199(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_F4,a_word a_F5,a_word a_F6,a_word a_F7,a_word a_F8,a_word a_F9){ /* ruledeclarationhead+>a+>a+>a+>a+>a+>a+>a+>a+>a */
-a_word a_L10;a_word a_P[2];
+static void a_1199(a_word a_F1,a_word a_F2,a_word a_F3,a_word a_F4,a_word a_F5,a_word a_F6,a_word a_F7,a_word a_F8){ /* ruledeclarationhead+>a+>a+>a+>a+>a+>a+>a+>a */
+a_word a_L9;a_word a_P[2];
 a_1209=a_F1;
 a_1120();
-a_1202(a_F1,a_P);a_L10=a_P[0];
-a_1198(a_F1,a_L10);
+a_1202(a_F1,a_P);a_L9=a_P[0];
+a_1198(a_F1,a_L9);
 a_P[0]=2130705553;a_P[1]=to_LIST(a_1288)->offset[a_F1-3];a_1105(a_1001,2,a_P);
 a_1203(a_F1);
 a_P[0]=2130705549;a_1105(a_1001,1,a_P);
-a_add(a_F6,a_F8,a_F8);
-a_1138(a_F6,a_F7,a_F8);
-a_1137(a_F1,a_F2,a_F3,a_F4);
+a_add(a_F5,a_F7,a_F7);
+a_1138(a_F5,a_F6,a_F7);
+a_1137(a_F1,a_F2,a_F3);
 if(a_equal(a_1127,0)){ goto a_G13;}
-a_F5=1;
-a_G13:if(a_equal(a_F5,0)){ goto a_G15;}
+a_F4=1;
+a_G13:if(a_equal(a_F4,0)){ goto a_G15;}
 a_P[0]=2130705545;a_P[1]=a_F1;a_1105(a_1001,2,a_P);
-a_G15:a_1118(a_F9);
+a_G15:a_1118(a_F8);
 a_1119();
 a_1121(); return;
 } /* ruledeclarationhead */
@@ -5731,4 +5733,23 @@ a_incr(a_L2);
 a_putchar(a_F1,a_L3); goto a_G2;
 } /* putstring */
 a_PROFILE *a_profiles=NULL;
+static void a_stringhash(int F1,int F2,int A[1]){ int *ptr=to_LIST(F1)->offset+F2; unsigned char *v=(unsigned char*)&ptr[1-ptr[0]]; unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v); while(*v){  v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;  v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;  v++; } A[0]=(int)((v1<<16)^v2);}
+void a_blockhash(int F1,int F2,int A[1]){ unsigned char *v=(unsigned char*)(to_LIST(F1)->offset+F2+1); unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v); int cnt=sizeof(int)*(to_LIST(F1)->aupb-F2); for(;cnt>0;cnt--){  v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;  v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;  v++; } A[0]=(int)((v1<<16)^v2);}
+extern int a_argc; extern char **a_argv;
+static int a_push_string_to(int F1,const char*ptr){ int n,w;int*goal;char*to;
+ #define st to_LIST(F1)
+ n=strlen(ptr);if(a_requestspace(F1,3+(n/4))==0){return 0;}
+ n=0;goal=&(st->offset[1+st->aupb]);to=(char*)goal;
+ while(*ptr){if((*ptr&0x80)==0){*to++=*ptr++;n++;}  else if((*ptr&0xC0)!=0xC0){ptr++;}  else if((*ptr&0xE0)==0xC0){*to++=*ptr++;n++;   if((*ptr&0xC0)!=0x80){n--;to--;}else{*to++=*ptr++;}}  else if((*ptr&0xF0)==0xE0){*to++=*ptr++;n++;   if((*ptr&0xC0)!=0x80){n--;to--;}else{*to++=*ptr++;    if((*ptr&0xC0)!=0x80){n--;to-=2;}else{*to++=*ptr++;}}}  else if((*ptr&0xF8)==0xF0){*to++=*ptr++;n++;   if((*ptr&0xC0)!=0x80){n--;to--;}else{*to++=*ptr++;    if((*ptr&0xC0)!=0x80){n--;to-=2;}else{*to++=*ptr++;     if((*ptr&0xC0)!=0x80){n--;to-=3;}else {*to++=*ptr++;}}}}  else{ptr++;}}
+ *to=0;w=1+(to-((char*)goal))/4;goal[w]=n;goal[w+1]=w+2;st->aupb+=w+2;
+ #undef st
+ return 1;}
+static void a_setup_stdarg(int F1,const char*name,int F2){
+ int i;
+ #define st to_LIST(F1)
+ st->name=name;st->offset=st->p=0;st->length=0; st->vlwb=a_virtual_max+16;a_virtual_max+=65436; if(a_virtual_max<=0){fprintf(stderr,"Out of virtual space\n");  a_fatal(a_FATAL_memory);}
+ st->vupb=a_virtual_max-1;st->calibre=F2; st->alwb=st->vlwb;st->aupb=st->alwb-st->calibre;
+  for(i=a_argc-1;i>0;i--){   if(a_push_string_to(F1,a_argv[i])==0){    fprintf(stderr,"out of memory\n");a_fatal(a_FATAL_memory);} }
+ #undef st
+}
 /* EOF */

@@ -1,0 +1,361 @@
+$ lexical parsing of .ice files for js ALEPH
+'pragmat'module=lexical,title="js linker lexical, v1.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+'constant'
+   Darea,Dbox,Dcalibre,Dexpression,Dextension,Dexternal,
+   Dfile,Dfill,Dlist,Dlwb,Dnode,Drule,Dto,Dupb,Dvlwb,Dvupb,
+   Dmain,Dmodule,Dinclude,Dfrontmatter,Dbackmatter,
+   Danchor,Dand,Dbus,Dclose,Dcolon,Dcomma,Dcompl,Ddiv,Dminus,
+   Dnoarg,Dopen,Dor,Dout,Dplus,Dpoint,Dsemicolon,Dstar,Dsub,
+   Dxor,Dend,
+   Tconst,Tnumber,Ttype,Tnode,Titem,Tformal,Tlocal,Tstring,
+   $ types $
+   Iconstant,Ivariable,Istatic var,Itable,Istack,Istatic stack,
+   Ipointer constant,Ichar file,Idata file,Irule,
+   Iformal stack,Iformal table,Iformal file,Iformal in,
+   Iformal out,Iformal inout,Iformal anchor,Iformal shift.
+'constant'Squote image.
+
+'a'next symbol.        $ read next symbol
+'variable' inpt,       $ next symbol
+           inpt value, $ auxiliary value
+           source line.$ source line count
+
+'p'R+>x:x=inpt,next symbol.
+'p'RR+>x+y>:x=inpt,inpt value->y,next symbol.
+'a'must+>x+y>:x=inpt,inpt value->y,next symbol;corrupt ice file+_rule_.
+'pragmat'require="error".
+
+'pragmat'macro=(R,RR,must).
+$ save and restore input position
+'a'save input position,restore input position.
+
+$ manupulating LEXT entries
+$ each entry has a data field (zero), and an image (string)
+'f'get tag data+>tag+d>,get tag image+>tag+img>.
+'a'put tag data+>tag+>d.
+
+'a'try to open source+res>.
+   $ >>LEXT is the string to be opened.
+   $ res=0: success, res=1: file not found; -1: other error
+'a'close source.
+
+'stack'BUFFER,(next,def)LEXT.
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("error","item","number").
+
+'stack'[2]BUFFER[].
+'a'extend BUFFER+>x: (* x->BUFFER *)BUFFER.
+
+'variable'inpt=0,inpt value=0,source line=1.
+
+$ .ice file constituents:
+$ 'bold'
+$ "string" (quote is doubled)
+$ signed integer
+$ <type>
+$  I54 (item), F54 (formal), L54 (local), N54 (node)
+$ other characters: ()[] .@;:> +-*/~|^
+
+'charfile'SOURCE=>"aleph.ice".   $ ice file $
+'a'try to open source+res>-errno:
+   open file+SOURCE+/r/+LEXT+>>LEXT,0->res,
+      unstack string+LEXT,1->source line,/ /->char,next char,next symbol;
+   unstack string+LEXT,get file error+SOURCE+errno,(errno=2,1->res;-1->res).
+'a'close source:
+   close file+SOURCE.
+
+'variable'char=/ /.
+'constant'end char=1.
+  
+'a'next char:
+   get char+SOURCE+char,
+     (=char=
+      [newline],incr+source line;
+      [:31],:next char;
+      +);
+  end char->char.
+$ RE-READ INPUT *********************************************** $
+$ rules are read more than once; a single position can be
+$  saved and restored
+'pragmat'macro=(bold letter,digit,read index,read minus).
+
+'variable'
+  last filepos=0,
+  last char=0,last inpt=0,last inpt value=0.
+'a'save input position:
+  get file pos+SOURCE+last filepos,char->last char,
+    inpt->last inpt,inpt value->last inpt value.
+'a'restore input position:
+  set file pos+SOURCE+last filepos,last char->char,
+    last inpt->inpt,last inpt value->inpt value.
+$ CHARACTERS ************************************************** $
+'p'bold letter+x>:
+  =char= [/a/:/z/],char->x,nextchar;-.
+'p'digit+x>:
+  =char=[/0/:/9/],subtr+char+/0/+x,next char;
+  -.
+'a'comment:
+  char=newline;char=end char;next char,:comment.
+$ NUMBER ********************************** $
+'a'read index+>sign+x>-d:
+  ((digit+x,(x>0;sign=0));corrupt ice file+_rule_),
+  (nxt:digit+d,addmult+x+10+d+x,:nxt;
+       is+sign,subtr+0+x+x;
+       +).
+'a'read minus+x>+y>:
+  =char=[/0/:/9/],Tconst->x,read index+1+y;
+      Dminus->x,0->y.
+'a'read destination+x>:
+  =char=[/N/],next char,read index+0+x;
+        [/0/],next char,0->x;
+        [/-/],next char,read index+1+x;
+        corrupt ice file+_rule_.
+'a'read target number+x>-obuff-sign:
+   >>BUFFER->obuff,0->sign,
+   (nxt:=char=
+      [/-/],1->sign,next char,:nxt;
+      [/0/:/9/],extend BUFFER+char,next char,:nxt;
+      enter const string+sign+obuff+x,unstack to+BUFFER+obuff).
+
+$ STRING ********************************** $
+$ strings identify tags, sources and titles.
+$ each tag has at most one unique global definition,
+$   but can have several local definitions.
+$
+$ items in LEXT are hashed, strings with the same
+$   has value are linked throught the "next" field.
+$   the "def" field points to the global definition
+$   of this tag (global definitons are unique).
+'constant'
+  HASH increment = 1024. $ HASH size grows by that much
+'variable'
+  HASH size=HASH increment-1, $current HASH size $
+  HASH entries=1.       $ string entries in LEXT table
+'stack'[20](next,def)LEXT[]=
+  (""      ,(0,0):Squote image).
+'stack'[2]HASH[].
+
+'f'get tag data+>tag+def>:   def*LEXT[tag]->def.
+'f'get tag image+>tag+ptr>:  subtr+tag+<>LEXT+ptr.
+'a'put tag data+>tag+>def:   def->def*LEXT[tag].
+'a'add LEXT entry+x>:
+  (*0->next->def*)LEXT,enter string+>>LEXT+x,
+  (x=>>LEXT;unstack+LEXT,unstack string+LEXT).
+
+'a'enter string+>ptr+out>-string-hash-ptr2-string2-eq:
+  subtr+ptr+<>LEXT+string,string hash+LEXT+string+hash,
+  bool and+hash+max int+hash,divrem+hash+HASH size+#+hash,
+  add+hash+<<HASH+hash,HASH[hash]->ptr2,
+    (nxt:ptr2=0,HASH[hash]->next*LEXT[ptr],ptr->HASH[hash]->out,
+       incr+HASH entries,
+       (HASH entries<HASH size;
+        add+HASH size+HASH increment+HASH size,rehash);
+     subtr+ptr2+<>LEXT+string2,compare string+LEXT+string+LEXT+string2+eq,
+       (eq=0,ptr2->out;
+        next*LEXT[ptr2]->ptr2,:nxt)).
+
+'a'rehash-ptr-block:
+   0->HASH entries,>>HASH->ptr, $ clear all entries in HASH
+     (nxt:ptr<<<HASH;0->HASH[ptr],previous+HASH+ptr,:nxt),
+   $ makes sure there are HASH size entries
+   subtr+>>HASH+<<HASH+block,incr+block,
+     (nxt:block>=HASH size;(*0->HASH*)HASH,incr+block,:nxt),
+   >>LEXT->ptr,(nxt:ptr<<<LEXT; $ done $
+   enter string+ptr+block,
+     (block=ptr,previous+LEXT+ptr,previous string+LEXT+ptr,:nxt;
+      internal error+_rule_)).
+
+'a'read string+x>-n-obuff:
+  >>BUFFER->obuff,0->n,
+  (nxt: next char,(=char=
+   [/"/],next char, $ closing quote mark
+     (char=/"/,extend BUFFER+char,incr+n,:nxt;
+      n=0,Squote image->x;
+      pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,add LEXT entry+x);
+   [newline;end char],corrupt ice file+_rule_;
+   extend BUFFER+char,incr+n,:nxt)).
+
+'a'read target string+size>+x>-obuff:
+   >>BUFFER->obuff,(char=/"/;corrupt ice file+_rule_),
+   (nxt: next char,(=char=
+    [/"/],next char,
+      (char=/"/,extend BUFFER+char,:nxt;
+       enter target string+obuff+size+x,unstack to+BUFFER+obuff);
+    [newline;end char],corrupt ice file+_rule_;
+    extend BUFFER+char,:nxt)).
+
+
+$ BOLD ************************************ $
+
+'table'BOLD[] = (
+ "area"		:Darea:first BOLD,
+ "back"		:Dbackmatter,
+ "box"		:Dbox,
+ "calibre"	:Dcalibre,
+ "expression"	:Dexpression,
+ "extension"	:Dextension,
+ "external"	:Dexternal,
+ "file"		:Dfile,
+ "fill"		:Dfill,
+ "front"	:Dfrontmatter,
+ "include"      :Dinclude,
+ "list"		:Dlist,
+ "lwb"		:Dlwb,
+ "main"         :Dmain,
+ "module"	:Dmodule,
+ "node"		:Dnode,
+ "rule"		:Drule,
+ "to"		:Dto,
+ "upb"		:Dupb,
+ "vlwb"		:Dvlwb,
+ "vupb"		:Dvupb:last BOLD,
+$ types $
+ "constant"	:Iconstant:first TYPE,
+ "variable"	:Ivariable,
+ "static var"   :Istatic var,
+ "table"	:Itable,
+ "stack"	:Istack,
+ "static stack"	:Istatic stack,
+ "pointer constant":Ipointer constant,
+ "charfile"	:Ichar file,
+ "datafile"	:Idata file,
+ "rule"		:Irule,
+$ formal types $
+ "formal stack"	:Iformal stack,
+ "formal table"	:Iformal table,
+ "formal file"	:Iformal file,
+ "formal in"	:Iformal in,
+ "formal out"	:Iformal out,
+ "formal inout"	:Iformal inout,
+ "formal anchor":Iformal anchor,
+ "formal shift"	:Iformal shift:last TYPE,
+$ single characters $
+ "@"            :Danchor,
+ "&"		:Dand,
+ "]"		:Dbus,
+ ")"		:Dclose,
+ ":"		:Dcolon,
+ ","		:Dcomma,
+ "~"		:Dcompl,
+ "/"		:Ddiv,
+ "-"		:Dminus,
+ "#"		:Dnoarg,
+ "("		:Dopen,
+ "|"		:Dor,
+ ">"		:Dout,
+ "+"		:Dplus,
+ "."		:Dpoint,
+ ";"		:Dsemicolon,
+ "*"		:Dstar,
+ "["		:Dsub,
+ "^"		:Dxor,
+$ internal $
+ "const"        :Tconst,	$ constant
+ "number"       :Tnumber,	$ target number
+ "type"		:Ttype,		$ <type>
+ "node"		:Tnode,		$ N12, N0, N-2
+ "item"		:Titem,		$ I12
+ "formal"	:Tformal,	$ F3
+ "local"	:Tlocal,	$ L4
+ "string"       :Tstring,	$ "xxx", stored uniquely
+ "***"		:Dend
+).
+
+'a'read bold+x>-n-obuff:
+  $ read a bold symbol 'abc'
+  next char,>>BUFFER->obuff,0->n,
+  (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
+        char=/'/,next char;
+        corrupt ice file+_rule_),
+   pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,last BOLD->x,
+   (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
+        (n=0;
+         x=first BOLD,corrupt ice file+_rule_;
+         previous string+BOLD+x,:nxt)),
+   unstack string+LEXT.
+$ TYPES *********************************** $
+$ <type>
+'a'read type+x>-n-obuff:
+  next char,>>BUFFER->obuff,0->n,
+  (nxt-t:bold letter+t,extend BUFFER+t,incr+n,:nxt;
+         char=/ /,extend BUFFER+/ /,incr+n,next char,:nxt;
+         char=/>/,next char;
+         corrupt ice file+_rule_),
+  pack string+BUFFER+n+LEXT,unstack to+BUFFER+obuff,last TYPE->x,
+  (nxt:compare string+BOLD+x+LEXT+>>LEXT+n,
+       (n=0;
+        x=first TYPE,corrupt ice file+_rule_;
+        previous string+BOLD+x,:nxt)),
+   unstack string+LEXT.
+$ READ ************************************ $
+$ Target strings are in fillings only. Instead a sequence of Tnumber
+$  is emitted which represents the target string packing.
+$  xnumber: number of Tnumber values to recover
+'variable'xnumber=0. $ target representation of string
+
+'a'next symbol:
+   (next target string value+xnumber+inpt value,xnumber>0),Tnumber->inpt;
+   (=char=
+   [/ /;newline], next char,:next symbol;
+   [/$/],comment,:next symbol;
+   [/0/],Tconst->inpt,0->inpt value,next char;
+   [/1/:/9/],Tconst->inpt,read index+0+inpt value;
+   [/F/],Tformal->inpt,next char,read index+0+inpt value;
+   [/I/],Titem->inpt,next char,read index+0+inpt value,convert to item+inpt value;
+   [/L/],Tlocal->inpt,next char,read index+0+inpt value;
+   [/N/],Tnode->inpt,next char,read index+0+inpt value;
+   [/X/],Tnumber->inpt,next char,read target number+inpt value;
+   [/T/],Tnumber->inpt,next char,read target string+xnumber+inpt value;
+   [/'/],read bold+inpt;
+   [/</],Ttype->inpt,read type+inpt value;
+   [/"/],Tstring->inpt,read string+inpt value;
+   [/&/],Dand->inpt,next char;
+   [/]/],Dbus->inpt,next char;
+   [/)/],Dclose->inpt,next char;
+   [/:/],Dcolon->inpt,next char;
+   [/,/],Dcomma->inpt,next char;
+   [/~/],Dcompl->inpt,next char;
+   [///],Ddiv->inpt,next char;
+   [/-/],next char,read minus+inpt+inpt value;
+   [/#/],Dnoarg->inpt,next char;
+   [/(/],Dopen->inpt,next char;
+   [/|/],Dor->inpt,next char;
+   [/>/],Dout->inpt,next char,read destination+inpt value;
+   [/+/],Dplus->inpt,next char;
+   [/./],Dpoint->inpt,next char;
+   [/;/],Dsemicolon->inpt,next char;
+   [/*/],Dstar->inpt,next char;
+   [/[/],Dsub->inpt,next char;
+   [/^/],Dxor->inpt,next char;
+   [/@/],Danchor->inpt,next char;
+   [end char],Dend->inpt;
+   corrupt ice file+_rule_).
+
+'root'rehash. $ initialize the HASH table $
+
+'pragmat'endif=compile.
+
+'end'
+
+

@@ -1,0 +1,1070 @@
+$ target.ale for js
+'pragmat'module=target,title="js linker target, v1.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ************************************************** $
+$ generating code $
+'a'open target,close target,delete target.
+   $ manipulate the target file $
+'a'use call stack.
+   $ call tracing was required
+'variable'gen async.
+   $ generate asynchronous rules
+$ data section
+'a'target prelude,target postlude.
+   $ header -- show modules and the main file, plus tail
+'a'data declaration.
+   $ data declaration and rule prototypes. Define stack, table,
+   $  file offsets.
+'a'fill table head,generate fill entries,fill table tail.
+   $ generate the fill table
+'a'target main.
+   $ generate waitfor and a_ROOT
+$ rule section
+'a'profiling declaration.
+   $ declare a_profiles at the end.
+
+'a'rule declaration head+>item+>C1+>C2+>C3+>rulehead
+                      +>minloc+>maxloc+>locptr.
+'a'start rule body+>has label.
+'a'rule declaration tail+>has label.
+'a'Tlabel+>this+>next.
+'a'T box+>ptr+>area,T extension+>ptr+>label.
+'a'T rule call+>tag+>n+>fnext+>tnext+>rep+>star+>ptr.
+
+$ BODY **************************************************** $
+'pragmat'if=compile.
+'pragmat'require=("number","lexical","input","item",
+                  "arithm","error","config").
+
+$ manipulate target file ********************************** $
+
+'charfile'TARGET="aleph.c">.
+'table'MESSAGE=(
+ "cannot create target file %x, error code: %d" :cannot open target
+).
+
+'variable'target opened=0.
+
+'a'open target-d:
+  get target file, $ file name on top of LEXT
+  (open file+TARGET+/w/+LEXT+>>LEXT,unstack string+LEXT,1->target opened;
+   get file error+TARGET+d,error+cannot open target+>>LEXT+d).
+'a'close target:
+  target opened=0;close file+TARGET,0->target opened.
+'a'delete target:
+  target opened=0;
+  close target,get target file,unlink file+LEXT+>>LEXT,unstack string+LEXT.
+
+$ naming convention *************************************** $
+$  formal parameters: 
+$     a_tr      call stack
+$     a_F%d     if not out/inout (serial number)
+$     a_A[%d]   out/inout (count, starting at zero)
+$     a_C       formal repeat count
+$     a_Voff
+$    *a_V       repeat block (indexed consecutively from a_Voff)
+$  local variables:
+$     a_L%d     from 'min loc' to 'max loc', inclusive (d>=1)
+$  labels:
+$     a_G%d     d>1, the node number
+$  actual parameters:
+$     a_P[]     for out/inout, fixed size repeat block
+$    *a_D       dynamic size repeat block
+$  items:
+$     a_nnnn    nnnn is the repr number of the item
+
+$ print to TARGET file ==================================== $
+'pragmat'macro=(print char,print str,print prefix).
+'a'print char+>ch: put char+TARGET+ch.
+
+'a'print int+>n:
+   $ print n in decimal; min int is not allowed in gcc
+   n=min int, $ print char+/-/,subtr+-1+n+n,print int1+n+/1/;
+     print char+/(/,print char+/-/,print int+max int,
+     print char+/-/,print char+/1/,print char+/)/;
+   n<0, print char+/-/,get abs+n+n,print int1+n+/0/;
+   print int1+n+/0/.
+'a'print int1+>n+>c-q-r:
+   divrem+n+10+q+r,(q=0; print int1+q+/0/),
+        add+r+c+r, print char+r.
+'a'print str+T[]+>ptr:
+  put string+TARGET+T+ptr.
+
+$ prefix, formal, local, actual arguments
+'a'print prefix:
+   print char+/a/,print char+/_/.
+$'a'print label prefix:
+$   print prefix,print char+/G/.
+'a'local argument+>cnt:
+   $ local affix
+   print prefix,print char+/L/,print int+cnt.
+'a'print int index+>c+>idx:
+   print prefix,print char+c,print char+/[/,print int+idx,print char+/]/.
+'a'formal argument+>cnt-i-type-out:
+   $ formal affix of this rule
+   0->i->out,(nxt:get formal+this rule+i+type,incr+i,
+     ((type=Iformal out;type=Iformal inout),
+        (i=cnt,print int index+/A/+out;incr+out,:nxt);
+      type=Iformal anchor,incr+i,subtr+cnt+i+i,
+        (i<0,print prefix,print char+/C/;
+         i=0,print str+"a_V[a_Voff]"; $a_V[a_Voff+i]
+         print str+"a_V[a_Voff+",print int+i,print char+/]/);
+      i=cnt,print prefix,print char+/F/,print int+cnt;
+      :nxt)).
+$'a'print pidgin repr+>item-ptr-x-y:
+  $ if pidgin, start with the second char
+$  get tag image+repr*ITEM[item]+ptr,1->y,
+$     (nxt:string elem+LEXT+ptr+y+x,print char+x,incr+y,:nxt;+).
+'a'print external repr+>item:
+  =type*ITEM[item]=
+  [Iconstant;Ivariable],print ptr+repr*ITEM[item];
+$  [Irule],(is item flag+item+rpidgin,print pidgin repr+item;
+$           print ptr+repr*ITEM[item]);
+  [Irule],print ptr+repr*ITEM[item];
+  print prefix,print int+repr*ITEM[item].
+'a'print repr+>item:
+   $ representation of an item
+   was+ITEM+item,
+     (is item flag+item+texternal,print external repr+item;
+      (=type*ITEM[item]=
+          [Iconstant;Ipointer constant],print number+repr*ITEM[item];
+          print prefix, print int+repr*ITEM[item]));
+   print ptr+item.
+$'a'print local label+>label:
+   $ local label with prefix a_G
+$   print label prefix,print int+label.
+'a'print goto+>label:
+   $ -1: success return, -2: fail return; otherwise jump
+   =label=
+$   [0], (is item flag+called rule+rexit,-1->label,:print goto;
+$         internal error+_rule_);
+   [0;-1],(is item flag+this rule+rcan fail,print str+" return 1;";print str+" return;");
+   [-2],print str+" return 0;";
+   print str+"aip=",print int+label,print str+";continue;". $print local label+label,print char+/;/.
+'a'print GOTO+>label:
+   $ goto only if label!=next node idx $
+   (label=next node idx,next node idx!=0);
+   print goto+label.
+$ print an affix ----------------------------------------- $
+$ affixes are stored in BUFFER. The format character %p
+$   prints a double item from BUFFER
+'a'print BUFFER+>ptr:
+  =BUFFER[ptr]=
+  [Titem],incr+ptr,print repr+BUFFER[ptr];
+  [Tconst],incr+ptr,print int+BUFFER[ptr];
+  [Tlocal],incr+ptr,local argument+BUFFER[ptr];
+  [Tnumber],incr+ptr,print number+BUFFER[ptr];
+  [Tformal],incr+ptr,formal argument+BUFFER[ptr];
+  internal error+_rule_.
+'a'print ptr+>p:
+  was+ITEM+p,tag*ITEM[p]->p,:print ptr;
+  was+LEXT+p,get tag image+p+p,print str+LEXT+p;
+  was+MESSAGE+p,print str+MESSAGE+p;
+  was+BUFFER+p,print BUFFER+p;
+  p=0,print str+"[null]";
+  internal error+_rule_.
+'a'print nlptr+>p-obuff-ptr:
+  was+LEXT+p,get tag image+p+p,
+    >>BUFFER->obuff->ptr,unpack string+LEXT+p+BUFFER,
+      (nxt:>>BUFFER<=ptr,unstack to+BUFFER+obuff;
+           (incr+ptr,BUFFER[ptr]!=/%/),print char+BUFFER[ptr],:nxt;
+           (incr+ptr,>>BUFFER<ptr),:nxt;
+           BUFFER[ptr]=/n/,print char+newline,:nxt;
+           print char+/%/,print char+BUFFER[ptr],:nxt);
+  print ptr+p.
+'a'print number+>p-obuff-ptr:
+   >>BUFFER->obuff->ptr,get number repr+p,
+     (nxt:>>BUFFER<=ptr,unstack to+BUFFER+obuff;
+          incr+ptr,print char+BUFFER[ptr],:nxt).
+
+'a'T+t[]+@+>fmt-ptr-optr:
+$ formal characters:
+$   r: item, get repr
+$   g: goto (return or goto)
+$   G: don't print for the next node
+$   n: newline
+$   p: pointer
+$   d: integer
+$   s: LEXT string, replace %n by newline
+$   t: target number
+$   w: ALEPH word type
+  >>BUFFER->optr,unpack string+t+fmt+BUFFER,add+optr+1+ptr,
+  (nxt:>>BUFFER<ptr;
+    BUFFER[ptr]!=/%/,print char+BUFFER[ptr],incr+ptr,:nxt;
+    incr+ptr,(ptr>>>BUFFER,print char+/%/;
+      (=BUFFER[ptr]=
+       [/r/],(shift affix block+@,print repr+fmt;print char+/?/),incr+ptr,:nxt;
+       [/g/],(shift affix block+@,print goto+fmt;print char+/?/),incr+ptr,:nxt;
+       [/G/],(shift affix block+@,print GOTO+fmt;print char+/?/),incr+ptr,:nxt;
+       [/S/],(shift affix block+@,(fmt=0;print str+"async ");print char+/?/),incr+ptr,:nxt;
+       [/W/],(shift affix block+@,(fmt=0;print str+"await ");print char+/?/),incr+ptr,:nxt;
+$       [/w/],print str+"a_word",incr+ptr,:nxt;
+       [/n/],print char+newline,incr+ptr,:nxt;
+       [/d/],(shift affix block+@,print int+fmt;print char+/?/),incr+ptr,:nxt;
+       [/p/],(shift affix block+@,print ptr+fmt;print char+/?/),incr+ptr,:nxt;
+       [/s/],(shift affix block+@,print nlptr+fmt;print char+/?/),incr+ptr,:nxt;
+       [/t/],(shift affix block+@,print number+fmt;print char+/?/),incr+ptr,:nxt;
+       print char+/?/,print char+BUFFER[ptr],incr+ptr,:nxt))),
+  (shift affix block+@,print str+"[...]";+),
+  unstack to+BUFFER+optr.
+
+'a'call trace arg+sep>:
+   call stack=0,0->sep;
+   T+"a_Tr",1->sep.
+'a'call trace call+sep>:
+   call stack=0,0->sep;
+   T+"a_Ltr",1->sep.
+'a'add call stack+>item:
+   call stack=0;
+   T+" const a_Ltr={rule:%d,next:a_Tr};%n"+count*ITEM[item].
+
+$ auxiliary rules *************************************************
+'variable'
+   call stack=0.  $ 1 if link with call stack
+
+'a'use call stack: 1->call stack.
+
+'variable'gen async=0, $ 1 if generate asynchonous routines
+          waitfor async=0,
+          root async=0.
+
+'f'get item def+>item>:
+   $ switch to the definition of the item
+   is item flag+item+timported,repr*ITEM[item]->item;+.
+'pragmat'macro=get item def.
+
+$ JS rules ********************************************************
+$  Aleph specific identifiers start with a_XXXX
+$  Rule: tags for bounds=on, trace=on, count=on, call stack=1
+$    are stored in a string array; rules are idendified by the
+$    index stored in the count*ITEM[] field
+$        a_RuleNames=["ruletag1","ruletag2",...];
+$  Call stack:
+$    linked list; extra first argument for all functions, linked
+$    object is added to all function head:
+$        function a_9999(a_Tr,...){//rulename+>a+[]a[]
+$            const a_Ltr={rule:<ddd>,next:a_Tr};
+$  Profiling:
+$    linked list; each profiled rule is preceded by the declaration
+$        const a_Pf1001={rule:<ddd>,count:0,next:<prev>};
+$    forming a linked list; starting with null. At the end we have
+$        const a_PROFILE=a_Pf9999; or NULL
+$  Tracing: added the statement
+$        a_TraceRule(<ddd>,m,v1,v2,...,vm);
+$  Lists:  a_Array(<type>,"name",cal,lwb,upb,filln);
+$  File:   a_CharFile("STDIN",dir,a_1001,<ptr>);
+$          a_DataFile("DATA",dir,a_1001,<ptr>,dd);
+$    dir is 0,1,2,3 for direction, 4 for external files.
+$  Fill table: declared as 
+$        let a_FillTable=[...];
+$    the content is released by a_FillTable=null; after using it.
+$  main program: a_ROOT()
+$    set up call stack; fills lists by calling
+$        a_FillLists(a_FillTable);a_FillTable=null;
+$    for external lists calls <EXTSTRING>(a_2222);
+$    for external files calls <EXTSTRING>(a_2233);
+$    for charfiles call a_2345.init()
+$    for datafiles call a_3345.setarea([a_3212,a_3213,a_3214]);
+$       with the lists in the areas
+$    calls the root of the main module.
+$
+
+$ prelude *********************************************************
+$  target head; module names, front matters
+'a'target prelude-ptr-str:
+   T+"/* ALEPH to javascript linker v%d.%d */%n%n// linked modules:%n"+
+       version major+version minor,
+   (nxt:(get next module head+ptr,ptr=0);
+       tag*ITEM[ptr]=0,(scope*ITEM[ptr]=0; $ built in
+          T+"// @main ""%p""%n"+scope*ITEM[ptr]),:nxt; $ main module
+       T+"// %p ""%p""%n"+ptr+scope*ITEM[ptr],:nxt),
+   $ built-in front matter
+   T+"%s%n"+aleph front matter,
+   $ indicate whether call stack is used or not
+   T+"const a_UseCallStack=%d;// 0 - no, 1- yes%n"+call stack, $ zero or 1
+   $ user supplied front matters, including stdlib
+   0->ptr,(nxt:get matter+ptr+1+str,T+"%s%n"+str,:nxt;+),
+   $ virtual min, virtual max
+   $ address space from virtualmax to maxint is for external tables
+   $ and stacks; virtualmax increases when reserved.
+   T+"const a_VirtualMin=%p;let a_VirtualMax=%p;%n"+min virtual address+max virtual address.
+
+'a'target postlude-ptr-str:
+   $ used supplied back matters
+   0->ptr,(nxt:get matter+ptr+0+str,T+"%s%n"+str,:nxt;+),
+   T+"%s%n"+aleph back matter.
+
+$ declaration ************************************************
+$ variable, list, file declarations
+$ defined
+$  variable:   let a_1099=<initial value>; /* tag */
+$  list:       const a_1101=new a_Array(0,"TARGET",cal,lwb,upt,filln);
+$  file:       const a_1001=new a_CharFile("STDIN",dir,@stdarr,ptr);
+$ ------------------------------------------------------------
+'variable'waitfor used=0, $ waitfor external is used
+          module roots=0. $ number of non-empty module roots
+
+$ call stack: procedures have first arg "a_Tr";
+$     first command is "const a_Ltr={rule:<ddd>,next:a_Tr};"
+$     call each rule with "a_Ltr" as first arg
+
+'a'var declaration+>item:
+   $ let a1001=0; // variablename
+   is item flag+item+texternal;
+   T+"let %r=%t; // %p%n"+item+adm*ITEM[item]+item.
+'a'list declaration+>kind+>item-cal-lb-up-fill:
+   $ const a1001=new a_Array(dir,"name",cal,lwb,upb,fill);
+   is item flag+item+texternal,get calibre+item+cal,
+     T+"const %r=new a_Array(%d,""%p"",%d,0,0,0);%n"
+        +item+kind+item+cal;
+   get calibre+item+cal,get vupb+item+up,get vlwb+item+lb,
+     get fill+item+fill,
+     T+"const %r=new a_Array(%d,""%p"",%d,%t,%t,%d);%n"
+        +item+kind+item+cal+lb+up+fill.
+'a'charfile declaration+>item-dir-id-ptr:
+   is item flag+item+texternal,
+     T+"const %r=new a_CharFile(""%p"",4,0,0);%n"+item+item;
+   (is item flag+item+toutfile,2->dir;0->dir),
+     (is item flag+item+tinfile,incr+dir;+),
+     get file data+item+id+ptr,get item def+id,
+     T+"const %r=new a_CharFile(""%p"",%d,%r,%r);%n"
+         +item+item+dir+id+ptr.
+'a'datafile declaration+>item-dir-id-ptr-cnt:
+   is item flag+item+texternal,
+     T+"const %r=new a_DataFile(""%p"",4,0,0,0);%n"+item+item;
+   (is item flag+item+toutfile,2->dir;0->dir),
+     (is item flag+item+tinfile,incr+dir;+),
+     get file data+item+id+ptr,count file area+item+cnt,get item def+id,
+     T+"const $r=new a_DataFile(""%p"",%d,%r,%r,%d);%n"
+         +item+item+dir+id+ptr+cnt.   
+'a'rule prototype+>item: $ prototype $
+   is item flag+item+rpidgin, $ no prototype
+     (is waitfor item+item,1->waitfor used;+);
+   is builtin rule+item+#;
+   is item flag+item+rempty;  $ if empty rule, do nothing
+     $ module root
+   is root item+item,add matter+2+item;
+   +.
+'a'root prototype+>item: $ number of non-empty module roots
+   scope*ITEM[item]=Squote image;incr+module roots.
+
+$ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+$ create rule name table
+'cons'rspecial=rtrace|rcount|rbounds.
+'a'create rule name table-item-sep-cnt:
+   T+"const a_RuleNames=[",<<ITEM->item,0->sep->cnt,
+   ((is+callstack,module roots>0,is+waitfor used),T+"""waitfor""",1->sep->cnt;+),
+   (nxt:item>>>ITEM;
+    is item flag+item+timported,next+ITEM+item,:nxt;
+    type*ITEM[item]=Irule,store rulename+item+sep+cnt,next+ITEM+item,:nxt;
+    next+ITEM+item,:nxt),
+   T+"];%n".
+'a'store rulename+>item+>sep>+>cnt>:
+   is item flag+item+texternal;
+   is builtin rule+item+#;
+   is item flag+item+rempty;
+   (is+call stack;is item flag+item+rspecial),
+      arg sep+sep,T+"""%p"""+item,
+      cnt->count*ITEM[item],incr+cnt;
+   +.
+'a'data declaration-item-roots:
+   <<ITEM->item,(nxt:item>>>ITEM;
+     is item flag+item+timported,next+ITEM+item,:nxt;
+     (=type*ITEM[item]=
+        [Ivariable;Istatic var],var declaration+item;
+        [Itable],list declaration+0+item;
+        [Istack;Istatic stack],list declaration+1+item;
+        [Icharfile],charfile declaration+item;
+        [Idatafile],datafile declaration+item;
+        [Irule], rule prototype+item;
+      +), next+ITEM+item,:nxt),
+   $ compute number of non-empty module roots
+   0->roots,(nxt:get matter+roots+2+item,root prototype+item,:nxt;+),
+   create rule name table.
+
+$ FILL table *************************************************
+$  generate the fill table with all fills. 
+$   where: list id, or -1, followed by a sequence of blocks
+$     n=0: last block
+$     n>0: block of n items
+$     n<0: repeat the previous block -n times
+
+'a'push BUFFER+>x: (* x->BUFFER *)BUFFER.
+
+'variable'fill total=0.
+$ for js a_FillTable[] can be assigned null to release the content
+'a'fill table head:
+  T+"let a_FillTable=[%n",0->fill total.
+'a'fill table tail:
+  T+"-1]; // fill table size %d%n"+fill total.
+
+'a'until next comma+>ptr>:
+   ptr>>>BUFFER,internal error+_rule_;
+   BUFFER[ptr]=/,/,print char+/,/,incr+ptr;
+   print char+BUFFER[ptr],incr+ptr,:until next comma.
+'a'const item-v:
+   $ inpt value vanished at the next symbol, save it immediately
+  inpt=Tnumber,get number repr+inpt value,next symbol;
+  must+Titem+v,get item def+v,get number repr+repr*ITEM[v].
+'a'fill item+size>:
+  $ save the decimal representation of the value immediately
+  R+Dopen,0->size,(nxt:R+Dclose;
+        incr+size,const item,push BUFFER+/,/,:nxt);
+  1->size,const item,push BUFFER+/,/.
+'p'fill repeater+rep>-item:
+  R+Dstar,(RR+Tconst+rep;
+           must+Titem+item,get item def+item,
+              get target number value+repr*ITEM[item]+rep).
+'a'flush buffer+>size+>last+>ptr:
+  add+size+fill total+fill total,add+last+fill total+fill total,
+  incr+ptr,(size=0;T+"%d,"+size,incr+fill total),
+  (nxt:size=0;until next comma+ptr,decr+size,:nxt),
+  (last=0;T+"%d,"+last,incr+fill total),
+  (nxt:last=0;until next comma+ptr,decr+last,:nxt).
+'a'skip fill initializer:
+  R+Dcolon,must+Titem+#,:skip fill initializer;+.
+'a'generate fill entries-list-obuff-size-last-rep:
+   must+Titem+list,get item def+list,must+Tconst+#,incr+fill total,
+    T+"%r,// %p%n"+list+list,>>BUFFER->obuff,0->size,
+    (nxt:R+Dpoint;
+         fill item+last,
+           (fill repeater+rep,flush buffer+size+last+obuff,
+               T+"-%d,%n"+rep,incr+fill total,
+               unstack to+BUFFER+obuff,0->size;
+            add+size+last+size),
+           skip fill initializer,:nxt),
+    flush buffer+size+0+obuff,unstack to+BUFFER+obuff,
+    incr+fill total,T+"0,%n".
+
+$ DATA SETUP ********************************************** $
+$  do all fills,
+$  setup external list
+$  setup file data structures.
+
+'a'list initialization+>item-lb:
+   $ external list initialization: <string>(<listID>);
+   is item flag+item+texternal,get vlwb+item+lb, $ the init function
+     T+" %p(%r);//%p%n"+lb+item+item;
+   +.
+'a'charfile initialization+>item:
+   is item flag+item+texternal, $ init function is in adm
+     T+" %p(%r);//%p%n"+adm*ITEM[item]+item+item;
+   T+" %r.init();%n"+item.
+'f'count file area+>item+cnt>-list:
+   1->cnt,(nxt:get file area+item+cnt+list,
+      (list=0,decr+cnt;incr+cnt,:nxt)).
+'a'datafile initialization+>item-link-cnt-sep:
+   is item flag+item+texternal,
+     T+" %p(%r);//%p%n"+adm*ITEM[item]+item+item;
+   T+" %r.setarea(["+item,$])$ 0->sep,1->cnt,
+   (nxt:get file area+item+cnt+link,
+      (link=0,$([$ T+"]);//%p%n"+item;
+       get item def+link,arg sep+sep,T+"%r"+link,incr+cnt,:nxt)).
+
+'a'data initialization-item:
+   $ do all fills and release it
+   T+" a_FillLists(a_FillTable);a_FillTable=null;%n",
+   $ call the init function for  external stacks and tables
+   <<ITEM->item,(nxt:item>>>ITEM;
+     is item flag+item+timported,next+ITEM+item,:nxt;
+     (=type*ITEM[item]=
+       [Itable;Istack;Istatic stack],list initialization+item;
+       +),next+ITEM+item,:nxt),
+    $ set up external files and datafile areas
+    <<ITEM->item,(nxt:item>>>ITEM;
+      is item flag+item+timported,next+ITEM+item,:nxt;
+      (=type*ITEM[item]=
+        [Icharfile],charfile initialization+item;
+        [Idatafile],datafile initialization+item;
+       +), next+ITEM+item,:nxt).
+
+$ ROOT DECLARATIONS ******************************************
+$  generate  waitfor 
+'table'MESSAGE=(
+"rule waitfor: only empty module roots, not needed":waitfor has no effect
+).
+'a'find sync-roots-item:
+    0->roots,(nxt:get matter+roots+2+item,
+       (is item flag+item+rasync,
+          (scope*ITEM[item]=Squote image,1->root async;1->waitfor async);+),
+       :nxt;
+    +).
+'a'proc waitfor-roots-item-sc-aw:
+    $ function a_waitfor(<CALLTR>,Table,offset){
+    $     a_MODROOT(module_root,"moduleid")
+    $ if Table!=0 calls matching modules, otherwise
+    $ all modules at most once.
+    T+"const a_waitforCalls=[];%n",
+    T+"%Sfunction a_waitfor("+waitfor async,$)$
+    (call stack=0,$($ T+"a_F1,a_F2){%n";$}$
+     $($T+"a_Tr,a_F1,a_F2){%n const a_Ltr={rule:0,next:a_Tr};%n"),
+    0->roots,(nxt:get matter+roots+2+item,
+        ((scope*ITEM[item]->sc,sc=Squote image),:nxt; $ the main root
+         (is item flag+item+rasync,1->aw;0->aw),
+         T+" if(a_F2==0||a_cmpToStr(a_F1,a_F2,""%p""){%n"
+           "   if(!a_waitforCalls[""%p""]){a_waitforCalls[""%p""]=2;"
+           "%W%r("+sc+sc+sc+aw+item,call trace call+#,
+         T+");a_waitforCalls[""%p""]=1;}%n"
+           "   else if(a_waitforCalls[""%p""]!=1){"
+           "a_FatalError(0,""%p"""+sc+sc+sc,
+         (call stack=0;T+",a_Ltr"),
+         T+");}}%n",:nxt);
+      T+"}%n").
+'a'target main-roots-item-sep-main-aw:
+    $ generate waitfor if required or there are mod roots
+    find sync,
+    (waitfor used=0;module roots>0;warning+waitfor has no effect),
+    ((waitfor used=0,module roots=0);proc waitfor),
+    $ calls each module root then the main root
+    T+"%Sfunction a_ROOT(){%n"+root async,
+    (call stack=0;T+" const a_Ltr={rule:-1,next:null};%n"),
+    data initialization,
+    0->roots->main,(nxt:get matter+roots+2+item,
+      (scope*ITEM[item]=Squote image,item->main;+),:nxt;
+    +),
+    (module roots=0;T+" a_waitfor(",call trace call+sep,
+           arg sep+sep,T+"0,0);%n"),
+    (is+main,(is item flag+main+rasync,1->aw;0->aw),
+      T+" %W%r("+aw+main,call trace call+#,T+");%n}%n";
+     corrupt ice file+_rule_).
+
+$ RULE generation ********************************************
+'variable'
+  last profile=0.    $ profile link
+
+'variable'
+  this rule=0,       $ rule compiled now
+  next node idx=0,   $ label of the next node, no jump to it
+  called rule=0.     $ rule to be called
+
+$ declaration head  and tail *********************************
+'a'rule typer+>item+sep>-as:
+  (is item flag+item+rasync,1->as;0->as),
+  T+"%Sfunction %r("+as+item $)$,call trace arg+sep.
+'a'arg sep+>sep>:
+  sep=0,1->sep;print char+/,/.
+'a'out args+>out+>sep>:
+  out=0;arg sep+sep,T+"a_A".$[out]$
+'a'rule args+>item+>sep-n-cnt-type-out:
+  get number of formals+item+n,0->cnt->out,
+  (nxt: cnt<n,get formal+item+cnt+type,incr+cnt,
+     ((type=Iformal out;type=Iformal inout),incr+out,:nxt;
+      type=Iformal anchor,out args+out+sep,arg sep+sep,
+              $($ T+"a_C,a_Voff,a_V)";
+      arg sep+sep,T+"a_F%d"+cnt,:nxt);
+    out args+out+sep,$($ print char+/)/).
+$ ------------------------------------------------------------
+'a'show formals as comment+>item-n-cnt-type:
+  get number of formals+item+n,0->cnt,
+  (nxt:cnt>=n;
+    get formal+item+cnt+type,incr+cnt,
+    (=type=
+     [Iformal in],    T+"+>a";
+     [Iformal out],   T+"+a>";
+     [Iformal inout], T+"+>a>";
+     [Iformal table], T+"+t[]";
+     [Iformal stack], T+"+[]st[]";
+     [Iformal file],  T+"+""""f";
+     [Iformal anchor],T+"+@"),:nxt).
+'a'declare locals+>minloc+>maxloc+>locptr:
+   minloc=0;
+   minloc>maxloc;
+   BUFFER[locptr]=0,incr+minloc,incr+locptr,:declare locals;
+   T+"let a_L%d;"+minloc,incr+minloc,incr+locptr,:declare locals.
+'a'declare callargs+>item+>C1+>C2+>C3-cnt:
+   (C2=0;T+"const a_P=new Array(%d);"+C2),
+   (C3=0;get anchor count+item+cnt,$ even if cnt=1 $
+        T+"const a_D=new Array(%d+%d*a_C);"+C3+cnt),
+   print char+newline.
+'a'rule declaration head+>rule+>C1+>C2+>C3+>rn+>minloc+>maxloc
+              +>locptr-sep:
+   $ rule declaration head, prototype, trace and count
+   rule->this rule,add profiling def,
+     rule typer+rule+sep,rule args+rule+sep,
+     T+"{ // %p"+tag*ITEM[rule],
+     show formals as comment+rule,T+"%n",
+     add+minloc+locptr+locptr,declare locals+minloc+maxloc+locptr,
+     declare callargs+rule+C1+C2+C3,
+$     (call stack=0;1->rn),
+     add call stack+rule,add rulename+rn,
+     add profiling count,add tracing.
+'a'start rule body+>has label:
+   has label=0; $ no labels in the body
+   T+" let aip=1;%n"
+     "while(true){switch(aip){%n"
+     "case 1: ".
+'a'rule declaration tail+>has label:
+  (has label=0,T+"}// %p%n"+this rule;
+  T+"}}}// %p%n"+this rule).
+
+
+$ profiling and tracing --------------------------------------
+$  profiling: add a definition before the rule declaration
+$     add a count inside the rule
+$     declare a_profiles variable holding all counts (at the end)
+'a'add profiling def-c-r:
+   (is item flag+this rule+rcount,count*ITEM[this rule]->c,c>=0),
+      repr*ITEM[this rule]->r,
+      T+"const a_PF%d={rule:%d,count:0,next:"+r+c,
+      (last profile=0,T+"null";T+"a_PF%d"+last profile),
+      T+"};%n",r->last profile;
+   +.         
+'a'add profiling count:
+   (is item flag+this rule+rcount,count*ITEM[this rule]>=0),
+     T+" a_PF%d.count++;%n"+repr*ITEM[this rule];
+   +.
+'a'profiling declaration:
+   T+"const a_PROFILE=",(last profile=0,T+"null;%n";
+                 T+"a_PF%d;%n"+last profile).
+$ tracing:
+$    add a_TraceRule(1234,n,affix1,affix2,...)
+'a'add tracing-n-m-cnt-type:
+   (is item flag+this rule+rtrace,count*ITEM[this rule]>=0),
+     get number of formals+this rule+n,0->cnt->m,
+     (nxt:cnt>=n;
+          get formal+this rule+cnt+type,incr+cnt,
+          (type=Iformal out;incr+m),:nxt),
+     T+" a_TraceRule(%d,%d"+count*ITEM[this rule]+m,0->cnt,
+     (nxt:cnt>=n;
+          get formal+this rule+cnt+type,incr+cnt,
+          (type=Iformal out;print char+/,/,formal argument+cnt),:nxt),
+     T+");%n";
+   +.
+$ classification error message
+'a'add rulename+>rn:
+   rn=0; $ no classification
+   count*ITEM[this rule]>=0; $ has been stored
+   T+" const a_RuleName=""%p"";%n"+this rule.
+$ RULE BODY *************************************************
+'table'MESSAGE=(
+   "calibre"  :Tcalibre,
+   "alwb"     :Tlwb,
+   "aupb"     :Tupb,
+   "vlwb"     :Tvlwb,
+   "vupb"     :Tvupb,
+   "a_r1"     :r1, $ variable storing classifier's value
+   "a_r2"     :r2  $ another auxiliary variable
+). 
+$ labels ----------------------------------------------------
+'a'Tlabel+>label+>nextidx:
+   nextidx->next node idx,(label=0;label=1;
+$     print local label+label,print char+/:/).
+     T+"case %d: "+label).
+'a'jump to label+>label:
+   label=next node idx; $ don't jump $
+   T+" %g%n"+label.
+
+$ affixes ---------------------------------------------------
+$ BUFFER[ptr] starts an affix; generate code for it
+'a'T affix+>ptr:
+   =BUFFER[ptr]=
+   [Dcolon],incr+ptr,T affix inner+ptr;
+   [Dnoarg],+;
+   T affix inner+ptr.
+'a'T affix inner+>ptr>-x:
+   $ generate an affix from BUFFER[ptr]
+   =BUFFER[ptr]=
+   [Tformal;Tlocal;Titem],T+"%p"+ptr,incr+ptr,incr+ptr;
+   [Tnumber],T+"%p"+ptr,incr+ptr,incr+ptr;
+   [Dsub],incr+ptr,T index+ptr;
+   T limit tail+BUFFER[ptr]+x,incr+ptr,
+      T+"%p.%p"+ptr+x,incr+ptr,incr+ptr.
+'f'T limit tail+>what+code>:
+   =what=
+   [Dcalibre],Tcalibre->code;
+   [Dlwb],    Tlwb->code;
+   [Dupb],    Tupb->code;
+   [Dvlwb],   Tvlwb->code;
+   [Dvupb],   Tvupb->code;
+   internal error+_rule_.
+'a'T index+>ptr>-x:
+   is item flag+this rule+rbounds, $ indexing with bound checking $
+      T+"%p.data[%p.checkidx("+ptr+ptr,incr+ptr,incr+ptr,T affix inner+ptr,
+      incr+ptr,subtr+BUFFER[ptr]+1+x,incr+ptr,(x=0;T+"-%d"+x),
+      T+",%d"+count*ITEM[this rule],
+      (call stack=0,T+")]";T+",a_Ltr)];");
+$      call trace call+#,
+$      arg sep+x,T+"%p,"+ptr,incr+ptr,incr+ptr,
+$      T affix inner+ptr,incr+ptr,
+$      subtr+BUFFER[ptr]+1+x,incr+ptr,T+",%d,a_rulename)]"+x;
+   T+"%p.data[%p.offs+"+ptr+ptr,incr+ptr,incr+ptr,T affix inner+ptr,
+      $ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
+      incr+ptr,(x=0,T+"]";T+"-%d]"+x).
+
+$ EXTENSION ******************************************************
+$  BUFFER[affix+1] is the stack, then width, followed by
+$  a linked list of affixes + target offsets
+$    { const r1=L.extension(n,a_Ltr);
+$         L.data[r1+0]=affix; L.data[r1+2]=L.data[r1+1]=affix;
+$         L.aupb+=n;}%n
+'a'extension block+>st+>w+>ptr-offs-x:
+   incr+ptr,$ affix $
+   ptr->offs,(nxt:BUFFER[offs]=Dplus;incr+offs,:nxt),incr+offs,
+   (nxt:BUFFER[offs]<0;
+        subtr+w+BUFFER[offs]+x,incr+offs,
+        T+"%p.data[%p+%d]="+st+r1+x,:nxt),
+   T affix+ptr,print char+/;/.
+'a'T extension+>ptr+>label-st-w:
+   incr+ptr,BUFFER[ptr]->w,incr+ptr,ptr->st,
+     T+"{const %p=%p.extension(%d"+r1+st+w,
+       (call stack=0;T+",a_Ltr"),T+");",
+     add+2+ptr+ptr, $ BUFFER[ptr] points to the affix; zero if no more
+     (nxt:extension block+st+w+ptr,BUFFER[ptr]->ptr,(ptr=0;:nxt)),
+     T+"%p.aupb+=%d;}%n"+st+w,jump to label+label.
+
+$ CLASSIFICATION *************************************************
+$  BUFFER[affix+1] the affix; BUFFER[area+1] ... describes areas
+$    <next>,<label>,lw,up,Dsemicolon,lw,up,Dplus
+
+'p'numbers equal+>x+>y-yes:
+    load register+Anum+x+x,load register+Anum+y+y,
+    (reg compare2+Aeq+x+y,1->yes;0->yes),
+    free register+x,free register+y,is+yes.
+
+'a'box classifier+>ptr+v>:
+  =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tnumber],ptr->v;
+     r1->v,T+"const %p="+v,T affix+ptr,T+";%n".
+
+'q'is complete area+>ptr:
+  BUFFER[ptr]=0,incr+ptr,incr+ptr,BUFFER[ptr]=target min int,incr+ptr,
+     BUFFER[ptr]=target max int.
+
+'a'T single if condition+>lw+>up+>v:
+  numbers equal+lw+up,T+"%p==%t"+v+lw;
+  numbers equal+lw+target min int,T+"%p<=%t"+v+up;
+  numbers equal+up+target max int,T+"%p>=%t"+v+lw;
+  T+"(%t<=%p && %p<=%t)"+lw+v+v+up.
+
+'a'T if condition+>ptr+>v-lw-up:
+  incr+ptr,BUFFER[ptr]->lw,incr+ptr,BUFFER[ptr]->up,
+     T single if condition+lw+up+v,incr+ptr,
+     (BUFFER[ptr]=Dsemicolon,T+"||",:T if condition;+).
+
+'a'T jump to areas+>ptr+>v-goal-fgoal-nextptr:
+  $ ptr: pointer to next; label to jump to if true;
+  $  (lw,up), Dsemicolon or Dplus
+  BUFFER[ptr]->nextptr,
+    (nextptr=0, $ last case, may fail
+        incr+ptr,BUFFER[ptr]->goal,
+        T+" if(!(",T if condition+ptr+v,T+")){a_AreaFailed(%p,"+v,
+        (count*ITEM[this rule]>=0,T+"a_RuleNames[%d]"+count*ITEM[this rule];
+         T+"a_RuleName"),
+        (call stack=0;T+",a_Ltr"),T+");}%n",
+        (goal=next node idx;T+" %g"+BUFFER[ptr]);
+    is complete area+nextptr,incr+ptr,BUFFER[ptr]->goal,
+        incr+nextptr,BUFFER[nextptr]->fgoal,
+        (goal=next node idx,(goal=fgoal;
+           T+" if(!(",T if condition+ptr+v,T+")){%g}%n"+fgoal);
+         T+" if(",T if condition+ptr+v,T+"){ %g}%n"+goal,
+           (fgoal=next node idx;T+" %g"+fgoal));
+    incr+ptr,T+" if(",T if condition+ptr+v,T+"){%g}%n"+BUFFER[ptr],
+        nextptr->ptr,:T jump to areas).
+'a'T box+>affix+>area-v:
+  T+"{",incr+affix,box classifier+affix+v,incr+area,
+    T jump to areas+area+v,T+"}%n".
+
+$ RULE CALL *****************************************************
+
+'a'T rule call+>tag+>n+>fnext+>tnext+>rep+>star+>ptr-x-type:
+   $ tag   rule to be called
+   $ n     total number of arguments including @
+   $ fnext,tnext false, true node numbers
+   $ rep   number of repeat items (not blocks)
+   $ star  0/1 indicating if "@" is the last actual affix
+   $ ptr   actual affixes start at BUFFER[ptr+1], linked
+   $         Danchor is followed by <n> where
+   $           n>0   number of repeat blocks
+   $           n<=0  star=1, -n blocks follow plus @
+   tag->called rule,incr+ptr, $ BUFFER[ptr] is the first affix 
+   (is rule discarded+ptr+fnext+tnext,T+"/* %p */;%G%n"+tag+tnext;
+    is waitfor item+tag,gen waitfor+ptr+tnext;
+    is assign item+tag,gen assignment+rep+star+ptr+tnext;
+    is builtin rule+tag+x,
+        (x=1,gen shiftaffix+fnext+tnext;gen getaffixno+n+ptr+tnext);
+    is item flag+tag+rpidgin,
+        regular call d1+1+fnext+tnext+type,
+        pidgin rule call+type+ptr,
+        regular call d2+type+fnext,
+        regular call d3+type+fnext+tnext;
+    regular call preload+ptr,
+        regular call d1+0+fnext+tnext+type,
+        regular rule call+ptr,
+        regular call d2+type+fnext,
+        regular call postload+ptr,
+        regular call d3+type+fnext+tnext).
+
+$ auxiliary rules -------------------------------------------------
+
+'f'next affix+>ptr>:
+   BUFFER[ptr]=Dplus,incr+ptr;
+   incr+ptr,:next affix.
+'q'is dummy affix+>ptr:
+   =BUFFER[ptr]= [Dnoarg;Dcolon],+;-.
+
+$ discarded call --------------------------------------------------
+$   rule is discarded here if the out affix is not used
+'q'has out affix+>ptr-n-cnt-type:
+    get number of formals+called rule+n,0->cnt,
+      (nxt:cnt>=n,-;
+           is dummy affix+ptr,incr+cnt,next affix+ptr,:nxt;
+           get formal+called rule+cnt+type,
+             ((type=Iformal out;type=Iformal inout;type=Iformal anchor);
+              incr+cnt,next affix+ptr,:nxt)).
+
+'q'is rule discarded+>ptr+>fnext+>tnext:
+    is item flag+called rule+rside effect,-; $ it has a side effect
+    is item flag+called rule+rno return,-;   $ it is exit
+    is item flag+called rule+rvararg,-;      $ has @
+    has out affix+ptr,-;
+    is item flag+called rule+rcan fail,fnext=tnext;
+    +.
+'a'gen shiftaffix+>fnext+>tnext-w: $ shift affix block+@
+   get anchor count+this rule+w,
+    ((fnext=next node idx;
+      fnext=tnext,next node idx->tnext;
+      tnext!=next node idx),
+         T+"if(a_C>1){a_C--;a_Voff+=%d;%G} %G%n"+w+tnext+fnext;
+     $tnext=next node idx$
+         T+"if(a_C<=1){%g} a_C--;a_Voff+=%d;%n"+fnext+w).
+'a'gen getaffixno+>n+>ptr+>tnext:
+   n!=2,corrupt ice file+_rule_;
+   is dummy affix+ptr,T+"%G%n"+tnext;
+   T affix+ptr,T+"=a_C;%G%n"+tnext.
+'a'gen waitfor+>ptr+>tnext-sep:
+   T+" a_waitfor(",call trace call+sep,arg sep+sep,T affix+ptr,
+     next affix+ptr,arg sep+sep,T affix+ptr,T+"); %G"+tnext.
+$ assignment ------------------------------------------------------
+'a'assignment source+>ptr+v>+block>:
+   =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tnumber],ptr->v,0->block;
+   r1->v,T+"{const %p="+v,T affix+ptr,print char+/;/,1->block.
+'a'gen assignment+>rep+>star+>ptr+>tnext-source-v-block-n-cnt:
+   $ rep: one more than blocks after @ (@ is an extra)
+   $ star: the last actual affix is the formal @
+   $    X->b->c->d->@   (rep=5,star=1)
+   $    X->b->c->d      (rep=4,star=0)
+   $ ALEPH semantic requires evaluating assignment from left to
+   $  right. The C double assignment a[i]=(i=3) is undefined;
+   $  thus an ALEPH assignment is split into separate C assignments:
+   $       b=X;c=X;d=X;for(i=0;i<a_C;i++)a_V[a_Voff+i]=X;
+   $  if X is a slice, then it is assigned to a dummy int first
+   $  as the index could change, example: L[x]->x->y,
+   ptr->source,next affix+ptr, $ BUFFER[ptr]=Danchor $
+   $ number of valid destinations goes to n
+   0->n,1->cnt,(nxt:cnt>=rep;
+     incr+cnt,next affix+ptr,
+     (=BUFFER[ptr]= [Danchor;Dnoarg;Dcolon],+;incr+n),:nxt),
+   $ if n>1 or star, store source
+   ((n>1;is+star),assignment source+source+v+block;
+    0->v->block),
+   source->ptr,next affix+ptr,1->cnt,(nxt:cnt>=rep;
+     incr+cnt,next affix+ptr,
+     (=BUFFER[ptr]= [Danchor;Dnoarg;Dcolon],+;
+       T affix+ptr,
+       (v=0,print char+/=/,T affix+source,print char+/;/;
+        T+"=%p;"+v)),:nxt),
+   (star=0;T+"for(let %p=0;%p<a_C;%p++){a_V[a_Voff+%p]=%p;}"+r2+r2+r2+r2+v),
+   (block=0;print char+/}/),T+"%G%n"+tnext.
+
+$ regular call interface ------------------------------------------
+$   may fail: <pre> if(<call>){ <post> GOTO <texit> }
+$             <pre> if(!<call>){ GOTO <fexit> } <post>
+$   cannot fail: <pre> <call> <post> GOTO <texit>
+$   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
+'a'repeat block preload+>ptr+>n+>rep+>out-size-bsz-cnt-type-dn:
+   $ BUFFER[ptr]=Danchor,BUFFER[ptr+1]=size,
+   $  size>0: number of blocks to a_P[]
+   $  size=0: pass a_C, a_V (nothing to be done)
+   $  size<0: blocks plus the formal blocks in a_V to a_D[]
+   $ rep: first repeat affix
+   $ n:   number of affixes
+   $ out: first free index in a_A[]
+   incr+ptr,BUFFER[ptr]->size,next affix+ptr,rep->dn,
+    (size<0,0->out,subtr+0+size+cnt;size->cnt),
+    get anchor count+called rule+bsz,mult+cnt+bsz+cnt,
+    (nxt:cnt=0;
+     get formal+called rule+dn+type,
+     (type=Iformal out;
+      size>0,T+"a_P[%d]="+out,T affix+ptr,print char+/;/;
+      T+"a_D[%d]="+out,T affix+ptr,print char+/;/),
+     incr+dn,(dn<n;rep->dn),decr+cnt,incr+out,next affix+ptr,:nxt),
+    (size>=0; $ done, otherwise copy repeat block to a_D[out ...] $
+     T+"for(let ar=0;ar<a_C*%d;ar++){a_D[%d+ar]=a_V[a_Voff+ar];}"+bsz+out).
+$     T+"memcpy(a_D+%d,a_V,a_C*%d*sizeof(%w));"+out+bsz).
+'a'regular call preload+>ptr-n-cnt-out-type:
+   get number of formals+called rule+n,0->cnt->out,
+   $ before @ inout affixes go to a_A[out]
+   (nxt:cnt=n;
+    get formal+called rule+cnt+type,incr+cnt,
+     (type=Iformal out,incr+out,next affix+ptr,:nxt;
+      type=Iformal inout,T+"a_P[%d]="+out,incr+out,T affix+ptr,
+            print char+/;/,next affix+ptr,:nxt;
+      type=Iformal anchor,repeat block preload+ptr+n+cnt+out;
+      next affix+ptr,:nxt)).
+'a'repeat block call+>ptr+>out+>sep-size:
+   (out=0;arg sep+sep,T+"a_P"),
+   incr+ptr,BUFFER[ptr]->size,arg sep+sep,
+   (size=0,T+"a_C,a_Voff,a_V)";
+    size<0,subtr+0+size+size,T+"a_C+%d,0,a_D)"+size;
+    out=0,T+"%d,0,a_P)"+size;
+    T+"%d,%d,a_P)"+size+out).
+'a'regular rule call+>ptr-n-cnt-out-sep-type-aw:
+   get number of formals+called rule+n,0->aw,
+   (is item flag+called rule+rasync,1->aw,
+      (is item flag+this rule+rasync;
+      error+wrong async call+called rule+this rule);
+    +),
+   T+"%W%r("+aw+called rule,0->cnt->out,$)$
+   (is item flag+called rule+texternal,0->sep;call trace call+sep),
+   (nxt:cnt=n,(out=0,$($print char+/)/;arg sep+sep,T+"a_P)");
+     get formal+called rule+cnt+type,incr+cnt,
+     ((type=Iformal out;type=Iformal inout),incr+out,next affix+ptr,:nxt;
+      type=Iformal anchor,repeat block call+ptr+out+sep;
+      arg sep+sep,T affix+ptr,next affix+ptr,:nxt)).
+'a'repeat block postload+>ptr+>n+>rep+>out-size-bsz-dn-cnt-type:
+   incr+ptr,BUFFER[ptr]->size,next affix+ptr,rep->dn,
+   (size<0,0->out,subtr+0+size+cnt;size->cnt),
+   get anchor count+called rule+bsz,mult+cnt+bsz+cnt,
+   (nxt:cnt=0;
+    get formal+called rule+dn+type,
+      (is dummy affix+ptr;
+       (type=Iformal out;type=Iformal inout),T affix+ptr,
+          (size>0,T+"=a_P[%d];"+out;T+"=a_D[%d];"+out);
+       +),
+      incr+dn,(dn<n;rep->dn),decr+cnt,incr+out,next affix+ptr,:nxt),
+   (size>=0; $ done, otherwise copy back repeat block from a_D[out] $
+    T+"for(let ar=0;ar<a_C*%d;ar++){a_V[a_Voff+ar]=a_D[%d+ar];}"+bsz+out).
+$    T+"memcpy(a_V,a_D+%d,a_C*%d*sizeof(%w));"+out+bsz).
+'a'regular call postload+>ptr-n-cnt-out-type:
+   get number of formals+called rule+n,0->cnt->out,
+   (nxt:cnt=n;
+    get formal+called rule+cnt+type,incr+cnt,
+      ((type=Iformal out;type=Iformal inout),
+         (is dummy affix+ptr;T affix+ptr,T+"=a_P[%d];"+out),
+         incr+out,next affix+ptr,:nxt;
+       type=Iformal anchor,repeat block postload+ptr+n+cnt+out;
+       next affix+ptr,:nxt)).
+'a'regular call d1+>pidgin+>fnext+>tnext+type>:
+   $ type=1:  if(<call>){ <post> GOTO <tnext>} GOTO <fnext>
+   $ type=2:  if(!<call>){ GOTO <fnext>} <post> GOTO <tnext>
+   $ type=0:  <call> <post> GOTO <tnext>
+   is item flag+called rule+rcan fail,
+     ((fnext!=next node idx,(tnext=next node idx;fnext<=0)),
+           2->type,(pidgin=0,T+"if(!";T+"if("$))$);
+      1->type,T+"if("$)$);
+   0->type.
+'a'regular call d2+>type+>fnext:
+   type=1,$($ T+"){"; 
+   type=2,$($ T+"){%G}"+fnext;
+   print char+/;/.
+'a'regular call d3+>type+>fnext+>tnext:
+   type=1,T+"%G}%G%n"+tnext+fnext;
+   type=2,T+"%G%n"+tnext;
+   T+"%G%n"+tnext.
+
+$ pidgin call interface -------------------------------------------
+$  - function with dummy out affixes only: discard
+$  - pidgin alt: append 0/1 for all out, discard dummy
+'table'MESSAGE=(
+"external rule string ""%p"" (%i) misses alternative %d":wrong external rule,
+"external rule string ""%p"" (%i) missing affix no %d":missing external affix number,
+"calling async ""%p"" in the not async rule ""%p""":wrong async call
+).
+
+'f'pidgin alt tagtail type+>ptr+tp>-n-cnt-type: $ figure out which arguments are valid
+   get number of formals+called rule+n,0->cnt->tp,
+   (nxt:cnt=n;
+    get formal+called rule+cnt+type,incr+cnt,
+      (type=Iformal out,left clear+tp+1,(BUFFER[ptr]=Dnoarg;incr+tp);+),
+      (type=Iformal anchor;next affix+ptr,:nxt)).
+$ search for @0101 ... in BUFFER matching the value n;
+$ give error if not found
+'q'check BUFFER no+>n+>ptr>-m:
+   subtr+BUFFER[ptr]+/0/+m,incr+ptr,(nxt:
+     BUFFER[ptr]=/0/,incr+ptr,left clear+m+1,:nxt;
+     BUFFER[ptr]=/1/,incr+ptr,left clear+m+1,incr+m,:nxt;
+     m=n).
+'a'find BUFFER version+>n+>ptr>:
+   ptr>=>>BUFFER,decr+ptr,
+       error+wrong external rule+repr*ITEM[called rule]+called rule+n;
+   BUFFER[ptr]=/@/,incr+ptr,
+      (BUFFER[ptr]=/0/,(check BUFFER no+n+ptr;incr+ptr,:find BUFFER version);
+       BUFFER[ptr]=/1/,(check BUFFER no+n+ptr;incr+ptr,:find BUFFER version);
+       :find BUFFER version);
+   incr+ptr,:find BUFFER version.
+$ search the next /@/ in BUFFER; we have an additional /@/ at the end
+'a'find BUFFER alternative+>ptr>:
+   BUFFER[ptr]=/@/,incr+ptr;
+   ptr<>>BUFFER,incr+ptr,:find BUFFER alternative;
+   internal error+_rule_.
+'a'copy text from BUFFER+>txt+>n+>args-aff:
+   txt>>>BUFFER;
+   BUFFER[txt]=/@/;
+   BUFFER[txt]=/#/,incr+txt,(=BUFFER[txt]=
+     [/1/:/9/],subtr+BUFFER[txt]+/0/+aff,
+                 copy affix+n+args+aff,incr+txt,:copy text from BUFFER;
+     [/a/:/z/],subtr+BUFFER[txt]+/a/+aff,add+10+aff+aff,
+                 copy affix+n+args+aff,incr+txt,:copy text from BUFFER;
+     [/,/],incr+txt,(call stack=0;print str+",a_Ltr"),:copy text from BUFFER;
+     [/0/],incr+txt,(call stack=0;print str+"a_Ltr"),:copy text from BUFFER;
+     [/>/],incr+txt,(gen async=0;T+"%W"+1),:copy text from BUFFER; $ ignore
+     print char+BUFFER[txt],incr+txt,:copy text from BUFFER);
+   print char+BUFFER[txt],incr+txt,:copy text from BUFFER.
+'a'copy affix+>maxn+>ptr+>n: $ copy n-th affix, starting with n=1
+  n>maxn,error+missing external affix number+repr*ITEM[called rule]+called rule+n;
+  (nxt:n=1;decr+n,next affix+ptr,:nxt),T affix+ptr.
+
+$'a'pidgin repeat block+>ptr-size-cnt-rep:
+   $ BUFFER[ptr]=Danchor
+$   incr+ptr,BUFFER[ptr]->size,next affix+ptr,print int+size,
+$   (size<0,subtr+0+size+cnt;size->cnt),
+$   get anchor count+called rule+rep,mult+cnt+rep+cnt,
+$   (nxt:cnt=0;
+$    print char+/,/,T affix+ptr,decr+cnt,next affix+ptr,:nxt),
+$   (size>0;T+",a_C,a_V").
+$'a'pidgin rule args+>ptr+>alt-n-cnt-sep-type:
+$   get number of formals+called rule+n,0->cnt->sep,
+$   (nxt:cnt=n;
+$    get formal+called rule+cnt+type,incr+cnt,
+$      (type=Iformal anchor,arg sep+sep,pidgin repeat block+ptr;
+$       ((type=Iformal out,is+alt,BUFFER[ptr]=Dnoarg);
+$        arg sep+sep,T affix+ptr),
+$       next affix+ptr,:nxt)).
+'a'pidgin rule call+>type+>ptr-oldp-n-txt:
+    >>BUFFER->oldp,get tag image+repr*ITEM[called rule]+txt,
+    unpack string+LEXT+txt+BUFFER,push BUFFER+/@/,oldp->txt,incr+txt,
+    (is item flag+called rule+raltpidgin,
+         pidgin alt tagtail type+ptr+n,
+         find BUFFER version+n+txt;+),
+    $ if type=2 use the second alternative
+    (type!=2;find BUFFER alternative+txt),
+    $ copy text from BUFFER, replace #1 ... #9, #a .. #z by the formals
+    get number of formals+called rule+n,
+    copy text from BUFFER+txt+n+ptr,
+    unstack to+BUFFER+oldp.    
+$    T+"%r"+called rule, # no tracing
+$    (is item flag+called rule+raltpidgin,1->alt,pidgin alt tagtail+ptr;0->alt),
+$    print char+/(/,pidgin rule args+ptr+alt,print char+/)/.
+
+$ ROOT *******************************************************
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+

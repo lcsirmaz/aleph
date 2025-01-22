@@ -1,0 +1,46 @@
+$ standard ALEPH library -- command-line arguments
+'pragmat'module=stdlib,title="jslib stdarg".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ command line arguments
+'table'STDARG.
+$ STDARG[] command line argument strings in reverse order
+
+$ BODY ******************************************************** $
+'pragmat'if=compile,library mode=on.
+
+$ populate the STDARG table from a_StdargArray[ ... ]
+'pragmat'front matter=
+"function a_SetupStdArg(a){%n"
+" a.vlwb=a_VirtualMax+16;a.alwb=a.vlwb+a.calibre;%n"
+" a.vupb=a_VirtualMax+65536;a.aupb=a.vlwb;a.offs=-a.aupb-1;%n"
+" for(let i=a_StdargArray.length-1;i>=0;i--){%n"
+"  const s=[];%n"
+"  for(const c of a_StdargArray[i]) s.push(c.codePointAt(0));%n"
+"  a_PushString(a,s.length,(x)=>{return s[x]});%n"
+" a_VirtualMax=a.chomp()+16;%n"
+"}".
+'x''table'STDARG="a_SetupStdArg". $ initial function
+
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+

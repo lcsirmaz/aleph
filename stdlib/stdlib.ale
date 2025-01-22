@@ -1,4 +1,4 @@
-$ standard ALEPH library
+$ standard ALEPH library, compressed version
 'pragmat' module=stdlib.
 
 $ *************************************************************
@@ -17,14 +17,11 @@ $  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 $  the GNU General Public License for more details.
 $
 $ ************************************************************* 
-
-'pragmat'if=compile,
-    error="Aleph standard library. Do not compile",
-    endif=compile.
-
+'pragmat'if=compile,error="Aleph standard library. Do not compile",endif=compile.
 'pragmat'library mode=on.
-$ Included from aleph-XXXXXX standard library files
-$ aleph-stdbase ***********************************************
+$ Target words size
+'cons'word size=32,max int=0x7fffffff,min int=-max int-1,int size=10.
+$ Arithmetic, string
 'f' add+>x+>y+z>, subtr+>x+>y+z>,
     mult+>x+>y+z>,addmult+>x+>y+>z+u>,
     div+>x+>y+z>,divrem+>x+>y+z>+u>,incr+>x>,decr+>x>,
@@ -41,64 +38,44 @@ $ aleph-stdbase ***********************************************
 'cons'nil=0.
 'q' was+t[]+>p.
 'f' next+t[]+>p>,previous+t[]+>p>,list length+t[]+n>.
-'a' unstack+[]st[],unstack to+[]st[]+>p,
-    scratch+[]st[],release+[]st[].
+'a' unstack+[]st[],unstack to+[]st[]+>p,scratch+[]st[],release+[]st[].
 'p' request space+[]st[]+>n.
 'f' string length+t[]+>p+n>,string width+t[]+>p+n>,
-    previous string+t[]+>p>,
-    compare string+t1[]+>p1+t2[]+>p2+comp>,
+    previous string+t[]+>p>,compare string+t1[]+>p1+t2[]+>p2+comp>,
     compare string n+t1[]+>p1+t2[]+>p2+>n+comp>.
 'q' string elem+t[]+>p+>n+chr>.
 'a' unstack string+[]st[],pack string+from[]+>p+[]to[],
     unpack string+from[]+>p+[]to[],copy string+from[]+>p+[]to[].
-'f' string hash+t[]+>p+hash>,
-    block hash+t[]+>p+hash>.
-'cons'newline=10,newpage=12.
-'cons'same line=-1,rest line=-2.
-'p' open file+""f+>mode+t[]+>p.
-'p' open temp file+""f+[]st[]+>p.
-'a' close file+""f.
-'a' unlink file+t[]+>p.
-'f' get file error+""f+err>.
-'f' get file pos+""f+pos>.
+'f' string hash+t[]+>p+hash>, block hash+t[]+>p+hash>.
+$ Files
+'p' open file+""f+>mode+t[]+>p,open temp file+""f+[]st[]+>p.
+'a' close file+""f,unlink file+t[]+>p.
+'f' get file error+""f+err>,get file pos+""f+pos>.
 'a' set file pos+""f+>pos.
-'p' get char+""f+char>, ahead char+""f+char>.
-'a' put char+""f+>char.
+'cons'newline=10,newpage=12,same line=-1,rest line=-2.
+'charfile'STDIN,STDOUT.
+'p' get char+""f+char>,ahead char+""f+char>,
+    get line+""f+[]st[]+ctrl>,get int+""f+n>.
+'a' put char+""f+>char,put line+""f+t[]+>ch,
+    put int+""f+>n,put string+""f+t[]+>ptr,
+    put as string+""f+t[]+>ptr,fprintf+""f+t[]+@+>ptr.
+'pragmat'macro=(fgetc,fputc,fprint char,fprint string,
+    getc,putc,print char,print string,printf).
+'p' fgetc+""f+c>:get char+f+c.
+'a' fputc+""f+>c:put char+f+c.
+'a' fprint char+""f+>c:put char+f+c.
+'a' fprint string+""f+t[]+>p:put string+f+t+p.
+'p' getc+c>:get char+STDIN+c.
+'a' putc+>c:put char+STDOUT+c.
+'a' print char+>c:put char+STDOUT+c.
+'a' print string+t[]+>p:put string+STDOUT+t+p.
+'a' printf+t[]+@+>ptr:fprintf+STDOUT+t+@.
 'cons'numerical=0,pointer=1.
-'p' get data+""f+data>+type>.
+'p' get data+""f+data>+type>,put datap+""f+>data+>type.
 'a' put data+""f+>data+>type.
-'p' put datap+""f+>data+>type.
-'e'exit+>code,@exit+>code.
-'a'backtrack.
-$ *************************************************************
-'cons'word size=32,		$ aleph-stdwordsize
-      max int=0x7fffffff,
-      min int=-max int-1,
-      int size=10.
-'table'STDARG.			$ aleph-stdarg
-'a'put int+""f+>n.		$ aleph-stdputin
-'a'put line+""f+t[]+>ch.	$ aleph-stdputline
-'a'put string+""f+t[]+>ptr.	$ aleph-stdputstring
-'a'put as string+""f+t[]+>ptr.	$ aleph-stdputasstring
-'a'printf+t[]+@+>ptr.		$ aleph-stdformatprint
-'a'fprintf+""f+t[]+@+>ptr.	$ aleph-stdformatprint
-'p'get int+""f+n>.		$ aleph-stdgetint
-'p'get line+""f+[]st[]+ctrl>.	$ aleph-stdgetline
-'a'wait for+t[]+>p.		$ aleph-stdwait
-'charfile'STDIN.		$ aleph-stdin
-'charfile'STDOUT.		$ aleph-stdout
-$ *************************************************************
-'pragmat'macro=(
-   $ rules for STDIN and STDOUT 
-   getc,putc,print char,print string,
-   $ alias
-   fgetc,fputc,fprint char,fprint string).
-'p'getc+c>:		get char+STDIN+c.
-'p'fgetc+""f+c>:	get char+f+c.
-'a'putc+>c:		put char+STDOUT+c.
-'a'fputc+""f+>c:	put char+f+c.
-'a'print char+>c:	put char+STDOUT+c.
-'a'fprint char+""f+>c:	put char+f+c.
-'a'print string+t[]+>p: put string+STDOUT+t+p.
-'a'fprint string+""f+t[]+>p: put string+f+t+p.
+$ Other
+'e' exit+>code,@exit+>code.
+'a' backtrack.
+'table'STDARG.
+'a' wait for+t[]+>p.
 'end'

@@ -591,7 +591,7 @@ $ scans *************************************************** $
    (node hash different;     $ find identical nodes
     restore input position,0->this node,scan ii),
    find equal nodes,
-   rule declaration head+rtag+C1+C2+C3+store rule name
+   rule declaration head+rtag+C2+C3+store rule name
                 +minloc+maxloc+local affix ptr+add cs,
    unstack to+BUFFER+obuff,
    restore input position,0->this node,scan iii,

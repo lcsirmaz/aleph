@@ -266,7 +266,7 @@ $     ext: 0/3 prototype, 0/4 fill
 
 $ 'stack'[](fields)[]tag with size estimator
 $ 'table'(fields)[]tag
-'a'declarer+>dl+>etype+>eqf+>esize-err-res:
+'a'declarer+>dl+>etype+>eqf+>esize-err:
    get list tag+err, $ read selectors
      (is+err,skip all;declarer body+dl+etype+eqf+esize).
 'a'declarer body+>dl+>etype+>eqf+>esize-res:

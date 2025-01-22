@@ -1,0 +1,247 @@
+$ expr.ale for js ALEPH
+'pragmat'module=expression,title="js linker expression, v1.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ******************************************************
+$ expressions are stored in the stack EXPRESSION,
+$  linked so we can walk them.
+$ expressions are evaluated twice. Loose evaluation
+$  determines values which do not depend on pointers
+$  and limits. Final evaluation determines all final
+$  values for expressions; after that EXPRESSION can
+$  be released.
+
+'a'read expression.
+   $ store expressions in a linked list so we can walk them.
+'a'loose evaluation.
+   $ evalute expressions not depending on virtual addresses
+'a'final evaluation.
+   $ evaluate expressions, virtual addresse are known
+
+$ distributing the virtual address
+'p'split virtual space+>abs+>rel.
+   $ the requested total absoult and relative list size
+   $ fail if insufficient virtual space
+'a'next virtual block+>cal+>abs+>rel+lwb>+upb>.
+   $ cal: calibre, gat; abs: absolute size, rel: relative size
+'a'clear virtual space.
+   $ clean up after vistual space assignment.
+'a'virtual address offset+>base+>off+result>.
+   $ add const off the the number base to get the number result
+$ BODY ********************************************************
+'pragmat'if=compile.
+'pragmat'require=("number","arithm","error","item","lexical","config").
+
+'variable'link expr=0. $ link all expressions
+'stack'[7]EXPRESSION[].  $ store all expressions
+'a'push EXPR+>x: (* x->EXPRESSION *)EXPRESSION.
+
+'f'get item def+>item>:
+    is item flag+item+timported,repr*ITEM[item]->item;+.
+
+$ READ EXPRESSIONS ********************************************
+$ read expressions, make sanitary checks for ID types
+'constant'tnodef=timported|texternal.
+
+'a'check list type+>item:
+    (=type*ITEM[item]=
+      [Itable;Istack;Istatic stack],is item flag+item+tnodef;
+      +), corrupt ice file+_rule_;
+    +.
+'a'check calibre type+>item:
+    (=type*ITEM[item]=
+      [Itable;Istack;Istatic stack],is item flag+item+timported;
+      +), corrupt ice file+_rule_;
+    +.
+'a'check constant type+>item+>strict:
+    (=type*ITEM[item]=
+       [Ipointer constant],(strict=1;is item flag+item+tnodef);
+       [Iconstant],is item flag+item+tnodef;
+       [Ivariable;Istatic var],(strict=0;is item flag+item+tnodef);
+       +), corrupt ice file+_rule_;
+     +.
+
+'a'read expression-item-ptr:
+   $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
+   must+Titem+item,check constant type+item+1,
+     (adm*ITEM[item]=0;corrupt ice file+_rule_),
+     push EXPR+item,>>EXPRESSION->ptr,push EXPR+link expr,ptr->link expr,
+     >>EXPRESSION->adm*ITEM[item],(nxt:=inpt=
+      [Dpoint],next symbol,push EXPR+Dpoint;
+      [Tnumber],push EXPR+Tnumber,push EXPR+inpt value,next symbol,:nxt;
+      [Titem],inpt value->item,get item def+item,push EXPR+item,
+        check constant type+item+0,next symbol,:nxt;
+      [Dlwb;Dupb],push EXPR+inpt,next symbol,must+Titem+item,
+        get item def+item,push EXPR+item,check list type+item,:nxt;
+      [Dcalibre],push EXPR+inpt,next symbol,must+Titem+item,
+        get item def+item,push EXPR+item,check calibre type+item, :nxt;
+      [Dplus;Dminus;Dstar;Ddiv;Dand;Dor;Dxor;Dcompl;Dopen;Dclose],
+        push EXPR+inpt,next symbol,:nxt;
+      corrupt ice file+_rule_
+     ).
+
+$ LOOSE EXPRESSION EVALUATION *********************************
+$ evalute expressions which do not depent on limits or 
+$  pointer constants. Size estimates and repeaters must have
+$  a value after this round
+'table'MESSAGE=(
+  "%p: constant definition refers to itself (%i)": constant refers to itself
+).
+'variable'eptr=0.
+'p'E+>x:
+    EXPRESSION[eptr]=x,incr+eptr.
+'p'Eitem+x>:
+    EXPRESSION[eptr]->x,was+ITEM+x,incr+eptr.
+'p'Eop+>prio+op>+p>:
+    EXPRESSION[eptr]->op,(=op=
+       [Dxor],        prio=0, 1->p,incr+eptr;
+       [Dand],        prio<=1,2->p,incr+eptr;
+       [Dor],         prio<=2,3->p,incr+eptr;
+       [Dplus;Dminus],prio<=3,4->p,incr+eptr;
+       [Ddiv;Dstar],  prio<=4,5->p,incr+eptr;
+       -).
+$ doing target arithmetic;
+$   get register+reg>:    next entry in the NUMBER stack, to be filled
+$   free register+>reg:   release if it was the top entry
+$   load register+>num+>type+>reg: type=Anum: number, type=Aval: constant
+$   store register+>reg+number>;  free register
+$   operator+>op+>reg2+>reg1, free register reg2
+'a'optor+>op+>w+>v:
+  =op=
+  [Dxor], reg operator+Axor+w+v;
+  [Dand], reg operator+Aand+w+v;
+  [Dor],  reg operator+Aor+w+v;
+  [Dplus],reg operator+Aplus+w+v;
+  [Dminus],reg operator+Aminus+w+v;
+  [Dstar], reg operator+Atimes+w+v;
+  [Ddiv], reg operator+Adiv+w+v.
+
+'p'loose base+v>:  $ return the value in a register
+   E+Dopen,loose expr+0+v,E+Dclose;
+   E+Tnumber,load register+Anum+EXPRESSION[eptr]+v,incr+eptr;
+   E+Dcompl,loose base+v,reg operator+Acomp+v+v;
+   E+Dminus,loose base+v,reg operator+Aneg+v+v;
+   E+Dcalibre,get calibre+EXPRESSION[eptr]+v,load register+Aval+v+v,incr+eptr;
+   Eitem+v,get item def+v,type*ITEM[v]=Iconstant,loose eval+v,
+       is item flag+v+tvalue,load register+Anum+repr*ITEM[v]+v.
+'p'loose expr+>prio+v>-op-p-w: $ v is a register
+   loose base+v,
+      (nxt:Eop+prio+op+p,(loose expr+p+w,optor+op+w+v,:nxt;
+                          free register+v,-);+).
+
+'a'set final value+>v+>item:
+   clear item flag+item+teval,v->repr*ITEM[item],
+     set item flag+item+tvalue.
+
+'a'loose eval+>item-oldptr-v:
+   (is item flag+item+timported,internal error+_rule_;
+   is item flag+item+tvalue); $ it has been computed
+   is item flag+item+teval,
+         error+constant refers to itself+tag*ITEM[item]+item,
+         get number zero+v,set final value+v+item;
+   set item flag+item+teval,eptr->oldptr,adm*ITEM[item]->eptr,incr+eptr,
+      (was+EXPRESSION+eptr;corrupt ice file+_rule_),
+      (loose expr+0+v,store register+v+v,set final value+v+item;
+       clear item flag+item+teval),
+      oldptr->eptr.
+'a'loose evaluation-ptr:
+   was error;
+   link expr->ptr,(nxt:ptr=0;
+     loose eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt).
+
+$ FINAL EXPRESSION EVALUATION *********************************
+$ evalute remaining expressions. It assumes that all pointer
+$   constants have the tvalue flag; vlwb and vupb are NUMBER pointers
+$   release the EXPRESSION stack
+'a'get expr limit+>what+>item+x>:
+  get item def+item, (what=Dlwb,get vlwb+item+x;get vupb+item+x),
+    load register+Anum+x+x.
+
+'a'final base+v>: $ return the value in a register
+   E+Dopen,final expr+0+v,(E+Dclose;+);
+   E+Tnumber,load register+Anum+EXPRESSION[eptr]+v,incr+eptr;
+   E+Dcompl,final base+v,reg operator+Acomp+v+v;
+   E+Dminus,final base+v,reg operator+Aneg+v+v;
+   E+Dcalibre,get calibre+EXPRESSION[eptr]+v,load register+Aval+v+v,incr+eptr;
+   E+Dlwb,get expr limit+Dlwb+EXPRESSION[eptr]+v,incr+eptr;
+   E+Dupb,get expr limit+Dupb+EXPRESSION[eptr]+v,incr+eptr;
+   Eitem+v,get item def+v,final eval+v,load register+Anum+repr*ITEM[v]+v;
+   corrupt ice file+_rule_.
+   
+'a'final expr+>prio+v>-op-p-w: $ v is a register
+   final base+v,(nxt:Eop+prio+op+p,final expr+p+w,optor+op+w+v,:nxt;+).
+
+'a'final eval+>item-v-oldptr:
+   (is item flag+item+timported,internal error+_rule_;
+   is item flag+item+tvalue); $ has been computed
+   is item flag+item+teval,
+      error+constant refers to itself+tag*ITEM[item]+item,
+      get number zero+v,set final value+v+item;
+   set item flag+item+teval,eptr->oldptr,adm*ITEM[item]->eptr,incr+eptr,
+      (was+EXPRESSION+eptr;corrupt ice file+_rule_),
+      final expr+0+v,store register+v+v,set final value+v+item,
+      oldptr->eptr.
+'a'final evaluation-ptr:
+   link expr->ptr,(nxt:ptr=0;
+     final eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt),
+   0->link expr,release+EXPRESSION.
+
+$ VIRTUAL SPACE ASSIGNMENT ************************************
+$  assigning virtual space
+'variable'Raddr=0,Rby=0. $ registers: actual address and step
+
+'a'store numstring+>x+num>-obuff:
+   $ x is a numerical string in LEXT, store it
+   >>BUFFER->obuff,previous+LEXT+x,unpack string+LEXT+x+BUFFER,
+     enter const string+0+obuff+num,unstack to+BUFFER+obuff.
+
+'p'split virtual space+>abs+>rel-minv-maxv-w:
+   $ store minimal and maximal virtual address
+   $ is target const+abs,is target const+rel,
+   store numstring+min virtual address+minv,
+   store numstring+max virtual address+maxv,
+   load register+Anum+minv+Raddr,load register+Anum+maxv+Rby,
+   load register+Anum+minv+w,reg operator+Aminus+w+Rby, $ D=maxv-minv
+   load register+Aval+abs+w,reg operator+Aminus+w+Rby,  $ D - abs
+   load register+Aval+rel+w,reg operator+Adiv+w+Rby,    $ (D-abs)/rel
+   reg compare+Agt0+Rby. $ should be positive
+
+'a'next virtual block+>cal+>abs+>rel+lwb>+upb>-v-w:
+   load register+Aval+cal+v,load register+Areg+Raddr+w,
+   reg operator+Aplus+w+v,store register+v+lwb,      $ R+<>, lower bound
+   load register+Aval+abs+v,reg operator+Aplus+v+Raddr, $ R+abs+by*rel->R
+   load register+Areg+Rby+w,load register+Aval+rel+v,      $ by*rel
+     reg operator+Atimes+w+v,reg operator+Aplus+v+Raddr,
+   load register+Areg+Raddr+v,store register+v+upb,     $ upper bound
+   load register+Aval+cal+v,reg operator+Aplus+v+Raddr. $ add <> gap
+
+'a'clear virtual space:
+   free register+Raddr,0->Raddr,free register+Rby,0->Rby.   
+
+'a'virtual address offset+>base+>off+result>-v-w:
+   $ off can be negative
+   load register+Aval+off+w,load register+Anum+base+v,
+    reg operator+Aplus+w+v,store register+v+result.
+
+$ ROOT ********************************************************
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+

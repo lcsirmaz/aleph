@@ -1,0 +1,37 @@
+$ standard ALEPH library -- put line
+'pragmat'module=stdlib,title="jslib put line".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ put line
+'a'put line+""f+t[]+>ch.
+$ prints elements of t[] followed by ch if ch is not 'rest line'
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+
+'a'put line+""f+t[]+>ch-ptr:
+   <<t->ptr,previous+t+ptr,incr+ptr,
+   (nxt:ptr<=>>t,put char+f+t[ptr],incr+ptr,:nxt;+),
+   (ch=rest line;put char+f+ch).
+'root'+.
+
+'pragmat'endif=compile.
+'end'
+

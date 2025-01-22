@@ -10,8 +10,10 @@
 // stdlib "stdlib put as string"
 // stdlib "stdlib put string"
 // stdlib "stdlib stdarg"
+// stdlib "stdlib stdhash"
 #include "aleph_core.h"
-#include "aleph_stdarg.h"
+static void a_stringhash(int,int,int[1]);static void a_blockhash(int,int,int[1]);
+static void a_setup_stdarg(int,const char*,int);
 #include "aleph_stdlib.h"
 #define a_1001 (0) /* @StringTable */
 #define a_1005 (a_1001+sizeof_LIST) /* ERRFILE */
@@ -1784,14 +1786,15 @@ static a_word a_1148(a_word a_F1,a_word a_F2){ /* samecontent+>a+>a */
 a_word a_L3;
 if(!a_equal(to_LIST(a_1137)->offset[a_F1-7],to_LIST(a_1137)->offset[a_F2-7])){ return 0;}
 if(!a_equal(to_LIST(a_1137)->offset[a_F1-4],to_LIST(a_1137)->offset[a_F2-4])){ return 0;}
+if(!a_equal(to_LIST(a_1137)->offset[a_F1-3],to_LIST(a_1137)->offset[a_F2-3])){ return 0;}
 a_L3=to_LIST(a_1137)->offset[a_F1-4];
 a_F1=to_LIST(a_1137)->offset[a_F1-2];
 a_F2=to_LIST(a_1137)->offset[a_F2-2];
-a_G6:if(a_less(a_L3,0)){ return 1;}
+a_G7:if(a_less(a_L3,0)){ return 1;}
 if(!a_equal(to_LIST(a_1134)->offset[a_F1],to_LIST(a_1134)->offset[a_F2])){ return 0;}
 a_incr(a_F1);
 a_incr(a_F2);
-a_decr(a_L3); goto a_G6;
+a_decr(a_L3); goto a_G7;
 } /* samecontent */
 static void a_1149(a_word a_F1,a_word a_F2){ /* startnode+>a+>a */
 
@@ -1963,4 +1966,23 @@ a_incr(a_L2);
 a_putchar(a_F1,a_L3); goto a_G2;
 } /* putstring */
 a_PROFILE *a_profiles=NULL;
+static void a_stringhash(int F1,int F2,int A[1]){ int *ptr=to_LIST(F1)->offset+F2; unsigned char *v=(unsigned char*)&ptr[1-ptr[0]]; unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v); while(*v){  v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;  v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;  v++; } A[0]=(int)((v1<<16)^v2);}
+void a_blockhash(int F1,int F2,int A[1]){ unsigned char *v=(unsigned char*)(to_LIST(F1)->offset+F2+1); unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v); int cnt=sizeof(int)*(to_LIST(F1)->aupb-F2); for(;cnt>0;cnt--){  v1=(29*v1+17*v2+1259u*(((unsigned)*v)^v2)) % 0x1010309;  v2=(23*v2+257*v1+1237u*(((unsigned)*v)^v1)) % 0x1010507;  v++; } A[0]=(int)((v1<<16)^v2);}
+extern int a_argc; extern char **a_argv;
+static int a_push_string_to(int F1,const char*ptr){ int n,w;int*goal;char*to;
+ #define st to_LIST(F1)
+ n=strlen(ptr);if(a_requestspace(F1,3+(n/4))==0){return 0;}
+ n=0;goal=&(st->offset[1+st->aupb]);to=(char*)goal;
+ while(*ptr){if((*ptr&0x80)==0){*to++=*ptr++;n++;}  else if((*ptr&0xC0)!=0xC0){ptr++;}  else if((*ptr&0xE0)==0xC0){*to++=*ptr++;n++;   if((*ptr&0xC0)!=0x80){n--;to--;}else{*to++=*ptr++;}}  else if((*ptr&0xF0)==0xE0){*to++=*ptr++;n++;   if((*ptr&0xC0)!=0x80){n--;to--;}else{*to++=*ptr++;    if((*ptr&0xC0)!=0x80){n--;to-=2;}else{*to++=*ptr++;}}}  else if((*ptr&0xF8)==0xF0){*to++=*ptr++;n++;   if((*ptr&0xC0)!=0x80){n--;to--;}else{*to++=*ptr++;    if((*ptr&0xC0)!=0x80){n--;to-=2;}else{*to++=*ptr++;     if((*ptr&0xC0)!=0x80){n--;to-=3;}else {*to++=*ptr++;}}}}  else{ptr++;}}
+ *to=0;w=1+(to-((char*)goal))/4;goal[w]=n;goal[w+1]=w+2;st->aupb+=w+2;
+ #undef st
+ return 1;}
+static void a_setup_stdarg(int F1,const char*name,int F2){
+ int i;
+ #define st to_LIST(F1)
+ st->name=name;st->offset=st->p=0;st->length=0; st->vlwb=a_virtual_max+16;a_virtual_max+=65436; if(a_virtual_max<=0){fprintf(stderr,"Out of virtual space\n");  a_fatal(a_FATAL_memory);}
+ st->vupb=a_virtual_max-1;st->calibre=F2; st->alwb=st->vlwb;st->aupb=st->alwb-st->calibre;
+  for(i=a_argc-1;i>0;i--){   if(a_push_string_to(F1,a_argv[i])==0){    fprintf(stderr,"out of memory\n");a_fatal(a_FATAL_memory);} }
+ #undef st
+}
 /* EOF */

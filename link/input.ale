@@ -176,7 +176,7 @@ $   Fstdp:  add built-in standard search path
    (is file flag+ptr+Fpath,try open with path+ptr+libdir+res;
     is file flag+ptr+Fstdp,try open with path+ptr+std search path+res;
     try open+ptr+res).
-'a'try open with path+>ptr+>paths+res>-n:
+'a'try open with path+>ptr+>paths+res>:
    1->count*FILES[ptr],
      (nxt:(string to BUFFER+paths,select path+ptr),try open+ptr+res,
                 (res=0;incr+count*FILES[ptr],:nxt);

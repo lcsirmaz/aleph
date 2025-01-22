@@ -1,0 +1,151 @@
+$ handling target numbers for js ALEPH
+'pragmat'module=number,title="js linker number v1.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ target numbers are stored in the private NUMBER[] stack,
+$    each number occupies a complete block of <>NUMBER elements
+$ actual arithmetic operations depend on the target word size
+$    and performed in the arithmetic module using a register machine
+
+$ target numbers
+'f'get number zero+x>.
+   $ return x with NUMBER[x]=0
+'a'get target number value+>x+n>.
+   $ get NUMBER[x] value: list estimator and fill repeat
+   $ works for non-negative small numbers only
+'a'enter const string+>sign+>ptr+x>.
+   $ store the decimal string from BUFFER[ptr+1] as a target number,
+   $   each entry is /0/ .. /9/;  error if overflow
+'a'get number repr+>x.
+   $ get the decimal representation at NUMBER[x] to BUFFER
+
+$ target strings
+'a'enter target string+>ptr+width>+x>.
+   $ a target string is BUFFER[ptr+1 ... ], return a sequence of 
+   $  target numbers followed by width many calls of
+'a'next target string value+>cnt>+x>.
+   $ null operation if cnt<1, otherwise clears the topmost
+   $  NUMBER entry and return the next number
+
+$ enhanced register functions
+'constant'
+   Anum	=0,	$ poiniter to NUMBER[]
+   Aval =1,	$ a constant value
+   Areg =2.	$ pointer to REGISTER[]
+'a'load register+>atype+>x+reg>.
+   $ type=0: NUMBER[x], type=1: compiler const, type=2: register
+'a'store register+>reg+x>.
+   $ store register as a target number in NUMBER[x], free the register
+'q'minmax registers+>reg1+>reg2.
+   $ check if reg1=target min, reg2=targat max
+
+'static''variable'target min int,target max int.
+   $ NUMBER[] containing these target values
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+
+'pragmat'require=("arithm","lexical","error","config").
+
+'variable' zero ptr=0. $ the zero value in NUMBER
+
+'static''variable'target max int=0,target min int=0.
+'variable'rtarget min=0,rtarget max=0.
+   $ registers with these values
+
+'stack'[2](#)NUMBER[].
+$ the number of selectors MUST match the number of compiler
+$  words in arithm containing a target word
+
+'pragmat'macro=load register.
+'a'load register+>type+>x+reg>:
+   $Anum=0, Aval=1, Areg=2, target min=3, target max=4
+   get register+type+NUMBER+x+reg.
+
+'p'same number block+>r1+>ptr-r2:
+   (load register+Anum+ptr+r2,reg compare2+Aeq+r1+r2),free register+r2;
+   free register+r2,-.
+
+'a'store register+>reg+ptr>-cnt:
+   <<NUMBER->ptr,0->cnt,(nxt:
+     (cnt>100;ptr>>>NUMBER),put register+reg+NUMBER,>>NUMBER->ptr;
+     same number block+reg+ptr,free register+reg;
+     incr+cnt,next+NUMBER+ptr,:nxt).
+
+$ target numbers ******************************************************
+'f'get number zero+x>: zero ptr->x.
+   $ NUMBER with zero value
+'a'get target number value+>ptr+n>-reg:
+   $ return the value of NUMBER[ptr], works for small positive numbers
+   load register+Anum+ptr+reg,put register value+reg+n.
+
+'a'enter const string+>sign+>ptr+x>-reg:
+   get decimal form+BUFFER+ptr+sign+reg, store register+reg+x.
+   $ BUFFER[ptr+1] constains /0/../9/ digits, store it as a NUMBER
+
+'a'get number repr+>x-reg:
+   $ get the decimal representation of NUMBER[x] to BUFFER.
+   $ use (-1-target max int) for target min int
+   load register+Anum+x+reg,put decimal form+reg+BUFFER.
+
+'q'minmax registers+>reg1+>reg2:
+    reg compare2+Aeq+reg1+rtarget min,reg compare2+Aeq+reg2+rtarget max.
+
+$ target strings ******************************************************
+'a'enter target string+>ptr+width>+x>-reg-i:
+   $ pack the characters in BUFFER[ptr+1]... and create a target
+   $  encoding, and then store it in NUMBER[] in reverse order.
+   pack string to registers+BUFFER+ptr+width+reg,width->i,
+      $ this converts the string to target representation
+      $ of 'width' many target words, stored in registers
+      $ of which 'reg' is the last. Now copy them to NUMBER[]
+      (nxt: i<1;
+       decr+i,pop register+reg+NUMBER,:nxt),
+      >>NUMBER->x.
+
+'a'next target string value+>cnt>+x>-ptr:
+   cnt>1,decr+cnt,>>NUMBER->ptr,previous+NUMBER+ptr,
+       unstack to+NUMBER+ptr,>>NUMBER->x;
+   cnt=1,decr+cnt,>>NUMBER->ptr,previous+NUMBER+ptr,
+       unstack to+NUMBER+ptr,0->x;
+   0->x.
+
+$ initialize **********************************************************
+'root'-v:
+   waitfor+"arithmetic",
+   $ create the first few entries in NUMBER
+   load register+Aval+0+v,store register+v+zero ptr,
+   $ check if <>NUMBER is set correctly
+   (<<NUMBER=>>NUMBER;internal error+"number.ale: wrong <>NUMBER"),
+   load register+3+0+rtarget max,
+   load register+4+0+rtarget min,
+   load register+Areg+rtarget max+v,store register+v+target max int,
+   load register+Areg+rtarget min+v,store register+v+target min int.
+
+'pragmat'endif=compile.
+
+'end'
+
+
+
+
+
+
+

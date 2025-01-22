@@ -1,0 +1,95 @@
+$ ALEPH javascript link main module
+'pragmat'title="ALEPH js linker, v1.0".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+'pragmat'require=("rule","input","item","error","lexical","data","expr","target").
+
+'a'pass1-ptr:
+   $ collect definitions, imports and exports
+   was error; $ stop at the first error
+   get next source+ptr,
+       head section+ptr,item section,close source,:pass1;
+   +.
+'a'pass2-next:
+   $ read data sections for the first time; 
+   was error; $ stop at the first error
+   open next module+next,(next=0;next=2,:pass2;
+      skip head section,skip item section,data section i,:pass2).
+
+'a'pass3-next:
+   $ scan data sections again; store externals, front and back matters,
+   $  determine the relative address of pointer constants.
+   was error;
+   open next module+next,(next=0;next=2,:pass3;
+       skip head section,skip item section,data section ii,:pass3).
+
+'a'pass4-next:
+   fill table head,
+   (nxt:open next module+next,(next=0; next=2,:nxt;
+        skip head section,skip item section,data section iii,:nxt)),
+   fill table tail.
+
+'a'pass4a-next-repeat-next:
+   gen async=0;
+   0->repeat,(nxt:open next module+next,
+     (next=0,(repeat=0;:pass4a);
+      next=2,:nxt;
+      is+repeat,:nxt;
+      skip head section,skip item section,skip data section,
+             find async rules+repeat,:nxt)).
+
+'a'pass5-next:
+   was error;
+   open next module+next,(next=0;next=2,:pass5;
+       skip head section,skip item section,
+          skip data section,rule section,:pass5).
+
+$ standard exit values:
+$   0:  output is generated
+$   1:  no argument, --help or --version
+$   2:  error
+$   3:  missing or corrupted .ice file
+$   4:  cannot create target file
+'root' check command line arguments,(was error,exit+1;+),
+         $ handle --help, --version and other flags
+       pass1,(was error,close source,exit+2;+),
+         $ determine which modules to keep
+         scan linked modules,report not used public items,
+       pass2,(was error,close source,exit+2;+),
+         $ pre-evaluate expressions and determined estimators
+         loose evaluation,loose bounds,
+       pass3,(was error,close source,exit+2;+),
+         $ distribute virtual addresses and compute pointers
+         distribute virtual address,(was error,exit+2;+),
+         $ compute all expressions and then release the stack
+         final evaluation,(was error,exit+2;+),
+         $ finally assign item representation numbers
+         assign repr numbers,
+       open target,(was error,exit+4;+),
+         target prelude,data declaration,
+       pass4, $ generate fill table
+       pass4a,$ check async
+         target main,$ waitfor() and the ROOT routine
+       pass5,profiling declaration,target postlude,close target,
+         $ compile rules
+         (was error,delete target,exit+2;+).
+
+'end'
+
+
