@@ -1,0 +1,46 @@
+$ standard ALEPH library -- get line
+'pragmat'module=stdlib,title="libC get line".
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
+$
+$  (C) 2020-2024, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+
+$ HEADER ****************************************************** $
+$ get line
+'p'get line+""f+[]st[]+ctrl>.
+$ reads until the next newline, newpage character or EOF. 
+$    fails if there are no more characters.
+$    if the first character is newline,newpage, it goes to ctrl, and
+$    skipped. Otherwise ctrl is "restline". Then the following
+$    characters appended to the stack st until a newpage, newline,
+$    or EOF.
+
+$ BODY ******************************************************** $
+'pragmat'if=compile.
+
+'p'get line+""f+[]st[]+ctrl>-ch:
+   get char+f+ch,
+   (=ch= [newline;newpage],ch->ctrl;
+         restline->ctrl,(*ch->st*)st),
+   (nxt:ahead char+f+ch,
+        (=ch= [newline;newpage],+;
+              (*ch->st*)st,(get char+f+#;+),:nxt);
+    +).
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+
