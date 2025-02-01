@@ -4,7 +4,7 @@ $ INPUT source files for ALEPH $
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH-v2.1)
 $
-$  (C) 2020-2024, L.Csirmaz
+$  (C) 2020-2025, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -493,7 +493,7 @@ $
 'a'check source modules-mtag:
    $ set program title if none was given
    (is pragmat value+pgt title;
-    set pragmat value+pgt title+def program title),
+    set pragmat value+pgt title+default title),
    <<INPUT->this source,
    $ if this is a module, does some other have the same name?
    (is pragmat value+pgt module,

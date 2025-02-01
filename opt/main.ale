@@ -1,5 +1,5 @@
 $ ALEPH ice optimizer main module
-'pragmat'title="ALEPH optimizer, v2.2".
+'pragmat'title="ALEPH optimizer, v1.2".
 
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH-v2.2)
@@ -21,14 +21,13 @@ $ *************************************************************
 'pragmat'require=("lexical","item","error").
 
 'constant'version major = 1,  $ optimizer version
-          version minor = 1.
+          version minor = 2.
 'table'MESSAGE=( $ --help, --version
-  "Optimize an ALEPH-M .ice file%n"
+  "Remove unused entries from an ALEPH-M .ice file%n"
   "Usage: aopt [--help | --version]%n"
-  "   or: aopt [--no-ruleopt] --replace <input>%n"
-  "   or: aopt [--no-ruleopt] <input> <output>%n"
-  "With ""--replace"" <input> is replaced with the optimized version.%n"
-  "The flag ""--no-ruleopt"" inhibits rule compression."
+  "   or: aopt [-no-rule] [-o <output>] <input>%n"
+  "If <output> is missing, <input> is replaced by the optimized code.%n"
+  "Flag ""-no-rule"" inhibits additional rule optimization."
    :help message,
   "ALEPH-M .ice optimizer version %d.%d%n"
   "Copyright (C) 2020-2025 Laszlo Csirmaz%n"
@@ -51,17 +50,17 @@ $ =====================================================================
 'q'is first arg+T[]+>str-eq:
     compare string+STDARG+arg top+T+str+eq,eq=0.
 'a'parse STDARG:
-    >>STDARG->arg top,(nxt:
+    >>STDARG->arg top,1->replace arg,(nxt:
       arg top< <<STDARG;
       is first arg+"--help",error+eINF+help message;
       is first arg+"--version",
          error+eINF+version message+version major+version minor;
-      is first arg+"--replace",previous string+STDARG+arg top,
-           1->replace arg,:nxt;
-      is first arg+"--no-ruleopt",previous string+STDARG+arg top,
+      is first arg+"-o",previous string+STDARG+arg top,
+           (arg top<<<STDARG,error+eINF+missing output;
+            arg top->ofile,0->replace arg,previous string+STDARG+arg top,:nxt);
+      is first arg+"-no-rule",previous string+STDARG+arg top,
            0->node optimization,:nxt;
-      is+ofile,error+eINF+too many arguments;
-      is+ifile,arg top->ofile,previous string+STDARG+arg top,:nxt;
+      is+ifile,error+eINF+too many arguments;
       arg top->ifile,previous string+STDARG+arg top,:nxt).
 'a'check command line arguments:
    parse STDARG,

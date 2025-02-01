@@ -1,5 +1,5 @@
-$ ICE file, produced by ALEPH compiler v2.2
-'module' "stdlib" "stdlib base" 32 
+$ ICE file, produced by ALEPH compiler v2.3
+'module' "stdlib" "libC base" 32 
 4 235 "base"
 236 316 "stdlib"
 .

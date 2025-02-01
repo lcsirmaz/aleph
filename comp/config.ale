@@ -1,10 +1,10 @@
 $ version, general information
-'pragmat'module=config,title="config v2.2".
+'pragmat'module=config,title="config v2.3".
 
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH-v2.2)
 $
-$  (C) 2020-2024, L.Csirmaz
+$  (C) 2020-2025, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -19,25 +19,25 @@ $
 $ ************************************************************* 
 
 $ HEADER ****************************************************** $
-'constant' version major = 2,
-           version minor = 2.
-'constant' target word size = 32,
+'constant' version major=2,
+           version minor=3.
+'constant' target word size=32,
            max string length=8192.
-'constant' path separator=/:/,            $ or /;/ for MS 
-           dir separator=///.             $ or /\/ for MS
+'constant' path separator=/:/,           $ or /;/ for MS 
+           dir separator=///.            $ or /\/ for MS
 
-'constant' disc file, stdlib file,        $disc, input
-           std search path,               $system search path
-           def program title,             $default title if none is given
-           help message,version message.  $data for --help and --version
+'constant' disc file, stdlib file,       $disc, input
+           std search path,              $system search path
+           default title,                $default title if none is given
+           help message,version message. $data for --help and --version
 
-'constant' max input files=200,           $ maximum number of input entries
-           restore size=500,              $ bactrack buffer size
-           max stack size=100 000,        $ lists: maximal fixed stack size
-           max repeat size=1 000.         $ lists: maximal repeat size
-'constant' default warning level=4,       $ default warning level
-           soft warning level=3,          $ -W 
-           lib default warning level=6.   $ default warning level in library
+'constant' max input files=200,          $ maximum number of input entries
+           restore size=500,             $ bactrack buffer size
+           max stack size=100 000,       $ lists: maximal fixed stack size
+           max repeat size=1 000.        $ lists: maximal repeat size
+'constant' default warning level=4,      $ default warning level
+           soft warning level=3,         $ -W 
+           lib default warning level=6.  $ default warning level in library
 
 
 $ BODY ******************************************************** $
@@ -45,11 +45,11 @@ $ BODY ******************************************************** $
 'pragmat'require=("display","lexical").
 
 'stack'LEXT=(
-   "/tmp/aleph-XXXXXX" :disc file,     $ temp disc file, must end with XXXXXX
-   "./aleph/stdlib:/usr/local/aleph/stdlib" 
-                    :std search path,  $ system path
-   "stdlib"         :stdlib file,      $ standard library source
-   "aleph"          :def program title $ default title
+   "/tmp/aleph-XXXXXX"	:disc file,       $ temp disc file, must end with XXXXXX
+   "./aleph:/usr/local/aleph"
+			:std search path, $ system path
+   "stdlib.ale"		:stdlib file,     $ standard library source
+   "aleph"		:default title    $ default title
 ).
 
 'table'MESSAGE=( $ --help, --version

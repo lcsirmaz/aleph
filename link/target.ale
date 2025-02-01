@@ -206,7 +206,7 @@ $   w: ALEPH word type
        [/r/],(shift affix block+@,print repr+fmt;print char+/?/),incr+ptr,:nxt;
        [/g/],(shift affix block+@,print goto+fmt;print char+/?/),incr+ptr,:nxt;
        [/G/],(shift affix block+@,print GOTO+fmt;print char+/?/),incr+ptr,:nxt;
-       [/w/],print str+"a_word",incr+ptr,:nxt;
+       [/w/],print str+"int",incr+ptr,:nxt;
        [/n/],print char+newline,incr+ptr,:nxt;
        [/d/],(shift affix block+@,print int+fmt;print char+/?/),incr+ptr,:nxt;
        [/p/],(shift affix block+@,print ptr+fmt;print char+/?/),incr+ptr,:nxt;
@@ -686,12 +686,12 @@ $    <next>,<label>,lw,up,Dsemicolon,lw,up,Dplus
     (nextptr=0, $ last case, may fail
         incr+ptr,BUFFER[ptr]->goal,
         T+" if(!(",T if condition+ptr+v,T+")){a_area_failed(a_rulename,%p);}%n"+v,
-        (goal=next node idx;T+" %g"+BUFFER[ptr]);
+        (goal=next node idx;T+"%g"+BUFFER[ptr]);
     is complete area+nextptr,incr+ptr,BUFFER[ptr]->goal,
         incr+nextptr,BUFFER[nextptr]->fgoal,
         (goal=next node idx,(goal=fgoal;
            T+" if(!(",T if condition+ptr+v,T+")){%g}%n"+fgoal);
-         T+" if(",T if condition+ptr+v,T+"){ %g}%n"+goal,
+         T+" if(",T if condition+ptr+v,T+"){%g}%n"+goal,
            (fgoal=next node idx;T+" %g"+fgoal));
     incr+ptr,T+" if(",T if condition+ptr+v,T+"){%g}%n"+BUFFER[ptr],
         nextptr->ptr,:T jump to areas).
@@ -770,11 +770,9 @@ $   rule is discarded here if the out affix is not used
    T+" a_waitfor(",call trace call+sep,arg sep+sep,T affix+ptr,
      next affix+ptr,arg sep+sep,T affix+ptr,T+"); %G"+tnext.
 $ assignment ------------------------------------------------------
-'a'assignment source+>ptr+>star+v>+block>:
-   =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tnumber],ptr->v,
-     (is+star,T+"{register %w %p;"+r2,1->block;0->block);
-   r1->v,T+"{register %w %p="+v,T affix+ptr,
-     (is+star,T+",%p"+r2;+),print char+/;/,1->block.
+'a'assignment source+>ptr+v>+block>:
+   =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tnumber],ptr->v,0->block;
+   r1->v,1->block,T+"{register %w %p="+v,T affix+ptr,print char+/;/.
 'a'gen assignment+>rep+>star+>ptr+>tnext-source-v-block-n-cnt:
    $ rep: one more than blocks after @ (@ is an extra)
    $ star: the last actual affix is the formal @
@@ -792,7 +790,7 @@ $ assignment ------------------------------------------------------
      incr+cnt,next affix+ptr,
      (=BUFFER[ptr]= [Danchor;Dnoarg;Dcolon],+;incr+n),:nxt),
    $ if n>1 or star, store source
-   ((n>1;is+star),assignment source+source+star+v+block;
+   ((n>1;is+star),assignment source+source+v+block;
     0->v->block),
    source->ptr,next affix+ptr,1->cnt,(nxt:cnt>=rep;
      incr+cnt,next affix+ptr,
@@ -800,7 +798,7 @@ $ assignment ------------------------------------------------------
        T affix+ptr,
        (v=0,print char+/=/,T affix+source,print char+/;/;
         T+"=%p;"+v)),:nxt),
-   (star=0;T+"for(%p=0;%p<a_C;%p++)a_V[%p]=%p;"+r2+r2+r2+r2+v),
+   (star=0;T+"for(register int %p=0;%p<a_C;%p++)a_V[%p]=%p;"+r2+r2+r2+r2+v),
    (block=0;print char+/}/),T+"%G%n"+tnext.
 
 $ regular call interface ------------------------------------------

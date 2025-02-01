@@ -1,5 +1,5 @@
-$ ICE file, produced by ALEPH compiler v2.2
-'module' "stdlib" "stdlib put string" 32 
+$ ICE file, produced by ALEPH compiler v2.3
+'module' "stdlib" "libC put string" 32 
 4 38 "putstring"
 39 119 "stdlib"
 .

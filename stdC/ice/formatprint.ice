@@ -1,5 +1,5 @@
-$ ICE file, produced by ALEPH compiler v2.2
-'module' "stdlib" "stdlib format print" 32 
+$ ICE file, produced by ALEPH compiler v2.3
+'module' "stdlib" "libC format print" 32 
 4 62 "formatprint"
 63 143 "stdlib"
 .

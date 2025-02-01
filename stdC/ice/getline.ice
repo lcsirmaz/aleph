@@ -1,5 +1,5 @@
-$ ICE file, produced by ALEPH compiler v2.2
-'module' "stdlib" "stdlib get line" 32 
+$ ICE file, produced by ALEPH compiler v2.3
+'module' "stdlib" "libC get line" 32 
 4 48 "getline"
 49 129 "stdlib"
 .

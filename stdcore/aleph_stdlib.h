@@ -25,11 +25,11 @@
 * External rule string starting with underscore or @:
 *  Functions with no no out/inout affix and no repeat affix block are
 *  discarded.
-* rule string starts with @ (macro):
+* if the rule string starts with @: handled as a macro
 *  0/1 is appended for each out affix (see divrem below) as
 *     0  -  dummy actual affix, affix skipped
-*     1  -  not a dummy affix
-* rule string starts with underscore (macro):
+*     1  -  affix presented
+* if the rule string starts with underscore: handled as macro
 *     dummy actual affix - empty
 *     formal anchor: number of blocks;
 *         if zero or negative then after that many blocks a_C,a_V
@@ -37,7 +37,7 @@
 *     otherwise the affix itself
 *
 * function,action:    closing semicolon is added automatically
-* question,pradicate: possibly preceded by ! to negate
+* question,pradicate: replacement text might be preceded by ! to negate
 *
 * External rule starting with a letter:
 *  standard aleph calling syntax:
