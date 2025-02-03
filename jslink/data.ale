@@ -369,7 +369,7 @@ $ ASSIGN REPR NUMBERS *************************************** $
 $ add repr numbers of items. external variable and external rule
 $  add tpidgin and tauxpidgin flags to rules
 $  items do not use the representation
-'variable'next repr no=1000. $ last number assigned $
+'variable'next repr no=100. $ last number assigned $
 
 'a'set repr number+>item-x-y:
    is item flag+item+texternal,(=type*ITEM[item]=
@@ -377,10 +377,8 @@ $  items do not use the representation
       [Irule],get tag image+repr*ITEM[item]+x,
          (string elem+LEXT+x+0+y,(=y=
           [/@/],set item flag+item+raltpidgin;
+          [/%/],(is+gen async,set item flag+item+rasync;+);
           [/a/:/z/;/A/:/Z/],+;
-          [/#/],((is+gen async,string elem+LEXT+x+1+y,y=/>/),
-                   set item flag+item+rasync;+),
-                set item flag+item+rplainpidgin;
           set item flag+item+rplainpidgin);+);
       [Ichar file;Idata file;Itable;Istack],
         incr+next repr no,next repr no->repr*ITEM[item];

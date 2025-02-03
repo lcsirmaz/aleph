@@ -34,7 +34,7 @@ $ populate the STDARG table from a_StdargArray[ ... ]
 " for(let i=a_StdargArray.length-1;i>=0;i--){%n"
 "  const s=[];%n"
 "  for(const c of a_StdargArray[i]) s.push(c.codePointAt(0));%n"
-"  a_PushString(a,s.length,(x)=>{return s[x]});%n"
+"  a_PushString(a,s.length,(x)=>{return s[x]});}%n"
 " a_VirtualMax=a.chomp()+16;%n"
 "}".
 'x''table'STDARG="a_SetupStdArg". $ initial function

@@ -160,7 +160,7 @@ $ arithmetic operators
       addmult+>x+>y+>z+u>     ="#4=#1*#2+#3",	$ x*y+z -> u
       div+>x+>y+z>            ="#3=(#1/#2)|0",	$ x/y -> z
       divrem+>x+>y+z>+u>      =			$ x/y -> z, x%y-> u
-      "@00@01#4=#1%#2@10#3=(#1/#2)|0@11{const ar=#1%#2;#3=(#1/#2)|0;#4=ar;}",
+      "@00@01#4=#1%#2@10#3=0|#1/#2@11{const ar=#1%#2;#3=0|#1/#2;#4=ar;}",
       incr+>x>                ="#1++",		$ x+1 -> x
       decr+>x>                ="#1--",		$ x-1 -> x
       getabs+>x+y>            ="#2=Math.abs(#1)",$ |x| -> y
@@ -198,7 +198,7 @@ $ stacks and tables
       list length+t[]+p>      ="#2=#1.aupb-#1.alwb+#1.calibre".
 'x''a'unstack+[]st[]          ="#1.aupb-=#1.calibre",
       unstack to+[]st[]+>p    ="#1.aupb=#2",
-      scratch+[]st[]          ="#1.aupb=#1.alwb-#1.calibre_a_scratch",
+      scratch+[]st[]          ="#1.aupb=#1.alwb-#1.calibre",
       release+[]st[]          ="#1.free()".
 'x''p'request space+[]st[]+>n ="a_RequestSpace".
 $ strings
@@ -209,7 +209,7 @@ $ strings
       compare string n+t1[]+>p2+t2[]+>p2+>n+comp> ="#6=a_CompareStringN(#1,#2,#3,#4,#5)".
 'x''q'string elem+t[]+>p+>n+c>       ="a_StringElem".
 'x''a'unstack string+[]st[]          ="#1.aupb-=#1.get(#1.aupb)",
-      pack string+t[]+>p+[]st[]      ="a_PackString",
+      pack string+t[]+>n+[]st[]      ="a_PackString",
       unpack string+t[]+>p+[]st[]    ="a_UnpackString",
       copy string+t[]+>p+[]st[]      ="a_CopyString".
 $ files
@@ -218,7 +218,7 @@ $ files
 'x''a'close file+""f                 ="a_closefile".
 'x''a'unlink file+t[]+>p             ="a_unlinkfile".
 'x''f'get file error+""f+err>        ="#2=#1.errno".
-'x''f'get file pos+""f+pos>          ="#2=#1.filepos".
+'x''f'get file pos+""f+pos>          ="#2=#1.fpos".
 'x''a'set file pos+""f+>pos          ="a_setfilepos".
 'x''p'get char+""f+char>             ="%a_getchar".
 'x''p'ahead char+""f+char>           ="%a_aheadchar".

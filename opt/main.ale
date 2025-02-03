@@ -26,7 +26,7 @@ $ *************************************************************
   "Remove unused entries from an ALEPH-M .ice file%n"
   "Usage: aopt [--help | --version]%n"
   "   or: aopt [-no-rule] [-o <output>] <input>%n"
-  "If <output> is missing, <input> is replaced by the optimized code.%n"
+  "If <output> is missing, <input> is replaced with the optimized code.%n"
   "Flag ""-no-rule"" inhibits additional rule optimization."
    :help message,
   "ALEPH-M .ice optimizer version %d.%d%n"

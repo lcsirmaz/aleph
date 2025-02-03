@@ -30,7 +30,7 @@ $ store ice files in FILES; identify by pointers.
 'a'set source+>ptr.
    $ set the source for messages
 'a'get target file.
-   $ create the target .c file as >>LEXT, should be released.
+   $ create the target .js file as >>LEXT, should be released.
 $ error callback routines
 'f'get ice file+ptr>.
    $ copy the actual source path to ptr
@@ -38,6 +38,8 @@ $ error callback routines
    $ if ptr is in FILES, copy path to str
 'q'not stdlib source.
    $ the actual source is not stblib
+'q'runtime char+>n+ch>.
+   $ return the n-th character of the runtime library
 $ BODY ************************************************ $
 'pragmat'if=compile.
 
@@ -83,20 +85,23 @@ $ FILES flags: how to open the file
        fatal error+maximum reached+max input files).
 $ -------------------------------------------------------------
 $ check argument list for options
-'variable'arg top=0,   $ next command line argument
-          add stdlib=1,$ add stdlib
-          libfile=0.   $ first library file
+'variable'arg top=0,	$ next command line argument
+          add stdlib=1,	$ add stdlib
+          runtime arg=0,$ new runtime, pointer to STDARG
+          libfile=0.	$ first library file, pointer to FILES
 
 'q'is first arg+T[]+>str-eq:
    compare string+STDARG+arg top+T+str+eq,eq=0.
+'q'first arg starts+T[]+>str-n-eq:
+   string length+T+str+n,compare string n+STDARG+arg top+T+str+n+eq,eq=0.
 'a'check command line arguments:
-   >>STDARG->arg top,1->add stdlib,(nxt:
+   >>STDARG->arg top,1->add stdlib,0->gen async,(nxt:
     arg top < <<STDARG,error+no input;
-    is first arg+"--help",message+help message;
+    is first arg+"--help",message+help message+aleph runtime;
     is first arg+"--version",message+version message+version major+version minor;
-    is first arg+"--no-stdlib",0->add stdlib,
+    is first arg+"-no-stdlib",0->add stdlib,
         previous string+STDARG+arg top,:nxt;
-    is first arg+"--async",1->gen async,previous string+STDARG+arg top,:nxt;
+    is first arg+"-async",1->gen async,previous string+STDARG+arg top,:nxt;
     is first arg+"-o",previous string+STDARG+arg top,
         (arg top < <<STDARG,error+missing argument+/o/;
          arg top->target file,previous string+STDARG+arg top,:nxt);
@@ -106,6 +111,8 @@ $ check argument list for options
     is first arg+"-W",report not used public items,
         previous string+STDARG+arg top,:nxt;
     is first arg+"-g",use call stack,
+        previous string+STDARG+arg top,:nxt;
+    first arg starts+"--RE=",arg top->runtime arg,
         previous string+STDARG+arg top,:nxt;
     +).
 
@@ -125,6 +132,11 @@ $ check argument list for options
                  handle source file+ptr+res,(res=0;:nxt)).
 'q'not stdlib source:
    libfile=0;actual ptr=0;actual ptr<libfile.
+
+'q'runtime char+>n+ch>-ptr:
+   $ the prefix "--RE=" has five characters
+   is+runtime arg,add+n+5+n,string elem+STDARG+runtime arg+n+ch;
+   get tag image+aleph runtime+ptr,string elem+LEXT+ptr+n+ch.
 $ --------------------------------------------------------------
 $ copy .ice file to BUFFER for messages
 'f'get ice file+ptr>:
@@ -250,7 +262,9 @@ $ create the target file name in >>LEXT
                   decr+nn,(is+pt,0->pt,unstack to+BUFFER+nn;+),:nxt);
            [///;/\/;/:/],(ext=1;oldp->nn);
            decr+nn,:nxt)),
-     (ext=2;extend BUFFER+/./,extend BUFFER+/j/,extend BUFFER+/s/),
+     (ext=2;
+      BUFFER[>>BUFFER]=///;
+      extend BUFFER+/./,extend BUFFER+/j/,extend BUFFER+/s/),
      subtr+>>BUFFER+nn+n,pack string+BUFFER+n+LEXT,unstack to+BUFFER+oldp.
 
 
