@@ -52,6 +52,7 @@ $
     R+Dcomma;
     R+Dend,corrupt ice file+_rule_;
     next symbol,:skip node.
+
 $ ************************************************************* 
 
 'a'rule section:
@@ -217,7 +218,7 @@ $   4) repeat affix, formal @ and additional repeat affixes:
 $        inout/out in A[] (if any), all repeat affix in a
 $        dynamic array (additional blocks + C)*block size
 $  for a rule:
-$   C1: total number of affixes NOT in the variable block
+$   C1: total number of affixes NOT in the variable block, not used
 $   C2: inout/out affixes BEFORE variable block plus all
 $        affixes in the variable block IF the last affix is not @
 $   C3: number of variable affixes BEFORE the last @
@@ -618,7 +619,7 @@ $ scans *************************************************** $
    (node hash different;     $ find identical nodes
     restore input position,0->this node,scan ii),
    find equal nodes,
-   rule declaration head+rtag+C1+C2+C3+store rule name
+   rule declaration head+rtag+C2+C3+store rule name
                 +minloc+maxloc+local affix ptr,
    unstack to+BUFFER+obuff,
    restore input position,0->this node,scan iii,

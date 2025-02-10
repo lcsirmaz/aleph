@@ -487,15 +487,17 @@ $  generate  waitfor
 'a'target main-roots-item-sep-main:
     $ generate waitfor if required or there are mod roots
     (waitfor used=0;module roots>0;warning+waitfor has no effect),
-    ((waitfor used=0,module roots=0);proc waitfor),
+    (waitfor used=0;proc waitfor),
     $ calls each module root then the main root
     T+"void a_ROOT(void){%n",
     (call stack=0;T+" a_addto_callstack_bottom();%n"),
     T+" a_data_setup();%n",
     0->roots->main,(nxt:get matter+roots+2+item,
-      (scope*ITEM[item]=Squote image,item->main;+),:nxt;
+      (scope*ITEM[item]=Squote image,item->main;
+       is+waitfor used;
+       T+" %r("+item,call trace call+#,T+");"),:nxt;
     +),
-    (module roots=0;T+" a_waitfor(",call trace call+sep,
+    (waitfor used=0;T+" a_waitfor(",call trace call+sep,
            arg sep+sep,T+"0,0);%n"),
     (is+main,T+" %r("+main,call trace call+#,T+");%n}%n";
      corrupt ice file+_rule_).

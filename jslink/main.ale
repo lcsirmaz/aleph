@@ -84,7 +84,7 @@ $   4:  cannot create target file
        open target,(was error,exit+4;+),
          target prelude,data declaration,
        pass4, $ generate fill table
-       pass4a,$ check async
+       pass4a,(is async waitfor,pass4a;+), $ check async
          target main,$ waitfor() and the ROOT routine
        pass5,profiling declaration,target postlude,close target,
          $ compile rules

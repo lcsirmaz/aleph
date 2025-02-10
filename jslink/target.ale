@@ -34,6 +34,8 @@ $ data section
    $  file offsets.
 'a'fill table head,generate fill entries,fill table tail.
    $ generate the fill table
+'p'is async waitfor.
+   $ if waitfor is async, do another round
 'a'target main.
    $ generate waitfor and a_ROOT
 $ rule section
@@ -79,19 +81,19 @@ $     aF%d     if not out/inout (serial number)
 $     aA[%d]   out/inout (count, starting at zero)
 $     aC       formal repeat count
 $     aVoff
-$    *aV       repeat block (indexed consecutively from aVoff)
+$     aV[]     repeat block (indexed consecutively from aVoff)
 $  local variables:
 $     aL%d     from 'min loc' to 'max loc', inclusive (d>=1)
 $  labels:
-$     aG%d     d>1, the node number
+$     aip      local instruction pointer, the node number
 $  actual parameters:
 $     aP[]     for out/inout, fixed size repeat block
-$    *aD       dynamic size repeat block
+$     aD[]     dynamic size repeat block
 $  items:
-$     annn     nnn is the repr number of the item
+$     a%3d     999 is the repr number of the item
 
 $ print to TARGET file ==================================== $
-'pragmat'macro=(print char,print str,print prefix).
+'pragmat'macro=(print char,print str,print prefix,print int index).
 'a'print char+>ch: put char+TARGET+ch.
 
 'a'print int+>n:
@@ -109,7 +111,7 @@ $ print to TARGET file ==================================== $
 
 $ prefix, formal, local, actual arguments
 'a'print prefix:
-   print char+/a/.$,print char+/_/.
+   print char+/a/.
 'a'local argument+>cnt:
    $ local affix
    print prefix,print char+/L/,print int+cnt.
@@ -122,7 +124,7 @@ $ prefix, formal, local, actual arguments
         (i=cnt,print int index+/A/+out;incr+out,:nxt);
       type=Iformal anchor,incr+i,subtr+cnt+i+i,
         (i<0,print prefix,print char+/C/;
-         i=0,print str+"aV[aVoff]"; $aV[aVoff+i]
+         i=0,print str+"aV[aVoff]"; $ aV[aVoff+i]
          print str+"aV[aVoff+",print int+i,print char+/]/);
       i=cnt,print prefix,print char+/F/,print int+cnt;
       :nxt)).
@@ -137,7 +139,7 @@ $ prefix, formal, local, actual arguments
      (is item flag+item+texternal,print external repr+item;
       (=type*ITEM[item]=
           [Iconstant;Ipointer constant],print number+repr*ITEM[item];
-          print prefix, print int+repr*ITEM[item]));
+          print prefix,print int+repr*ITEM[item]));
    print ptr+item.
 'a'print goto+>label:
    $ -1: success return, -2: fail return; otherwise jump
@@ -159,22 +161,22 @@ $   prints a double item from BUFFER
   [Tlocal],incr+ptr,local argument+BUFFER[ptr];
   [Tnumber],incr+ptr,print number+BUFFER[ptr];
   [Tformal],incr+ptr,formal argument+BUFFER[ptr];
-  internal error+_rule_.
+  TE+12.
 'a'print ptr+>p:
    was+ITEM+p,tag*ITEM[p]->p,:print ptr;
    was+LEXT+p,get tag image+p+p,print str+LEXT+p;
    was+MESSAGE+p,print str+MESSAGE+p;
    was+BUFFER+p,print BUFFER+p;
-   p=0,print str+"[null]";
-   internal error+_rule_.
+   TE+13. $ including p=0
 'a'print external rule repr+>p-n-ch:
-   $ skip the leading % character marking async function
+   $ skip the leading % character marking async function,
+   $ and add a_async_a if linked with -async
    was+LEXT+p,get tag image+p+p,
       ((string elem+LEXT+p+0+ch,ch=/%/),
         1->n,(gen async=0;print str+"a_async_");
        0->n),
-      (nxt:string elem+LEXT+p+n+ch,put char+TARGET+ch,incr+n,:nxt;+);
-   internal error+_rule_.
+      (nxt:string elem+LEXT+p+n+ch,print char+ch,incr+n,:nxt;+);
+   TE+14.
 'a'print nlptr+>p-obuff-ptr:
    was+LEXT+p,get tag image+p+p,
      >>BUFFER->obuff->ptr,unpack string+LEXT+p+BUFFER,
@@ -189,8 +191,10 @@ $   prints a double item from BUFFER
    >>BUFFER->obuff->ptr,get number repr+p,
      (nxt:>>BUFFER<=ptr,unstack to+BUFFER+obuff;
           incr+ptr,print char+BUFFER[ptr],:nxt).
+$ internal error: 1..11: T+
+$    12: print BUFFER, 13: print ptr, 14: external rule repr
 'e'TE+>code:
-   print str+"T error:",print int+code,print char+newline,
+   print str+"Code: ",print int+code,print char+newline,
    internal error+_rule_.
 'a'T+t[]+@+>fmt-ptr-optr:
 $ formal characters:
@@ -220,7 +224,6 @@ $   S: async if the argument is not zero
        [/s/],(shift affix block+@,print nlptr+fmt;TE+8),incr+ptr,:nxt;
        [/t/],(shift affix block+@,print number+fmt;TE+9),incr+ptr,:nxt;
        TE+10))),
-$       print char+/?/,print char+BUFFER[ptr],incr+ptr,:nxt))),
   (shift affix block+@,TE+11;+),
   unstack to+BUFFER+optr.
 
@@ -240,10 +243,6 @@ $ auxiliary rules *************************************************
 
 'a'use call stack: 1->call stack.
 
-'variable'gen async=0, $ 1 if generate asynchonous routines
-          waitfor async=0,
-          root async=0.
-
 'f'get item def+>item>:
    $ switch to the definition of the item
    is item flag+item+timported,repr*ITEM[item]->item;+.
@@ -258,13 +257,13 @@ $        a_RuleNames=["ruletag1","ruletag2",...];
 $  Call stack:
 $    linked list; extra first argument for all functions, linked
 $    object is added to all function head:
-$        function a9999(aTr,...){//rulename+>a+[]a[]
+$        function a999(aTr,...){//rulename+>a+[]a[]
 $            const aLtr={rule:<ddd>,next:aTr};
 $  Profiling:
 $    linked list; each profiled rule is preceded by the declaration
 $        const aPf1001={rule:<ddd>,count:0,next:<prev>};
 $    forming a linked list; starting with null. At the end we have
-$        const a_PROFILE=aPf9999; or NULL
+$        const a_PROFILE=aPf999; or NULL
 $  Tracing: added the statement
 $        a_TraceRule(<ddd>,m,v1,v2,...,vm);
 $  Lists:  a_Array(<type>,"name",cal,lwb,upb,filln);
@@ -277,10 +276,10 @@ $    the content is released by a_FillTable=null; after using it.
 $  main program: a_ROOT()
 $    set up call stack; fills lists by calling
 $        a_FillLists(a_FillTable);a_FillTable=null;
-$    for external lists calls <EXTSTRING>(a2222);
-$    for external files calls <EXTSTRING>(a2233);
-$    for charfiles call a2345.init()
-$    for datafiles call a3345.setarea([a3212,a3213,a3214]);
+$    for external lists calls <EXTSTRING>(a222);
+$    for external files calls <EXTSTRING>(a223);
+$    for charfiles call a235.init()
+$    for datafiles call a335.setarea([a322,a313,a314]);
 $       with the lists in the areas
 $    calls the root of the main module.
 $
@@ -292,8 +291,8 @@ $  target head; module names, front matters
        version major+version minor,
    (nxt:(get next module head+ptr,ptr=0);
        tag*ITEM[ptr]=0,(scope*ITEM[ptr]=0; $ built in
-          T+"// @main ""%p""%n"+scope*ITEM[ptr]),:nxt; $ main module
-       T+"// %p ""%p""%n"+ptr+scope*ITEM[ptr],:nxt),
+          T+"//@main ""%p""%n"+scope*ITEM[ptr]),:nxt; $ main module
+       T+"//%p ""%p""%n"+ptr+scope*ITEM[ptr],:nxt),
    $ built-in front matter
    T+"%s%n"+aleph front matter,
    $ indicate whether call stack is used or not
@@ -308,7 +307,7 @@ $  target head; module names, front matters
    0->ptr,(nxt:get matter+ptr+1+str,T+"%s%n"+str,:nxt;+),
    $ virtual min, virtual max
    $ address space from virtualmax to maxint is for external tables
-   $ and stacks; virtualmax increases when reserved.
+   $ and stacks; virtualmax can increase
    T+"const a_VirtualMin=%p;let a_VirtualMax=%p;%n"+min virtual address+max virtual address.
 
 'a'target postlude-ptr-str:
@@ -323,7 +322,9 @@ $  variable:   let a1099=<initial value>; /* tag */
 $  list:       const a1101=new a_Array(0,"TARGET",cal,lwb,upt,filln);
 $  file:       const a1001=new a_CharFile("STDIN",dir,@stdarr,ptr);
 $ ------------------------------------------------------------
-'variable'waitfor used=0, $ waitfor external is used
+'variable'gen async=0,    $ 1 if generate asynchonous routines
+	  waitfor used=0, $ waitfor external is used
+	  waitfor item=0, $ the waitfor item if used
           module roots=0. $ number of non-empty module roots
 
 $ call stack: procedures have first arg "aTr";
@@ -333,7 +334,7 @@ $     call each rule with "aLtr" as first arg
 'a'var declaration+>item:
    $ let a1001=0; // variablename
    is item flag+item+texternal;
-   T+"let %r=%t; // %p%n"+item+adm*ITEM[item]+item.
+   T+"let %r=%t;//%p%n"+item+adm*ITEM[item]+item.
 'a'list declaration+>kind+>item-cal-lb-up-fill:
    is item flag+item+texternal,get calibre+item+cal,
      T+"const %r=new a_Array(%d,""%p"",%d,0,0,0);%n"
@@ -357,20 +358,20 @@ $     call each rule with "aLtr" as first arg
      (is item flag+item+tinfile,incr+dir;+),
      get file data+item+id+ptr,count file area+item+cnt,get item def+id,
      T+"const %r=new a_DataFile(""%p"",%d,%r,%r,%d);%n"
-         +item+item+dir+id+ptr+cnt.   
+         +item+item+dir+id+ptr+cnt.
 'a'rule prototype+>item: $ prototype $
    is item flag+item+rpidgin, $ no prototype
-     (is waitfor item+item,1->waitfor used;+);
+     (is waitfor item+item,1->waitfor used,item->waitfor item;+);
    is builtin rule+item+#;
    is item flag+item+rempty;  $ if empty rule, do nothing
-     $ module root
+     $ non-empty module or main root
    is root item+item,add matter+2+item;
    +.
-'a'root prototype+>item: $ number of non-empty module roots
+'a'root prototype+>item: $ count number of non-empty module roots
    scope*ITEM[item]=Squote image;incr+module roots.
 
 $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-$ create rule name table
+$ rule name table
 'cons'rspecial=rtrace|rcount|rbounds.
 'a'create rule name table-item-sep-cnt:
    T+"const a_RuleNames=[",<<ITEM->item,0->sep->cnt,
@@ -399,8 +400,9 @@ $ create rule name table
         [Idatafile],datafile declaration+item;
         [Irule], rule prototype+item;
       +), next+ITEM+item,:nxt),
-   $ compute number of non-empty module roots
+   $ compute the number of non-empty module roots
    0->roots,(nxt:get matter+roots+2+item,root prototype+item,:nxt;+),
+   $ computed: waitfor used, waitfor item, number of module roots
    create rule name table.
 
 $ FILL table *************************************************
@@ -413,11 +415,11 @@ $     n<0: repeat the previous block -n times
 'a'push BUFFER+>x: (* x->BUFFER *)BUFFER.
 
 'variable'fill total=0.
-$ for js a_FillTable[] can be assigned null to release the content
 'a'fill table head:
   T+"let a_FillTable=[%n",0->fill total.
+  $ a_FillTable[] will be assigned null to release the content
 'a'fill table tail:
-  T+"-1]; // fill table size %d%n"+fill total.
+  T+"-1];// fill table size %d%n"+fill total.
 
 'a'until next comma+>ptr>:
    ptr>>>BUFFER,internal error+_rule_;
@@ -446,7 +448,7 @@ $ for js a_FillTable[] can be assigned null to release the content
   R+Dcolon,must+Titem+#,:skip fill initializer;+.
 'a'generate fill entries-list-obuff-size-last-rep:
    must+Titem+list,get item def+list,must+Tconst+#,incr+fill total,
-    T+"%r,// %p%n"+list+list,>>BUFFER->obuff,0->size,
+    T+"%r,//%p%n"+list+list,>>BUFFER->obuff,0->size,
     (nxt:R+Dpoint;
          fill item+last,
            (fill repeater+rep,flush buffer+size+last+obuff,
@@ -456,6 +458,16 @@ $ for js a_FillTable[] can be assigned null to release the content
            skip fill initializer,:nxt),
     flush buffer+size+0+obuff,unstack to+BUFFER+obuff,
     incr+fill total,T+"0,%n".
+
+$ ASYNC FUNCTIONS ***************************************** $
+$  check async roots: am: some module, ar: main root, aw: any
+'f'async modules+aw>+am>+ar>-roots-item:
+    0->aw->am->ar->roots,(nxt:get matter+roots+2+item,
+      (is item flag+item+rasync,1->aw,
+        (scope*ITEM[item]=Squote image,1->ar;1->am);+),:nxt;+).
+'p'is async waitfor-am:
+   is+gen async,is+waitfor used,async modules+#+am+#,is+am,
+     set item flag+waitfor item+rasync.
 
 $ DATA SETUP ********************************************** $
 $  do all fills,
@@ -504,53 +516,48 @@ $  generate  waitfor
 'table'MESSAGE=(
 "rule waitfor: only empty module roots, not needed":waitfor has no effect
 ).
-'a'find sync-roots-item:
-    0->roots,(nxt:get matter+roots+2+item,
-       (is item flag+item+rasync,
-          (scope*ITEM[item]=Squote image,1->root async;1->waitfor async);+),
-       :nxt;
-    +).
-'a'proc waitfor-roots-item-sc-aw:
+$ const a_wC=[];
+$  a_wC.mmm = 2: under evaluation; =1: done
+$  %S a_waitfor(aTr,aF1,aF2){
+$    if(aF2==0||a_cmpToStr(aF1,aF2,"mmm"){
+$       if(!a_wC.mmm){a_wC.mmm=2;%W mmm(aLTr); a_wC.mmm=1;}
+$       else if(a_wC.mmm!=1){a_WaitLock("mmm",aLTr);}}
+'a'proc waitfor+>am-roots-item-sc-aw:
+    T+"const a_wC=[];%n",
     $ function a_waitfor(<CALLTR>,Table,offset){
-    $ if Table!=0 calls matching modules, otherwise all modules at most once.
-    T+"const a_waitforCalls=[];%n",
-    T+"%Sfunction a_waitfor("+waitfor async,$)$
-    (call stack=0,$($ T+"aF1,aF2){%n";$}$
-     $($T+"aTr,aF1,aF2){%n const aLtr={rule:0,next:aTr};%n"),
-    $ (0==aF2||a_cmpToStr(aF1,aF2,"xxx"))&&
-    $   (a_waitforCalls.xxx?1!=a_waitforCalls.xxx && a_WaitLock("xxx",TRACE):
-    $     (a_waitforCalls.xxx=2,AWAIT annn(TRACE),a_waitforCalls.xxx=1));
-    $ 0!=aF2 && !a_cmpToStr(aF1,aF2,"xxx") ||
-    $   (a_waitforCalls.xxx?1!=a_waitforCalls.xxx && a_WaitLock("xxx",TRACE):
-    $     (a_waitforCall.xxx=2,AWAIT annn(TRACE),a_waitforCalls.xxx=1));
+    $ if Table!=0 calls matching modules, otherwise call all modules.
+    T+"%Sfunction a_waitfor("+am,$)$
+    (call stack=0,$($T+"aF1,aF2){%n";$}$
+                  $($T+"aTr,aF1,aF2){%n const aLtr={rule:0,next:aTr};%n"),
     0->roots,(nxt:get matter+roots+2+item,
         ((scope*ITEM[item]->sc,sc=Squote image),:nxt; $ the main root
          (is item flag+item+rasync,1->aw;0->aw),
          T+" if(aF2==0||a_cmpToStr(aF1,aF2,""%p"")){%n"
-           "   if(!a_waitforCalls.%p){a_waitforCalls.%p=2;"
-           "%W%r("+sc+sc+sc+aw+item,call trace call+#,
-         T+");a_waitforCalls.%p=1;}%n"
-           "   else if(a_waitforCalls.%p!=1){"
-           "a_WaitLock(""%p"""+sc+sc+sc,
-         (call stack=0;T+",aLtr"),
-         T+");}}%n",:nxt);
-      T+"}%n").
-'a'target main-roots-item-sep-main-aw:
-    $ generate waitfor if required or there are mod roots
-    find sync,
+           "   if(!a_wC.%p){a_wC.%p=2;%W%r("+sc+sc+sc+aw+item,
+         call trace call+#,T+");",
+         T+"a_wC.%p=1;}else if(a_wC.%p!=1){"
+           "a_WaitLock(""%p"""+sc+sc+sc,(call stack=0;T+",aLtr"),
+         T+");}}%n",
+         :nxt);+),
+    T+"}%n".
+
+'a'target main-roots-item-sep-main-aw-am-ar:
+    $ generate waitfor if required
     (waitfor used=0;module roots>0;warning+waitfor has no effect),
-    ((waitfor used=0,module roots=0);proc waitfor),
-    $ calls each module root then the main root
-    T+"%Sfunction a_ROOT(){%n"+root async,
+    async modules+aw+am+ar,
+    (waitfor used=0;proc waitfor+am),
+    T+"%Sfunction a_ROOT(){%n"+aw,
     (call stack=0;T+" const aLtr={rule:-1,next:null};%n"),
     data initialization,
     0->roots->main,(nxt:get matter+roots+2+item,
-      (scope*ITEM[item]=Squote image,item->main;+),:nxt;
+       (scope*ITEM[item]=Squote image,item->main;
+        is+waitfor used;
+        (is item flag+item+rasync,1->aw;0->aw),
+          T+"%W%r("+aw+item,call trace call+#,T+");"),:nxt;
     +),
-    (module roots=0;T+" a_waitfor(",call trace call+sep,
-           arg sep+sep,T+"0,0);%n"),
-    (is+main,(is item flag+main+rasync,1->aw;0->aw),
-      T+" %W%r("+aw+main,call trace call+#,T+");%n}%n";
+    (waitfor used=0;T+" %Wa_waitfor("+am,
+        call trace call+sep,arg sep+sep,T+"0,0);%n"),
+    (is+main,T+" %W%r("+ar+main,call trace call+#,T+");%n}%n";
      corrupt ice file+_rule_).
 
 $ RULE generation ********************************************
@@ -606,7 +613,7 @@ $ ------------------------------------------------------------
    $ rule declaration head, prototype, trace and count
    rule->this rule,add profiling def,
      rule typer+rule+sep,rule args+rule+sep,
-     T+"{ // %p"+tag*ITEM[rule],
+     T+"{//%p"+tag*ITEM[rule],
      show formals as comment+rule,T+"%n",
      add+minloc+locptr+locptr,declare locals+minloc+maxloc+locptr,
      declare callargs+rule+C2+C3,
@@ -618,8 +625,8 @@ $     (call stack=0;1->rn),
    T+" for(let aip=1;;)switch(aip){%n"
      "case 1: ".
 'a'rule declaration tail+>has label:
-  (has label=0,T+"}// %p%n"+this rule;
-  T+"}}// %p%n"+this rule).
+  (has label=0,T+"}//%p%n"+this rule;
+  T+"}}//%p%n"+this rule).
 
 
 $ profiling and tracing --------------------------------------
