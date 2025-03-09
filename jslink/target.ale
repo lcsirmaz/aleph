@@ -57,7 +57,7 @@ $ BODY **************************************************** $
 
 $ manipulate target file ********************************** $
 
-'charfile'TARGET="aleph.c">.
+'charfile'TARGET="aleph.js">.
 'table'MESSAGE=(
  "cannot create target file %x, error code: %d" :cannot open target
 ).
@@ -76,7 +76,6 @@ $ manipulate target file ********************************** $
 
 $ naming convention *************************************** $
 $  formal parameters: 
-$     aTr      call stack
 $     aF%d     if not out/inout (serial number)
 $     aA[%d]   out/inout (count, starting at zero)
 $     aC       formal repeat count
@@ -91,6 +90,9 @@ $     aP[]     for out/inout, fixed size repeat block
 $     aD[]     dynamic size repeat block
 $  items:
 $     a%3d     999 is the repr number of the item
+$  call stack:
+$     aTr      global
+$     aLtr     const aLtr={rule:123,next:aTr};aTr=aLtr;  local
 
 $ print to TARGET file ==================================== $
 'pragmat'macro=(print char,print str,print prefix,print int index).
@@ -219,6 +221,7 @@ $   S: async if the argument is not zero
        [/S/],(shift affix block+@,(fmt=0;print str+"async ");TE+4),incr+ptr,:nxt;
        [/W/],(shift affix block+@,(fmt=0;print str+"await ");TE+5),incr+ptr,:nxt;
        [/n/],print char+newline,incr+ptr,:nxt;
+       [/T/],(call stack=0;print str+";aTr=aLtr"),incr+ptr,:nxt;
        [/d/],(shift affix block+@,print int+fmt;TE+6),incr+ptr,:nxt;
        [/p/],(shift affix block+@,print ptr+fmt;TE+7),incr+ptr,:nxt;
        [/s/],(shift affix block+@,print nlptr+fmt;TE+8),incr+ptr,:nxt;
@@ -227,15 +230,11 @@ $   S: async if the argument is not zero
   (shift affix block+@,TE+11;+),
   unstack to+BUFFER+optr.
 
-'a'call trace arg+sep>:
-   call stack=0,0->sep;
-   T+"aTr",1->sep.
-'a'call trace call+sep>:
-   call stack=0,0->sep;
-   T+"aLtr",1->sep.
 'a'add call stack+>item:
+   $item=0 for waitfor, -1 for ROOT
    call stack=0;
-   T+" const aLtr={rule:%d,next:aTr};%n"+count*ITEM[item].
+   (was+ITEM+item,count*ITEM[item]->item;+),
+      T+" const aLtr={rule:%d,next:aTr}%T;%n"+item.
 
 $ auxiliary rules *************************************************
 'variable'
@@ -258,7 +257,7 @@ $  Call stack:
 $    linked list; extra first argument for all functions, linked
 $    object is added to all function head:
 $        function a999(aTr,...){//rulename+>a+[]a[]
-$            const aLtr={rule:<ddd>,next:aTr};
+$            const aLtr={rule:<ddd>,next:aTr};aTr=aLtr;
 $  Profiling:
 $    linked list; each profiled rule is preceded by the declaration
 $        const aPf1001={rule:<ddd>,count:0,next:<prev>};
@@ -293,16 +292,18 @@ $  target head; module names, front matters
        tag*ITEM[ptr]=0,(scope*ITEM[ptr]=0; $ built in
           T+"//@main ""%p""%n"+scope*ITEM[ptr]),:nxt; $ main module
        T+"//%p ""%p""%n"+ptr+scope*ITEM[ptr],:nxt),
-   $ built-in front matter
-   T+"%s%n"+aleph front matter,
-   $ indicate whether call stack is used or not
-   T+"const a_UseCallStack=%d;%n"+call stack, $ zero or 1
-   T+"const a_UseAsyncInput=%d;%n"+gen async, $ zero or 1
    $ import runtime script if specified
    (runtime char+0+#,T+"importScripts(""",0->ptr,(nxt:
         runtime char+ptr+str,print char+str,incr+ptr,:nxt;
         T+""");%n");
     +),
+   $ built-in front matter
+   T+"%s%n"+aleph front matter,
+   $ indicate whether call stack is used or not
+   T+"const a_UseCallStack=%d;%n"+call stack, $ zero or 1
+   T+"const a_UseAsyncInput=%d;%n"+gen async, $ zero or 1
+   $ if call stack, add function aIf()
+   (call stack=0;T+"function aIf(tr,b){aTr=tr;return b;}%n"),
    $ user supplied front matters, including stdlib
    0->ptr,(nxt:get matter+ptr+1+str,T+"%s%n"+str,:nxt;+),
    $ virtual min, virtual max
@@ -327,12 +328,14 @@ $ ------------------------------------------------------------
 	  waitfor item=0, $ the waitfor item if used
           module roots=0. $ number of non-empty module roots
 
-$ call stack: procedures have first arg "aTr";
-$     first command is "const aLtr={rule:<ddd>,next:aTr};"
-$     call each rule with "aLtr" as first arg
+$ call stack:
+$  first command is "const aLtr={rule:<ddd>,next:aTr};aTr=aLtr;"
+$  restore aTr after each call: <call>;aTr=aLtr;
+$  for question, predicate use aIf(aLtr,<call>) with the definition
+$  function aIf(a,b){aTr=a;return b;}
 
 'a'var declaration+>item:
-   $ let a1001=0; // variablename
+   $ let a101=0;//<variablename>
    is item flag+item+texternal;
    T+"let %r=%t;//%p%n"+item+adm*ITEM[item]+item.
 'a'list declaration+>kind+>item-cal-lb-up-fill:
@@ -359,11 +362,11 @@ $     call each rule with "aLtr" as first arg
      get file data+item+id+ptr,count file area+item+cnt,get item def+id,
      T+"const %r=new a_DataFile(""%p"",%d,%r,%r,%d);%n"
          +item+item+dir+id+ptr+cnt.
-'a'rule prototype+>item: $ prototype $
+'a'rule prototype+>item: $ prototype, collect module and main roots
    is item flag+item+rpidgin, $ no prototype
      (is waitfor item+item,1->waitfor used,item->waitfor item;+);
    is builtin rule+item+#;
-   is item flag+item+rempty;  $ if empty rule, do nothing
+   is item flag+item+rempty;$ if empty rule, skip it
      $ non-empty module or main root
    is root item+item,add matter+2+item;
    +.
@@ -520,45 +523,39 @@ $ const a_wC=[];
 $  a_wC.mmm = 2: under evaluation; =1: done
 $  %S a_waitfor(aTr,aF1,aF2){
 $    if(aF2==0||a_cmpToStr(aF1,aF2,"mmm"){
-$       if(!a_wC.mmm){a_wC.mmm=2;%W mmm(aLTr); a_wC.mmm=1;}
-$       else if(a_wC.mmm!=1){a_WaitLock("mmm",aLTr);}}
+$       if(!a_wC.mmm){a_wC.mmm=2;%W mmm(); a_wC.mmm=1;}
+$       else if(a_wC.mmm!=1){a_WaitLock("mmm");}}
 'a'proc waitfor+>am-roots-item-sc-aw:
     T+"const a_wC=[];%n",
-    $ function a_waitfor(<CALLTR>,Table,offset){
+    $ function a_waitfor(Table,offset){
     $ if Table!=0 calls matching modules, otherwise call all modules.
-    T+"%Sfunction a_waitfor("+am,$)$
-    (call stack=0,$($T+"aF1,aF2){%n";$}$
-                  $($T+"aTr,aF1,aF2){%n const aLtr={rule:0,next:aTr};%n"),
+    T+"%Sfunction a_waitfor(aF1,aF2){%n"+am,$}$
+    add call stack+0, $ const aLtr={};
     0->roots,(nxt:get matter+roots+2+item,
         ((scope*ITEM[item]->sc,sc=Squote image),:nxt; $ the main root
          (is item flag+item+rasync,1->aw;0->aw),
          T+" if(aF2==0||a_cmpToStr(aF1,aF2,""%p"")){%n"
-           "   if(!a_wC.%p){a_wC.%p=2;%W%r("+sc+sc+sc+aw+item,
-         call trace call+#,T+");",
-         T+"a_wC.%p=1;}else if(a_wC.%p!=1){"
-           "a_WaitLock(""%p"""+sc+sc+sc,(call stack=0;T+",aLtr"),
-         T+");}}%n",
-         :nxt);+),
+           "   if(!a_wC.%p){a_wC.%p=2;%W%r()%T;a_wC.%p=1;}"
+              "else if(a_wC%p!=1){a_WaitLock(""%p"");}}%n"
+              +sc+sc+sc+aw+item+sc+sc+sc,:nxt);+),
     T+"}%n".
 
-'a'target main-roots-item-sep-main-aw-am-ar:
+'a'target main-roots-item-main-aw-am-ar:
     $ generate waitfor if required
     (waitfor used=0;module roots>0;warning+waitfor has no effect),
     async modules+aw+am+ar,
     (waitfor used=0;proc waitfor+am),
     T+"%Sfunction a_ROOT(){%n"+aw,
-    (call stack=0;T+" const aLtr={rule:-1,next:null};%n"),
+    add call stack+-1,
     data initialization,
     0->roots->main,(nxt:get matter+roots+2+item,
        (scope*ITEM[item]=Squote image,item->main;
         is+waitfor used;
         (is item flag+item+rasync,1->aw;0->aw),
-          T+"%W%r("+aw+item,call trace call+#,T+");"),:nxt;
+          T+"%W%r()%T;"+aw+item),:nxt;
     +),
-    (waitfor used=0;T+" %Wa_waitfor("+am,
-        call trace call+sep,arg sep+sep,T+"0,0);%n"),
-    (is+main,T+" %W%r("+ar+main,call trace call+#,T+");%n}%n";
-     corrupt ice file+_rule_).
+    (waitfor used=0;T+" %Wa_waitfor(0,0)%T;%n"+am),
+    (is+main,T+" %W%r();%n}%n"+ar+main;corrupt ice file+_rule_).
 
 $ RULE generation ********************************************
 'variable'
@@ -570,15 +567,15 @@ $ RULE generation ********************************************
   called rule=0.     $ rule to be called
 
 $ declaration head  and tail *********************************
-'a'rule typer+>item+sep>-as:
+'a'rule typer+>item-as:
   (is item flag+item+rasync,1->as;0->as),
-  T+"%Sfunction %r("+as+item $)$,call trace arg+sep.
+  T+"%Sfunction %r("+as+item $)$.
 'a'arg sep+>sep>:
   sep=0,1->sep;print char+/,/.
 'a'out args+>out+>sep>:
-  out=0;arg sep+sep,T+"aA".$[out]$
-'a'rule args+>item+>sep-n-cnt-type-out:
-  get number of formals+item+n,0->cnt->out,
+  out=0;arg sep+sep,T+"aA". $[out]$
+'a'rule args+>item-sep-n-cnt-type-out:
+  get number of formals+item+n,0->cnt->out->sep,
   (nxt: cnt<n,get formal+item+cnt+type,incr+cnt,
      ((type=Iformal out;type=Iformal inout),incr+out,:nxt;
       type=Iformal anchor,out args+out+sep,arg sep+sep,
@@ -598,21 +595,29 @@ $ ------------------------------------------------------------
      [Iformal stack], T+"+[]st[]";
      [Iformal file],  T+"+""""f";
      [Iformal anchor],T+"+@"),:nxt).
-'a'declare locals+>minloc+>maxloc+>locptr:
+'q'no locals+>minloc+>maxloc+>locptr:
    minloc=0;
    minloc>maxloc;
-   BUFFER[locptr]=0,incr+minloc,incr+locptr,:declare locals;
-   T+"let aL%d;"+minloc,incr+minloc,incr+locptr,:declare locals.
+   BUFFER[locptr]=0,incr+minloc,incr+locptr,:no locals.
+'a'declare locals+>minloc+>maxloc+>locptr-sep:
+   no locals+minloc+maxloc+locptr;
+   T+"let",/ /->sep,
+   (nxt:minloc>maxloc,print char+/;/;
+    BUFFER[locptr]=0,incr+minloc,incr+locptr,:nxt;
+    print char+sep,/,/->sep,T+"aL%d"+minloc,incr+minloc,incr+locptr,:nxt).
+$   minloc=0;
+$   minloc>maxloc;
+$   BUFFER[locptr]=0,incr+minloc,incr+locptr,:declare locals;
+$   T+"let aL%d;"+minloc,incr+minloc,incr+locptr,:declare locals.
 'a'declare callargs+>item+>C2+>C3-cnt:
    (C2=0;T+"const aP=[",(nxt:C2=0,T+"];";print char+/,/,decr+C2,:nxt)),
    (C3=0;get anchor count+item+cnt,$ even if cnt=1 $
         T+"const aD=new Array(%d+%d*aC);"+C3+cnt),
    print char+newline.
-'a'rule declaration head+>rule+>C2+>C3+>rn+>minloc+>maxloc
-              +>locptr-sep:
+'a'rule declaration head+>rule+>C2+>C3+>rn+>minloc+>maxloc+>locptr:
    $ rule declaration head, prototype, trace and count
    rule->this rule,add profiling def,
-     rule typer+rule+sep,rule args+rule+sep,
+     rule typer+rule,rule args+rule,
      T+"{//%p"+tag*ITEM[rule],
      show formals as comment+rule,T+"%n",
      add+minloc+locptr+locptr,declare locals+minloc+maxloc+locptr,
@@ -627,7 +632,6 @@ $     (call stack=0;1->rn),
 'a'rule declaration tail+>has label:
   (has label=0,T+"}//%p%n"+this rule;
   T+"}}//%p%n"+this rule).
-
 
 $ profiling and tracing --------------------------------------
 $  profiling: add a definition before the rule declaration
@@ -712,12 +716,7 @@ $ BUFFER[ptr] starts an affix; generate code for it
    is item flag+this rule+rbounds, $ indexing with bound checking $
       T+"%p.data[%p.checkidx("+ptr+ptr,incr+ptr,incr+ptr,T affix inner+ptr,
       incr+ptr,subtr+BUFFER[ptr]+1+x,incr+ptr,(x=0;T+"-%d"+x),
-      T+",%d"+count*ITEM[this rule],
-      (call stack=0,T+")]";T+",aLtr)];");
-$      call trace call+#,
-$      arg sep+x,T+"%p,"+ptr,incr+ptr,incr+ptr,
-$      T affix inner+ptr,incr+ptr,
-$      subtr+BUFFER[ptr]+1+x,incr+ptr,T+",%d,a_rulename)]"+x;
+      T+",%d)]"+count*ITEM[this rule];
    T+"%p.data[%p.offs+"+ptr+ptr,incr+ptr,incr+ptr,T affix inner+ptr,
       $ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
       incr+ptr,(x=0,T+"]";T+"-%d]"+x).
@@ -737,8 +736,7 @@ $         L.aupb+=n;}%n
    T affix+ptr,print char+/;/.
 'a'T extension+>ptr+>label-st-w:
    incr+ptr,BUFFER[ptr]->w,incr+ptr,ptr->st,
-     T+"{const %p=%p.extension(%d"+r1+st+w,
-       (call stack=0;T+",aLtr"),T+");",
+     T+"{const %p=%p.extension(%d);"+r1+st+w,
      add+2+ptr+ptr, $ BUFFER[ptr] points to the affix; zero if no more
      (nxt:extension block+st+w+ptr,BUFFER[ptr]->ptr,(ptr=0;:nxt)),
      T+"%p.aupb+=%d;}%n"+st+w,jump to label+label.
@@ -780,7 +778,7 @@ $    <next>,<label>,lw,up,Dsemicolon,lw,up,Dplus
         T+" if(!(",T if condition+ptr+v,T+")){a_AreaFailed(%p,"+v,
         (count*ITEM[this rule]>=0,T+"a_RuleNames[%d]"+count*ITEM[this rule];
          T+"a_RuleName"),
-        (call stack=0;T+",aLtr"),T+");}%n",
+        T+");}%n",
         (goal=next node idx;T+" %g"+BUFFER[ptr]);
     is complete area+nextptr,incr+ptr,BUFFER[ptr]->goal,
         incr+nextptr,BUFFER[nextptr]->fgoal,
@@ -819,7 +817,7 @@ $ RULE CALL *****************************************************
         regular call d3+type+fnext+tnext;
     regular call preload+ptr,
         regular call d1+0+fnext+tnext+type,
-        regular rule call+ptr,
+        regular rule call+ptr+type+tnext,
         regular call d2+type+fnext,
         regular call postload+ptr,
         regular call d3+type+fnext+tnext).
@@ -861,9 +859,9 @@ $   rule is discarded here if the out affix is not used
    n!=2,corrupt ice file+_rule_;
    is dummy affix+ptr,T+"%G%n"+tnext;
    T affix+ptr,T+"=aC;%G%n"+tnext.
-'a'gen waitfor+>ptr+>tnext-sep:
-   T+" a_waitfor(",call trace call+sep,arg sep+sep,T affix+ptr,
-     next affix+ptr,arg sep+sep,T affix+ptr,T+"); %G"+tnext.
+'a'gen waitfor+>ptr+>tnext:
+   T+"a_waitfor(",T affix+ptr,next affix+ptr,
+        print char+/,/,T affix+ptr,T+")%T;%G"+tnext.
 $ assignment ------------------------------------------------------
 'a'assignment source+>ptr+v>+block>:
    =BUFFER[ptr]= [Titem;Tlocal;Tformal;Tnumber],ptr->v,0->block;
@@ -937,15 +935,29 @@ $   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
     size<0,subtr+0+size+size,T+"aC+%d,0,aD)"+size;
     out=0,T+"%d,0,aP)"+size;
     T+"%d,%d,aP)"+size+out).
-'a'regular rule call+>ptr-n-cnt-out-sep-type-aw:
+'a'trace pre+>type:
+   call stack=0;
+   is item flag+called rule+texternal;
+   type=0;
+   T+"aIf(aLtr,".$)$
+'a'trace post+>type+>to:
+   call stack=0;
+   is item flag+called rule+texternal;
+   type=0,(to<=0;T+"%T"); $ do not restore the trace just before an exit
+   $($ print char+/)/.
+'a'regular rule call+>ptr+>tp+>tlabel-n-cnt-out-sep-type-aw:
+   $                        with trace: <call> =>
+   $ type=1: if(<call>)       aIf(aLtr,<call>)
+   $ type=2: if(!<call>)      aIf(aLtr,<call>)
+   $ type=0; <call>           <call>;aTr=aLtr
    get number of formals+called rule+n,0->aw,
    (is item flag+called rule+rasync,1->aw,
       (is item flag+this rule+rasync;
-      error+wrong async call+called rule+this rule);
+       error+wrong async call+called rule+this rule);
     +),
-   T+"%W%r("+aw+called rule,0->cnt->out,$)$
-   (is item flag+called rule+texternal,0->sep;call trace call+sep),
-   (nxt:cnt=n,(out=0,$($print char+/)/;arg sep+sep,T+"aP)");
+   trace pre+tp,
+   T+"%W%r("+aw+called rule,0->cnt->out->sep,$)$
+   (nxt:cnt=n,(out=0,$($print char+/)/;arg sep+sep,T+"aP)"),trace post+tp+tlabel;
      get formal+called rule+cnt+type,incr+cnt,
      ((type=Iformal out;type=Iformal inout),incr+out,next affix+ptr,:nxt;
       type=Iformal anchor,repeat block call+ptr+out+sep;
@@ -1033,8 +1045,6 @@ $ search the next /@/ in BUFFER; we have an additional /@/ at the end
                  copy affix+n+args+aff,incr+txt,:copy text from BUFFER;
      [/a/:/z/],subtr+BUFFER[txt]+/a/+aff,add+10+aff+aff,
                  copy affix+n+args+aff,incr+txt,:copy text from BUFFER;
-     [/,/],incr+txt,(call stack=0;print str+",aLtr"),:copy text from BUFFER;
-     [/0/],incr+txt,(call stack=0;print str+"aLtr"),:copy text from BUFFER;
      print char+BUFFER[txt],incr+txt,:copy text from BUFFER);
    print char+BUFFER[txt],incr+txt,:copy text from BUFFER.
 'a'copy affix+>maxn+>ptr+>n: $ copy n-th affix, starting with n=1

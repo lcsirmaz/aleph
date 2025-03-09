@@ -97,8 +97,8 @@
 #define a_mreq(x,y)             (x>=y)
 
 #ifdef a_CALL_STACK
-#define a_exit(x)		{a_backtrack(&a_Ltr,x);exit(x);}
-#define a_xbacktrack()		a_backtrack(&a_Ltr,0)
+#define a_exit(x)		{a_backtrack();exit(x);}
+#define a_xbacktrack()		a_backtrack()
 #else
 #define a_exit(x)		exit(x)
 #define a_xbacktrack()		{;} /* ignore */
@@ -128,6 +128,8 @@ extern void a_putchar(int a_F1,int a_F2); /* putchar */
 extern int a_getdata(int a_F1,int a_A[2]); /* getdata */
 extern void a_putdata(int a_F1,int a_F2,int a_F3); /* putdata */
 extern int a_putdatap(int a_F1,int a_F2,int a_F3); /* putdatap */
+/* sleep */
+extern void a_msleep(int);
 
 #endif /* ALEPH_STDLIB_H */
 

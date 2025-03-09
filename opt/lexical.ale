@@ -34,7 +34,6 @@ $   Ipointer constant,Ichar file,Idata file,
    Irule,
    Iformal stack,Iformal table,Iformal file,Iformal in,
    Iformal out,Iformal inout,Iformal anchor,Iformal shift.
-$'constant'Squote image.
 
 'a'next symbol.        $ read next symbol
 'variable' inpt,       $ next symbol
@@ -52,9 +51,6 @@ $ printing
 'a'toggle out+>what. $ 1: print read, 0: stop printing
 'a'W+>x.		$ print symbol
 'a'WW+>type+>val.	$ print val of given type
-
-$ save and restore input position
-$'a'save input position,restore input position.
 
 $ manupulating LEXT entries
 $ each entry has a data field (zero), and an image (string)
@@ -138,12 +134,14 @@ $ source and result files
       error+eMOVE+cannot move result+of+if),
    copy source to result,unlink file+LEXT+if.
 
+$ CHARACTERS ************************************************** $
+'pragmat'macro=(bold letter,digit,read index,read minus).
+
 'variable'char=/ /.
 'variable'output=0.
 'constant'end char=1.
 
 'a'toggle out+>what: what -> output.
-  
 'a'next char:
    (output=0;char=end char;put char+RESULT+char),
    (get char+SOURCE+char,
@@ -152,12 +150,6 @@ $ source and result files
       [:31],:next char;
       +);
    end char->char).
-$ RE-READ INPUT *********************************************** $
-$ rules are read more than once; a single position can be
-$  saved and restored
-'pragmat'macro=(bold letter,digit,read index,read minus).
-
-$ CHARACTERS ************************************************** $
 'p'bold letter+x>:
   =char= [/a/:/z/],char->x,nextchar;-.
 'p'digit+x>:

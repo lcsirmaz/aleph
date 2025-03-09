@@ -274,7 +274,7 @@ void a_trace_rule(const char *name,int affixno,...){
 }
 
 /* -------------------------------------------------------------- */
-extern a_PROFILE *a_profiles;
+extern a_PROFILE *a_profiles; // should be defined in the main
 
 /* a_sort_profiles()
 *    sort profiles by their count
@@ -295,15 +295,14 @@ a_PROFILE **p,*q; int done=1;
 * the call stack
 *  the call stack is at the linked a_CALL block, print this list.
 ******************************************************************/
-#undef a_backtrack
-void a_backtrack(a_CALLp tr,int code){
-int i=1;
-   if(code){fprintf(stderr,"exit with code %d\n",code);}
+void a_backtrack(void){
+   int i=1; a_CALLp tr=a_TrHead;
+   if(tr)fprintf(stderr,"Called ALEPH rules:\n");
    while(tr && tr->rule){
       fprintf(stderr,"#%-2d %s ()\n",i,tr->rule);
       i++;tr=tr->next;}
 }
-
+a_CALLp a_TrHead=NULL;
 /******************************************************************
 * a_fatal(code)
 *    abort the program; print trace information, if any
@@ -321,6 +320,7 @@ void a_fatal(int code){
    int i; char *type;
    type=ErrorType[(0<=code && code<=a_FATAL_index)?code:0];
    fprintf(stderr,"Fatal runtime error: %s (%d)\n",type,code);
+   a_backtrack();
    if(a_traced_index>=0){
      i=a_traced_index;
      fprintf(stderr,"Rules with trace on called:\n%s\n",a_traced_rules[i]);

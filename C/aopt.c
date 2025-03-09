@@ -1,4 +1,4 @@
-/* ALEPH ice linker v2.1, word size=32 */
+/* ALEPH ice linker v2.2, word size=32 */
 
 // linked modules:
 // error "optimizer error v2.2"
@@ -209,13 +209,9 @@ static void a_data_setup(void){
  a_setup_charfile(a_1084,"SOURCE",1,a_1001,2130706316); /* SOURCE */
  a_list_fill(a_FILL);
 }
-static void a_waitfor(int a_F1,int a_F2){
- a_MODROOT(a_1076,"lexical")
-}
 void a_ROOT(void){
  a_data_setup();
- a_waitfor(0,0);
- a_1120();
+ a_1076(); a_1120();
 }
 static void a_1013(int a_F1){ /* printchar+>a */
 
@@ -1967,7 +1963,7 @@ a_G2:if(!a_stringelem(a_F2,a_F3,a_L2,a_P)){ return;}a_L3=a_P[0];
 a_incr(a_L2);
 a_putchar(a_F1,a_L3); goto a_G2;
 } /* putstring */
-a_PROFILE *a_profiles=NULL;
+a_PROFILEp a_profiles=NULL;
 static void a_stringhash(int F1,int F2,int A[1]){ int *ptr=to_LIST(F1)->offset+F2; unsigned char *v=(unsigned char*)&ptr[1-ptr[0]]; unsigned v1=0x135345+47u*(*v),v2=0xeca864+856u*(*v); while(*v){  v1=(-29u*v1-17u*v2+1259u*((*v)^v2)) % 0x1010309;  v2=(-23u*v2-257u*v1+1237u*((*v)^v1)) % 0x1010507;  v++; } A[0]=(int)((v1<<16)^v2);}
 void a_blockhash(int F1,int F2,int A[1]){ unsigned char *v=(unsigned char*)(to_LIST(F1)->offset+F2+1); unsigned v1=0x135345+47u*(*v), v2=0xeca864+856u*(*v); int cnt=sizeof(int)*(to_LIST(F1)->aupb-F2); for(;cnt>0;cnt--){  v1=(-29u*v1-17u*v2+1259u*((*v)^v2)) % 0x1010309;  v2=(-23u*v2-257u*v1+1237u*((*v)^v1)) % 0x1010507;  v++; } A[0]=(int)((v1<<16)^v2);}
 extern int a_argc; extern char **a_argv;

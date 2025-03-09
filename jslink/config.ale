@@ -1,8 +1,8 @@
 $ js linker version, general information
-'pragmat'module=config,title="js linker config, v1.1".
+'pragmat'module=config,title="js linker config, v1.2".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular js ALEPH-v1.1)
+$  This code is part of ALEPH-M (Modular js ALEPH-v1.2)
 $
 $  (C) 2020-2025, L.Csirmaz
 $
@@ -20,7 +20,7 @@ $ *************************************************************
 
 $ HEADER ***************************************************** $
 'constant' version major = 1,
-           version minor = 1.
+           version minor = 2.
 'constant' target word size = 32.
 'constant' path separator=/:/,		$ or /;/
            dir separator=///.		$ or /\/
@@ -44,12 +44,15 @@ $ BODY ******************************************************* $
 
 'stack'(next,def)LEXT=(
    "./aleph:/usr/local/aleph"
-   			,(0,0):std search path,
+			,(0,0):std search path,
    "stdjs.ice"		,(0,0):stdlib file,
    "16777216"		,(0,0):min virtual address,$ string,0x0100 0000
    "2130706432"		,(0,0):max virtual address,$ string,0x7f00 0000
    "alephRE.js"		,(0,0):aleph runtime,
-   "// ALEPH code"	,(0,0):aleph front matter, $ cannot be empty
+   "// ALEPH code%n"
+   "const [a_ROOT,a_RuleNames,a_PROFILE,a_Tr]=function(){%n"
+   "let aTr=null;"	,(0,0):aleph front matter, $ cannot be empty
+   "return [a_ROOT,a_RuleNames,a_PROFILE,()=>aTr]}()%n"
    "// EOF"		,(0,0):aleph back matter   $ cannot be empty
 ).
 

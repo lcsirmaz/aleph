@@ -1,10 +1,10 @@
 $ rule generator
-'pragmat'module=rule,title="rule, v2.0".
+'pragmat'module=rule,title="rule, v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2025, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -127,7 +127,7 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
      (nxt:R+Darea,incr+cnt,check area+set+dl,must+Dout+#,:nxt;
       complete zone+set,set node flag+nzone,
           (cnt>1;error+classification succeeds+dl);
-      warning+area may fail+dl,1->store rule name),
+      warning+area may fail+dl),
      free registers from mark+mark.
      
 $ NODES *************************************************** $
@@ -198,18 +198,14 @@ $ mark local affixes. Due to optimization, references to local
 $   affixes might disappear (macro substitution).
 'variable'
    C1=0,C2=0,C3=0,
-   local affix ptr=0,do local affix check=0,
-   store rule name=0, $ store rule name
-   indexed affix=0,   $ was an indexed affix
-   add cs=0.          $ add call stack arguments
+   local affix ptr=0,do local affix check=0.
 
 'a'set rule head-tag-x1-x2-x3:
    must+Titem+tag,get item def+tag,tag->tag*NODE[this node],
    must+Tconst+x1,must+Tconst+x2,must+Tconst+x3,
    (is item flag+tag+rpidgin; $ does not count towards C1-C2-C3
     is item flag+tag+rempty,set node flag+nempty;
-    max+x1+C1,max+x2+C2,max+x3+C3),
-   (is node flag+nempty;no call stack rule+tag;1->add cs).
+    max+x1+C1,max+x2+C2,max+x3+C3).
 'a'skip rule head:
    next symbol,next symbol,next symbol,next symbol.
    $ ID        C1          C2          C3
@@ -229,7 +225,7 @@ $ skip a unit; skip an affix, skip an area $
 'a'skip to comma-idx:
    R+Dcomma;
    RR+Tlocal+idx,mark local affix+idx,:skip to comma;
-   R+Dsub,1->indexed affix,:skip to comma;
+   R+Dsub,:skip to comma;
    R+Dend,corrupt ice file+_rule_;
    next symbol,:skip to comma.
 
@@ -249,7 +245,7 @@ $ skip a unit; skip an affix, skip an area $
    R+Dnoarg;     $ only as out affix  
    R+Tnumber;    $ number
    is limit,skip list;
-   R+Dsub,1->indexed affix,skip list,skip affix,must+Dbus+#,must+Tconst+#;
+   R+Dsub,skip list,skip affix,must+Dbus+#,must+Tconst+#;
    corrupt ice file+_rule_.
 
 $ node equality ******************************************* $
@@ -293,8 +289,7 @@ $
      [Tformal;Tnumber;Tconst],
         push BUFFER+inpt+inpt value,next symbol,:nxt;
      [Dsub],
-        push BUFFER+inpt,next symbol,
-        (is node flag+nempty;1->indexed affix),:nxt;
+        push BUFFER+inpt,next symbol,:nxt;
      [Dlwb;Dupb;Dvlwb;Dvupb;Dcalibre;Dnoarg;Dbus;Danchor;Dcolon],
         push BUFFER+inpt,next symbol,:nxt;
      +),
@@ -579,20 +574,14 @@ $ scans *************************************************** $
    (must+Titem+rtag,must+Tconst+minloc,must+Tconst+maxloc,
        is item flag+rtag+rempty),skip rule;
    create nodes,             $ read number of nodes $
-   0->add cs->indexed affix, $ call stack, list index
-   (is item flag+rtag+rtrace,1->store rule name;0->store rule name),
    >>BUFFER->obuff,          $ save buffer
    clear stack size,start local affix check+minloc+maxloc,
    save input position,0->this node,scan i,
       0->do local affix check,0->loop found,omit empty nodes,
-      (is+store rule name;
-       is item flag+rtag+rbounds,indexed affix->store rule name;
-       +),
    (node hash different;     $ find identical nodes
     restore input position,0->this node,scan ii),
    find equal nodes,
-   rule declaration head+rtag+C2+C3+store rule name
-                +minloc+maxloc+local affix ptr+add cs,
+   rule declaration head+rtag+C2+C3+minloc+maxloc+local affix ptr,
    unstack to+BUFFER+obuff,
    restore input position,0->this node,scan iii,
       (is+loop found,error+loop in rule+tag*ITEM[rtag]+

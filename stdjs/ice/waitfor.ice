@@ -1,4 +1,4 @@
-$ ICE file, produced by ALEPH compiler v2.2
+$ ICE file, produced by ALEPH compiler v2.3
 'module' "stdlib" "jslib waitfor" 32 
 4 37 "waitfor"
 38 118 "stdlib"

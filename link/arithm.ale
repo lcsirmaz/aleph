@@ -1,10 +1,10 @@
 $ target size arithmetic for ALEPH
-'pragmat'module=arithmetic,title="arithmetic v2.0".
+'pragmat'module=arithmetic,title="arithmetic v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2025, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -45,7 +45,6 @@ $  retrieve the correct value for small non-negative values only
 $  for overflow use the followng procedures
 
 'q'is target const+>cst.        $ cst is target representable
-$'q'is host value+>reg.          content of reg is host representable
 
 $ how many host words a target word occupies
 'static''var'target word width.
@@ -88,8 +87,6 @@ $ *********************************************************************
 $ these rules depend on the host and target word size
 $    These definitions work when both host and target is 32 bit long
 'q'is target const+>cst:cst=cst.
-    $ is a host value is also a target
-$'q'is host value+>reg:reg=reg.
     $ does a register contains a host value
 'a'putcst register+>cst+reg>:
    get register+reg,cst->REGISTER[reg].

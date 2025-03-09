@@ -230,6 +230,17 @@ void a_copystring(int F1,int F2,int F3){
    to_LIST(F3)->aupb+=n;
 }
 /*******************************************************************
+* wait function
+*
+*  wait for the given amount of milliseconds
+*
+*******************************************************************/
+#include <unistd.h>
+void a_msleep(int F1){
+    if(F1>0 && F1<100000) usleep(((unsigned)F1) * 1000u);
+}
+
+/*******************************************************************
 * input / output
 *
 *  for character input use character stream, for data use direct read

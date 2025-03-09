@@ -1,10 +1,10 @@
 $ lexical parser for ALEPH 
-'pragmat'module=lexical, title="lexical v2.0".
+'pragmat'module=lexical, title="lexical v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2025, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -122,7 +122,7 @@ $ put the character representation of ptr into []st[]
 'p'was lexical pointer+>ptr:
   was+SPECIAL+ptr, copy string+SPECIAL+ptr+BUFFER;
   was+LEXT+ptr, copy string+LEXT+ptr+BUFFER;
-  was+NUMBER+ptr, get number repr+ptr.
+  was+NUMBER+ptr, copy string+"<number>"+BUFFER.
 
 $ ************************************************************* 
 

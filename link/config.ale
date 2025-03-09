@@ -1,10 +1,10 @@
 $ version, general information
-'pragmat'module=config,title="config, v2.1".
+'pragmat'module=config,title="config, v2.2".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2.1)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
 $
-$  (C) 2020-2024, L.Csirmaz
+$  (C) 2020-2025, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -20,7 +20,7 @@ $ *************************************************************
 
 $ HEADER ***************************************************** $
 'constant' version major = 2,
-           version minor = 1.
+           version minor = 2.
 'constant' target word size = 32.
 'constant' path separator=/:/,		$ or /;/
            dir separator=///.		$ or /\/
@@ -41,9 +41,9 @@ $ BODY ******************************************************* $
 'pragmat'require=("error","lexical").
 
 'stack'(next,def)LEXT=(
-   "./aleph/stdice:/usr/local/aleph/stdice"
+   "./aleph/stdice:/usr/local/aleph"
    				,(0,0):std search path,
-   "stdlib"			,(0,0):stdlib file,
+   "stdC.ice"			,(0,0):stdlib file,
    "16777216"			,(0,0):min virtual address, $ 0x0100 0000
    "2130706432"			,(0,0):max virtual address, $ 0x7f00 0000
    "#include ""aleph_core.h""",(0,0):aleph front matter

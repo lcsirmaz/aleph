@@ -123,10 +123,12 @@ $                            pointer not in the list.
 'p' put datap+""f+>data+>type.
 $ Exit routines
 $   exit+>code           terminate program execution with code "code".
-'e'exit+>code,@exit+>code.
+'e' exit+>code,@exit+>code.
+$ sleep for ms milliseconds
+'a' msleep+>ms.
 $ Backtrack
 $   backtrack            if linked with -g, prints the calls; otherwise nop
-'a'backtrack.
+'a' backtrack.
 
 $ BODY ******************************************************** $
 'pragmat'if=compile,library mode=on.
@@ -136,8 +138,11 @@ $ external rule string first character:
 $   letter:  use the string as a procedure name to be called
 $      with the standard ALEPH parameter passing mechanism
 $      for each used name generate an extern prototype
-$   % indicates an async external rule with standard parameter
-$      passing. Used for getchar() and aheadchar()
+$   % indicates async external rule with standard parameter passing
+$      when linked with -async. If not, % is deleted; if yes, % is
+$      replaced by 'a_async_'. All rules calling an async rule are
+$      async.
+$
 $   @ followed by a sequence of 0/1 digits. A 0/1 sequence is created
 $      for each out affix whether it is dummy or not. Search the 
 $      matching @01010, start the replacing process from that point.
@@ -147,8 +152,6 @@ $   other (including space) If the rule is question or predicate, skip
 $      to the next @ character when generating negated condition.
 $      Copy by replacement until the end or until the first @ character.
 $      #1 .. #9 #a .. #z copy numbered actual affix (1 .. 35)
-$      #, add  ",a_Ltr" if linked with stack trace, otherwise nothing
-$      #0 all "a_Ltr" if linked with stack trace, otherwise nothing
 $      ## the # sign
 $ functions with only dummy out affixes and questions with no branching
 $      are optimized out.
@@ -214,7 +217,7 @@ $ strings
       copy string+t[]+>p+[]st[]      ="a_CopyString".
 $ files
 'x''p'open file+""f+>mode+t[]+>p     ="a_openfile".
-'x''p'open temp file+""f+[]st[]+>p   ="a_opentempfile".
+'x''p'open temp file+""f+[]st[]+>p   ="a_opentmp".
 'x''a'close file+""f                 ="a_closefile".
 'x''a'unlink file+t[]+>p             ="a_unlinkfile".
 'x''f'get file error+""f+err>        ="#2=#1.errno".
@@ -226,11 +229,13 @@ $ files
 'x''p'get data+""f+data>+type>       ="a_getdata".
 'x''a'put data+""f+>data+>type       ="a_putdata".
 'x''p'put datap+""f+>data+>type      ="a_putdatap".
-$ exit with optional backtrack 
-'x''e'exit+>code                     =" a_exit(#1#,)",
-      @exit+>code                    =" a_exit(#1#,)".
-$ backtack 
-'x''a'backtrack                      =" a_PrintStackFrame(#0)".
+$ exit
+'x''e'exit+>code                     ="a_exit",
+      @exit+>code                    ="a_exit".
+$ sleep
+'x''a'msleep+>ms                     ="%a_msleep".
+$ backtack
+'x''a'backtrack                      ="a_PrintStackFrame".
 
 'root'+.
 'pragmat'endif=compile.

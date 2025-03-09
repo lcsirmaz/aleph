@@ -1,4 +1,4 @@
-$ ICE file, produced by ALEPH compiler v2.2
+$ ICE file, produced by ALEPH compiler v2.3
 'module' "stdlib" "jslib put string" 32 
 4 38 "putstring"
 39 119 "stdlib"

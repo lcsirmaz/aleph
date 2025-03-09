@@ -1,10 +1,10 @@
 $ item.ale
-'pragmat'module=item, title="item, v2.0".
+'pragmat'module=item, title="item, v2.1".
 
 $ *************************************************************
-$  This code is part of ALEPH-M (Modular ALEPH-v2)
+$  This code is part of ALEPH-M (Modular ALEPH-v2.2)
 $
-$  (C) 2020-2023, L.Csirmaz
+$  (C) 2020-2025, L.Csirmaz
 $
 $  ALEPH-M is a free software, your can redistribute and/or
 $  modify it under the terms of the GNU General Public License
@@ -48,7 +48,6 @@ $ read all items from the .ice file
 
 'q'is assign item+>item,is waitfor item+>item,is root item+>item.
 'q'is builtin rule+>item+idx>.
-'q'no call stack rule+>item.
 $ auxiliary functions
 'f'get calibre+>item+x>,get fill+>item+x>,get vupb+>item+x>,
    get vlwb+>item+x>,get list link+>item+x>.
@@ -400,11 +399,6 @@ $ mod base is not necessarily set (scanning the ITEM list only)
    [Sshiftaffix],1->idx;
    [Sgetaffixno],2->idx;
    -.
-'q'no call stack rule+>item:
-   is waitfor item+item,-;
-   is item flag+item+rno return,-;
-   is item flag+item+texternal,tag*ITEM[item]!=Sbacktrack;
-   is builtin rule+item+#.
 $ file extension *********************************************
 'a'read file info+>item-ptr-x-y:
     $ add file extension: string plus area

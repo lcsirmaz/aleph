@@ -181,6 +181,9 @@ extern void a_list_fill(int *fill);
 *    L        index of list
 *    idx      the index
 *    rule     rule where the error happened
+*
+* void a_backtrack(void)
+*  prints the execution stack if avaiable.
 ********************************************************************/
 /* fatal error values */
 typedef enum{
@@ -196,36 +199,31 @@ extern int a_extstrcmp(int table,int off,const char *str);
 extern void a_fatal(int code);
 extern void a_area_failed(const char *rule,int v);
 extern void a_index_error(int L,int idx,const char*rule);
-
+extern void a_backtrack(void);
 
 /********************************************************************
-* call stack,
+* call stack
 *
-* a_CALL STACK
-*  is defined when linked with the -g option. The first parameter
-*  of each rule is a_tr of type a_CALLp; the first argument of
-*  each rule call is &a_Ltr.
-* a_addto_callstack(rulename)
-* a_unused_callstack(rulename)
-*  create the local call block a_Ltr; suppress "not used" warning
-* a_addto_callstack_bottom()
-*  create the bottom call stack element in the main @root
-* a_backtrack(top,code)
-*  print the call stack starting at top; if code!=0 it is from exit
+* Generated when linked with the -g option. Each linked rule starts with
+*     a_CALL a_Ltr={"name",a_TrHead}; a_TrHead=&a_Ltr;
+* The value of a_TrHead is restored after calling an aleph rule.
+* Inside if(...) such calls are wrapped within
+*     a_iftr(call())
+* which is a #define calling the inline function a_xiftr()
 ********************************************************************/
 
 typedef struct a_CALL{
   const char *rule;struct a_CALL *next; } a_CALL;
 typedef a_CALL *a_CALLp;
+extern a_CALLp a_TrHead;
 
 #define a_addto_callstack(rulename)			\
-   a_CALL a_Ltr={rulename,a_tr}
-#define a_unused_callstack(rulename)			\
-   a_CALL __attribute__((unused)) a_Ltr={rulename,a_tr}
-#define a_addto_callstack_bottom()			\
-   a_CALL a_Ltr={NULL,NULL}
+   a_CALL a_Ltr={rulename,a_TrHead}
 
-extern void a_backtrack(a_CALLp tr,int);
+#define a_iftr(f)	a_xiftr(&a_Ltr,f)
+
+static inline int a_xiftr(a_CALLp tr,int v){
+   a_TrHead=tr; return v;}
 
 /********************************************************************
 * Profile and trace
@@ -245,6 +243,7 @@ typedef struct a_PROFILE_ {
   const char        *rulename;
   struct a_PROFILE_ *link;
 } a_PROFILE;
+typedef a_PROFILE *a_PROFILEp;
 
 #define a_profile_def(thispf,rulename,prevpf)		\
   static a_PROFILE thispf={0uL,rulename,prevpf}
@@ -270,9 +269,8 @@ void a_trace_rule(const char*rname,int affixno,...);
 #define a_MODROOT(x,name)				\
   if(a_F2==0 || a_extstrcmp(a_F1,a_F2,name)==0){	\
     static int working=0;				\
-    if(working==0){working=2;x(&a_Ltr);working=1;}	\
-    else if(working!=1){				\
-      a_backtrack(&a_Ltr,-1);a_fatal(a_FATAL_waitfor);}	\
+    if(working==0){working=2;x();a_TrHead=&a_Ltr;working=1;}	\
+    else if(working!=1){a_fatal(a_FATAL_waitfor);}	\
   }
 #else  /* no CALL_STACK */
 #define a_MODROOT(x,name)				\
@@ -292,24 +290,13 @@ void a_trace_rule(const char*rname,int affixno,...);
 *
 ********************************************************************/
 
-#ifdef a_CALL_STACK
-inline static int a_listelem(a_CALLp bt,int L,register int idx,
-         const int off,const char *rname)
-{   if(idx-off<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
-       idx > to_LIST(L)->aupb){
-         a_index_error(L,idx,rname),a_backtrack(bt,-1);
-         a_fatal(a_FATAL_index);}
-    return idx-off;
-}
-#else /* no CALL_STACK */
-inline static int a_listelem(int L,register int idx,int off,
+inline static int a_listelem(int L,register int idx,
              const char *rname)
-{   if(idx-off<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
+{   if(idx<=to_LIST(L)->alwb-to_LIST(L)->calibre ||
        idx > to_LIST(L)->aupb){
          a_index_error(L,idx,rname);a_fatal(a_FATAL_index); }
-    return idx-off;
+    return idx;
 }
-#endif /* CALL_STACK */
 
 #endif /* ALEPH_CORE_H */
 

@@ -125,6 +125,8 @@ $ Exit routines
 $   exit+>code           terminate program execution with code "code".
 'e'exit+>code,@exit+>code.
 $ Backtrack
+$   msleep
+'a'msleep+>ms.
 $   backtrack            if linked with -g, prints the calls; otherwise nop
 'a'backtrack.
 
@@ -224,6 +226,8 @@ $ files
 $ exit
 'x''e'exit+>code                     ="_a_exit",
       @exit+>code                    ="_a_exit".
+$ sleep
+'x''a'msleep+>ms                     ="a_msleep".
 $ backtack
 'x''a'backtrack                      ="_a_xbacktrack".
 
