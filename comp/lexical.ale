@@ -118,11 +118,14 @@ $ Symbol names $
  "\n"           :Seol
 ).
 
-$ put the character representation of ptr into []st[]
-'p'was lexical pointer+>ptr:
+$ put the string representing ptr into the top of BUFFER
+'p'was lexical pointer+>ptr-optr-n:
   was+SPECIAL+ptr, copy string+SPECIAL+ptr+BUFFER;
   was+LEXT+ptr, copy string+LEXT+ptr+BUFFER;
-  was+NUMBER+ptr, copy string+"<number>"+BUFFER.
+  was+NUMBER+ptr, >>BUFFER->optr,get number repr+ptr,
+     subtr+>>BUFFER+optr+n,
+     pack string+BUFFER+n+LEXT,unstack to+BUFFER+optr,
+     copy string+LEXT+>>LEXT+BUFFER,unstack string+LEXT.
 
 $ ************************************************************* 
 

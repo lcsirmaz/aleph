@@ -616,7 +616,7 @@ $ BUFFER[ptr] starts an affix; generate code for it
    is item flag+this rule+rbounds, $ indexing with bound checking $
       T+"to_LIST(%p)->offset[a_listelem(%p,"+ptr+ptr,incr+ptr,incr+ptr,
       T affix inner+ptr,incr+ptr,subtr+BUFFER[ptr]+1+x,incr+ptr,
-      (x=0;T+"-%d"+x),T+",""%p"")]"+x+this rule;
+      (x=0;T+"-%d"+x),T+",""%p"")]"+this rule;
    T+"to_LIST(%p)->offset["+ptr,incr+ptr,incr+ptr,T affix inner+ptr,
       $ BUFFER[ptr]=Dbus $incr+ptr,subtr+BUFFER[ptr]+1+x,
       incr+ptr,(x=0,T+"]";T+"-%d]"+x).
@@ -789,7 +789,7 @@ $ assignment ------------------------------------------------------
        T affix+ptr,
        (v=0,print char+/=/,T affix+source,print char+/;/;
         T+"=%p;"+v)),:nxt),
-   (star=0;T+"for(register int %p=0;%p<a_C;%p++)a_V[%p]=%p;"+r2+r2+r2+r2+v),
+   (star=0;T+"for(register %w %p=0;%p<a_C;%p++)a_V[%p]=%p;%n"+r2+r2+r2+r2+v),
    (block=0;print char+/}/),T+"%G%n"+tnext.
 
 $ regular call interface ------------------------------------------
