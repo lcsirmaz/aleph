@@ -26,27 +26,25 @@ padding: 5px 0 5px 9px; color: #206020;}
 /* start css.sty */
 .cmr-7{font-size:70%;}
 .cmmi-10{font-style: italic;}
-.ec-lmtt-10{ font-family: monospace,monospace; color: #206020;}
-.ec-lmtt-8{font-size:80%; font-family: monospace,monospace;}
-.ec-lmtk-10{ font-family: monospace,monospace; color: #206020;}
+.ec-lmtt-10{ font-family: monospace,monospace; color: #206020;font-size:85%;}
+.ec-lmtt-8{font-size:80%; font-family: monospace,monospace;font-size:85%;}
+.ec-lmtk-10{ font-family: monospace,monospace; color: #206020;font-size:85%;}
 .cmr-17{font-size:170%;}
 .cmss-17{font-size:170%;  font-family: sans-serif;}
 .cmss-17{  font-family: sans-serif;}
 .cmr-12{font-size:120%;}
 .cmr-8{font-size:80%;}
-.cmtt-10{font-family: monospace,monospace;}
-.cmtt-10{font-family: monospace,monospace;}
+.cmtt-10{font-family: monospace,monospace;font-size:85%;}
+.cmtt-10{font-family: monospace,monospace;font-size:85%;}
 .cmss-10{  font-family: sans-serif;color: #102080;}
 .cmti-10{ font-style: italic;}
 .cmbx-10{ font-weight: bold;}
 .cmbx-10{ font-weight: bold;}
 .tcti-1000{font-style: italic;}
 .cmr-9{font-size:90%;}
-.cmtt-9{font-size:90%;font-family: monospace,monospace;}
-.cmtt-9{font-family: monospace,monospace;}
 .cmbx-9{font-size:90%; font-weight: bold;}
 .cmbx-9{ font-weight: bold;}
-p{margin-top:0;margin-bottom:0}
+p{margin-top:0;margin-bottom:0;text-align:justify;}
 p.indent{text-indent:2em;}
 p + p{margin-top:0.5em;}
 p + div, p + pre {margin-top:1em;}
@@ -78,7 +76,6 @@ div.obeylines-v p { margin-top:0; margin-bottom:0; }
 td.displaylines {text-align:center; white-space:nowrap;}
 .centerline {text-align:center;}
 .rightline {text-align:right;}
-pre.verbatim {font-family: monospace,monospace; text-align:left; clear:both; }
 .fbox {padding-left:3.0pt; padding-right:3.0pt; text-indent:0pt; border:solid black 0.4pt; }
 div.fbox {display:table}
 div.center div.fbox {text-align:center; clear:both; padding-left:3.0pt; padding-right:3.0pt; text-indent:0pt; border:solid black 0.4pt; }
