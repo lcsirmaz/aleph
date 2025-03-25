@@ -8,7 +8,7 @@ in the [Aleph Manual](https://lcsirmaz.github.io/aleph/);
 the implemented Aleph language in
 [Aleph Compiler 2.2](https://lcsirmaz.github.io/aleph/alephcomp.html).
 To try out language features, use the 
-[Aleph PlayGround](https://lcsirmaz/github.io/aleph/play.html).
+[Aleph PlayGround](https://lcsirmaz.github.io/aleph/play.html).
 
 Files with extension `.ale` are Aleph source files.
 
