@@ -1,0 +1,50 @@
+/* console.css */
+
+:root{
+  --con-fontsize: 0.8em;
+}
+
+.console-wrap {
+  position:absolute;
+}
+.console-combo {
+    position:relative; left: 30px; top: 0px;
+    margin: 5px;
+  .console-inner {
+    border: 1px solid #aaa;
+    min-width: 20em;
+    min-height: 10em;
+    max-width:95vw;
+    padding: 2px;
+    resize: both;
+    overflow-x:hidden;
+    background-color: #f0f0f0;
+  }
+  #con-stdout{height:42em;}
+  #con-stderr{height:4em;}
+  #con-stdout,#con-stderr {
+    resize:vertical;
+    outline:none;
+    border:1px solid #b0c0d0;
+  }
+  textarea { white-space: pre-wrap; word-break: break-all; resize:none;
+    display:block; /* without this there is a 2px margin */
+    overflow-wrap:anywhere;
+    overflow-x:hidden;
+    padding: 4px;
+    margin: 0;
+    width: 100%;
+    box-sizing:border-box;
+    font-family:Monaco,"Dejavu Sans Mono",monospace;
+    font-size: var(--con-fontsize);
+  }
+  #con-stdin {
+    overflow-y:hidden;
+    height: auto;
+    field-sizing: content;
+  }
+  #con-stdin:focus-visible {outline:1px solid #a0b0c0;}
+  #con-prompt {
+    font-family:Monaco,"Dejavu Sans Mono",monospace;
+    font-size:var(--con-fontsize); color:#777;}
+}

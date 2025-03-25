@@ -1,0 +1,170 @@
+/* editor.css */
+:root{
+   --edit-fontsize: 1em;
+}
+
+body {
+  font-family: Roboto,sans-serif;
+  color:#222;
+}
+
+/* we should set font-family for <code> and <textarea> explicitly
+   Changing --edit-fsize from "1em" to smaller or larger value changes
+   the font size in the editor.
+*/
+.container {
+  font-family: "Dejavu Sans Mono",monospace;
+  font-size: 0.8em;
+  line-height: normal;
+  margin: 0;
+  position:fixed;
+}
+.gutter-wrapper {
+  background-color: #f8f8f8;
+  border: solid 1px #c8c8c8;
+  min-width: 20em;
+  max-height: 80vh;
+  resize: both;
+  overflow-x: hidden;
+}
+.gutter-wrapper > .aetitle {
+  padding: 4px 0;
+  margin-bottom: 5px;
+  border-bottom: solid 1px #c8c8c8;
+  width: 100%;
+  color: #070707;
+  background-color: #f0f0f0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: 1fr;
+  gap: 0;
+  
+   button {
+  border-radius: 4px;
+  border: 1px solid #a0a0a0;
+  background-color: #e5e5e3;
+  color: #101010;
+  }
+   button:hover {
+  background-color: #f7f7e7;
+  cursor:pointer;
+  }
+   button:active {
+   background-color: #f372bc;
+    cursor:pointer;
+  }  
+   button:disabled{
+    color: #a0a0a0;
+    cursor: default;
+   }
+}
+
+.gutter-wrapper .aesave {
+  padding: 0 10px;
+  text-align: left;
+}
+.gutter-wrapper .aefile{ 
+  text-align: center;
+}
+.gutter-wrapper .aefile:hover {
+  cursor:grab;
+}
+
+.gutter-wrapper .aefile > .aechanged {
+  font-weight: bold;
+  color: #802010;
+  padding-right: 5px;
+  visibility:hidden;
+}
+
+.gutter-wrapper .aequit{
+  padding: 0 10px;
+  text-align: right;
+}
+
+.container code, .container textarea, .container .linenumber {
+  font-family: "Dejavu Sans Mono",monospace;
+  font-size: var(--edit-fontsize);
+}
+.gutter-wrapper .linenumber {
+  cursor:default;
+  grid-area: 1 / 1 / 1 / 1;
+  align-self:baseline;
+  border-right: 1px solid #c8c8c8;
+  padding: 1px 8px 1px 2px;
+  min-width: 20px;
+  text-align:right;
+  white-space: nowrap;
+  background-color:inherit;
+  color: #808285;
+  z-index:1;
+}
+
+.gutter-wrapper .double-line {
+  display: grid;
+  grid-template-columns: 3.3em 1fr;
+  grid-template-rows: 1fr;
+  gap: 0;
+  background-color:inherit;
+}
+
+.double-line pre, .double-line textarea {
+  grid-area: 1 / 2 / 1 / 3;
+  background-color: inherit;
+  color: #171717;
+  border: none;
+  display: block;
+  line-height: normal;
+  margin: 0 3px;
+  overflow: auto;
+  padding: 0px 0px 1px 2px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  resize:none;
+  z-index: 2;
+}
+.double-line textarea {
+	background-color: transparent;
+	border:none;
+	color: transparent;
+	caret-color: #000;
+	outline: none;
+	scrollbar-width:none;
+}
+
+/* syntax highlighting
+  arr	arrow ->
+  comm	comment
+  err	error
+  func	function (js)
+  idr	identifier
+  idx	Iddd (ice)
+  kwd	keyword
+  lim	limit << >> <>
+  num	number
+  opt	operator
+  str	string
+  type	type <xxx> (ice)
+*/
+
+.snx-comm {color:#75787b;}
+.snx-num {color:#8649b3;}
+.snx-kwd {color:#1d75b3;font-weight:bold;}
+.snx-str {color:#3ea314;}
+.snx-err {color:#a01213;}
+.snx-lim {color:#047d65;}
+.snx-arr {color:#af2728;}
+.snx-typ {color:#1d75b3;}
+.snx-idx {color:#047d65;}
+
+/* yes/no dialog */
+.container .aeyesno {
+  border-radius: 4px;
+  border: 2px solid black;
+  background: #f8f8f4;
+}
+.aeyesno button {
+  border-radius: 4px;
+  border: 1px solid #a0a0a0;
+  background-color: #e5e5e3;
+}

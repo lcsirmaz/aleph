@@ -1,0 +1,81 @@
+$ standard ALEPH library, compressed version
+'pragmat' module=stdlib.
+
+$ *************************************************************
+$  This code is part of ALEPH-M (Modular ALEPH-v2.3)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+$ ************************************************************* 
+'pragmat'if=compile,error="Aleph standard library. Do not compile",endif=compile.
+'pragmat'library mode=on.
+$ Target words size
+'cons'word size=32,max int=0x7fffffff,min int=-max int-1,int size=10.
+$ Arithmetic, string
+'f' add+>x+>y+z>, subtr+>x+>y+z>,
+    mult+>x+>y+z>,addmult+>x+>y+>z+u>,
+    div+>x+>y+z>,divrem+>x+>y+z>+u>,incr+>x>,decr+>x>,
+    getabs+>x+y>,max+>x+>y>,min+>x+>y>.
+'q' equal+>x+>y,not equal+>x+>y,less+>x+>y,lseq+>x+>y,
+    more+>x+>y,mreq+>x+>y,
+    @equal+>x+>y,@noteq+>x+>y,@less+>x+>y,@lseq+>x+>y,
+    @more+>x+>y,@mreq+>x+>y.
+'f' @make+>from+@+to>.
+'cons'false=0,true=1.
+'q' is+>x,is true+>x,is false+>x.
+'f' bool invert+>x+y>,bool and+>x+>y+z>,bool or+>x+>y+z>,
+    bool xor+>x+>y+z>,left clear+>x>+>n,right clear+>x>+>n.
+'cons'nil=0.
+'q' was+t[]+>p.
+'f' next+t[]+>p>,previous+t[]+>p>,list length+t[]+n>.
+'a' unstack+[]st[],unstack to+[]st[]+>p,scratch+[]st[],release+[]st[].
+'p' request space+[]st[]+>n.
+'f' string length+t[]+>p+n>,string width+t[]+>p+n>,
+    previous string+t[]+>p>,compare string+t1[]+>p1+t2[]+>p2+comp>,
+    compare string n+t1[]+>p1+t2[]+>p2+>n+comp>.
+'q' string elem+t[]+>p+>n+chr>.
+'a' unstack string+[]st[],pack string+from[]+>p+[]to[],
+    unpack string+from[]+>p+[]to[],copy string+from[]+>p+[]to[].
+'f' string hash+t[]+>p+hash>, block hash+t[]+>p+hash>.
+$ Files
+'p' open file+""f+>mode+t[]+>p,open temp file+""f+[]st[]+>p.
+'a' close file+""f,unlink file+t[]+>p.
+'f' get file error+""f+err>,get file pos+""f+pos>.
+'a' set file pos+""f+>pos.
+'cons'newline=10,newpage=12,same line=-1,rest line=-2.
+'charfile'STDIN,STDOUT.
+'p' get char+""f+char>,ahead char+""f+char>,
+    get line+""f+[]st[]+ctrl>,get int+""f+n>.
+'a' put char+""f+>char,put line+""f+t[]+>ch,
+    put int+""f+>n,put string+""f+t[]+>ptr,
+    put as string+""f+t[]+>ptr,fprintf+""f+t[]+@+>ptr.
+'pragmat'macro=(fgetc,fputc,fprint char,fprint string,
+    getc,putc,print char,print string,printf).
+'p' fgetc+""f+c>:get char+f+c.
+'a' fputc+""f+>c:put char+f+c.
+'a' fprint char+""f+>c:put char+f+c.
+'a' fprint string+""f+t[]+>p:put string+f+t+p.
+'p' getc+c>:get char+STDIN+c.
+'a' putc+>c:put char+STDOUT+c.
+'a' print char+>c:put char+STDOUT+c.
+'a' print string+t[]+>p:put string+STDOUT+t+p.
+'a' printf+t[]+@+>ptr:fprintf+STDOUT+t+@.
+'cons'numerical=0,pointer=1.
+'p' get data+""f+data>+type>,put datap+""f+>data+>type.
+'a' put data+""f+>data+>type.
+$ Other
+'e' exit+>code,@exit+>code.
+'a' msleep+>ms,backtrack.
+'table'STDARG.
+'a' wait for+t[]+>p.
+'end'

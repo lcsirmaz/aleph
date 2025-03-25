@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+ <link rel="stylesheet" href="console.css">
+ <link rel="stylesheet" href="editor.css">
+ <script src="utils.js"> </script>
+ <script src="aeditor.js"></script>
+ <script src="console.js"></script>
+ <script src="shell.js"></script>
+ <style>
+body {background-color:#fefefe;
+      margin-left:1px;}
+h1 {font-family:'Trebuchet MS', Arial, Helvetica, sans-serif;
+    color:#175B6D;
+    font-size: 15pt;
+    font-weight:bold;
+    text-align:left;
+    margin-left: 20px; margin-bottom:0px;}
+h2 {font-family:'Trebuchet MS', Arial, Helvetica, sans-serif;
+    color:#175B6D90;
+    font-size:11pt;
+    text-align:left;
+    margin-left: 20px;
+    margin-top:0.3em;
+    }
+.bottom {font-size: 8pt; text-align:center; color:#989898;
+         font-family:'Trebuchet MS', Arial, Helvetica, sans-serif;
+         margin: 10px 0px;}
+ </style>
+</head>
+<body>
+
+<h1>Online ALEPH PlayGround</h1>
+<h2>write, compile and run ALEPH code</h2>
+
+<div class="console-wrap">
+<div class="console-combo">
+ <div class="console-inner" style="width:40em;height:40em;">
+   <textarea readonly id="con-stderr" placeholder="system messages"></textarea>
+   <div class="con-sep1"></div>
+   <textarea readonly id="con-stdout" placeholder="console output"></textarea>
+   <div class="con-sep2"></div>
+   <div class="con-impt"><span id="con-prompt">aleph</span><textarea 
+id="con-stdin" autocorrect="off" spellcheck="false" translate="no" autocomplete="off" 
+rows="1" autofocus disabled placeholder="help"></textarea></div>
+ </div>
+</div>
+
+<p class="bottom">
+Modular JavaScript ALEPH &copy; 2025 Laszlo Csirmaz
+</p>
+
+</div><!-- console-wrap -->
+
+<!-- this MUST go to the end -->
+<script>
+  function callnext(){
+     setTimeout(aCle.read,100,
+     'project: '+FS.cwp().name,
+     (s,t)=>{SHELL(s);callnext();}, // callback function
+     {bg:'#e8f0f8',s:1,p:'> ',x:1}// options: bg; show ^C and non-empty lines 
+     );}
+  callnext();
+</script>
+</body>
+</html>
+<!-- ***********************************************************
+$  This code is part of Modular javascript ALEPH-M v1.0)
+$
+$  (C) 2020-2025, L.Csirmaz
+$
+$  ALEPH-M is a free software, your can redistribute and/or
+$  modify it under the terms of the GNU General Public License
+$  as published by the Free Software Foundation, either version
+$  3 of the License, or (at your option) any later version.
+$
+$  ALEPH-M is distributed in the hope that it will be useful,
+$  but  WITHOUT ANY WARRANTY; without even the implied warranty
+$  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+$  the GNU General Public License for more details.
+$
+************************************************************ -->
+
