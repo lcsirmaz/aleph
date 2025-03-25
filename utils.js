@@ -236,7 +236,7 @@ var FS=function (){
     link:   AlephFiles[2],
     stdlib: [AlephFiles[3]],
     stdice: Array.from({length:14},(_,i)=>AlephFiles[i+4]),
-    RE:     '--RE=http://degas.ceu.edu:8000/aleph/lib/alephRE.js'
+    RE:     '--RE=https://lcsirmaz.github.io/aleph/lib/alephRE.js'
  };
 
  function cwp(n){
