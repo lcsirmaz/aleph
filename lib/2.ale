@@ -1,0 +1,11 @@
+$ reading numbers from STDIN, squaring them and 
+$  printing the result.
+'pragmat'title="squaring numbers".
+'a'intro:
+   printf+"Type a number; I will compute its square.%n"
+          "To quit, hit ^C, ^D or a non-number%n".
+'p'square and print-n-nn:
+   get int+STDIN+n,mult+n+n+nn,
+     printf+"the square of %d is %d%n"+n+nn.
+'root'intro,(nxt:square and print,:nxt;+).
+'end'

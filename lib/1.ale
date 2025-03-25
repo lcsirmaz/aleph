@@ -1,0 +1,5 @@
+$ Hello world 
+'pragmat'title="Hello world".
+'pragmat'warning="This is the first ALEPH program".
+'root'printf+"Hello world!%n".
+'end'

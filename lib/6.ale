@@ -1,0 +1,24 @@
+$ generating all permutations
+$ starting with an increasing order of the elements
+$ take the next permutation of the tail. If it is decreasing,
+$ determine the lexicographically next permutation.
+'pragmat'title="generating next permutation".
+
+'predicate'next perm+>i+[]st[]-p-q-elem:
+  i = >>st,-;
+  add+i+1+p,
+    (next perm+p+st;
+     st[i] > st[p],-;
+     >>st->q,(rep: q<=p;
+                   st[q]->elem,st[p]->st[q],elem->st[p],
+                     incr+p,decr+q,:rep),
+             add+i+1+p,st[i]->elem,
+                   (rep:elem>st[p],incr+p,:rep;
+                         st[p]->st[i],elem->st[p])
+            ).
+$ and apply it here
+'stack'[]V[]=(/a/,/b/,/c/,/d/).
+'root'(rep:put line+STDOUT+V+newline,(next perm+<<V+V,:rep;+)).
+
+'end'
+

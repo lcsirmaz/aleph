@@ -1,0 +1,13 @@
+$ computing n! using a recursive function
+'pragmat'title="factorial".
+$ using a recursive procedure: n! = (n-1)!*(n-1)+(n-1)!
+'f'factorial+>n+m>:
+   n<=0,1->m;
+   decr+n,factorial+n+m,addmult+m+n+m+m.
+'a'intro:
+   printf+"Type a number between 0 and 20, I try compute its factorial%n".
+'root'intro,(nxt-n-m:
+         get int+STDIN+n,n>=0,n<=20,
+         factorial+n+m,printf+"%d!=%d%n"+n+m,:nxt).
+'end'
+

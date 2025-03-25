@@ -72,7 +72,7 @@ function cmdhelp(tp,shh){ // check argument numbers
 }
 // commands; help describe projects and files
 function helpcmd(args){// help
-   if(cmdhelp('help',args.length==1)){
+   if(cmdhelp('help',(args.length==1||(args.length==2 && args[0]=='-')))){
      if(args.length==0){
         let cmdlist='  ',cnt=0;
         Object.keys(COMMANDS).forEach((cmd)=>{
@@ -91,28 +91,30 @@ function helpcmd(args){// help
    }
    let f=COMMANDS[args[0]];if(f?.alias){f=COMMANDS[f.alias];}
    if(f){showHelp(f); return;}
-   if(args[0].at(0)=='-')f=TOPICS[args[0].slice(1)];
+   if(args[0].at(0)=='-')f=TOPICS[args[0].slice(1)||args[1]];
    if(!f){P('unknown command or topic');return;}
    P(f);
 }
 const TOPICS = {
   cmdline:
-'The ALEPH PlayGround is command-line based: commands to be executed should\n'+
-'be entered at the bottom line of the workspace. Use the commands\n'+
-'   edit file.ale\n'+
-'to edit the ALEPH source \'file.ale\' in a separate editing window,\n'+
-'   compile file.ale\n'+
-'to compile it, and finally\n'+
-'   run file.js\n'+
-'to run if the source was compiled without errors. Enter \'help\' for a full\n'+
-'list of accepted commands. To navigate among previously entered lines use\n'+
-'the up and down arrows. Ctrl+C clears the command line, Enter or ctrl+D\n'+
-'(this latter indicating end of input) executes the entered command.\n'+
-'The same command line is used as the console input when running an ALEPH\n'+
-'program. It is indicated by different background color and the displayed\n'+
-'project name is changed to that of the running project. Hitting ctrl+C kills\n'+
-'the running program. Finishing the line with ctrl+D instead of Enter closes\n'+
-'this channel for the running program.\n',
+'ALEPH PlayGround is command-line based tool in which ALEPH programs can be\n'+
+'created, edited, compiled and run. Commands to be executed are entered at the\n'+
+'bottom line of the workspace. Above the command line is the console window,\n'+
+'also for messages sent to \'stdout\'. The top windows is reserved for system\n'+
+'messages an for \'stderr\'. Enter \'help\' for the complete list of accepted\n'+
+'commands. To get a help on a specific command, use either \'help <cmd>\', or\n'+
+'\'<cmd> -h\'. To navigate among previously entered commands use the up and down\n'+
+'arrows. Ctrl+C clears the command line, while Enter or ctrl+D executes the\n'+
+'entered command. Some commands one can start to work with:\n'+
+'  load 1            load the sample ALEPH program \'a1.ale\'\n'+
+'  edit a1.ale       open \'a1.ale\' in an editing window\n'+
+'  compile a1.ale    compile the ALEPH program\n'+
+'  run a1            and run if it was compiled without errors\n'+
+'The same command line is used as console input by compiled ALEPH programs.\n'+
+'This usage is indicated by different background color; the project name\n'+
+'above is changed to that of the running project. Hitting ctrl+C kills the\n'+
+'requesting program. Closing the line with ctrl+D instead of Enter closes the\n'+
+'channel for further use by this program.\n',
 
   project: 
 'The ALEPH PlayGround is organized into projects. Each project contains the\n'+
@@ -171,22 +173,23 @@ const TOPICS = {
 'the used technology, selecting and highlighting is limited to a single line.',
 
   run:
-'Compiled ALEPH programs are executed by dedicated Web Workers. A project\n'+
-'can run one program at a time, but different projects can run programs\n'+
-'simultaneously. Files visible to the running program are moved to the Worker\n'+
-'and retrieved when the Worker terminates by itself. If the Worker is killed\n'+
-'(e.g., it runs in an infinite loop) then those files are lost and must be\n'+
-'recreated. Files in the Local Storage are automatically recovered.\n'+
-'Each running program has a dedicated job number.  \n',
+'Compiled ALEPH programs are executed by dedicated Web Workers. A project can\n'+
+'run one program at a time, but different projects can run several programs\n'+
+'simultaneously. Running programs have job numbers, living jobs can be listed\n'+
+'by the command \'jobs\'. Project files visible to the running program are\n'+
+'moved to the Worker, and are retrieved when the Worker terminates by itself.\n'+
+'If the Worker job is killed by a \'kill\' command, then those files might be\n'+
+'lost and should be recreated. Files in the Local Storage are automatically\n'+
+'recovered, but others are permanently deleted.\n',
 
   jobs:
 'Editor and viewer windows as well as running programs have dedicated job\n'+
-'entries. Jobs can be listed by \'jobs\'. Jobs can be killed; killing an editor\n'+
-'or viewer closes the corresponding window immediately discarding any unsaved\n'+
-'changes. When killing a running program a "terminate" message is sent first to\n'+
-'the controlling Worker. This takes effect only when the ALEPH program pauses by\n'+
-'waiting for console input or sleeping. A second \'kill\' command terminates the\n'+
-'Worker itself when the files held by the Worker are lost.',
+'entries. Jobs can be listed by \'jobs\'. Jobs can be killed by the \'kill\''+
+'command; killing an editor or viewer closes the window immediately discarding\n'+
+'any unsaved changes. When killing a running program a "stop" message is sent\n'+
+'first to the controlling Worker. This takes effect only when the program\n'+
+'either waits for console input or sleeps. A second \'kill\' command terminates\n'+
+'the Worker itself when all files held by the Worker are lost.',
 
   about:
 'ALEPH PlayGround is a command line based runtime environment for editing,\n'+
@@ -340,6 +343,28 @@ function viewcmd(args){// view file
       gw:    AE.createEditor(fObj,jobno,1)
    });   
 }
+// load a sample ALEPH program
+// args[0]: 1 .. 9, load one or more files as a0<n>.ale, a0<n>m<j>.ale
+function loadFile(n,url){
+   if(FS.ffind(FS.cwp(),n,0)){P('file '+n+' exists, not overwritten');return;}
+   let fObj=FS.ffind(FS.cwp(),n);
+   let xhr=new XMLHttpRequest();
+   xhr.open('get',url,true); // async reading
+   xhr.responseType='arraybuffer';
+   xhr.addEventListener('loadend',()=>{
+     if(xhr.status!=200){P('error loading '+n);FS.rmfile(fObj);}
+     else{fObj.buffer=xhr.response;}
+   },false);
+   xhr.send();
+}
+
+function sample(args){
+  if(cmdhelp('load',args.length==1 && args[0].length==1))return;
+  const n=args[0].at(0);
+  if(n<'1'||'9'<n){cmdHelp('loada',false);return;}
+  loadFile('a'+n+'.ale','lib/'+n+'.ale');
+}
+
 // for upload add the element
 // <input type="file" accept=".ale,.ice,.txt,.js" style="display:none">
 function mkuplink(callf){
@@ -506,6 +531,11 @@ const COMMANDS={
   help:      {f:helpcmd,s:'[<command>|-<topic>]',h:[
               'give help on a specific command or topic.','']},
   '?':       {alias:'help'},
+  load:      {f:sample,s:'<n> with n=1..9',h:['load a sample ALEPH program.','\n'+
+              'These ALEPH programs represent different features, starting at "hello\n'+
+              'world" for n=1, and advancing. The main programs are a1.ale, a2.ale,\n'+
+              'etc, while modules, if any, are a5m1.ale, a5m2.ale, ... Use\n'+
+              '\'compile a5*.ale\' to compile the main program and all modules.']},
   chpr:      {f:chpr,s:'<project>',h:['change to the specified project.','']},
   mkpr:      {f:mkpr,s:'<project>',h:['create a new empty project and change to it.','']},
   lspr:      {f:pwpr,s:'',h:['print the current project name.','']},
@@ -562,8 +592,8 @@ const COMMANDS={
               '  -g          link with call stack tracing\n'+
               'files:\n'+
               '  ALEPH modules (optional) and main program to be compiled. These\n'+
-              '  must be .ale files in the current project.'
-               ]},
+              '  must be .ale files in the current project. Can be specified using\n'+
+              '  file patterns.']},
  'font-size':{alias:'fontsize'},
   fontsize:  {f:(b)=>{const x=parseFloat(b[0]||'');if(isNaN(x) || !(0.5<=x && x<=2.0)){
                      P("usage: fontsize <s> with 0.5<= s <=2.0");}
