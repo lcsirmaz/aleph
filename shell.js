@@ -65,7 +65,7 @@ function showHelp(f){ // <cmd> -h
    else {P(f.h[0]);}
 }
 function cmdhelp(tp,shh){ // check argument numbers
-   if(ssh)return 0;
+   if(shh)return 0;
    tp=COMMANDS[tp].alias??tp;
    P('usage: '+tp+' '+COMMANDS[tp].s);
    return 1;
