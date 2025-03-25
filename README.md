@@ -4,9 +4,11 @@ Modular ALEPH programming language v2.2
 Aleph is a historical programming language; its name is an abbreviation for
 **A** **L**anguage **E**ncouraging **P**rogram **H**iearachy.
 This is an Aleph complier written in Aleph. The language is described
-in the [Aleph Manual](https://lcsirmaz.github.io/aleph/).
-The implemented Aleph language is described in
+in the [Aleph Manual](https://lcsirmaz.github.io/aleph/);
+the implemented Aleph language in
 [Aleph Compiler 2.2](https://lcsirmaz.github.io/aleph/alephcomp.html).
+To try out language features, use the 
+[Aleph PlayGround](https://lcsirmaz/github.io/aleph/play.html).
 
 Files with extension `.ale` are Aleph source files.
 
