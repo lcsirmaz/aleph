@@ -23,7 +23,7 @@ Files with extension `.ale` are Aleph source files.
 * [sample](sample) Sample Aleph programs
 * [joe](joe) Joe syntax highlighter for Aleph programs with .ale extension
 
-## Compiling the Aleph &rarr; C compiler
+## Compiling the Aleph &xrarr; C compiler
 
 Compile the `acomp.c` and `alink.c` files in the [C](C) directory:
 
