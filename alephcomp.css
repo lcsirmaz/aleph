@@ -77,7 +77,7 @@ padding: 5px 0 5px 9px; color: #206020;}
 .cmtt10{font-family: monospace,monospace;}
 .cmtt-10{font-family: monospace,monospace;}
 .cmss10{ font-family: sans-serif;}
-.cmss-10{  font-family: sans-serif; color:#102080;}
+.cmss-10{  font-family: sans-serif; color:#102080;font-size:10pt;}
 .cmti-10{ font-style: italic;}
 p{margin-top:0;margin-bottom:0;text-align:justify;}
 p.indent{text-indent:0;}
