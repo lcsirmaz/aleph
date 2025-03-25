@@ -3,9 +3,9 @@ Modular ALEPH programming language v2.2
 
 Aleph is a historical programming language; its name is an abbreviation for
 **A** **L**anguage **E**ncouraging **P**rogram **H**iearachy.
-This is an Aleph to C complier written in Aleph. The language is described
-in the [Aleph Manual](https://lcsirmaz.github.io/aleph/) (use right-click to
-open it). The implemented Aleph language is described in
+This is an Aleph complier written in Aleph. The language is described
+in the [Aleph Manual](https://lcsirmaz.github.io/aleph/).
+The implemented Aleph language is described in
 [Aleph Compiler 2.2](https://lcsirmaz.github.io/aleph/alephcomp.html).
 
 Files with extension `.ale` are Aleph source files.
@@ -23,7 +23,7 @@ Files with extension `.ale` are Aleph source files.
 * [sample](sample) Sample Aleph programs
 * [joe](joe) Joe syntax highlighter for Aleph programs with .ale extension
 
-## Compiling the Aleph - C compiler
+## Compiling the Aleph &xrarr; C compiler
 
 Compile the `acomp.c` and `alink.c` files in the [C](C) directory:
 
