@@ -54,6 +54,7 @@ console:
 */
 
 var SHELL = function(docm){
+"use strict";
 // print to the console, channel one
 function P(str,nl=1){aCle.print(1,str,nl);}
 // general help
@@ -61,7 +62,7 @@ function showHelp(f){ // <cmd> -h
    // figure out the command
    let c='?? ';
    Object.keys(COMMANDS).forEach((cmd)=>{if(COMMANDS[cmd]==f)c=cmd+' ';});
-   if(f.h.length>1){P(f.h[0],0);P(' Usage: '+c+f.s,0),P(f.h[1]);}
+   if(f.h.length>1){P(f.h[0],0);P(' Usage: '+c+f.s,0);P(f.h[1]);}
    else {P(f.h[0]);}
 }
 function cmdhelp(tp,shh){ // check argument numbers
@@ -361,7 +362,7 @@ function loadFile(n,url){
 function sample(args){
   if(cmdhelp('load',args.length==1 && args[0].length==1))return;
   const n=args[0].at(0);
-  if(n<'1'||'9'<n){cmdHelp('load',false);return;}
+  if(n<'1'||'9'<n){cmdhelp('load',false);return;}
   loadFile('a'+n+'.ale','lib/'+n+'.ale');
   if(n=='8'){ // we have m1,m2,m3 as well
      loadFile('a8m1.ale','lib/8m1.ale');
@@ -386,7 +387,7 @@ function mkuplink(callf){
     const l=e.currentTarget;
     if(l.cB && l.files.length>0){
         for(let i=0;i<l.files.length;i++){
-           if(l.files[i]){l.cB(l.files[i]);}};
+           if(l.files[i]){l.cB(l.files[i]);}}
         l.cB=null;}
     });
   return l;
@@ -482,7 +483,7 @@ function runcmd(args){
    const F=rObj==FS.cd.comp?FS.cd.stdlib.slice(0) :
            rObj==FS.cd.link?FS.cd.stdice.slice(0) : [],C=[];
    let bracket=0,addd=0;
-   for(i=1;i<args.length;i++){
+   for(let i=1;i<args.length;i++){
      if(i==1 && args[i]=='{'){bracket=1;}
      else if(bracket==1){
        if(args[i]=='}')bracket=2;
@@ -502,7 +503,7 @@ function runcmd(args){
    if(bracket==1){P('missing closing }');return;}
    if(bracket==0||addd){// get all +d files in this project
       let fObj;
-      for(i=0;fObj=FS.fbyidx(i);i++){
+      for(let i=0;(fObj=FS.fbyidx(i));i++){
         if(fObj.pr==pObj && fObj.ad){F.push(fObj);}
       }
    }
@@ -513,7 +514,7 @@ function compcmd(args){
    // <compiles flags> -X <linker flags> <.ale files>
    const pObj=FS.cwp(); if(pObj.run){P('project is busy, job #'+pObj.run);return;}
    const copt=[],lopt=[],files=[];let h=0;
-   for(i=0;i<args.length;i++){
+   for(let i=0;i<args.length;i++){
       if(h==0){if(args[i]=='-X'){h=1;continue;}
                else if(args[i].startsWith('-')){copt.push(args[i]);}
                else{h=2;}}
@@ -623,7 +624,7 @@ const COMMANDS={
 
 function EXEC(str){
    let b=[];
-   str.split(/(?:\s+|\s*([{}])\s*)/).forEach((x)=>{if(x)b.push(x)});
+   str.split(/(?:\s+|\s*([{}])\s*)/).forEach((x)=>{if(x)b.push(x);});
    if(b.length>0){
      let f=COMMANDS[b.shift()];if(f?.alias){f=COMMANDS[f.alias];}
      if(f){

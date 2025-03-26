@@ -94,23 +94,23 @@ The method based partially on ideas from: https://github.com/speed-highlight
 
 */
 
-"use strict";
 
 var AE=function(document){
+  "use strict";
  // helper functions
- const cE=(t)=>{return document.createElement(t);}
- const nD=(cl)=>{const n=cE("div");n.className=cl;return n;}
+ const cE=(t)=>{return document.createElement(t);};
+ const nD=(cl)=>{const n=cE("div");n.className=cl;return n;};
  const tA=(n)=>{// cloned textarea, these should be added by hand
-   n.addEventListener("input",function(){updateTo(this,this.value)});
+   n.addEventListener("input",function(){updateTo(this,this.value);});
    n.addEventListener("keydown",keyhit);
- }
+ };
  const ROOT=(force)=>{// find the root, if not found, create
     let n=document.getElementById('AEDITORS');
     if(n || !force) return n;
     n=cE('div');n.id='AEDITORS';
     document.body.prepend(n);
     return n;
- }
+ };
  function removeEditor(gw){ // we are closing the editor gw
    const fo=gw.fileObj;gw.fileObj=null;
    if(!gw.ro){
@@ -165,7 +165,7 @@ var AE=function(document){
  // save, reload, quit; if the dialog say "yes" call function f
  function askyn(gw,f){//
    const dg=gw.parentElement.querySelector("dialog");
-   dg.callfunc=(g)=>{f(g);} // this function will be called
+   dg.callfunc=(g)=>{f(g);};// this function will be called
    dg.showModal(); // show the dialog
  }
  function refreshWindow(gw){// refresh the file view
@@ -241,7 +241,7 @@ var AE=function(document){
        const ro=fileObj.writing ? 1 : readonly;// read only attrib
        if(!ro){fileObj.writing=gw;gw.fileObj=fileObj;}
        gw.aechanged=0;gw.ro=ro;gw.jobno=jobno;
-       gw.addEventListener("click",(e)=>{if(e.target==gw)focusOnLastLine(gw);raiseToTop(e.currentTarget.parentElement)});
+       gw.addEventListener("click",(e)=>{if(e.target==gw)focusOnLastLine(gw);raiseToTop(e.currentTarget.parentElement);});
        // aet is the editor's top line;
        // [save]  ...title...  [reload] [close]
        // the ...title.. part moves the window around
@@ -255,8 +255,7 @@ var AE=function(document){
        } else {// [save] ...title... [reset][close]
           aet.innerHTML=
           '<span class="aesave"><button type="button">save</button></span>'+grabtxt+
-          '<span class="aequit"><button type="button" class="aereset">reset</button> '
-          +closebt;
+          '<span class="aequit"><button type="button" class="aereset">reset</button> '+closebt;
           aet.querySelector(".aereset").addEventListener("click",(e)=>{reloadFile(gw);});
           aet.querySelector(".aesave button").addEventListener("click",(e)=>{saveFile(gw);});
        }
@@ -283,7 +282,7 @@ var AE=function(document){
             e.preventDefault();e.stopPropagation();
             top.style.top=e.clientY-offy+'px';
             top.style.left=e.clientX-offx+'px';
-          }
+          };
          });
        // a single editor line which is to be cloned
        const dl=gw.appendChild(nD("double-line"));
@@ -346,7 +345,7 @@ var AE=function(document){
  const renumber=function(node){
    let cnt=1;
    node.querySelectorAll(".linenumber").forEach((n)=>{n.innerHTML=cnt;cnt++;});
- }
+ };
  // replace tabs by spaces, use the fixed _.tw value; txt is a single line
  const retab=function(txt){
    if(txt.indexOf('\t')===-1)return txt;
@@ -355,11 +354,11 @@ var AE=function(document){
      if(c!='\t'){pos++;res+=c;}
      else do{pos++;res+=' ';}while(pos%_.tw!=0);}
    return res;
- }
+ };
  // key handling: up, down arrows, Backspace and Delete
  // up, down goes to the previous/next line at the same position
  // Backspace and Delete at the beginning / end join the line
- const killkey=function(e){e.preventDefault();e.stopPropagation();}
+ const killkey=function(e){e.preventDefault();e.stopPropagation();};
  const keyhit=function(e){
    const key=e.key,node=e.target;if(node.type!='textarea')return;
    if(key=='ArrowDown' || key=='Down'){
@@ -399,7 +398,7 @@ var AE=function(document){
       node.setSelectionRange(pos,pos);
       renumber(dl.parentElement);
    }
- }
+ };
  // syntax highlighter: aleph, ice, javascript
  // ideas from: https://github.com/speed-highlight
  const asyntax = [
@@ -463,10 +462,10 @@ var AE=function(document){
  ];
  function sanitize(str){
   return str.replaceAll('&', '&#38;')?.replaceAll('<', '&lt;')?.replaceAll('>', '&gt;');
- };
+ }
  function toSpan(str, token){
   str=sanitize(str);
-  return token ? `<span class="snx-${token}">${str}</span>` : str;};
+  return token ? `<span class="snx-${token}">${str}</span>` : str;}
  function tokenize(sytx,src) {
     if(sytx>=3)return sanitize(src);// no hightlighting
     let m,part,first = {},match,cache = [],i = 0,
@@ -497,7 +496,7 @@ var AE=function(document){
 		index: cache[m].match.index,
 		match: cache[m].match[0],
 		end: cache[m].lastIndex
-  	  }
+  	  };
 	}
       if (first.index === null) break; // no more to highligh
       result +=toSpan(src.slice(i, first.index),null);

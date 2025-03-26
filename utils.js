@@ -68,9 +68,9 @@ var JOB=function(){
     get: (idx)=>J[idx], // undefined if does not exists
     set: (idx,v)=>{if(v!==null && J[idx])J[idx]=v;},
     next:()=>{if(n>800)return -1;
-              do{inc()}while(J[last]);
+              do{inc();}while(J[last]);
               J[last]={};return last;}
-  }
+  };
 }();
 
 /* ****************************************************************** */
@@ -84,7 +84,7 @@ var JOB=function(){
 
 var LS=function(){
   const WLS=window.localStorage;
-  function tr(v){return v>191?v&191:v;}
+  function tr(v){return v>191?(v&191):v;}
   function txt2str(a,len){
     let res=""; for(let i=0;i<len;){
       let part="";if(i+256<len){
@@ -102,22 +102,22 @@ var LS=function(){
       res+=part;
     }
     return res;
-  };
+  }
   function str2txt(s,len,u){
     let i=0,j=0,x=0;
     const v=(s)=>{if(x>0){x--;}
                  else if(s>127){s|=64;x=1+(s>=0xe0)+(s>=0xf0);}
-                 u[i++]=s;}
+                 u[i++]=s;};
     for(;i<len-1;j++){
       let a=s.charCodeAt(j)-32;v((a/200)|0);v(a%200);
     }
     if(i<len)v(((s.charCodeAt(j)-32)/200)|0);
-  };
+  }
   function delFile(f){
      const fname='/'+f.pr.name+'/'+f.name;
      WLS.removeItem('attrib'+fname);
      WLS.removeItem('data'+fname);
-  };
+  }
   function storeFile(f,msg=1){ // return 1 for error (no space left)
      if(!f.as) return 0;
      const fname='/'+f.pr.name+'/'+f.name;
@@ -129,12 +129,12 @@ var LS=function(){
         WLS.setItem('data'+fname,data);
      }catch(error){
         f.as=0; // remove the store attribute
-        base.removeFile(f);
+        delFile(f);
         if(msg){aCle.print(2,'No storage space for '+fname);}
         return 1;
      }
      return 0;
-  };
+  }
   function storeAttrib(f){ // store attrib only
     if(!f.as) return;
     const fname='/'+f.pr.name+'/'+f.name;
@@ -158,7 +158,7 @@ var LS=function(){
           readst(c[1]+'/'+c[2],y,f);
        }
      }
-  };
+  }
   function retr(f){
     if(!f.as) return;
     const fname=f.pr.name+'/'+f.name;
@@ -245,7 +245,7 @@ var FS=function (){
     AlephProjects.forEach((pr)=>{
       if(pr.name==n && !pr.sys){currentwp=pr;nf=0;}});
     return nf?null:currentwp;
- };
+ }
  function projectMatch(pattern,sort=1){ // return an array of project indices
     if(!pattern)pattern='*';
     const re=RegExp('^'+pattern // no slash,{},space in project names
@@ -260,7 +260,7 @@ var FS=function (){
       });
     res.sort(function(a,b){return a.m<b.m?-1:a.m>b.m?1:0;});
     return res;
- };
+ }
  function fileMatch(pattern){ // pattern can start with /
     let addprj=0;
     if(pattern.at(0)=='/'){// start with a slash
@@ -290,7 +290,7 @@ var FS=function (){
     // sort them
     res.sort(function(a,b){return a.m<b.m? -1 : a.m>b.m?+1:0;});
     return res;
- };
+ }
  function projectFind(n,force=1){// find the project with name n;
     let nn=null;
     AlephProjects.forEach((pr)=>{if(pr.name==n||(!pr.name && !nn))nn=pr;});
@@ -299,7 +299,7 @@ var FS=function (){
     const i=AlephProjects.length;
     AlephProjects.push({name:n,idx:i});
     return AlephProjects[i];
- };
+ }
  function fileFind(proj,n,force=1){ // find file with the given name or create
     if(!proj)return null;
     let file=null;
@@ -316,7 +316,7 @@ var FS=function (){
               n.endsWith('.js') ?'js' : 'txt';
     file.savef=LS.store;
     return file;
- };
+ }
  function qFind(n,force){ // find a qualified file; if force==1 then create
                           // check for filename correctness; project is
                           // not created
@@ -364,7 +364,7 @@ var FS=function (){
     if(!name || /^[\/+-]|^$|\/$|[\{\}\?\*\"]/.test(name)) return 3;
     if(res){res[0]=prj;res[1]=name;}
     return 0;
- };
+ }
  function delFile(fObj){// remove the file
     if(fObj.busy||fObj.writing) return 1;
     if(fObj.as){LS.remove(fObj);}
@@ -541,7 +541,7 @@ function fromWorker(e){ // message from a worker
               J.stat='k';
               J.worker.postMessage({cmd:'kill'}); return; }
            J.worker.postMessage({cmd:'stdin',file:fch,data:str,eof:tp});
-      },{bg:'#fed',s:2})
+      },{bg:'#fed',s:2});
   } else if(cmd=='write'){// async writing
       // ed.file: 'stdout' or 'stderr'; ed.data: string to be printed
       aCle.print(ed.file=='stderr'?2:1,ed.data);
@@ -565,7 +565,7 @@ function fromWorker(e){ // message from a worker
         const fObj=FS.ffind(J.pr,n);
         delete fObj.busy; // even if it was sent earlier
         LS.store(fObj);
-        fObj.buffer=ed.data
+        fObj.buffer=ed.data;
       } else if(ed.rm=='yes') { //deleted, ed.idx, filename is globbed
         const fObj=FS.fbyidx(ed.idx);
         if(fObj?.busy){fObj.busy=0;FS.rmfile(fObj);}

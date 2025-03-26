@@ -62,6 +62,7 @@ It expects the following structure:
 */
 
 var aCle = function(doc){
+   "use strict";
    // HighWater: when reaching that many lines in stdout or stderr
    //    linies are chopped to LowWater
    // ccBufLen: number of lines remembered in ccBuffer
@@ -102,14 +103,14 @@ var aCle = function(doc){
    const ccBuffer=new Array(ccBufLen).fill(""); // circular buffer
    let ccBufPtr=0,ccBufCirc=-1,ccLastLine="";   // save the last partial line
    function ccDown(){ // down, next content
-      if(ccBufCirc==ccBufPtr){ccBufBirc=-1; return ccLastLine;}
+      if(ccBufCirc==ccBufPtr){ccBufCirc=-1; return ccLastLine;}
       if(ccBufCirc>=0){
         ccBufCirc=(ccBufCirc+1)%ccBufLen; return ccBuffer[ccBufCirc];
       }
       return null; // cannot go down
    }
    function ccUp(line){ // up, previous content
-      if(ccBufCirc<0){ccBufCirc=ccBufPtr;ccLastLine=line}
+      if(ccBufCirc<0){ccBufCirc=ccBufPtr;ccLastLine=line;}
       else{const nc=(ccBufCirc+ccBufLen-1)%ccBufLen;
            if(nc!=ccBufPtr && ccBuffer[nc])ccBufCirc=nc;}
       return ccBuffer[ccBufCirc];
@@ -141,8 +142,8 @@ var aCle = function(doc){
    // one is restored
    function sanitize(str){
       return str.replaceAll('&','&#38;')
-               ?.replaceAll('<','&lt;')
-               ?.replaceAll('>','&gt;');}
+               .replaceAll('<','&lt;')
+               .replaceAll('>','&gt;');}
    function killEvent(e){e.cancelBubble=true;e.preventDefault();}
    const PendingInput=[];
    // PI={prompt:""   the prompt above the input line
