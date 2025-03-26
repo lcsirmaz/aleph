@@ -1,0 +1,32 @@
+$ quicksort with callback function, no module body
+'pragmat'module=qsort,title="module a8m3".
+
+'a'quick sort+>from+>to+[]a[]-left-middle-right-amiddle:
+   from >= to; $ done
+   from->left,to->right,
+   add+to+from+middle,div+middle+2+middle,
+   a[middle]->amiddle,
+   (split: (push right:
+              left>to;
+              qless+amiddle+a[left];
+              incr+left,:push right),
+           (push left:
+              from>right;
+              qless+a[right]+amiddle;
+              decr+right,:push left),
+           (left<right,(-elem:a[left]->elem,a[right]->a[left],elem->a[right]),
+              incr+left,decr+right,:split;
+            middle<right,
+              a[right]->a[middle],amiddle->a[right],decr+right;
+            left<middle,
+              a[left]->a[middle],amiddle->a[left],incr+left;
+            +)
+   ),quicksort+from+right+a,quicksort+left+to+a.
+
+$ this is the default, just in case no comparison rule is defined
+'pragmat'if=compile.
+'q'qless+>x+>y:x<y.
+'root'+.
+'pragmat'endif=compile.
+
+'end'

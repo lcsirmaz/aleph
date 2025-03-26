@@ -1,0 +1,14 @@
+$ quicksort in ascending order
+'pragmat'module=sortascending,title="module a8m1".
+'a'sort+[]T[]. $ exported sorting algorithm
+
+'pragmat'if=compile.
+'pragmat'require="a8m3". $ the sorting algorithm is defined here
+
+'a'sort+[]T[]: quick sort+<<T+>>T+T.
+
+'q'qsort::qless+>x+>y: x<y.
+
+'root'+.
+'pragmat'endif=compile.
+'end'

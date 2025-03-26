@@ -361,8 +361,13 @@ function loadFile(n,url){
 function sample(args){
   if(cmdhelp('load',args.length==1 && args[0].length==1))return;
   const n=args[0].at(0);
-  if(n<'1'||'9'<n){cmdHelp('loada',false);return;}
+  if(n<'1'||'9'<n){cmdHelp('load',false);return;}
   loadFile('a'+n+'.ale','lib/'+n+'.ale');
+  if(n=='8'){ // we have m1,m2,m3 as well
+     loadFile('a8m1.ale','lib/a8m1.ale');
+     loadFile('a8m2.ale','lib/a8m2.ale');
+     loadFile('a8m3.ale','lib/a8m3.ale');
+  }
 }
 
 // for upload add the element
@@ -534,8 +539,8 @@ const COMMANDS={
   load:      {f:sample,s:'<n> with n=1..9',h:['load a sample ALEPH program.','\n'+
               'These ALEPH programs represent different features, starting at "hello\n'+
               'world" for n=1, and advancing. The main programs are a1.ale, a2.ale,\n'+
-              'etc, while modules, if any, are a5m1.ale, a5m2.ale, ... Use\n'+
-              '\'compile a5*.ale\' to compile the main program and all modules.']},
+              'etc, while modules, if any, are a8m1.ale, a8m2.ale, ... Use\n'+
+              '\'compile a8*.ale\' to compile the main program and all modules.']},
   chpr:      {f:chpr,s:'<project>',h:['change to the specified project.','']},
   mkpr:      {f:mkpr,s:'<project>',h:['create a new empty project and change to it.','']},
   lspr:      {f:pwpr,s:'',h:['print the current project name.','']},

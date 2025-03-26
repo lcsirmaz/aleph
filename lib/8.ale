@@ -1,0 +1,17 @@
+'pragmat'title="quicksort with different comparison routines".
+$ for more explanation how this program works, see
+$ the discussion in "Aleph Compiler 2.2", Section 5.4
+'pragmat'require=("a8m1","a8m2").
+$ the first provides "sort", the second "sort reverse"
+
+$ this is the stack to be sorted
+'stack'[]T[]=(3,5,7,12,4,9,3,11,5,30,0).
+
+'a'print T-idx:
+   <<T->idx,putc+/(/,putc+/ /,
+   (nxt: idx>>>T,putc+/)/,putc+newline;
+         printf+"%d "+T[idx],incr+idx,:nxt).
+
+'root' print T,sort+T,print T,sort reverse+T,print T.
+
+'end'
