@@ -2,8 +2,9 @@ $ Towers of Hanoi
 'pragmat'title="Towers of Hanoi".
 $ read the number of discs; between 1 and 6
 $ move the discs from tower A to tower C
-$ Make profiling: count the number of calls for some rules
-$ use macros
+$ make profiling: count the number of calls for some rules
+$ use macros and rule stack printing
+'pragmat'warning="Compile with flags -X -g".
 'stack'[1]A[],[1]B[],[1]C[].
 'var'total=4. $ number of discs
 'pragmat'macro=(print disc,full disc).
