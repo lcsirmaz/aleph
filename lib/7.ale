@@ -1,0 +1,25 @@
+'pragmat'title="recursive sequences".
+$ compute recursive sequences using repeated affixes
+
+$ add x to z and return the sum in x
+'f'addrestore+>x>+>z>: add+x+z+z,z->x.
+
+$ this is the main routine. If n is not zero, decrease it,
+$ call itself recursively, then add the previous value to
+$ each affix.
+'a'rec+>n+@+>sq>-v:
+   n=0;
+   decr+n,rec+n+@,1->v,
+       (nxt:addrestore+v+sq,(shift affix block+@,:nxt;+)).
+$ print all affixes as integers
+'a'print sequence+@+>sq:
+   printf+" %d"+sq,(shift affix block+@,:print sequence;
+                    putc+newline).
+$ in the next rule, if k>0 then add more zero to the affixes;
+$ otherwise compute rec, and print the result
+'a'compute+>n+>k+@+>sq>-v:
+   k<1,rec+n+@,print sequence+@;
+   decr+k,0->v,compute+n+k+v+@.
+
+'root'-v: 0->v,compute+5+10+v.
+'end'
