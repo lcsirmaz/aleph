@@ -364,12 +364,12 @@ function sample(args){
   if(n<'1'||'9'<n){cmdHelp('load',false);return;}
   loadFile('a'+n+'.ale','lib/'+n+'.ale');
   if(n=='8'){ // we have m1,m2,m3 as well
-     loadFile('a8m1.ale','lib/a8m1.ale');
-     loadFile('a8m2.ale','lib/a8m2.ale');
-     loadFile('a8m3.ale','lib/a8m3.ale');
+     loadFile('a8m1.ale','lib/8m1.ale');
+     loadFile('a8m2.ale','lib/8m2.ale');
+     loadFile('a8m3.ale','lib/8m3.ale');
   }else if(n=='9'){
-     loadFile('a9m1.ale','lib/a9m1.ale');
-     loadFile('a9m2.ale','lib/a9m2.ale');
+     loadFile('a9m1.ale','lib/9m1.ale');
+     loadFile('a9m2.ale','lib/9m2.ale');
   }
 }
 
