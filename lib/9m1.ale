@@ -1,0 +1,23 @@
+$ define some library routines
+$ add a low level printing routine
+'pragmat'module=m1,title="module a9m1".
+
+'a'print arr+t[],print int+>n.
+
+'pragmat'if=compile.
+$ this is the module body
+'a'print arr+t[]: put line+STDOUT+t+newline.
+'a'print int+>n:  put int+STDOUT+n.
+
+'pragmat'library mode=on.
+$ this gets inserted at the from of the compied text
+$ and sends its argument to stderr (top of console)
+'pragmat'front matter="function XXX(y){"
+  "a_SendLineBuffer(""stderr"",""Private Print Rule: ""+y)}%n".
+'x''a'print1+>x="XXX".
+'pragmat'library mode=off.
+$ this is the initialization for this module
+'root'printf+"Module a9m1 initialization:%n",print1+12.
+'pragmat'endif=compile.
+
+'end'

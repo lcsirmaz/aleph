@@ -1,0 +1,29 @@
+$ creating new external library rule; testing bounds
+'pragmat'title="advancet ALEPH material".
+'pragmat'warning="Try compiling with stack trace".
+'pragmat'require=("a9m1","a9m2").
+
+'table'(a,b,c)T[]=(/a/,/b/,/c/,/x/,/y/,/z/).
+'table'(a,b,c)(#,#,test)test[]=((1,2,3),(11,12,13),(21,22,23),(31,32,33)).
+
+'pragmat'bounds=on.
+$ go ahead until zero or 1 is entered
+'a'read 01+how>-i:
+   print string+"zero for up, one for down: ",
+   (nxt:get char+STDIN+i,(=i=
+      [newline],:nxt;
+      [/0/],0->how;
+      [/1/],1->how;
+      print char+newline,:read01);
+    print string+"no input",print char+newline,exit+0).
+$ this is an exit rule, no return
+'e'test bounds-how-idx:
+   read01+how,(how=0,<<test->idx,
+      (nxt:print int+idx,print int+test[idx],print char+newline,incr+idx,:nxt);
+   >>test->idx,
+      (nxt:print int+idx,print int+test[idx],print char+newline,decr+idx,:nxt)).
+
+'root' dummy action,print arr+T,test bounds.
+
+'end'
+

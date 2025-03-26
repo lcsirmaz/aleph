@@ -367,6 +367,9 @@ function sample(args){
      loadFile('a8m1.ale','lib/a8m1.ale');
      loadFile('a8m2.ale','lib/a8m2.ale');
      loadFile('a8m3.ale','lib/a8m3.ale');
+  }else if(n=='9'){
+     loadFile('a9m1.ale','lib/a9m1.ale');
+     loadFile('a9m2.ale','lib/a9m2.ale');
   }
 }
 
