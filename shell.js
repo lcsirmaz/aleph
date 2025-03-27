@@ -87,11 +87,11 @@ function helpcmd(args){// help
       P(
 'ALEPH PlayGround is an online tool for creating, editing, compiling, and\n'+
 'running ALEPH programs. For a quick start enter\n'+
-'  help -start\n'
+'  help -start\n'+
 'at the bottom line of this workspace.\n'+
 'To get help on a command use \'help <command>\' or \'<command> -h\', and\n'+
-'\'help -<topic>\' (with a dash) to get help on a topic. Accepted commands:\n'
-+cmdlist+'\n'+
+'\'help -<topic>\' (with a dash) to get help on a topic. Accepted commands:\n'+
+cmdlist+'\n'+
 'Topics (start with a dash):\n'+tlist);
       return;} 
    if(cmdhelp('help',(args.length==1||(args.length==2 && args[0]=='-')))){
