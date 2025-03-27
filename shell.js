@@ -53,8 +53,8 @@ console:
 
 */
 
-var SHELL = function(docm){
 "use strict";
+var SHELL = function(docm){
 // print to the console, channel one
 function P(str,nl=1){aCle.print(1,str,nl);}
 // general help
@@ -73,23 +73,28 @@ function cmdhelp(tp,shh){ // check argument numbers
 }
 // commands; help describe projects and files
 function helpcmd(args){// help
+   if(args.length==0){
+      let cmdlist='  ',cnt=0;
+      Object.keys(COMMANDS).forEach((cmd)=>{
+        if(cnt==6){cmdlist+='\n  ';cnt=0;}
+        cmdlist+=' '+cmd.padEnd(10);cnt++;
+      });
+      let tlist='  ';cnt=0;
+      Object.keys(TOPICS).forEach((tp)=>{
+        if(cnt==6){tlist+='\n  ';cnt=0;}
+        tlist+=' -'+tp.padEnd(9);cnt++;
+      });
+      P(
+'The ALEPH PlayGround is an online tool for creating, editing, compiling,\n'+
+'and running ALEPH programs. It is command-line based; for a quick start\n'+
+'enter the command \'help -start\' at the bottom line of this workspace.\n'+
+'Use \'help <command>\' or \'<command> -h\' to describe a command; and use\n'+
+'\'help -<topic>\' (with a dash) to get help on a topic. Accepted commands:\n'
++cmdlist+'\n'+
+'Topics (start with a dash):\n'+tlist);
+      return;} 
    if(cmdhelp('help',(args.length==1||(args.length==2 && args[0]=='-')))){
-     if(args.length==0){
-        let cmdlist='  ',cnt=0;
-        Object.keys(COMMANDS).forEach((cmd)=>{
-          if(cnt==6){cmdlist+='\n  ';cnt=0;}
-          cmdlist+=' '+cmd.padEnd(10);cnt++;
-        });
-        let tlist='  ';cnt=0;
-        Object.keys(TOPICS).forEach((tp)=>{
-          if(cnt==6){tlist+='\n  ';cnt=0;}
-          tlist+=' -'+tp.padEnd(9);cnt++;
-        });
-        P("In general, use '<command> -h' for a short help. Accepted commands:\n"+
-          cmdlist+"\nTopics (starting with a dash - ):\n"+tlist);
-     } 
-     return;
-   }
+     return; }
    let f=COMMANDS[args[0]];if(f?.alias){f=COMMANDS[f.alias];}
    if(f){showHelp(f); return;}
    if(args[0].at(0)=='-')f=TOPICS[args[0].slice(1)||args[1]];
@@ -97,70 +102,82 @@ function helpcmd(args){// help
    P(f);
 }
 const TOPICS = {
-  cmdline:
-'ALEPH PlayGround is command-line based tool in which ALEPH programs can be\n'+
-'created, edited, compiled and run. Commands to be executed are entered at the\n'+
-'bottom line of the workspace. Above the command line is the console window,\n'+
-'also for messages sent to \'stdout\'. The top windows is reserved for system\n'+
-'messages an for \'stderr\'. Enter \'help\' for the complete list of accepted\n'+
-'commands. To get a help on a specific command, use either \'help <cmd>\', or\n'+
-'\'<cmd> -h\'. To navigate among previously entered commands use the up and down\n'+
-'arrows. Ctrl+C clears the command line, while Enter or ctrl+D executes the\n'+
-'entered command. Some commands one can start to work with:\n'+
-'  load 1            load the sample ALEPH program \'a1.ale\'\n'+
+  start:
+'Commands for the unpatient to start with:\n'+
+'  load a1           load the sample ALEPH program \'a1.ale\' (Hello World)\n'+
 '  edit a1.ale       open \'a1.ale\' in an editing window\n'+
-'  compile a1.ale    compile the ALEPH program\n'+
-'  run a1            and run if it was compiled without errors\n'+
-'The same command line is used as console input by compiled ALEPH programs.\n'+
-'This usage is indicated by different background color; the project name\n'+
-'above is changed to that of the running project. Hitting ctrl+C kills the\n'+
-'requesting program. Closing the line with ctrl+D instead of Enter closes the\n'+
-'channel for further use by this program.\n',
+'  compile a1.ale    compile it\n'+
+'  run a1            and run (assuming it compiled without errors)\n\n'+
+'Some basic commands:\n'+
+' mkpr, chpr  ALEPH PlayGround is organized into projects. \'mkpr\' creates\n'+
+'     a new project, while \'chpr\' changes to the named project.\n'+
+' load a1 .. a9   load one of the nine sample ALEPH programs (plus modules)\n'+
+' edit, view  open a character file for editing or viewing (in a new window)\n'+
+' dir, ls     list files\n'+
+' cp, rm      copy. remove (delete) files\n'+
+' compile     compile and link an ALEPH program and all modules\n'+
+' run         run a compiled ALEPH program',
+
+  cmdline:
+'Commands are typed at the bottom line of the workspace. Above this line is the\n'+
+'the actual project name, then the console window where entered commands and\n'+
+'messages sent to the \'stdout\' channel appear. The window at the top is reserved\n'+
+'for (typically error) messages and for the \'stderr\' channel. The \'up\' and\n'+
+'\'doen\' arrows navigate among previously entered commands. Ctrl+C clears this\n'+
+'line, while Enter and Ctrl+D executes it. To list all accepted commands type\n'+
+'\;help\' without arguments.'+
+'The command line is also  used as the console input by the running ALEPH programs.\n'+
+'This usage is indicated by a different background color; the project name is\n'+
+'changed to that of the running program. Hitting ctrl+C kills the running program;\n'+
+'finishing the line with ctrl+D instead of Enter closes the channel for further\n'+
+'use for this program.\n',
 
   project: 
-'The ALEPH PlayGround is organized into projects. Each project contains the\n'+
-'files it works with, and can run one program at a time using files from it.\n'+
+'The ALEPH PlayGround is organized around projects. Each project contains all\n'+
+'files it works with, and can run one program at a time, which can use files\n'+
+'from the project exclusively.\n'+
 'Projects are created by \'mkpr\', deleted by \'rmpr\', and changed to by \'chpr\'.'+
-'The current project name is shown just above the command line. The default\n'+
-'project is \'aleph\' and cannot be deleted. A project name cannot contain\n'+
+'The current project name is shown above the command line. The default project\n'+
+'is \'aleph\', this project cannot be deleted. A project name cannot contain\n'+
 'space nor ?*{}/\'", and cannot start with - or +.',
 
   file:
 'Each PlayGround file belongs to a unique project. Files in the current project\n'+
 'can be referred to as \'<filename>\', otherwise use \'/<project>/<filename>\'.\n'+
 'A filename cannot contain neither space nor ?*{}\'\", cannot start with\n'+
-'+-/ and cannot end with /. To list files use the command \'ls\'.\n'+
+'+-/ and cannot end with /. To list files use the command \'ls\' or \'dir\'.\n'+
 'The type of a file is determined by its extension. The following extensions\n'+
-'are recognized and indicate a character file:\n'+
+'are recognized; they also indicate that it is a character file:\n'+
 '  .ale -- ALEPH program source\n'+
 '  .ice -- intermediate ALICE code\n'+
-'  .js  -- compiled ALEPH program\n'+
-'Files can be uploaded to, downloaded from the PlayGround, manipulated by\n'+
-'running programs, but only CHARACTER files can be edited, compiled, run,\n'+
+'  .js  -- compiled javascript ALEPH program\n'+
+'Files can be uploaded to, downloaded from the PlayGround, manipulated by the\n'+
+'running ALEPH programs, but only CHARACTER files can be edited, compiled, run,\n'+
 'and saved in the Local Storage. The lifetime of PlayGround files is the\n'+
 'current session. However, files saved in Local Storage are restored when\n'+
 'starting a new session.\n'+
-'File attributes can be manipulated by the command \'attrib\'; character\n'+
-'files can be edited or created by \'edit\', listed by \'view\'; ALEPH sources\n'+
-'compiled by \'compile\', and after compilation can be run by \'run\'.',
+'Files have attributes which can be manipulated by \'attrib\'. Character files\n'+
+'can be edited or created by \'edit\', listed by \'view\'; .ale files can be\n'+
+'compiled by \'compile\', and, after compilation, .js files can be run by \'run\'.',
 
   attribute:
 'File attributes are s,r,d for save, readonly and data. They are off when\n'+
 'the file is created, and can be manipulated by the \'attrib\' command.\n'+
 'To see file attributes use \'ls -l <pattern>\'.\n'+
-' -s  save the file at the Local Storage. Saved files are automatically\n'+
-'     recovered when the PlayGround is opened or reloaded. Use for character\n'+
-'     files only. The Local Storage is part of the browser\'s local cache.\n'+
-' -r  the file is passed to a running ALEPH program as \'read only\', thus\n'+
+' +s  save the file at the Local Storage. Saved files are automatically\n'+
+'     recovered when the PlayGround is opened or reloaded. Can be used for\n'+
+'     characater files only. The Local Storage is part of the browser\'s\n'+
+'     local cache, and is not saved in incognito mode.\n'+
+' +r  the file is passed to a running ALEPH program as \'read only\', thus\n'+
 '     the program cannot modify or delete this file. These files, however,\n'+
 '     can be edited and deleted using command line tools.\n'+
-' -d  the file is automatically made avaiable to any running ALEPH program\n'+
+' +d  the file is automatically made avaiable to the running ALEPH program\n'+
 '     in this project. The program, however, can modify or delete this file.',
 
   pattern:
 'Many commands require a pattern as an argument. In a pattern ? matches\n'+
-'any character different from slash (/), and * matches a sequence of such\n'+
-'charcters, including the empty sequence.\n'+
+'any character different from the slash (/), and * matches a sequence of\n'+
+'such charcters, including the empty sequence.\n'+
 'Patterns starting with / search all projects; others search files in the\n'+
 'current project only. Thus \'ls /*\' lists the name of all projects (no\n'+
 'files), while \'ls *\' lists all file names in the current project which have\n'+
@@ -170,8 +187,19 @@ const TOPICS = {
 'The command \'edit <file>\' opens the file in a new editor window, creating\n'+
 'the file if not found. Use it for character files only, binary files are\n'+
 'not handled. The same file can be opened for editing only once, but it can\n'+
-'have many view instances. File changes in the background are not tracked. Due to\n'+
-'the used technology, selecting and highlighting is limited to a single line.',
+'have many view instances. File changes in the background are not tracked.\n'+
+'Due to the used technology, selecting and highlighting text in the editing\n'+
+'window is limited to a single line.',
+
+  compile:
+'To compile the main ALEPH program together with all modules use the command\n'+
+'  compile [<flags>] <source files>\n'+
+'Source files can be specified usign patterns. Compilation is done in many\n'+
+'stages. First, all .ale files are compiled into ALICE codes. Second, these\n'+
+'intermediate codes are optimized. Finally, the .ice files are linked to the\n'+
+'final javascript file. The process stops at the first error. Flags after the\n'+
+'\'compile\' command start with a dash (-). Those before \'-X\' are passed to\n'+
+'the compiler; and those after \'-X\' are passed to the linker',
 
   run:
 'Compiled ALEPH programs are executed by dedicated Web Workers. A project can\n'+
@@ -180,21 +208,23 @@ const TOPICS = {
 'by the command \'jobs\'. Project files visible to the running program are\n'+
 'moved to the Worker, and are retrieved when the Worker terminates by itself.\n'+
 'If the Worker job is killed by a \'kill\' command, then those files might be\n'+
-'lost and should be recreated. Files in the Local Storage are automatically\n'+
-'recovered, but others are permanently deleted.\n',
+'lost and should be recreated. In such case files in the Local Storage are\n'+
+'automatically recovered.',
 
   jobs:
 'Editor and viewer windows as well as running programs have dedicated job\n'+
-'entries. Jobs can be listed by \'jobs\'. Jobs can be killed by the \'kill\''+
-'command; killing an editor or viewer closes the window immediately discarding\n'+
+'entries. Jobs can be listed by \'jobs\'. Jobs can be killed by \'kill\';\n'+
+'killing an editor or viewer closes the window immediately discarding\n'+
 'any unsaved changes. When killing a running program a "stop" message is sent\n'+
 'first to the controlling Worker. This takes effect only when the program\n'+
-'either waits for console input or sleeps. A second \'kill\' command terminates\n'+
-'the Worker itself when all files held by the Worker are lost.',
+'either waits for console input or sleeps. A second \'kill\' terminates\n'+
+'the Worker itself, but in this case files held by the Worker are lost.\n'+
+'Among them those in the Local Storage are automatically recovered, but\n'+
+'others are permanently deleted.',
 
   about:
 'ALEPH PlayGround is a command line based runtime environment for editing,\n'+
-'compiling and running aleph program code. The PlayGround runs locally in the\n'+
+'compiling and running ALEPH program code. The PlayGround runs locally in the\n'+
 'browser without sending data over the internet. The PlayGround and the ALEPH\n'+
 'compiler are free software; the source is available at\n'+
 '    https://github.com/lcsirmaz/aleph/\n'+
@@ -360,9 +390,9 @@ function loadFile(n,url){
 }
 
 function sample(args){
-  if(cmdhelp('load',args.length==1 && args[0].length==1))return;
-  const n=args[0].at(0);
-  if(n<'1'||'9'<n){cmdhelp('load',false);return;}
+  if(cmdhelp('load',args.length==1 && args[0].length==2))return;
+  const n=args[0].at(1);
+  if(args[0].at(0)!='a' || n<'1'||'9'<n){cmdHelp('load',false);return;}
   loadFile('a'+n+'.ale','lib/'+n+'.ale');
   if(n=='8'){ // we have m1,m2,m3 as well
      loadFile('a8m1.ale','lib/8m1.ale');
@@ -503,7 +533,7 @@ function runcmd(args){
    if(bracket==1){P('missing closing }');return;}
    if(bracket==0||addd){// get all +d files in this project
       let fObj;
-      for(let i=0;(fObj=FS.fbyidx(i));i++){
+      for(let i=0;fObj=FS.fbyidx(i);i++){
         if(fObj.pr==pObj && fObj.ad){F.push(fObj);}
       }
    }
@@ -521,7 +551,11 @@ function compcmd(args){
       if(h==1){if(args[i].startsWith('-')){lopt.push(args[i]);}
                else{h=2;}}
       if(h==2){
-        const res=FS.fmatch(args[i]);let br=0;
+        let br=0; let res=FS.fmatch(args[i]);
+        // if no extension, add .ale
+        if(res.length==0 && ! /^.+\.[a-zA-Z0-9]+$/.test(args[i]) ){
+           res=FS.fmatch(args[i]+'.ale');
+        }
         if(res.length==0){P('file '+args[i]+' not found'); return;}
         res.forEach((x)=>{
            if(br)return;
@@ -540,11 +574,13 @@ const COMMANDS={
   help:      {f:helpcmd,s:'[<command>|-<topic>]',h:[
               'give help on a specific command or topic.','']},
   '?':       {alias:'help'},
-  load:      {f:sample,s:'<n> with n=1..9',h:['load a sample ALEPH program.','\n'+
-              'These ALEPH programs represent different features, starting at "hello\n'+
-              'world" for n=1, and advancing. The main programs are a1.ale, a2.ale,\n'+
-              'etc, while modules, if any, are a8m1.ale, a8m2.ale, ... Use\n'+
-              '\'compile a8*.ale\' to compile the main program and all modules.']},
+  load:      {f:sample,s:'a1 ... load a9',h:['load a sample ALEPH program.','\n'+
+              'These ALEPH programs represent different features, starting from the\n'+
+              '"hello world" in \'a1.ale\' and advancing. The main program is aN.ale,\n'+
+              'the modules, if any, are aNm1.ale, aNm2.ale, etc. Use the command\n'+
+              '  edit aN.ale      to open this program in an editing window;\n'+
+              '  compile aN*.ale  to compile with all modules; finally\n'+
+              '  run aN           to run the result.']},
   chpr:      {f:chpr,s:'<project>',h:['change to the specified project.','']},
   mkpr:      {f:mkpr,s:'<project>',h:['create a new empty project and change to it.','']},
   lspr:      {f:pwpr,s:'',h:['print the current project name.','']},
