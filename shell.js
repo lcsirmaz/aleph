@@ -85,10 +85,11 @@ function helpcmd(args){// help
         tlist+=' -'+tp.padEnd(9);cnt++;
       });
       P(
-'The ALEPH PlayGround is an online tool for creating, editing, compiling,\n'+
-'and running ALEPH programs. It is command-line based; for a quick start\n'+
-'enter the command \'help -start\' at the bottom line of this workspace.\n'+
-'Use \'help <command>\' or \'<command> -h\' to describe a command; and use\n'+
+'ALEPH PlayGround is an online tool for creating, editing, compiling, and\n'+
+'running ALEPH programs. For a quick start enter\n'+
+'  help -start\n'
+'at the bottom line of this workspace.\n'+
+'To get help on a command use \'help <command>\' or \'<command> -h\', and\n'+
 '\'help -<topic>\' (with a dash) to get help on a topic. Accepted commands:\n'
 +cmdlist+'\n'+
 'Topics (start with a dash):\n'+tlist);
