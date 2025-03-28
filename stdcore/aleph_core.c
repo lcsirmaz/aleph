@@ -184,7 +184,7 @@ void a_setup_charfile(int ID,const char*name,int dir,int dd,int off){
   ch->openflag=0;ch->fileError=0;ch->st1=dd;ch->st2=off;
   ch->f=NULL; 
   if(dir&1){setfl_in(ch,1);}
-  if(dir&3){setfl_out(ch,1);}
+  if(dir&2){setfl_out(ch,1);}
   #undef ch
 }
 /* a_setup_dfile(ID,name,dir,dd,off,cnt)
@@ -202,7 +202,7 @@ void a_setup_dfile(int ID,const char*name,int dir, int dd, int off,int cnt){
   df->fhandle=0; df->iflag=0; df->inarea=df->outarea=0;
   setfl_data(df,1); // this is a datafile
   if(dir&1){setfl_in(df,1);}
-  if(dir&3){setfl_out(df,1);}
+  if(dir&2){setfl_out(df,1);}
   if(cnt>=a_MAXIMAL_AREA){
     fprintf(stderr,"datafile %s: too many file areas\n",df->name);
     a_fatal(a_FATAL_datafile);
