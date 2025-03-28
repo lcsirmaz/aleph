@@ -137,7 +137,7 @@ const TOPICS = {
 'The ALEPH PlayGround is organized around projects. Each project contains all\n'+
 'files it works with, and can run one program at a time, which can use files\n'+
 'from the project exclusively.\n'+
-'Projects are created by \'mkpr\', deleted by \'rmpr\', and changed to by \'chpr\'.'+
+'Projects are created by \'mkpr\', deleted by \'rmpr\', and changed to by \'chpr\'.\n'+
 'The current project name is shown above the command line. The default project\n'+
 'is \'aleph\', this project cannot be deleted. A project name cannot contain\n'+
 'space nor ?*{}/\'", and cannot start with - or +.',
