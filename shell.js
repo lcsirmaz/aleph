@@ -89,7 +89,7 @@ function helpcmd(args){// help
 'running ALEPH programs. For a quick start enter\n'+
 '  help -start\n'+
 'at the bottom line of this workspace.\n'+
-'To get help on a command use \'help <command>\' or \'<command> -h\', and\n'+
+'To get help on a command use \'help <command>\' or \'<command> -h\'. Use\n'+
 '\'help -<topic>\' (with a dash) to get help on a topic. Accepted commands:\n'+
 cmdlist+'\n'+
 'Topics (start with a dash):\n'+tlist);
@@ -108,16 +108,15 @@ const TOPICS = {
 '  load a1           load the sample ALEPH program \'a1.ale\' (Hello World)\n'+
 '  edit a1.ale       open \'a1.ale\' in an editing window\n'+
 '  compile a1.ale    compile it\n'+
-'  run a1            and run (assuming it compiled without errors)\n\n'+
+'  run a1            and run it (assuming compiled without errors)\n\n'+
 'Some basic commands:\n'+
-' mkpr, chpr  ALEPH PlayGround is organized into projects. \'mkpr\' creates\n'+
-'     a new project, while \'chpr\' changes to the named project.\n'+
-' load a1 .. a9   load one of the nine sample ALEPH programs (plus modules)\n'+
-' edit, view  open a character file for editing or viewing (in a new window)\n'+
+' mkpr, chpr  create a new project, change to the named project\n'+
+' load a1 .. a9   load one of the nine sample ALEPH programs with modules\n'+
+' edit, view  open a character file for editing or viewing in a new window\n'+
 ' stdlib      show the standard ALEPH library\n'+
 ' dir, ls     list files\n'+
-' cp, rm      copy. remove (delete) files\n'+
-' compile     compile and link an ALEPH program and all modules\n'+
+' cp, rm      copy, remove (delete) files\n'+
+' compile     compile and link an ALEPH program and modules\n'+
 ' run         run a compiled ALEPH program',
 
   cmdline:
@@ -162,7 +161,7 @@ const TOPICS = {
 'can be edited or created by \'edit\', listed by \'view\'; .ale files can be\n'+
 'compiled by \'compile\', and, after compilation, .js files can be run by \'run\'.',
 
-  attribute:
+  attrib:
 'File attributes are s,r,d for save, readonly and data. They are off when\n'+
 'the file is created, and can be manipulated by the \'attrib\' command.\n'+
 'To see file attributes use \'ls -l <pattern>\'.\n'+
