@@ -124,9 +124,9 @@ const TOPICS = {
 'the actual project name, then the console window where entered commands and\n'+
 'messages sent to the \'stdout\' channel appear. The window at the top is reserved\n'+
 'for (typically error) messages and for the \'stderr\' channel. The \'up\' and\n'+
-'\'doen\' arrows navigate among previously entered commands. Ctrl+C clears this\n'+
+'\'down\' arrows navigate among previously entered commands. Ctrl+C clears this\n'+
 'line, while Enter and Ctrl+D executes it. To list all accepted commands type\n'+
-'\;help\' without arguments.'+
+'\'help\' without arguments.\n'+
 'The command line is also  used as the console input by the running ALEPH programs.\n'+
 'This usage is indicated by a different background color; the project name is\n'+
 'changed to that of the running program. Hitting ctrl+C kills the running program;\n'+
