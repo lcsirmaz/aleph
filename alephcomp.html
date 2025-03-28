@@ -14,10 +14,10 @@
 
                                                                   
 
-<h2 class="titleHead">Aleph Compiler v2.2</h2>
+<h2 class="titleHead">Aleph Compiler v2.4</h2>
 <div class="author" ><span 
 class="cmr-12">L. Csirmaz</span></div><br />
-<div class="date" >Document version 1.0, January 2025</div>
+<div class="date" >Document version 1.1, March 2025</div>
    </div>
 <!--l. 150--><p class="indent" >
                                                                   
@@ -1901,11 +1901,12 @@ information), and the <span
 class="cmss-10">direction</span> restricts the access: the file opens automatically
 for reading only if there is a <span 
 class="ec-lmtt-10">&#x003E;</span> <span 
-class="cmti-10">before </span>the string, and for writing if there is
+class="cmti-10">after </span>the string, and for writing if there is
 a <span 
 class="ec-lmtt-10">&#x003E;</span> <span 
-class="cmti-10">after </span>the path string. No file can be opened for reading and writing
-simultaneously.
+class="cmti-10">before </span>the path string. No file can be opened for reading and writing
+simultaneously. Note that this reverses the specification in the Manual, but
+it is more natural.
 <!--l. 1186--><p class="indent" >   For a character file the following special filenames identify the standard streams:
 <span 
 class="ec-lmtt-10">"&#x003C;&#x003C;stdin&#x003E;&#x003E;"</span>, <span 
