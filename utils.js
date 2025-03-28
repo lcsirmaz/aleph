@@ -223,10 +223,11 @@ var FS=function (){
      return ['acomp.js','aopt.js','alink.js','stdlib.ale','stdjs.ice',
         'base','formatprint','getint','getline','hash',
         'putasstring','putint','putline','putstring',
-        'stdarg','stdin','stdout','waitfor'].map((n)=>{ cnt++;
+        'stdarg','stdin','stdout','waitfor','stdlib.txt'].map((n)=>{ cnt++;
           return n.endsWith('.js')?{name:'bin/'+n,idx:cnt,pr:bs,type:'js',ar:1,src:url+n}:
            n.endsWith('.ale')?{name:loc+n,idx:cnt,pr:bs,type:'ale',ar:1,src:url+n}:
            n.endsWith('.ice')?{name:loc+n,idx:cnt,pr:bs,type:'ice',ar:1,src:url+n}:
+           n.endsWith('.txt')?{name:'/aleph/stdlib.ale',idx:cnt,pr:bs,type:'ale',ar:1,src:url+n}:
            (n='ice/'+n+'.ice',{name:loc+n,idx:cnt,pr:bs,type:'ice',ar:1,src:url+n});
      });}();
  let currentwp=AlephProjects[0]; // current working project
@@ -235,8 +236,9 @@ var FS=function (){
     opt:    AlephFiles[1],     // stdice and -RE for link
     link:   AlephFiles[2],
     stdlib: [AlephFiles[3]],
-    stdice: Array.from({length:14},(_,i)=>AlephFiles[i+4]),
-    RE:     '--RE=https://lcsirmaz.github.io/aleph/lib/alephRE.js'
+    stdice: AlephFiles.slice(4,18),//Array.from({length:14},(_,i)=>AlephFiles[i+4]),
+    RE:     '--RE=https://lcsirmaz.github.io/aleph/lib/alephRE.js',
+    vw:     AlephFiles[18]     // presenting stdlib by command stdlib
  };
 
  function cwp(n){

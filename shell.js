@@ -114,6 +114,7 @@ const TOPICS = {
 '     a new project, while \'chpr\' changes to the named project.\n'+
 ' load a1 .. a9   load one of the nine sample ALEPH programs (plus modules)\n'+
 ' edit, view  open a character file for editing or viewing (in a new window)\n'+
+' stdlib      show the standard ALEPH library\n'+
 ' dir, ls     list files\n'+
 ' cp, rm      copy. remove (delete) files\n'+
 ' compile     compile and link an ALEPH program and all modules\n'+
@@ -375,12 +376,36 @@ function viewcmd(args){// view file
       gw:    AE.createEditor(fObj,jobno,1)
    });   
 }
+function startstdview(fObj){
+   if(!fObj.buffer){P('error loading stdlib.ale');return;}
+   const jobno=getjobno();if(jobno<0)return;
+   JOB.set(jobno,{
+     idx:  jobno,
+     pr:   FS.cwp(),
+     type: 'view',
+     cmd:  'stdlib',
+     gw:   AE.createEditor(fObj,jobno,1)
+   });
+}
+function viewstdlib(args){// stdlib
+   if(cmdhelp('stdlib',args.length==0))return;
+   const fObj=FS.cd.vw; // the data
+   if(fObj.buffer){startstdview(fObj);return;}
+   const xhr=new XMLHttpRequest();
+   xhr.open('get',fObj.src,true);
+   xhr.responseType='arraybuffer';
+   xhr.addEventListener('loadend',()=>{
+     if(xhr.status==200){fObj.buffer=xhr.response;}
+     startstdview(fObj);
+   },false);
+   xhr.send();
+}
 // load a sample ALEPH program
 // args[0]: 1 .. 9, load one or more files as a0<n>.ale, a0<n>m<j>.ale
 function loadFile(n,url){
    if(FS.ffind(FS.cwp(),n,0)){P('file '+n+' exists, not overwritten');return;}
-   let fObj=FS.ffind(FS.cwp(),n);
-   let xhr=new XMLHttpRequest();
+   const fObj=FS.ffind(FS.cwp(),n);
+   const xhr=new XMLHttpRequest();
    xhr.open('get',url,true); // async reading
    xhr.responseType='arraybuffer';
    xhr.addEventListener('loadend',()=>{
@@ -389,7 +414,6 @@ function loadFile(n,url){
    },false);
    xhr.send();
 }
-
 function sample(args){
   if(cmdhelp('load',args.length==1 && args[0].length==2))return;
   const n=args[0].at(1);
@@ -613,6 +637,7 @@ const COMMANDS={
               'edit or create a new character file.','']},
   view:      {f:viewcmd,s:'<file>',h:[
               'view an existing character file.','']},
+  stdlib:    {f:viewstdlib,s:'',h:['show standard ALEPH library.','']},
   upload:    {f:upcmd,s:'',h:['upload character files to the current project.','']},
   download:  {f:downcmd,s:'<file>',h:['save a character file on the local machine.','']},
   jobs:      {f:jobscmd,s:'',h:['list all running jobs.','']},
