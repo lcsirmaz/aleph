@@ -73,10 +73,10 @@ $  file operation automatically opens with the given path and
 $  direction.
 
 'a'expect path+>dl+path>+dir>:
-   0->dir,(R+Sright,incr+dir;+),
+   (R+Sright,2->dir;0->dir),
    (is string+path;Squote image->path,error+no file path+ltype+ltag),
    new stdstring+path+dl+path, 
-   (R+Sright,add+dir+2+dir;+).
+   (R+Sright,incr+dir;+).
 
 'constant'max datafile area=32. $ maximal number of lists in a datafile
 'a'file area-qf-tag-cnt:

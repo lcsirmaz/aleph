@@ -1,5 +1,5 @@
 $ version, general information
-'pragmat'module=config,title="config v2.3".
+'pragmat'module=config,title="config v2.4".
 
 $ *************************************************************
 $  This code is part of ALEPH-M (Modular ALEPH-v2.2)
@@ -20,7 +20,7 @@ $ *************************************************************
 
 $ HEADER ****************************************************** $
 'constant' version major=2,
-           version minor=3.
+           version minor=4.
 'constant' target word size=32,
            max string length=8192.
 'constant' path separator=/:/,           $ or /;/ for MS 
@@ -74,7 +74,7 @@ $ BODY ******************************************************** $
  "the first source file and generated in the current directory."
  : help message,
  "ALEPH-M to ICE complier version %d.%d%n"
- "Copyright (C) 2020-2024 Laszlo Csirmaz%n"
+ "Copyright (C) 2020-2025 Laszlo Csirmaz%n"
  "This is a free software, see the source at https://github.com/lcsirmaz/aleph%n"
  "for copyright information. There is NO WARRANTY; not even merchantibility or%n"
  "fitness for a particular purpose." 
