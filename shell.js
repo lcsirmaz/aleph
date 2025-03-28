@@ -112,7 +112,7 @@ const TOPICS = {
 'Some basic commands:\n'+
 ' mkpr, chpr  create a new project, change to the named project\n'+
 ' load a1 .. a9   load one of the nine sample ALEPH programs with modules\n'+
-' edit, view  open a character file for editing or viewing in a new window\n'+
+' edit, view  open a character file for editing or viewing\n'+
 ' stdlib      show the standard ALEPH library\n'+
 ' dir, ls     list files\n'+
 ' cp, rm      copy, remove (delete) files\n'+
@@ -416,7 +416,7 @@ function loadFile(n,url){
 function sample(args){
   if(cmdhelp('load',args.length==1 && args[0].length==2))return;
   const n=args[0].at(1);
-  if(args[0].at(0)!='a' || n<'1'||'9'<n){cmdHelp('load',false);return;}
+  if(args[0].at(0)!='a' || n<'1'||'9'<n){cmdhelp('load',false);return;}
   loadFile('a'+n+'.ale','lib/'+n+'.ale');
   if(n=='8'){ // we have m1,m2,m3 as well
      loadFile('a8m1.ale','lib/8m1.ale');
