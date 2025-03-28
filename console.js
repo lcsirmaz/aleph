@@ -39,7 +39,7 @@ aCle.read(prompt,fg,opt)
           str is cleared; ^D signals EOF
    opt{}  structure with the following fields:
       bg: "#eee" background color; default 'field'
-      s:  0: don't show, 1: ^C and non-empty lines, 2: all lines; default 0
+      s:  0: don't show, 1: non-empty lines, 2: all lines; default 0
       p:  lines are preceded by it
       x:  low profile request, remember the line in history
 
@@ -168,7 +168,7 @@ var aCle = function(doc){
          iD.style.background=PendingInput[il].bg;
       }
       // showing in stdout
-      if(PI.sh>1||(PI.sh>0&&(how==2||str!=''))){
+      if(PI.sh>1||(PI.sh>0&&str!='')){
         printto(1,PI.px,0);printto(1,str,0);
         printto(1,how>1?'^C':how?'^D':'',1);
       }
