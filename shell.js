@@ -476,7 +476,7 @@ function jobscmd(args){// jobs
    if(cmdhelp('jobs',args.length==0))return;
    let cnt=0;
    JOB.jobs().forEach((idx)=>{cnt++;
-     J=JOB.get(idx);let t=J.type;if(t=='run'){t+='+'+J.stat;}
+     let J=JOB.get(idx),t=J.type;if(t=='run'){t+='+'+J.stat;}
      if(t=='edit'&&J.gw.aechanged){t+='*';}
      if(cnt==1){P('### type project command');}
      P(`${idx} ${t} ${J.pr.name} "${J.cmd}"`);
