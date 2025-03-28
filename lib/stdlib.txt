@@ -31,36 +31,36 @@ $ tables and stacks
     scratch+[]st[],     $ empty the stack, but keep memory
     release+[]st[].     $ release the stack memory
 'p' request space+[]st[]+>n.
-      $ extend the allocated memory (but not the upper bound)
+      $ extend the allocated memory (but not the upper bound) by n
 $ strings
-'f' string length+t[]+>p+n>,string width+t[]+>p+n>,
+'f' string length+t[]+>p+n>,string width+t[]+>p+n>.
       $ length: number of characters, width: table elements
-    previous string+t[]+>p>,
+'f' previous string+t[]+>p>.
       $ move back by string width
-    compare string+t1[]+>p1+t2[]+>p2+comp>,
+'f' compare string+t1[]+>p1+t2[]+>p2+comp>,
     compare string n+t1[]+>p1+t2[]+>p2+>n+comp>.
       $ compare two string, up to n characters
 'q' string elem+t[]+>p+>n+chr>.
       $ retrieve the n-th character of the string
-'a' unstack string+[]st[],
+'a' unstack string+[]st[].
       $ remove a string from the top of the stack
-    pack string+from[]+>p+[]to[],
+'a' pack string+from[]+>p+[]to[].
       $ pack a string from the characters found in 
-      $ from[p] .. from[>>from]
-    unpack string+from[]+>p+[]to[],
+      $    from[p] .. from[>>from]
+'a' unpack string+from[]+>p+[]to[].
       $ unpack characters of the string to the top of 'to'
-    copy string+from[]+>p+[]to[].
+'a' copy string+from[]+>p+[]to[].
       $ copy a string to the top of 'to'
 'f' string hash+t[]+>p+hash>, block hash+t[]+>p+hash>.
       $ simple and fast 32 bit hash values
 $ files
-'p' open file+""f+>mode+t[]+>p,
+'p' open file+""f+>mode+t[]+>p.
       $ open a file with the given path, mode is /r/ or /w/
-    open temp file+""f+[]st[]+>p.
+'p' open temp file+""f+[]st[]+>p.
       $ file name must end with XXXXXX, create a temp file
-'a' close file+""f,
+'a' close file+""f.
       $ close the file
-    unlink file+t[]+>p.
+'a' unlink file+t[]+>p.
       $ remove the file
 'f' get file error+""f+err>.
       $ retrieve the last file error, zero for no error
@@ -73,11 +73,11 @@ $ data input and output
 'p' get data+""f+data>+type>.
       $ read the next word, fail on error
 'p' put datap+""f+>data+>type.
-'a' put data+""f+>data+>type.
       $ write a word; fail and set error number,
-      $ or abort the program in case of error
+'a' put data+""f+>data+>type.
+      $ write a word, abort in case of error
 $ character input / output
-'cons'newline.          $ newline character
+'cons'newline.          $ the newline character
 'p' get char+""f+char>,ahead char+""f+char>.
       $ read or peek next character, fail on EOF
 'p' get line+""f+[]st[]+ctrl>.
@@ -94,7 +94,7 @@ $ character input / output
       $  %c   character
       $  %d   integer
       $  %x   hexadecimal
-      $  %n   newline (no affix)
+      $  %n   newline (no affix consumed)
 $ character input from STDIN and output to STDOUT
 'charfile'STDIN,STDOUT. $ standard input and output
 'p' getc+c>.            $ read a character from STDIN
@@ -106,3 +106,4 @@ $ other
     backtrack.          $ if linked with -g, print execution stack
 'table'STDARG.          $ command line arguments as strings
 'a' wait for+t[]+>p.    $ module root synchronization
+'end'
