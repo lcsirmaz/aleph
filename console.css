@@ -17,7 +17,7 @@
     max-width:95vw;
     padding: 2px;
     resize: both;
-    overflow-x:hidden;
+    overflow:hidden;
     background-color: #f0f0f0;
   }
   #con-stdout{height:42em;}
