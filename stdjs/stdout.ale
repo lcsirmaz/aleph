@@ -27,7 +27,7 @@ $ this is a separate module so the it is not compiled in
 $  if not used
 'pragmat'if=compile.
 
-'charfile'STDOUT="<<stdout>>">.
+'charfile'STDOUT=>"<<stdout>>".
 
 'root'+.
 'pragmat'endif=compile.

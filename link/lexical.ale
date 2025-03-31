@@ -77,7 +77,7 @@ $ <type>
 $  I54 (item), F54 (formal), L54 (local), N54 (node)
 $ other characters: ()[] .@;:> +-*/~|^
 
-'charfile'SOURCE=>"aleph.ice".   $ ice file $
+'charfile'SOURCE="aleph.ice">.   $ ice file $
 'a'try to open source+res>-errno:
    open file+SOURCE+/r/+LEXT+>>LEXT,0->res,
       unstack string+LEXT,1->source line,/ /->char,next char,next symbol;

@@ -1,8 +1,8 @@
-## Aleph compiler and linker
+## Aleph compiler and linker in C
 
 The result of compiling the modules of the [compiler](../comp),
-the [optimizer](../opt), 
-and of the [linker](../link) to C are the programs [acomp.c](acomp.c) 
+[optimizer](../opt), 
+and [linker](../link) to C are the programs [acomp.c](acomp.c) 
 and [alink.c](alink.c), respectively.
 
 These programs can be compiled and then used to *recompile* the three

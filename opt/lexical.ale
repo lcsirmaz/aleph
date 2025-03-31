@@ -75,8 +75,8 @@ $ BODY ******************************************************** $
 'variable'inpt=0,inpt value=0,source line=1.
 
 $ source and result files
-'charfile'SOURCE=>"aleph.ice".     $ ice file $
-'charfile'RESULT="optimized.txt">. $ result ice file
+'charfile'SOURCE="aleph.ice">.     $ ice file $
+'charfile'RESULT=>"optimized.txt". $ result ice file
 
 'table'MESSAGE=(
   "Cannot open input file %s":cannot open input, $ %s for STDARG

@@ -39,7 +39,7 @@ $ BODY ************************************************* $
 ).
 
 $ messages go here
-'charfile'ERRFILE="<<stdout>>">.
+'charfile'ERRFILE=>"<<stdout>>".
 
 'a'print char+>ch: put char+ERRFILE+ch.
 'a'nlcr: print char+newline.

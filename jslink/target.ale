@@ -57,7 +57,7 @@ $ BODY **************************************************** $
 
 $ manipulate target file ********************************** $
 
-'charfile'TARGET="aleph.js">.
+'charfile'TARGET=>"aleph.js".
 'table'MESSAGE=(
  "cannot create target file %x, error code: %d" :cannot open target
 ).
@@ -323,7 +323,7 @@ $  variable:   let a1099=<initial value>; /* tag */
 $  list:       const a1101=new a_Array(0,"TARGET",cal,lwb,upt,filln);
 $  file:       const a1001=new a_CharFile("STDIN",dir,@stdarr,ptr);
 $ ------------------------------------------------------------
-'variable'gen async=0,    $ 1 if generate asynchonous routines
+'variable'gen async=1,    $ 1 if generate asynchonous routines
 	  waitfor used=0, $ waitfor external is used
 	  waitfor item=0, $ the waitfor item if used
           module roots=0. $ number of non-empty module roots
@@ -536,7 +536,7 @@ $       else if(a_wC.mmm!=1){a_WaitLock("mmm");}}
          (is item flag+item+rasync,1->aw;0->aw),
          T+" if(aF2==0||a_cmpToStr(aF1,aF2,""%p"")){%n"
            "   if(!a_wC.%p){a_wC.%p=2;%W%r()%T;a_wC.%p=1;}"
-              "else if(a_wC%p!=1){a_WaitLock(""%p"");}}%n"
+              "else if(a_wC.%p!=1){a_WaitLock(""%p"");}}%n"
               +sc+sc+sc+aw+item+sc+sc+sc,:nxt);+),
     T+"}%n".
 
@@ -944,7 +944,7 @@ $   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
    call stack=0;
    is item flag+called rule+texternal;
    type=0,(to<=0;T+"%T"); $ do not restore the trace just before an exit
-   $($ print char+/)/.
+   $aIf(aLtr,$ print char+/)/.
 'a'regular rule call+>ptr+>tp+>tlabel-n-cnt-out-sep-type-aw:
    $                        with trace: <call> =>
    $ type=1: if(<call>)       aIf(aLtr,<call>)
@@ -960,7 +960,7 @@ $   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
    (nxt:cnt=n,(out=0,$($print char+/)/;arg sep+sep,T+"aP)"),trace post+tp+tlabel;
      get formal+called rule+cnt+type,incr+cnt,
      ((type=Iformal out;type=Iformal inout),incr+out,next affix+ptr,:nxt;
-      type=Iformal anchor,repeat block call+ptr+out+sep;
+      type=Iformal anchor,repeat block call+ptr+out+sep,trace post+tp+tlabel;
       arg sep+sep,T affix+ptr,next affix+ptr,:nxt)).
 'a'repeat block postload+>ptr+>n+>rep+>out-size-bsz-dn-cnt-type:
    incr+ptr,BUFFER[ptr]->size,next affix+ptr,rep->dn,

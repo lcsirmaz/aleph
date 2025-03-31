@@ -51,7 +51,7 @@ $ BODY **************************************************** $
 
 $ manipulate target file ********************************** $
 
-'charfile'TARGET="aleph.c">.
+'charfile'TARGET=>"aleph.c".
 'table'MESSAGE=(
  "cannot create target file %x, error code: %d" :cannot open target
 ).
@@ -842,18 +842,18 @@ $   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
    call stack=0;
    is item flag+called rule+texternal;
    type=0,(to<=0;T+"%T"); $ do not restore trace before return;
-   $($ print char+/)/.
+   $a_iftr($ print char+/)/.
 'a'regular rule call+>ptr+>tp+>tlabel-n-cnt-out-sep-type:
    $ 
    $ type=1:  if(<call>)         if(a_iftr(<call>))
-   $ type=2:  if(!<call>)        if(!a_itr(<call>))
+   $ type=2:  if(!<call>)        if(!a_iftr(<call>))
    $ type=0:  <call>             <call>%T
    get number of formals+called rule+n,trace pre+tp,
    T+"%r("+called rule,0->cnt->out->sep,$)$
    (nxt:cnt=n,(out=0,$($print char+/)/;arg sep+sep,T+"a_P)"),trace post+tp+tlabel;
      get formal+called rule+cnt+type,incr+cnt,
      ((type=Iformal out;type=Iformal inout),incr+out,next affix+ptr,:nxt;
-      type=Iformal anchor,repeat block call+ptr+out+sep;
+      type=Iformal anchor,repeat block call+ptr+out+sep,trace post+tp+tlabel;
       arg sep+sep,T affix+ptr,next affix+ptr,:nxt)).
 'a'repeat block postload+>ptr+>n+>rep+>out-size-bsz-dn-cnt-type:
    incr+ptr,BUFFER[ptr]->size,next affix+ptr,rep->dn,

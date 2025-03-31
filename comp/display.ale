@@ -74,7 +74,7 @@ $ basic output $
 'variable'
    prpos=0.		$ print position in the line, starting at 1
 
-'charfile' PRINTFILE="<<stdout>>">.
+'charfile' PRINTFILE=>"<<stdout>>".
 
 'a'print char+>ch: 
    $ print a character to PRINTFILE

@@ -199,11 +199,12 @@ $   put datap         same as put data but fail in case of an error.
 $ *************************************************************
 $ Miscellaneous
 $   exit              terminate program execution with code "code".
-$   backtrack         if linked with -g, prints the calls; otherwise nop
+$   msleep            wait for the given milliseconds
+$   backtrack         if linked with -g, prints pending calls; otherwise nop
 $   STDARG            command line arguments
 $   wait for          synchronize execution of module roots.
 'e' exit+>code,@exit+>code.
-'a' backtrack.
+'a' msleep+>ms,backtrack.
 'table'STDARG.
 'a' wait for+t[]+>p.
 $ *************************************************************

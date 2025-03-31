@@ -115,8 +115,8 @@ $ maintain proper line numbering
 'pragmat'require=("number","lexical","display","ice","tags","types",
            "selector","symbols","config").
 $ ------------------------------------------------------------- 
-'datafile' DISCR[TTAG;DSYMB;LADM;LLOC;LEXT;NUMBER;INDICATOR] = >"/tmp/aleph.tmp",
-           DISCW[TTAG;DSYMB;LADM;LLOC;LEXT;NUMBER;INDICATOR] = "/tmp/aleph.tmp">.
+'datafile' DISCR[TTAG;DSYMB;LADM;LLOC;LEXT;NUMBER;INDICATOR] = "/tmp/aleph.tmp">,
+           DISCW[TTAG;DSYMB;LADM;LLOC;LEXT;NUMBER;INDICATOR] =>"/tmp/aleph.tmp".
 
 'table'MESSAGE=(
    "cannot create temp file %p, error code=%d, aborting"

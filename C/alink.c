@@ -2906,7 +2906,7 @@ if(!a_equal(a_L8,16777382)){ goto a_G17;}
 a_G15:a_incr(a_L6);
 a_G16:a_P[0]=a_F1;a_1157(a_P);a_F1=a_P[0]; goto a_G5;
 a_G17:if(!a_equal(a_L8,16777388)){ goto a_G19;}
-a_1189(a_F1,a_L6,a_L7); return;
+a_1189(a_F1,a_L6,a_L7); goto a_G10;
 a_G19:a_P[0]=a_L7;a_1119(a_P);a_L7=a_P[0];
 a_1104(a_F1); goto a_G16;
 } /* regularrulecall */
@@ -5671,9 +5671,9 @@ a_1200();
 a_1483();
 a_1181();
 a_1202();
-a_1126();
-if(!a_1440()){ return;}
+if(!a_1440()){ goto a_G34;}
 a_1134(); goto a_G7;
+a_G34:a_1126(); return;
 } /* @root */
 static void a_1486(int a_F1,int a_F2,int a_F3){ /* putstring+""f+t[]+>a */
 int a_L2;int a_L3;int a_P[1];

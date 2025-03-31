@@ -29,7 +29,7 @@ $ BODY ******************************************************** $
 'pragmat'if=compile,library mode=on.
 $ hashing
 'x''f'string hash+t[]+>p+hash>       ="a_StringHash",
-      block hash+t[]+>p+hash>        ="a_BlockBash".
+      block hash+t[]+>p+hash>        ="a_BlockHash".
 'pragmat'front matter=
 "function a_StringHash(F1,F2,A){%n"
 " const ii=F1.offs+F2;const w=F1.data[ii]-1;%n"

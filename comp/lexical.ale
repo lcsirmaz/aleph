@@ -76,7 +76,7 @@ $ external stuff $
     "buffer","input","path","rulebody","config").
 
 $ ************************************************************* 
-'charfile' SOURCE=>"<<stdin>>".	$ input file
+'charfile' SOURCE="<<stdin>>">.	$ input file
 
 $ stacks for strings
 'stack'[16] LEXT[] =(

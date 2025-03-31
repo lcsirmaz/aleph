@@ -53,7 +53,7 @@ $ no actual memory is needed, only the virtual space is used
 'stack'[10]NODE[].
 
 $ ice file ==================================================== $
-'charfile' ICE="aleph.ice">.
+'charfile' ICE=>"aleph.ice".
 'a'open ice file-err:
    create ice name, $ creates file name on >>LEXT $
    (open file+ICE+/w/+LEXT+>>LEXT,forget string+>>LEXT,

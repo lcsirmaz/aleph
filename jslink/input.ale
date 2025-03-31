@@ -40,7 +40,7 @@ $ error callback routines
    $ the actual source is not stblib
 'q'runtime char+>n+ch>.
    $ return the n-th character of the runtime library
-$ BODY ************************************************ $
+   $ BODY ************************************************ $
 'pragmat'if=compile.
 
 'pragmat'require=("config","lexical","error","item","target").
@@ -95,13 +95,13 @@ $ check argument list for options
 'q'first arg starts+T[]+>str-n-eq:
    string length+T+str+n,compare string n+STDARG+arg top+T+str+n+eq,eq=0.
 'a'check command line arguments:
-   >>STDARG->arg top,1->add stdlib,0->gen async,(nxt:
+   >>STDARG->arg top,1->add stdlib,1->gen async,(nxt:
     arg top < <<STDARG,error+no input;
     is first arg+"--help",message+help message+aleph runtime;
     is first arg+"--version",message+version message+version major+version minor;
-    is first arg+"-no-stdlib",0->add stdlib,
+    is first arg+"-nostdlib",0->add stdlib,
         previous string+STDARG+arg top,:nxt;
-    is first arg+"-async",1->gen async,previous string+STDARG+arg top,:nxt;
+    is first arg+"-noasync",0->gen async,previous string+STDARG+arg top,:nxt;
     is first arg+"-o",previous string+STDARG+arg top,
         (arg top < <<STDARG,error+missing argument+/o/;
          arg top->target file,previous string+STDARG+arg top,:nxt);

@@ -75,7 +75,7 @@ $ Files
 'a' put data+""f+>data+>type.
 $ Other
 'e' exit+>code,@exit+>code.
-'a' backtrack.
+'a' msleep+>ms,backtrack.
 'table'STDARG.
 'a' wait for+t[]+>p.
 'end'
