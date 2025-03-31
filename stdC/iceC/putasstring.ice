@@ -1,4 +1,4 @@
-$ ICE file, produced by ALEPH compiler v2.3
+$ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "libC put as string" 32 
 4 41 "putasstring"
 42 122 "stdlib"

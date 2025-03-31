@@ -1,4 +1,4 @@
-$ ICE file, produced by ALEPH compiler v2.3
+$ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "jslib format print" 32 
 4 61 "formatprint"
 62 142 "stdlib"

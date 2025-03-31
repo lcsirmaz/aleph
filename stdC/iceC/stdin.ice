@@ -1,4 +1,4 @@
-$ ICE file, produced by ALEPH compiler v2.3
+$ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "libC stdin" 32 
 4 37 "stdin"
 38 118 "stdlib"

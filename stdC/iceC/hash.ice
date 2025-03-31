@@ -1,4 +1,4 @@
-$ ICE file, produced by ALEPH compiler v2.3
+$ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "libC simple hash" 32 
 4 66 "hash"
 67 147 "stdlib"
