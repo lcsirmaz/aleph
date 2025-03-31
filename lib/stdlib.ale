@@ -60,7 +60,7 @@ $ Files
     put int+""f+>n,put string+""f+t[]+>ptr,
     put as string+""f+t[]+>ptr,fprintf+""f+t[]+@+>ptr.
 'pragmat'macro=(fgetc,fputc,fprint char,fprint string,
-    getc,putc,print char,print string,printf).
+    getc,putc,print char,print int,print string,printf).
 'p' fgetc+""f+c>:get char+f+c.
 'a' fputc+""f+>c:put char+f+c.
 'a' fprint char+""f+>c:put char+f+c.
@@ -68,6 +68,7 @@ $ Files
 'p' getc+c>:get char+STDIN+c.
 'a' putc+>c:put char+STDOUT+c.
 'a' print char+>c:put char+STDOUT+c.
+'a' print int+>n:put int+STDOUT+n.
 'a' print string+t[]+>p:put string+STDOUT+t+p.
 'a' printf+t[]+@+>ptr:fprintf+STDOUT+t+@.
 'cons'numerical=0,pointer=1.
