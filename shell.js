@@ -210,7 +210,7 @@ const TOPICS = {
 'moved to the Worker, and are retrieved when the Worker terminates by itself.\n'+
 'If the Worker job is killed by a \'kill\' command, then those files might be\n'+
 'lost and should be recreated. In such case files in the Local Storage are\n'+
-'automatically recovered.',
+'automatically recovered, others are emptied.',
 
   jobs:
 'Editor and viewer windows as well as running programs have dedicated job\n'+
