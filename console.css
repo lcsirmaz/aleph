@@ -10,6 +10,7 @@
 .console-combo {
     position:relative; left: 30px; top: 0px;
     margin: 5px;
+  .con-sep1{ height: 2px; }
   .console-inner {
     border: 1px solid #aaa;
     min-width: 20em;
