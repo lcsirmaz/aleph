@@ -178,11 +178,13 @@ $   getc              read a single character from STDIN
 
 $ Character output to STDOUT
 $   putc, print char  put a character to STDOUT
+$   print init        print an integer to STDOUT
 $   print string      print a string to STDOUT
 $   printf            formatted printing to STDOUT
-'pragmat'macro=(putc,print char,print string,printf).
+'pragmat'macro=(putc,print char,print int,print string,printf).
 'a' putc+>c:		 put char+STDOUT+c.
 'a' print char+>c:	 put char+STDOUT+c.
+'a' print int+>n:        put int+STDOUT+n.
 'a' print string+t[]+>p: put string+STDOUT+t+p.
 'a' printf+t[]+@+>ptr:	 fprintf+STDOUT+t+@.
 $ ------------------------------------------------------------
