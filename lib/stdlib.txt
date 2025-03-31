@@ -98,7 +98,8 @@ $ character input / output
 $ character input from STDIN and output to STDOUT
 'charfile'STDIN,STDOUT. $ standard input and output
 'p' getc+c>.            $ read a character from STDIN
-'a' print char+>c,print string+t[]+>p,printf+t[]+@+>p.
+'a' print char+>c,print int+>n.
+'a' print string+t[]+>p,printf+t[]+@+>p.
       $ output to STDOUT
 $ other
 'e' exit+>code.         $ terminate program with exit value
