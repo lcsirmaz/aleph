@@ -17,7 +17,7 @@
 <h2 class="titleHead">Aleph Compiler v2.4</h2>
 <div class="author" ><span 
 class="cmr-12">L. Csirmaz</span></div><br />
-<div class="date" >Document version 1.1, March 2025</div>
+<div class="date" >Document version 1.2, April 2025</div>
    </div>
 <!--l. 150--><p class="indent" >
                                                                   
@@ -106,9 +106,6 @@ successful return. Other features unique to <span
 class="cmss10">ALEPH </span>are modeling the virtual
 memory as a huge sequence of computer words where stacks and tables
 occupy consecutive positions whose exact location is outside the control of the
-                                                                  
-
-                                                                  
 programmer; handling character strings as black boxes without direct access to its
 constituents; and datafiles which allow automatic transfer of stack and table
 pointers from one program to another. By design, no uninitialized memory
@@ -127,23 +124,20 @@ several other extensions, changes and restrictions compared to the original
 specification, hopefully all of them in the spirit of the original design of the
 language.
 <!--l. 218--><p class="indent" >   In this implementation both the compiler and the linker are written in <span 
-class="cmss10">ALEPH</span>,
-and the target language is standard <span 
-class="cmss10">C</span>. Both the <span 
-class="cmss10">ALEPH </span>source and the translated <span 
+class="cmss10">ALEPH</span> with two target languages:
+standard <span 
+class="cmss10">C</span> and javascript. The <span 
+class="cmss10">ALEPH </span>source and the <span 
 class="cmss10">C</span>
 programs are available at
 <div class="center" 
 >
-<!--l. 221--><p class="noindent" >
 <!--l. 222--><p class="noindent" >   <a 
 href="https://github.com/lcsirmaz/aleph" class="url" ><span 
 class="cmtt10">https://github.com/lcsirmaz/aleph</span></a></div>
 <!--l. 227--><p class="noindent" >
 Budapest, Hungary<br>
 Prague, Czech Republic
-                                                                  
-
                                                                   
 <!--l. 234--><p class="indent" >
                                                                   
@@ -331,7 +325,7 @@ class="cmti-10">word</span>, which is the storage unit in the target
 machine. A word can be considered either as a bit sequence interpreted as a signed
 integer value, or as a pointer which determines a location in the virtual memory. The
 virtual memory is a sequence of words indexed by words, and is populated partially
-only by <span 
+by <span 
 class="cmss-10">table</span>s and <span 
 class="cmss-10">stack</span>s, jointly named <span 
 class="cmti-10">list</span>s. Tables and stacks occupy disjoint (and
@@ -354,7 +348,7 @@ rightmost, having the largest address) element. Elements in a block are identifi
 relative to its address by <span 
 class="cmti-10">selectors</span>. A <span 
 class="cmss-10">stack</span> is extended by specifying the elements of a
-new block using its selectors, and the block is added to the top of the stack,
+new block using its selectors; the block is added to the top of the stack
 extending its actual range.
 <!--l. 280--><p class="indent" >   Strings are also stored at consecutive locations of a list, and behave like black
 boxes and can be manipulated by predefined routines only, see <a
@@ -423,7 +417,8 @@ class="ec-lmtt-10">affix2</span> receives a word value
 but does not return anything (and the rule body can use <span 
 class="ec-lmtt-10">affix2</span> as a local
 variable).
-<!--l. 322--><p class="indent" >   The control flow in the rule body is quite restricted: it is a sequence of
+<!--l. 322--><p class="indent" >   The control flow in the rule body is quite
+simple. The rule body is a sequence of
 alternatives probed in the order of their presence. An alternative is a sequence of
 members guarded by its first member. If this first member succeeds, the alternative is
 chosen and the remaining members are executed; otherwise the next alternative is
@@ -483,7 +478,7 @@ class="ec-lmtt-10">src-&#x003E;dest</span>, or <span
 class="ec-lmtt-10">equal+x+y</span>, which can
 also be written as <span 
 class="ec-lmtt-10">x=y</span>.
-<!--l. 359--><p class="indent" >   All file operations are also done by externals. Standard external are used for some
+<!--l. 359--><p class="indent" >   All file operations are also done by externals. Standard external are used for
 stack operations (such as shrinking), and for manipulating strings. Externals can be
 redefined; this feature allows to mimic overloading the basic operators, for an
 example see <a 
@@ -525,8 +520,8 @@ href="#x1-110004">Section 4<!--tex4ht:ref: sec:changes --></a>.
  id="x1-80003.1"></a>Prototypes</h4>
 <!--l. 385--><p class="noindent" >The original <span 
 class="cmss10">ALEPH </span>specification has no prototypes, but prototypes are indispensable
-when the program is split into smaller modules which are compiled independently.
-Each module should have complete information on all program constructs (rules,
+when the program is split into smaller modules to be compiled independently.
+Each module should have complete information on all constructs (rules,
 variables, lists, etc.) it imports, and should provide that information on constructs it
 exports. Prototypes, the stripped down declaration heads, are just the right
 constructs for this purpose.
@@ -535,7 +530,8 @@ constructs for this purpose.
  id="x1-90003.2"></a>Modules</h4>
 <!--l. 394--><p class="noindent" >An <span 
 class="cmss10">ALEPH </span>module provides certain resources to the main program and to other
-modules, and is compiled independently. A module (or the main program) can <span 
+modules, and is compiled independently. An <span 
+class="cmss10">ALEPH </span>program or module can <span 
 class="cmti-10">require</span>
 resources provided by other modules, and a module can <span 
 class="cmti-10">provide </span>resources defined
@@ -545,13 +541,13 @@ class="cmti-10">public </span>and a <span
 class="cmti-10">private </span>part.
 The public part specifies the provided items using prototypes, while the private part
 contains the realization of those resources. When the module is required,
-only the public part is scanned. When the module is compiled, both the
-public and private parts are processed, thus the compiler can check that all
+only the public part is processed. When the module is compiled, both the
+public and private parts are read, and the compiler checks that all
 items this module promises to export are indeed provided by its private
 part.
 <!--l. 406--><p class="indent" >   The public part of a module may contain genuine declarations next to the list of
-export prototypes, and may require additional modules. These public declarations are
-compiled into every invoking program locally.
+export prototypes, and may require additional modules. Declarations in the public
+part are compiled into every invoking program locally.
 <!--l. 410--><p class="indent" >   If an <span 
 class="cmss10">ALEPH </span>module <span 
 class="ec-lmtt-10">A</span> requests another module <span 
@@ -668,7 +664,7 @@ href="#Xa68">9</a>]</span> on <span
 class="cmss10">ALEPH</span>
 and on its relatives.
 <!--l. 487--><p class="indent" >   Characters in <span 
-class="cmss10">ALEPH </span>are not necessarily restricted to single byte characters as
+class="cmss10">ALEPH </span>are not restricted to single byte characters as
 <span 
 class="cmss10">ALEPH </span>strings cannot be manipulated directly. This implementation allows any
 unicode character as a string character. According to the <span 
@@ -1010,7 +1006,7 @@ there.
 class="ec-lmtt-10">@</span> can appear only as the last actual affix with the
 meaning that the present (visible) and all subsequent (pending) affix blocks of
 the actual calling rule are passed as arguments. The rule <span 
-class="ec-lmtt-10">negate</span> defined
+class="ec-lmtt-10">neg</span> defined
 as
                                                                   
 
@@ -1019,7 +1015,7 @@ as
  <span 
 class="ec-lmtt-10">&#8217;</span><span 
 class="ec-lmtk-10">function</span><span 
-class="ec-lmtt-10">&#8217;negate+a&#x003E;+@+&#x003E;b+&#x003E;c-z:</span>
+class="ec-lmtt-10">&#8217;neg+a&#x003E;+@+&#x003E;b+&#x003E;c-z:</span>
   <br /><span 
 class="ec-lmtt-10">&#x00A0;</span><span 
 class="ec-lmtt-10">&#x00A0;</span><span 
@@ -1036,9 +1032,9 @@ affixes, and then subtract the result from the sum of the first two. Thus the
 calls
   <!--l. 714--><p class="noindent" ><div class="obeylines-v">
   <span 
-class="ec-lmtt-10">&#x00A0;negate+x+3+4,</span><span 
-class="ec-lmtt-10">&#x00A0;negate+y+3+4+0+1,</span><span 
-class="ec-lmtt-10">&#x00A0;negate+z+3+4+0+1+x+y</span>
+class="ec-lmtt-10">&#x00A0;neg+x+3+4,</span><span 
+class="ec-lmtt-10">&#x00A0;neg+y+3+4+0+1,</span><span 
+class="ec-lmtt-10">&#x00A0;neg+z+3+4+0+1+x+y</span>
 </div>
 <!--l. 717--><p class="noindent" >put 7 to <span 
 class="ec-lmtt-10">x</span>, 6 to <span 
@@ -1656,10 +1652,9 @@ class="cmss-10">stack</span>
 class="cmss-10">declaration</span> may also define the initial content of the list. This content can also be
 specified separately using <span 
 class="cmti-10">fillings</span>. Fillings can spread across the program (actually,
-can spread across several modules). A list description (without size estimate),
-                                                                  
-
-                                                                  
+can spread across several modules). A list description (without size estimate
+and the closing <span 
+class="ec-lmtt-10">[]</span> pair),
 followed by <span 
 class="ec-lmtt-10">=</span> and a filling can appear multiple times across the program. Fillings
 specified this way are accumulated. Their final order is unspecified, but within a
@@ -1864,12 +1859,9 @@ restricts what values are allowed to send to or receive from that file. This
 implementation does not allow <span 
 class="cmss-10">area</span>s for character files, and the <span 
 class="cmss-10">area</span> of a datafile
-                                                                  
-
-                                                                  
 may contain only lists to which pointers are sent to or received from. The
 order of the lists is significant: when reading from a data file the first list
-in the area is matched to the first list when the file was written, and so
+in the area is matched against the first list when the file was written, and so
 on.
 <!--l. 1166--><p class="indent" >   The <span 
 class="cmss-10">string denotation</span> and the direction (the <span 
@@ -1881,42 +1873,50 @@ rule
 class="ec-lmtt-10">&#8217;</span><span 
 class="ec-lmtk-10">a</span><span 
 class="ec-lmtt-10">&#8217;open</span><span 
-class="ec-lmtt-10">&#x00A0;file+""file</span><span 
+class="ec-lmtt-10">&#x00A0;file + ""file</span><span 
 class="ec-lmtt-10">&#x00A0;+</span><span 
 class="ec-lmtt-10">&#x00A0;&#x003E;mode</span><span 
 class="ec-lmtt-10">&#x00A0;+</span><span 
-class="ec-lmtt-10">&#x00A0;t[]+&#x003E;ptr.</span>
+class="ec-lmtt-10">&#x00A0;t[] + &#x003E;ptr.</span>
 </div>
 <!--l. 1172--><p class="noindent" >where <span 
 class="ec-lmtt-10">mode</span> is <span 
 class="ec-lmtt-10">/r/</span> for reading, <span 
 class="ec-lmtt-10">/w/</span> for writing, and <span 
-class="ec-lmtt-10">/a/</span> for appending (appending is
+class="ec-lmtt-10">/a/</span> for appending (appending is accepted
 for character files only); the last two arguments specify the string containing the file
 name (with possible path information) to be opened.
-<!--l. 1178--><p class="indent" >   Without explicitly opening the file, the first file operation tries to open it. The
+<!--l. 1178--><p class="indent" >   Without explicitly opening the file the first file operation tries to open it. The
 <span 
-class="cmss-10">string denotation</span> in the file declaration gives the file name (with possible path
-information), and the <span 
+class="cmss-10">string denotation</span> in the file declaration
+  <!--l. 1169--><p class="noindent" ><div class="obeylines-v">
+  <span 
+class="ec-lmtt-10">&#8217;</span><span 
+class="ec-lmtk-10">charfile</span><span 
+class="ec-lmtt-10">&#8217;STREAM = &#x003E;"/tmp/out.txt".</span>
+</div>
+<p class="noindent" >gives the file name (with possible path
+information) to be opened, while the <span 
 class="cmss-10">direction</span> restricts the access: the file opens automatically
 for reading only if there is a <span 
 class="ec-lmtt-10">&#x003E;</span> <span 
 class="cmti-10">after </span>the string, and for writing if there is
 a <span 
 class="ec-lmtt-10">&#x003E;</span> <span 
-class="cmti-10">before </span>the path string. No file can be opened for reading and writing
-simultaneously. Note that this reverses the specification in the Manual, but
-it is more natural.
+class="cmti-10">before </span>the path string. Note that this reverses the specification in the Manual, but
+it is more intuitive: the data may come from (leave) the specified file, or it
+can go into that file.
+A file cannot be opened for reading and writing
+simultaneously.
 <!--l. 1186--><p class="indent" >   For a character file the following special filenames identify the standard streams:
 <span 
 class="ec-lmtt-10">"&#x003C;&#x003C;stdin&#x003E;&#x003E;"</span>, <span 
 class="ec-lmtt-10">"&#x003C;&#x003C;stdout&#x003E;&#x003E;"</span>, and <span 
-class="ec-lmtt-10">"&#x003C;&#x003C;stderr&#x003E;&#x003E;"</span>. Also, the character files <span 
+class="ec-lmtt-10">"&#x003C;&#x003C;stderr&#x003E;&#x003E;"</span>. The character files <span 
 class="ec-lmtt-10">STDIN</span> and
 <span 
 class="ec-lmtt-10">STDOUT</span> declared in the standard <span 
-class="cmss10">ALEPH </span>library correspond to the first two streams.
-The standard streams can be used without opening.
+class="cmss10">ALEPH </span>library correspond to the first two of these streams.
 <!--l. 1194--><p class="noindent" >
    <h4 class="subsectionHead"><span class="titlemark">4.21   </span> <a 
  id="x1-320004.21"></a>Static stack and static variable</h4>
@@ -1955,7 +1955,7 @@ class="cmss-10">prototype</span> informs the compiler about a type of an identif
 class="cmss-10">table</span> or <span 
 class="cmss-10">stack</span>
 <span 
-class="cmss-10">prototype</span> has no size estimate and filling; a <span 
+class="cmss-10">prototype</span> has no size estimate, square brackets and filling; a <span 
 class="cmss-10">constant</span>, <span 
 class="cmss-10">variable</span>, <span 
 class="cmss-10">file prototype</span> has no
@@ -1990,7 +1990,7 @@ class="ec-lmtk-10">stack</span><span
 class="ec-lmtt-10">&#8217;(#,#)STACK.</span>
 </div>
 <!--l. 1225--><p class="noindent" >Prototypes are also used to inform the compiler about tags which are defined in other
-modules, and about tags which should be exported from this module. See <a 
+modules, and about tags which this module exports. See <a 
 href="#x1-390005">Section 5<!--tex4ht:ref: section:module --></a>
 for more information.
 <!--l. 1232--><p class="noindent" >
@@ -2078,7 +2078,7 @@ class="ec-lmtt-10">&#8217;XX=YYYY.</span>
 href="#x1-350004.24">Section 4.24<!--tex4ht:ref: conditional --></a>) are accepted. There are other
 command-line pragmat shorthands starting with a single dash:
 <!--l. 1307--><p class="noindent" >  <span 
-class="ec-lmtt-10">-l</span>                   <span 
+class="ec-lmtt-10 smallsize">-l</span>                   <span 
 class="ec-lmtt-10 smallsize">list=on</span>
 <!--l. 1309--><p class="noindent" >  <span 
 class="ec-lmtt-10 smallsize">-d</span>                   <span 
@@ -2446,7 +2446,7 @@ have already been substituted. Consequently these tools have no effect on macro
 rules.
 <!--l. 1545--><p class="indent" >   <span 
 class="cmti-10">Index checking</span>. It is controlled by the <span 
-class="ec-lmtt-10">bounds=in/off</span> pragmat. If the pragmat is
+class="ec-lmtt-10">bounds=on/off</span> pragmat. If the pragmat is
 <span 
 class="ec-lmtt-10">on</span> when a rule is declared, the rule is compiled with index checking. Before touching
 an indexed element, the value of the index is checked to be within the actual limits of
@@ -2474,19 +2474,21 @@ compiled with instructions that print out to <span
 class="ec-lmtt-10">stderr</span> the rule name, followed by the
 values of its incoming <span 
 class="cmss-10">in</span> and <span 
-class="cmss-10">inout</span> affixes. As this would produce a huge volume
-output, tracing information is printed only when the compiled binary is executed
+class="cmss-10">inout</span> affixes. This can produce a huge volume
+output. In the <span 
+class="cmss10">C </span>version tracing information is printed only when the compiled binary is executed
 with the <span 
-class="ec-lmtt-10">-T</span> switch as the first command-line argument. (This switch is swallowed and
+class="ec-lmtt-10">-T</span> switch as the first command-line argument. 
+<!-- This switch is swallowed and
 not passed to the <span 
-class="cmss10">ALEPH </span>program.) Without this switch only the lastly executed 30
+class="cmss10">ALEPH </span>program. Without this switch only the lastly executed 30
 rulenames (without arguments) are printed when the program terminates (normally
-or with an error).
+or with an error). -->
 <!--l. 1578--><p class="indent" >   <span 
-class="cmti-10">Call stack</span>. Tracing provides the lastly executed 30 rule calls. Frequently the <span 
-class="cmti-10">call</span>
-<span 
-class="cmti-10">stack</span>, the hierarchy of pending rule calls gives more information. When adding the <span 
+class="cmti-10">Call stack</span>. Tracing provides rule calls in the order they
+were executed. Frequently the <span 
+class="cmti-10">call stack</span>,
+the hierarchy of pending rule calls gives more useful information. When adding the <span 
 class="ec-lmtt-10">-g</span>
 switch to the linker it produces an <span 
 class="cmss10">ALEPH </span>binary which keeps track of this call stack,
@@ -2517,10 +2519,20 @@ class="ec-lmtt-10">backtrack</span> behaves as a no-op and does nothing.
 <!--l. 1596--><p class="noindent" >
    <h3 class="sectionHead"><span class="titlemark">5   </span> <a 
  id="x1-390005"></a>Modular Aleph</h3>
-<!--l. 1598--><p class="noindent" >In general, a module is an incomplete program part which can be compiled
-independently, and which provides resources to be used by the other parts of the
-program. Modules are frequently written so that it can be reused by several
-programs. In an <span 
+<!--l. 1598--><p class="noindent" >
+Modular <span 
+class="cmss10">ALEPH </span>follows the usual modular design paradigm. A complete <span 
+class="cmss10">ALEPH </span>program is split into smaller, incomplete parts which can be compiled
+independently. These parts, called <span 
+class="cmti-10">modules</span>, typically provide resources to
+be used by other parts, and are written so that they can be reused by other
+programs. The overall structure which attempts to solve the numerous arising
+problems somewhat resembles the way <span 
+class="cmss10">CDL2</span> extended <span 
+class="cmss10">CDL</span> to tackle a
+similar goal.  
+
+<!--l. 1609--><p class="noindent" >In an <span 
 class="cmss10">ALEPH </span>module the first non-comment line is usually a <span 
 class="cmss-10">pragmat</span>
 specifying both the <span 
@@ -2534,7 +2546,7 @@ class="ec-lmtt-10">&#8217;module=XXX.</span>
 </div>
 <!--l. 1609--><p class="noindent" >The module name <span 
 class="ec-lmtt-10">XXX</span> must be a valid <span 
-class="cmss10">ALEPH </span>identifier; it is written without
+class="cmss10">ALEPH </span>identifier; in the pragmat it is specified without
 quotation marks. According to the best practice the name of the file containing the
 module source and the module name should resemble each other. It is particularly
 important as <span 
@@ -3893,15 +3905,15 @@ general character input and output rules the following ones write directly to
 class="ec-lmtt-10">STDOUT</span>:
 <div class="obeylines-v" style="color:black">
 <!--l. 2166--><p class="noindent" >  <span 
-class="ec-lmtt-10 medsize">put+&#x003E;c</span>               write the character <span 
+class="ec-lmtt-10 medsize">putc+&#x003E;c</span>               write the character <span 
 class="ec-lmtt-10">c</span> to <span 
 class="ec-lmtt-10">STDOUT</span>
-                                                                  
-
-                                                                  
 <!--l. 2168--><p class="noindent" >  <span 
 class="ec-lmtt-10 medsize">print char+&#x003E;c</span>        same as <span 
 class="ec-lmtt-10">putc+c</span>
+<!--l. 2168--><p class="noindent" >  <span 
+class="ec-lmtt-10 medsize">print int+&#x003E;n</span>        same as <span 
+class="ec-lmtt-10">put int+STDOUT+n</span>
 <!--l. 2170--><p class="noindent" >  <span 
 class="ec-lmtt-10 medsize">print string+t[]+&#x003E;p</span>  write the given string to <span 
 class="ec-lmtt-10">STDOUT</span>
@@ -3993,6 +4005,9 @@ class="cmss-10">terminator</span> <span
 class="ec-lmtt-10">&#8217;</span><span 
 class="ec-lmtk-10">exit</span><span 
 class="ec-lmtt-10">&#8217;n</span>.
+The action <span 
+class="ec-lmtt-10">msleep+n</span> suspends program execution (sleeps) for 
+<span class="ec-lmtk">n</span> milliseconds.
 <!--l. 2212--><p class="indent" >   The <span 
 class="ec-lmtt-10">wait for+"xxx"</span> rule can be used to synchronize module initializations. The
 root of each module is executed before the root of the main program is called. The
@@ -4051,9 +4066,8 @@ different.
 class="cmss10">ALEPH </span>compiler produces an intermediate code for each module while typically
 reading several source files: the module source, the headers of required modules,
 headers of user libraries and that of the standard library. These intermediate
-codes are read, merged and linked by the linker which generates the final <span 
-class="cmss10">C</span>
-code.
+codes are read, merged and linked by the linker which generates the final
+target code.
 <!--l. 2264--><p class="indent" >   The intermediate code is called <span 
 class="cmss10">ALICE </span>in reminiscence of the machine
 independent code designed for the first <span 
