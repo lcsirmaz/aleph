@@ -1910,9 +1910,9 @@ A file cannot be opened for reading and writing
 simultaneously.
 <!--l. 1186--><p class="indent" >   For a character file the following special filenames identify the standard streams:
 <span 
-class="ec-lmtt-10">"&#x003C;&#x003C;stdin&#x003E;&#x003E;"</span>, <span 
-class="ec-lmtt-10">"&#x003C;&#x003C;stdout&#x003E;&#x003E;"</span>, and <span 
-class="ec-lmtt-10">"&#x003C;&#x003C;stderr&#x003E;&#x003E;"</span>. The character files <span 
+class="ec-lmtt-10">&#x003C;&#x003C;stdin&#x003E;&#x003E;</span>, <span 
+class="ec-lmtt-10">&#x003C;&#x003C;stdout&#x003E;&#x003E;</span>, and <span 
+class="ec-lmtt-10">&#x003C;&#x003C;stderr&#x003E;&#x003E;</span>. The character files <span 
 class="ec-lmtt-10">STDIN</span> and
 <span 
 class="ec-lmtt-10">STDOUT</span> declared in the standard <span 
@@ -2526,10 +2526,10 @@ class="cmss10">ALEPH </span>program is split into smaller, incomplete parts whic
 independently. These parts, called <span 
 class="cmti-10">modules</span>, typically provide resources to
 be used by other parts, and are written so that they can be reused by other
-programs. The overall structure which attempts to solve the numerous arising
-problems somewhat resembles the way <span 
-class="cmss10">CDL2</span> extended <span 
-class="cmss10">CDL</span> to tackle a
+programs. The overall structure which solves numerous arising
+problems somewhat resembles the way how <span 
+class="cmss10">CDL2</span> extends <span 
+class="cmss10">CDL</span> while tackling a
 similar goal.  
 
 <!--l. 1609--><p class="noindent" >In an <span 
@@ -2546,7 +2546,7 @@ class="ec-lmtt-10">&#8217;module=XXX.</span>
 </div>
 <!--l. 1609--><p class="noindent" >The module name <span 
 class="ec-lmtt-10">XXX</span> must be a valid <span 
-class="cmss10">ALEPH </span>identifier; in the pragmat it is specified without
+class="cmss10">ALEPH </span>identifier; in this pragmat it is specified without
 quotation marks. According to the best practice the name of the file containing the
 module source and the module name should resemble each other. It is particularly
 important as <span 
@@ -3918,9 +3918,11 @@ class="ec-lmtt-10">put int+STDOUT+n</span>
 class="ec-lmtt-10 medsize">print string+t[]+&#x003E;p</span>  write the given string to <span 
 class="ec-lmtt-10">STDOUT</span>
 <!--l. 2172--><p class="noindent" >  <span 
-class="ec-lmtt-10 medsize">printf+"format"+...</span>  formatted printing</div>
-<!--l. 2174--><p class="noindent" >The first two arguments of the formatted printing defines the format string,
-additional affixes are words. Format characters determine how the next affix is
+class="ec-lmtt-10 medsize">printf+"format"+...</span>  formatted printing to <span 
+class="ec-lmtt-10">STDOUT</span></div>
+<!--l. 2174--><p class="noindent" >The first two arguments of <span 
+class="ec-lmtt-10">printf</span> defines the format string,
+additional optional affixes are words. Format characters determine how the next affix is
 printed: <span 
 class="ec-lmtt-10">%c</span> for printing as a character; <span 
 class="ec-lmtt-10">%d</span> as a decimal number; <span 
@@ -3929,7 +3931,7 @@ number; finally <span
 class="ec-lmtt-10">%n</span> prints a newline character without consuming an affix.
 Thus
 <!--l. 2181--><p class="indent" ><div class="obeylines-v">   <span 
-class="ec-lmtt-10">/$/-&#x003E;n, printf+"Char:%c, code:%d, hex:#%x%n"+n+n+n,</span></div>
+class="ec-lmtt-10">printf+"Char:%c, code:%d, hex:#%x%n"+/$/+/$/+/$/,</span></div>
 <!--l. 2183--><p class="noindent" >prints the text
 
 <p class="noindent" ><div class="obeylines-v"> <span 
@@ -4813,25 +4815,25 @@ happen.
 <!--l. 2615--><p class="noindent" >The target code is produced exclusively by the <span 
 class="cmss10">ALEPH </span>linker from the intermediate
 <span 
-class="cmss10">ALICE </span>code of the main program, modules, and standard library. In this
-implementation the target code is standard <span 
-class="cmss10">C</span>. It has been chosen as a <span 
-class="cmss10">C </span>program can
+class="cmss10">ALICE </span>code of the main program, modules, and standard library.
+Implementation details are discussed when the target code is standard <span 
+class="cmss10">C</span>; code generation is very similar for other target
+languages. <span 
+class="cmss10">C</span> has been chosen for target as it can
 be easily compiled into an executable binary, and <span 
-class="cmss10">C </span>also provides the basic tools for
-creating the running environment, memory management and minimal file transput
-routines.
+class="cmss10">C </span>also provides somoe basic tools for
+the running environment: memory management and basic file transput.
 <!--l. 2622--><p class="indent" >   Code generation assumes that the basic <span 
 class="cmss10">ALEPH </span>data type, the <span 
 class="cmti-10">word </span>has 32
 bits; it is translated to <span 
 class="ec-lmtt-10">int</span> in <span 
 class="cmss10">C</span>. Some efforts have been made to allow code
-generation for a different word size architecture. In this respect two more issues
+generation for a different word size architecture. Two more issues
 should also be addressed: what character encoding is used, and how strings
-are represented in the target words. The details given here assume that
-the target word size is 32 bit, and strings are packed into UTF-8 encoded
-bytes. The present implementation makes no assumption on the size of <span 
+are represented in the target words. This implementation uses unicode
+characters and string are UTF-8 encoded. No assumption is made
+on the size of <span 
 class="cmss10">C</span>
 pointers.
 <!--l. 2631--><p class="noindent" >
@@ -4905,13 +4907,8 @@ class="ec-lmtt-10">request space+L+n</span> external checks that there are at
 least <span 
 class="ec-lmtt-10">n</span> additional allocated words above the actual upper bound of <span 
 class="ec-lmtt-10">L</span>, and if
-not, then it allocates additional memory. This may result in moving the
-                                                                  
-
-                                                                  
-whole list to somewhere else in the actual memory, when <span 
-class="ec-lmtt-10">offset</span> is adjusted
-accordingly.
+not, then it allocates additional memory, possibly moving the
+whole list to somewhere else.
 <!--l. 2678--><p class="indent" >   When a stack is to be extended by a block of <span 
 class="ec-lmtt-10">n</span> words in an <span 
 class="cmss-10">extension</span>, the <span 
@@ -4940,9 +4937,8 @@ class="ec-lmtt-10">n</span>.
  id="x1-610008.2"></a>Data file</h4>
 <!--l. 2690--><p class="noindent" >As discussed in <a 
 href="#x1-310004.20">Section 4.20<!--tex4ht:ref: subsec:datafiles --></a>, an <span 
-class="cmss10">ALEPH </span>datafile stores integers (words), and pointers
-to lists. Such a datafile is realized as a sequence of blocks of size <span 
-class="ec-lmtt-10">1024*sizeof(int)</span>,
+class="cmss10">ALEPH </span>datafile stores words (integers), and pointers
+to lists. Such a datafile is realized as a sequence of blocks of 1024 words, 
 and each block <span 
 class="ec-lmtt-10">B[0..1023]</span> is arranged as follows.
 <!--l. 2700--><p class="noindent" >  <span 
@@ -4961,10 +4957,10 @@ class="ec-lmtt-10">B[int(i/32)]</span> and bit position <span
 class="ec-lmtt-10">(i&amp;31)</span> where zero
 is the most significant bit and 31 is the least significant bit. The <span 
 class="ec-lmtt-10">nil</span> pointer is a
-pointer with relative value zero; the <span 
+pointer with value zero; the <span 
 class="ec-lmtt-10">eof</span> (end of file) indicator is a pointer with
-relative value <span 
-class="cmsy-10">-</span>1; all other pointer values must be positive and belong to one of the
+value <span 
+class="cmsy-10">-</span>1; all other pointer values are positive and belong to one of the
 datafile zones.
 <!--l. 2718--><p class="indent" >   The first few data values in the first block of the datafile contain the
 <span 
@@ -4976,10 +4972,10 @@ class="ec-lmtt-10">B[33]</span>, <span
 class="ec-lmtt-10">B[34]</span>, <span 
 class="ec-lmtt-10">B[35]</span>, followed by data for the other
 zones. The list must fit into the first data block. The lower and upper bounds
-(inclusive) are strictly increasing (thus these ranges are disjoint and positive),
-therefore all pointer values, with the exception of <span 
+(inclusive) are strictly increasing (since the ranges are disjoint and positive),
+and all pointer values, with the exception of <span 
 class="ec-lmtt-10">nil</span> and <span 
-class="ec-lmtt-10">eof</span>, must be
+class="ec-lmtt-10">eof</span>, are 
 positive.
 <!--l. 2728--><p class="indent" >   Items in a datafile have positional data. The last 10 bits in this file position
 identify the index within the block; this value must be between 32 and 1023. Other
@@ -5070,7 +5066,7 @@ stream. There is no <span
 class="ec-lmtt-10">newpage</span> character, and writing <span 
 class="ec-lmtt-10">newline</span> sends the newline
 character (code 10) to the stream.
-<!--l. 2803--><p class="indent" >   Input character files can be positioned as well, but they use <span 
+<!--l. 2803--><p class="indent" >   Input character files can be positioned as well, they use <span 
 class="ec-lmtt-10">ftell()</span> to retrieve
 the current file position and <span 
 class="ec-lmtt-10">fseek()</span> to set the file position.
@@ -5095,8 +5091,8 @@ class="ec-lmtt-10 medsize">int      aheadchar</span>      look ahead character
 class="ec-lmtt-10">aheadchar</span> stores the next (unread) UTF-8 character when a look-ahead was
 made. This happens, for example, when an integer is read from the file by the
 standard rule <span 
-class="ec-lmtt-10">get int</span>. This rule should stop at the first non-digit character, but not
-consume that character.
+class="ec-lmtt-10">get int</span>. This rule should stop at the first non-digit character
+wihtout consuming that character.
 <!--l. 2828--><p class="noindent" >
    <h4 class="subsectionHead"><span class="titlemark">8.4   </span> <a 
  id="x1-630008.4"></a>Strings</h4>
@@ -5258,59 +5254,13 @@ class="ec-lmtt-10">a</span><span
 class="ec-lmtt-10">_DATABLOCK</span>. For the description see <a 
 href="#x1-610008.2">Section 8.2<!--tex4ht:ref: subsec:datafile-implement --></a> and <a 
 href="#x1-620008.3">Section 8.3<!--tex4ht:ref: subsec:charfile --></a>. The string in the external
-                                                                  
-
-                                                                  
 declaration is used as the name of a <span 
 class="cmss10">C </span>procedure which is responsible for initializing
 the structure. The procedure is called with two arguments: the index of the structure
 and the name as a character string.
-<!--l. 2934--><p class="noindent" >
-   <h4 class="subsectionHead"><span class="titlemark">8.7   </span> <a 
- id="x1-690008.7"></a>Assignment</h4>
-<!--l. 2936--><p class="noindent" >An <span 
-class="cmss10">ALEPH </span><span 
-class="cmss-10">transput</span> has strict semantics: it is evaluated from left to right using the
-newly assigned values when necessary. The <span 
-class="cmss-10">transput</span>
-  <!--l. 2938--><p class="noindent" ><div class="obeylines-v">
-  <span 
-class="ec-lmtt-10">&#x003E;&#x003E;ST</span><span 
-class="ec-lmtt-10">&#x00A0;-&#x003E;</span><span 
-class="ec-lmtt-10">&#x00A0;n</span><span 
-class="ec-lmtt-10">&#x00A0;-&#x003E;</span><span 
-class="ec-lmtt-10">&#x00A0;ST[n]</span></div>
-<!--l. 2942--><p class="noindent" >sets first <span 
-class="ec-lmtt-10">n</span> to the address of the top of the stack <span 
-class="ec-lmtt-10">ST</span>, and then stores this value at the
-top element of <span 
-class="ec-lmtt-10">ST</span>, using the newly assigned value of <span 
-class="ec-lmtt-10">n</span>. The semantics of the
-corresponding <span 
-class="cmss10">C </span>construct <span 
-class="ec-lmtt-10">ST-&#x003E;offs[n]=(n=ST-&#x003E;upb)</span> is <span 
-class="cmti-10">undefined </span>as the <span 
-class="cmss10">C </span>compiler
-is free to choose the order in which the two sides of the assigment are evaluated. It
-can compute first the address of <span 
-class="ec-lmtt-10">ST[n]</span>, and then execute the assignment to <span 
-class="ec-lmtt-10">n</span>, or the
-other way around. To avoid the ambiguity, the <span 
-class="cmss10">ALEPH </span>compiler generates
-successive <span 
-class="cmss10">C </span>assignments, storing the source in a temporary place when any of
-the destinations is indexed. The genereted <span 
-class="cmss10">C </span>code for the above example
-is
-  <!--l. 2954--><p class="noindent" ><div class="obeylines-v">
-  <span 
-class="ec-lmtt-10">{int</span><span 
-class="ec-lmtt-10">&#x00A0;tmp=ST-&#x003E;upb;</span><span 
-class="ec-lmtt-10">&#x00A0;n=tmp;</span><span 
-class="ec-lmtt-10">&#x00A0;ST-&#x003E;offs[n]=tmp;}</span>
-</div>
+
 <!--l. 2959--><p class="noindent" >
-   <h5 class="subsubsectionHead"><span class="titlemark">8.7.1   </span> <a 
+   <h5 class="subsubsectionHead"><span class="titlemark">8.6.4   </span> <a 
  id="x1-700008.7.1"></a>External rules</h5>
 <!--l. 2961--><p class="noindent" >How an external rule is handled depends on the <span 
 class="cmss-10">string denotation</span>. If it starts with a
@@ -5358,9 +5308,6 @@ class="cmss10">C </span>preprocessor tricks these empty arguments can be
 transformed to different <span 
 class="cmss10">C </span>procedure calls. To ease this work, the <span 
 class="cmss10">ALEPH </span>compiler
-                                                                  
-
-                                                                  
 does some additional work. If the <span 
 class="cmss-10">string denotation</span> of the external rule starts with a
 <span 
@@ -5404,6 +5351,51 @@ conditional tasks before calling an <span
 class="cmss-10">exit</span> rule (<a 
 href="#x1-300004.19">Section 4.19<!--tex4ht:ref: subsec:exit --></a>), as those checks will not be
 carried over.
+
+<!--l. 2934--><p class="noindent" >
+   <h4 class="subsectionHead"><span class="titlemark">8.7   </span> <a 
+ id="x1-690008.7"></a>Assignment</h4>
+<!--l. 2936--><p class="noindent" >An <span 
+class="cmss10">ALEPH </span><span 
+class="cmss-10">transput</span> has strict semantics: it is evaluated from left to right using the
+newly assigned values when necessary. The <span 
+class="cmss-10">transput</span>
+  <!--l. 2938--><p class="noindent" ><div class="obeylines-v">
+  <span 
+class="ec-lmtt-10">&#x003E;&#x003E;ST</span><span 
+class="ec-lmtt-10">&#x00A0;-&#x003E;</span><span 
+class="ec-lmtt-10">&#x00A0;n</span><span 
+class="ec-lmtt-10">&#x00A0;-&#x003E;</span><span 
+class="ec-lmtt-10">&#x00A0;ST[n]</span></div>
+<!--l. 2942--><p class="noindent" >sets first <span 
+class="ec-lmtt-10">n</span> to the address of the top of the stack <span 
+class="ec-lmtt-10">ST</span>, and then stores this value at the
+top element of <span 
+class="ec-lmtt-10">ST</span>, using the newly assigned value of <span 
+class="ec-lmtt-10">n</span>. The semantics of the
+corresponding <span 
+class="cmss10">C </span>construct <span 
+class="ec-lmtt-10">ST-&#x003E;offs[n]=(n=ST-&#x003E;upb)</span> is <span 
+class="cmti-10">undefined </span>as the <span 
+class="cmss10">C </span>compiler
+is free to choose the order in which the two sides of the assigment are evaluated. It
+can compute first the address of <span 
+class="ec-lmtt-10">ST[n]</span>, and then execute the assignment to <span 
+class="ec-lmtt-10">n</span>, or the
+other way around. To avoid the ambiguity, the <span 
+class="cmss10">ALEPH </span>compiler generates
+successive <span 
+class="cmss10">C </span>assignments, storing the source in a temporary place when any of
+the destinations is indexed. The genereted <span 
+class="cmss10">C </span>code for the above example
+is
+  <!--l. 2954--><p class="noindent" ><div class="obeylines-v">
+  <span 
+class="ec-lmtt-10">{int</span><span 
+class="ec-lmtt-10">&#x00A0;tmp=ST-&#x003E;upb;</span><span 
+class="ec-lmtt-10">&#x00A0;n=tmp;</span><span 
+class="ec-lmtt-10">&#x00A0;ST-&#x003E;offs[n]=tmp;}</span>
+</div>
                                                                   
 
                                                                   
@@ -5456,14 +5448,14 @@ class="cmti-10">Using  the  CDL  compiler</span>,  in  F.L.Bauer  and  J.Eickel
     (Eds.) <span 
 class="cmti-10">Compiler Constructions </span>LNCS 21, Springer, 1974
     </p>
-    <p class="bibitem" ><span class="biblabel">
+    <p class="bibitem" style="text-align:left;" ><span class="biblabel">
   [7]<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span>
     <a 
  id="Xcdl3"></a>C.H.A.Koster, J.G.Beney, P.A.Jones, M.Seutter, <span 
 class="cmti-10">CDL3 manual</span>, available
     as     <a 
 href="https://ftp.science.ru.nl/cdl3/cdl3-manual-1.2.7.pdf" class="url" ><span 
-class="cmtt-10">https://ftp.science.ru.nl/cdl3/cdl3-manual-1.2.7.pdf</span></a>
+class="cmtjt-10">https://ftp.science.ru.nl/cdl3/cdl3-manual-1.2.7.pdf</span></a>
     </p>
     <p class="bibitem" ><span class="biblabel">
   [8]<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
