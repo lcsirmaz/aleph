@@ -104,7 +104,7 @@ cmdlist+'\n'+
 }
 const TOPICS = {
   start:
-'Commands for the unpatient to start with:\n'+
+'Commands for the impatient to start with:\n'+
 '  load a1           load the sample ALEPH program \'a1.ale\' (Hello World)\n'+
 '  edit a1.ale       open \'a1.ale\' in an editing window\n'+
 '  compile a1.ale    compile it\n'+
@@ -120,7 +120,7 @@ const TOPICS = {
 ' run         run a compiled ALEPH program',
 
   cmdline:
-'Commands are typed at the bottom line of the workspace. Above this line is the\n'+
+'Commands are typed at the bottom line of the workspace. Above this line is\n'+
 'the actual project name, then the console window where entered commands and\n'+
 'messages sent to the \'stdout\' channel appear. The window at the top is reserved\n'+
 'for (typically error) messages and for the \'stderr\' channel. The \'up\' and\n'+
@@ -167,18 +167,18 @@ const TOPICS = {
 'To see file attributes use \'ls -l <pattern>\'.\n'+
 ' +s  save the file at the Local Storage. Saved files are automatically\n'+
 '     recovered when the PlayGround is opened or reloaded. Can be used for\n'+
-'     characater files only. The Local Storage is part of the browser\'s\n'+
+'     character files only. The Local Storage is part of the browser\'s\n'+
 '     local cache, and is not saved in incognito mode.\n'+
 ' +r  the file is passed to a running ALEPH program as \'read only\', thus\n'+
 '     the program cannot modify or delete this file. These files, however,\n'+
 '     can be edited and deleted using command line tools.\n'+
-' +d  the file is automatically made avaiable to the running ALEPH program\n'+
+' +d  the file is automatically made available to the running ALEPH program\n'+
 '     in this project. The program, however, can modify or delete this file.',
 
   pattern:
 'Many commands require a pattern as an argument. In a pattern ? matches\n'+
 'any character different from the slash (/), and * matches a sequence of\n'+
-'such charcters, including the empty sequence.\n'+
+'such characters, including the empty sequence.\n'+
 'Patterns starting with / search all projects; others search files in the\n'+
 'current project only. Thus \'ls /*\' lists the name of all projects (no\n'+
 'files), while \'ls *\' lists all file names in the current project which have\n'+
@@ -195,12 +195,12 @@ const TOPICS = {
   compile:
 'To compile the main ALEPH program together with all modules use the command\n'+
 '  compile [<flags>] <source files>\n'+
-'Source files can be specified usign patterns. Compilation is done in many\n'+
+'Source files can be specified using patterns. Compilation is done in many\n'+
 'stages. First, all .ale files are compiled into ALICE codes. Second, these\n'+
 'intermediate codes are optimized. Finally, the .ice files are linked to the\n'+
 'final javascript file. The process stops at the first error. Flags after the\n'+
 '\'compile\' command start with a dash (-). Those before \'-X\' are passed to\n'+
-'the compiler; and those after \'-X\' are passed to the linker',
+'the compiler; and those after \'-X\' are passed to the linker.',
 
   run:
 'Compiled ALEPH programs are executed by dedicated Web Workers. A project can\n'+
@@ -209,7 +209,7 @@ const TOPICS = {
 'by the command \'jobs\'. Project files visible to the running program are\n'+
 'moved to the Worker, and are retrieved when the Worker terminates by itself.\n'+
 'If the Worker job is killed by a \'kill\' command, then those files might be\n'+
-'lost and should be recreated. In such case files in the Local Storage are\n'+
+'lost and should be recreated. In such cases files in the Local Storage are\n'+
 'automatically recovered, others are emptied.',
 
   jobs:
@@ -231,7 +231,7 @@ const TOPICS = {
 '    https://github.com/lcsirmaz/aleph/\n'+
 'and is distributed under the GNU General Public License version 3 (or any\n'+
 'later version at your option) in the hope that it will be useful, but\n'+
-'WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTIBILITY\n'+
+'WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY\n'+
 'or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for\n'+
 'more details.',
 };
