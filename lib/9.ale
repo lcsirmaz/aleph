@@ -1,6 +1,6 @@
 $ creating new external library rule; testing bounds
-'pragmat'title="advancet ALEPH material".
-'pragmat'warning="Try compiling with stack trace".
+'pragmat'title="advanced ALEPH material".
+'pragmat'warning="Compile with -X -g (stack trace)".
 'pragmat'require=("a9m1","a9m2").
 
 'table'(a,b,c)T[]=(/a/,/b/,/c/,/x/,/y/,/z/).

@@ -1,5 +1,5 @@
 $ define some library routines
-$ add a low level printing routine
+$ add a low level routine returning current time
 'pragmat'module=m1,title="module a9m1".
 
 'a'print arr+t[],print int+>n.
@@ -10,14 +10,17 @@ $ this is the module body
 'a'print int+>n:  put int+STDOUT+n.
 
 'pragmat'library mode=on.
-$ this gets inserted at the from of the compied text
-$ and sends its argument to stderr (top of console)
-'pragmat'front matter="function XXX(y){"
-  "a_SendLineBuffer(""stderr"",""Private Print Rule: ""+y)}%n".
-'x''a'print1+>x="XXX".
+$ this gets inserted at the front of the compiled javascript text
+$ returns hours, minutes, seconds
+'pragmat'front matter="function XXX(A){"
+  "A[0]=(new Date).getHours();"
+  "A[1]=(new Date).getMinutes();"
+  "A[2]=(new Date).getSeconds();}%n".
+'x''a'getTime+h>+m>+s>="XXX".
 'pragmat'library mode=off.
 $ this is the initialization for this module
-'root'printf+"Module a9m1 initialization:%n",print1+12.
+'root'-h-m-s:getTime+h+m+s,
+    printf+"Module a9m1 initialization at %d:%d:%d%n"+h+m+s.
 'pragmat'endif=compile.
 
 'end'
