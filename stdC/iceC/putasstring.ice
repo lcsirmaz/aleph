@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "libC put as string" 32 
 4 41 "putasstring"
-42 122 "stdlib"
+42 123 "stdlib"
 .
 <rule> I1 520 72 2<formal in><formal in> "stdlib" "@equal"
 <rule> I2 98312 74 3<formal in><formal anchor><formal out> "stdlib" "@make"

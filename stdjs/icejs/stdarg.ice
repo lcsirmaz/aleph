@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "jslib stdarg" 32 
 4 48 "stdarg"
-49 129 "stdlib"
+49 130 "stdlib"
 .
 <rule> I1 16640 45 0 "stdlib" "@root"
 <table> I2 20 43 1 1 "stdlib" "STDARG"

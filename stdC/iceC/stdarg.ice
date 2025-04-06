@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "libC stdarg" 32 
 4 64 "stdarg"
-65 145 "stdlib"
+65 146 "stdlib"
 .
 <rule> I1 16640 61 0 "stdlib" "@root"
 <table> I2 20 32 1 1 "stdlib" "STDARG"

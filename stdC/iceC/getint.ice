@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "libC get int" 32 
 4 53 "getint"
-54 134 "stdlib"
+54 135 "stdlib"
 .
 <rule> I1 520 84 2<formal in><formal in> "stdlib" "@equal"
 <rule> I2 98312 86 3<formal in><formal anchor><formal out> "stdlib" "@make"

@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "libC base" 32 
 4 239 "base"
-240 320 "stdlib"
+240 321 "stdlib"
 .
 <rule> I1 532 171 2<formal in><formal in> "stdlib" "@equal"
 <rule> I2 1044 231 1<formal in> "stdlib" "@exit"

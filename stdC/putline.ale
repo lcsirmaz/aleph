@@ -21,7 +21,7 @@ $ *************************************************************
 $ HEADER ****************************************************** $
 $ put line
 'a'put line+""f+t[]+>ch.
-$ prints elements of t[] followed by ch if ch is not 'rest line'
+$ prints elements of t[] followed by ch if ch is a valid character
 
 $ BODY ******************************************************** $
 'pragmat'if=compile.
@@ -29,7 +29,7 @@ $ BODY ******************************************************** $
 'a'put line+""f+t[]+>ch-ptr:
    <<t->ptr,previous+t+ptr,incr+ptr,
    (nxt:ptr<=>>t,put char+f+t[ptr],incr+ptr,:nxt;+),
-   (ch=rest line;put char+f+ch).
+   (ch<1;put char+f+ch).
 'root'+.
 
 'pragmat'endif=compile.

@@ -30,12 +30,12 @@ $ BODY ******************************************************** $
 'pragmat'if=compile.
 'constant'hexshift=/a/-10.
 $'a'printf+t[]+@+>ptr: fprintf+STDOUT+t+@.
-'a'printint+""f+>n:
-   n=min int,put char+f+/-/,subtr+-1+n+n,printint1+f+n+/1/;
-   n<0,put char+f+/-/,get abs+n+n,printint1+f+n+/0/;
-   printint1+f+n+/0/.
-'a'printint1+""f+>n+>c-q-r:
-   divrem+n+10+q+r,(q=0; printint1+f+q+/0/),
+'a'prtint+""f+>n:
+   n=min int,put char+f+/-/,subtr+-1+n+n,prtint1+f+n+/1/;
+   n<0,put char+f+/-/,get abs+n+n,prtint1+f+n+/0/;
+   prtint1+f+n+/0/.
+'a'prtint1+""f+>n+>c-q-r:
+   divrem+n+10+q+r,(q=0; prtint1+f+q+/0/),
      add+r+c+r,put char+f+r.
 'a'printhex+""f+>n:
    printhex1+f+n.
@@ -49,7 +49,7 @@ $'a'printf+t[]+@+>ptr: fprintf+STDOUT+t+@.
       (string elem+t+ptr+cnt+ch,incr+cnt;+),(=ch= $ format char
        [/n/],put char+f+newline,:nxt;
        [/c/],(shift affix block+@,put char+f+arg,:nxt;+);
-       [/d/],(shift affix block+@,printint+f+arg,:nxt;+);
+       [/d/],(shift affix block+@,prtint+f+arg,:nxt;+);
        [/x/],(shift affix block+@,printhex+f+arg,:nxt;+);
        put char+f+ch,:nxt));
       +).

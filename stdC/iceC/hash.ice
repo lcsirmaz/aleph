@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "libC simple hash" 32 
 4 66 "hash"
-67 147 "stdlib"
+67 148 "stdlib"
 .
 <rule> I1 16640 63 0 "stdlib" "@root"
 <rule> I2 20 35 3<formal table> 1 1<formal in><formal out> "stdlib" "blockhash"

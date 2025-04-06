@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "jslib base" 32 
 4 245 "base"
-246 326 "stdlib"
+246 327 "stdlib"
 .
 <rule> I1 532 177 2<formal in><formal in> "stdlib" "@equal"
 <rule> I2 1044 237 1<formal in> "stdlib" "@exit"

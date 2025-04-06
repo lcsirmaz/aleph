@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "jslib format print" 32 
 4 61 "formatprint"
-62 142 "stdlib"
+62 143 "stdlib"
 .
 <rule> I1 520 92 2<formal in><formal in> "stdlib" "@equal"
 <rule> I2 520 92 2<formal in><formal in> "stdlib" "@less"
@@ -21,8 +21,8 @@ $ ICE file, produced by ALEPH compiler v2.4
 <constant> I16 0 116 "stdlib" "newline"
 <rule> I17 256 42 2<formal file><formal in> "stdlib" "printhex"
 <rule> I18 256 44 2<formal file><formal in> "stdlib" "printhex1"
-<rule> I19 256 34 2<formal file><formal in> "stdlib" "printint"
-<rule> I20 256 39 3<formal file><formal in><formal in> "stdlib" "printint1"
+<rule> I19 256 34 2<formal file><formal in> "stdlib" "prtint"
+<rule> I20 256 39 3<formal file><formal in><formal in> "stdlib" "prtint1"
 <rule> I21 264 120 2<formal file><formal in> "stdlib" "putchar"
 <rule> I22 8 98 2<formal inout><formal in> "stdlib" "rightclear"
 <rule> I23 33288 -2 1<formal shift> "" "shiftaffixblock"
