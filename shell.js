@@ -624,9 +624,9 @@ const COMMANDS={
   cp:        {f:copycmd,s:'<source> <dest>',h:['copy a file.','']},
   attrib:    {f:attribcmd,s:'+<attr> -<attr> <pattern>',h:['manipulate file attributes.','\n'+
               '  set (+) or clear (-) one or more of these attributes:\n'+
-              '     s  -- store as character file locally and retrieve automatically\n'+
-              '     r  -- read only, pass to running programs as \'read only\'\n'+
-              '     d  -- data, pass to running programs automatically.']},
+              '     s    store as character file locally and retrieve automatically\n'+
+              '     r    read only, pass to running programs as \'read only\'\n'+
+              '     d    data, pass to running programs automatically.']},
   edit:      {f:editcmd,s:'<file>',h:[
               'edit or create a new character file.','']},
   view:      {f:viewcmd,s:'<file>',h:[
@@ -644,7 +644,8 @@ const COMMANDS={
               '  <args>     command line arguments.\n'+
               'Both the <program> and all <files> must be in the current project.']},
   compile:   {f:compcmd,s:'[<compiler flags>] [-X <linker flags>] <.ale files>',
-                    h:['compile and link the main ALEPH program and optional modules.\n','\n'+
+                    h:['compile and link the main ALEPH program and optional modules. Usage:\n'+
+              '   compile [<compiler flags>] [-X <linker flags>] <.ale files>\n'+
               'compiler flags:\n'+
               '  -W          --warninglevel=3 (default is 4)\n'+
               '  -Wall       --warninglevel=0\n'+
