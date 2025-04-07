@@ -417,7 +417,7 @@ function sample(args){
   const modules={a18:2,a19:3,a20:2},maxsample=20;
   if(cmdhelp('load',args.length==1 && /^a\d\d?$/.test(args[0])))return;
   const n=parseInt(args[0].slice(1));
-  if(n>maxsample){chmdhelp('load',false);return;}
+  if(n>maxsample){cmdhelp('load',false);return;}
   loadFile('a'+n+'.ale','sample/a'+n+'.ale');
   const jj=modules['a'+n]??0;
   for(let j=1;j<=jj;j++){
