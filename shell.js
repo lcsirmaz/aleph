@@ -87,7 +87,7 @@ function helpcmd(args){// help
       P(
 'ALEPH PlayGround is an online tool for creating, editing, compiling, and\n'+
 'running ALEPH programs. For a quick start enter\n'+
-'  help -start\n'+
+'  -start\n'+
 'at the bottom line of this workspace.\n'+
 'To get help on a command use \'help <command>\' or \'<command> -h\'. Use\n'+
 '\'help -<topic>\' (with a dash) to get help on a topic. Accepted commands:\n'+
@@ -122,24 +122,23 @@ const TOPICS = {
   cmdline:
 'Commands are typed at the bottom line of the workspace. Above this line is\n'+
 'the actual project name, then the console window where entered commands and\n'+
-'messages sent to the \'stdout\' channel appear. The window at the top is reserved\n'+
-'for (typically error) messages and for the \'stderr\' channel. The \'up\' and\n'+
-'\'down\' arrows navigate among previously entered commands. Ctrl+C clears this\n'+
-'line, while Enter and Ctrl+D executes it. To list all accepted commands type\n'+
-'\'help\' without arguments.\n'+
-'The command line is also  used as the console input by the running ALEPH programs.\n'+
-'This usage is indicated by a different background color; the project name is\n'+
-'changed to that of the running program. Hitting ctrl+C kills the running program;\n'+
-'finishing the line with ctrl+D instead of Enter closes the channel for further\n'+
-'use for this program.\n',
+'messages sent to the \'stdout\' channel appear. The top window is reserved\n'+
+'for error messages and the \'stderr\' channel. The \'up\' and \'down\' \n'+
+'arrows navigate among previously entered commands. Ctrl+C clears this line,\n'+
+'while Enter and Ctrl+D executes it. To list all accepted commands type\n'+
+'\'help\' without arguments. The command line is also used as console input\n'+
+'by ALEPH programs. This usage is indicated by a different background color;\n'+
+'the project name is changed to that of the running program. Hitting ctrl+C\n'+
+'kills the running program; finishing the line with ctrl+D instead of Enter\n'+
+'closes the channel for further use for this program.\n',
 
   project: 
 'The ALEPH PlayGround is organized around projects. Each project contains all\n'+
-'files it works with, and can run one program at a time, which can use files\n'+
-'from the project exclusively.\n'+
+'files it can work with. A project can run a single program at a time and the\n'+
+'program can use project files only.\n'+
 'Projects are created by \'mkpr\', deleted by \'rmpr\', and changed to by \'chpr\'.\n'+
-'The current project name is shown above the command line. The default project\n'+
-'is \'aleph\', this project cannot be deleted. A project name cannot contain\n'+
+'The current project name is shown above the command line. The default\n'+
+'project is \'aleph\' which cannot be deleted. A project name cannot contain\n'+
 'space nor ?*{}/\'", and cannot start with - or +.',
 
   file:
@@ -147,93 +146,91 @@ const TOPICS = {
 'can be referred to as \'<filename>\', otherwise use \'/<project>/<filename>\'.\n'+
 'A filename cannot contain neither space nor ?*{}\'\", cannot start with\n'+
 '+-/ and cannot end with /. To list files use the command \'ls\' or \'dir\'.\n'+
-'The type of a file is determined by its extension. The following extensions\n'+
-'are recognized; they also indicate that it is a character file:\n'+
-'  .ale -- ALEPH program source\n'+
-'  .ice -- intermediate ALICE code\n'+
-'  .js  -- compiled javascript ALEPH program\n'+
-'Files can be uploaded to, downloaded from the PlayGround, manipulated by the\n'+
-'running ALEPH programs, but only CHARACTER files can be edited, compiled, run,\n'+
-'and saved in the Local Storage. The lifetime of PlayGround files is the\n'+
-'current session. However, files saved in Local Storage are restored when\n'+
-'starting a new session.\n'+
-'Files have attributes which can be manipulated by \'attrib\'. Character files\n'+
-'can be edited or created by \'edit\', listed by \'view\'; .ale files can be\n'+
-'compiled by \'compile\', and, after compilation, .js files can be run by \'run\'.',
+'File type is determined by its extension. The following extensions are\n'+
+'recognized; these are also character files:\n'+
+'  .ale    ALEPH program source\n'+
+'  .ice    intermediate ALICE code\n'+
+'  .js     compiled javascript ALEPH program\n'+
+'Files can be uploaded to, downloaded from the PlayGround, manipulated by\n'+
+'running ALEPH programs, but only character files can be edited, compiled,\n'+
+'run, and saved in the Local Storage. The lifetime of a PlayGround file is\n'+
+'the current session. Files in the Local Storage, however, are restored\n'+
+'when starting a new session, see the \'attrib\' command. Character files\n'+
+'can be edited or created by \'edit\', inspected by \'view\'; .ale files can be\n'+
+'compiled by \'compile\', and, .js files can be run by \'run\'.',
 
   attrib:
 'File attributes are s,r,d for save, readonly and data. They are off when\n'+
 'the file is created, and can be manipulated by the \'attrib\' command.\n'+
 'To see file attributes use \'ls -l <pattern>\'.\n'+
 ' +s  save the file at the Local Storage. Saved files are automatically\n'+
-'     recovered when the PlayGround is opened or reloaded. Can be used for\n'+
+'     recovered when the PlayGround is opened or reloaded. Use for\n'+
 '     character files only. The Local Storage is part of the browser\'s\n'+
-'     local cache, and is not saved in incognito mode.\n'+
+'     local cache, and is not saved when in incognito mode.\n'+
 ' +r  the file is passed to a running ALEPH program as \'read only\', thus\n'+
 '     the program cannot modify or delete this file. These files, however,\n'+
 '     can be edited and deleted using command line tools.\n'+
 ' +d  the file is automatically made available to the running ALEPH program\n'+
-'     in this project. The program, however, can modify or delete this file.',
+'     in this project. The program, however, can modify and delete this file.',
 
   pattern:
 'Many commands require a pattern as an argument. In a pattern ? matches\n'+
 'any character different from the slash (/), and * matches a sequence of\n'+
 'such characters, including the empty sequence.\n'+
 'Patterns starting with / search all projects; others search files in the\n'+
-'current project only. Thus \'ls /*\' lists the name of all projects (no\n'+
-'files), while \'ls *\' lists all file names in the current project which have\n'+
-'no slash character.',
+'current project only. Thus \'ls /*\' lists project names only, while\n'+
+'\'ls *\' lists all file names in the current project which have no\n'+
+'slash character.',
 
   edit:
 'The command \'edit <file>\' opens the file in a new editor window, creating\n'+
-'the file if not found. Use it for character files only, binary files are\n'+
-'not handled. The same file can be opened for editing only once, but it can\n'+
-'have many view instances. File changes in the background are not tracked.\n'+
-'Due to the used technology, selecting and highlighting text in the editing\n'+
-'window is limited to a single line.',
+'the file if not found. Only character files are handled correctly. A file\n'+
+'can be opened for editing only once, but can have many view instances.\n'+
+'Changes to the file in the background are not tracked. Due to the used\n'+
+'technology, selecting and highlighting is limited to a single line.',
 
   compile:
-'To compile the main ALEPH program together with all modules use the command\n'+
+'To compile a main ALEPH program together with all necessary modules use\n'+
 '  compile [<flags>] <source files>\n'+
-'Source files can be specified using patterns. Compilation is done in many\n'+
-'stages. First, all .ale files are compiled into ALICE codes. Second, these\n'+
-'intermediate codes are optimized. Finally, the .ice files are linked to the\n'+
-'final javascript file. The process stops at the first error. Flags after the\n'+
-'\'compile\' command start with a dash (-). Those before \'-X\' are passed to\n'+
-'the compiler; and those after \'-X\' are passed to the linker.',
+'Source files can be specified using patterns. Compilation requires several\n'+
+'stages. First, source files are compiled into ALICE codes. Second, these\n'+
+'intermediate codes are optimized. Finally, the .ice files are linked to\n'+
+'the final javascript code. The process stops at the first error. Flags\n'+
+'after the \'compile\' command start with a dash (-). Those before \'-X\'\n'+
+'are passed to the compiler; and those after \'-X\' are passed to the linker.',
 
   run:
-'Compiled ALEPH programs are executed by dedicated Web Workers. A project can\n'+
-'run one program at a time, but different projects can run several programs\n'+
-'simultaneously. Running programs have job numbers, living jobs can be listed\n'+
-'by the command \'jobs\'. Project files visible to the running program are\n'+
-'moved to the Worker, and are retrieved when the Worker terminates by itself.\n'+
-'If the Worker job is killed by a \'kill\' command, then those files might be\n'+
-'lost and should be recreated. In such cases files in the Local Storage are\n'+
-'automatically recovered, others are emptied.',
+'Compiled ALEPH programs are executed by dedicated Web Workers. A project\n'+
+'can run one program at a time, but different projects can run several\n'+
+'programs simultaneously. Running programs have dedicated job numbers,\n'+
+'the command \'jobs\' lists all running jobs. Project files available to the\n'+
+'running program are moved to the Worker, and are retrieved when the Worker\n'+
+'stops running. In case the Worker is killed by a \'kill\' command, then\n'+
+'those files might be lost and should be recreated. In such cases files in\n'+
+'the Local Storage are automatically recovered, but others are truncated.',
 
   jobs:
 'Editor and viewer windows as well as running programs have dedicated job\n'+
 'entries. Jobs can be listed by \'jobs\'. Jobs can be killed by \'kill\';\n'+
-'killing an editor or viewer closes the window immediately discarding\n'+
-'any unsaved changes. When killing a running program a "stop" message is sent\n'+
-'first to the controlling Worker. This takes effect only when the program\n'+
+'killing an editor or viewer closes the window immediately discarding any\n'+
+'unsaved changes. When killing a running program a "stop" message is sent\n'+
+'first to the controlling Worker. This takes effect only when the Worker\n'+
 'either waits for console input or sleeps. A second \'kill\' terminates\n'+
 'the Worker itself, but in this case files held by the Worker are lost.\n'+
 'Among them those in the Local Storage are automatically recovered, but\n'+
-'others are permanently deleted.',
+'others are truncated to zero.',
 
   about:
 'ALEPH PlayGround is a command line based runtime environment for editing,\n'+
-'compiling and running ALEPH program code. The PlayGround runs locally in the\n'+
-'browser without sending data over the internet. The PlayGround and the ALEPH\n'+
-'compiler are free software; the source is available at\n'+
+'compiling and running ALEPH program code. The PlayGround runs locally in\n'+
+'the browser without sending data over the internet. The PlayGround and\n'+
+'the ALEPH compiler are free software; the source is available at\n'+
 '    https://github.com/lcsirmaz/aleph/\n'+
 'and is distributed under the GNU General Public License version 3 (or any\n'+
 'later version at your option) in the hope that it will be useful, but\n'+
 'WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY\n'+
-'or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for\n'+
-'more details.',
+'or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License\n'+
+'for more details.',
 };
 
 /* commands */
