@@ -11,6 +11,7 @@
         print string+STDARG+ptr,print char+newline,
            previous string+STDARG+ptr,:nxt).
 'root'-n:count arguments+n,
-   (n=0,printf+" *** No arguments%n";
-    printf+" *** The %d arguments:%n"+n,print arguments).
+   (n=0,printf+" *** There are no arguments%n";
+    n=1,printf+" *** There is 1 argument:%n",print arguments;
+        printf+" *** There are %d arguments:%n"+n,print arguments).
 'end'
