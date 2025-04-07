@@ -3,7 +3,7 @@ $ move n discs from peg A to peg C
 $ the output is a sequence of peg pairs XY meaning 
 $   move the top disc on peg X to peg Y.
 
-'charfile'CF=>"work/a9.txt". $write to this file
+'charfile'CF=>"work/a10.txt". $write to this file
 'action'move tower+>height+>from+>via+>to:
    height=0; $ nothing is to be done
    decr+height,move tower+height+from+to+via,
