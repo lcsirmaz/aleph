@@ -8,14 +8,14 @@ $ add a low level routine returning current time
 $ this is the module body
 'a'c arr+t[]: put line+STDOUT+t+newline.
 'a'c int+>n:  put int+STDOUT+n.
-'a'c char+>c: put char+STDOUT.
-'a'c str+t[]+>p:put srting+STDOUT+t+p.
+'a'c char+>c: put char+STDOUT+c.
+'a'c str+t[]+>p:put string+STDOUT+t+p.
 
 'pragmat'library mode=on.
 $ this gets inserted at the front of the compiled javascript text
 $ returns hours, minutes, seconds
 'pragmat'front matter="function XXX(A){"
-  "let D=new Date;
+  "let D=new Date;"
   "A[0]=D.getHours();"
   "A[1]=D.getMinutes();"
   "A[2]=D.getSeconds();}%n".
