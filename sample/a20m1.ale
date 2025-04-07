@@ -1,0 +1,93 @@
+'pragmat'module=a20m1,title="formula definitions".
+$ a formula is stored as a tree; nodes are operators
+$ (binary and unary), leaves are constants or a variable
+$ HEADER ***************************************************
+'stack'(op,left,right)expr,const,var.
+'table'operator.
+$ constants
+'constant'plus op,min op,tim op,div op,pow op, $ binary
+  log op,exp op,sin op, cos op. $ unary
+'constant'x var,c zero,c one,c two. $ special leafs
+
+'a'M+>left+>op+>right+res>. $ add a new formula
+'a'add number+>v+res>.      $ add a number
+'q'is zero+>e,is one+>e.    $ check if it is a constant
+'q'is same+>e1+>e2.         $ check if they are equal
+'a'simplify+>e+f>.          $ simplify a formula
+'a'print expr+>e.           $ print a formula
+$ BODY *****************************************************
+'pragmat'if=compile.
+'stack'[3](op,left,right)expr[].
+'table'operator[]=(
+  $ binary operators      
+    "+":plus op,"-":min op,"*":tim op,"/":div op, "^":pow op,
+  $ unary, represented as 0 "op" f
+    "log":log op, "sin":sin op, "cos": cos op, "exp": exp op).
+'stack'[1] const [] = (0:c zero,1:c one, 2:c two).
+'stack'[] var [] = ("x":x var ).
+$ create a new expression 
+'action'M+>left+>op+>right+res>:
+  (*left->left,op->op,right->right*) expr, >>expr->res.
+'action'add number+>v+res>:
+  (* v->const *) const, >>const->res.
+'q'is zero+>e: is same+e+c zero.
+'q'is one+>e:  is same+e+c one.
+'q'is same+>e1+>e2:
+   e1=e2;
+   was+const+e1,was+const+e2,const[e1]=const[e2];
+   was+var+e1,was+var+e2,var[e1]=var[e2];
+   op*expr[e1]=op*expr[e2],is same+left*expr[e1]+left*expr[e2],
+        is same+right*expr[e1]+right*expr[e2].
+$ simplify the formula
+'action'simplify+>e+f>-e1-e2:
+   was+const+e, e->f;
+   was+var+e,   e->f;
+   simplify+left*expr[e]+e1,simplify+right*expr[e]+e2,
+   (=op*expr[e]=
+    [plus op], (is zero+e1, e2->f;
+                is zero+e2, e1->f;
+                (was+const+e1,was+const+e2),
+                  add+const[e1]+const[e2]+e1,(* e1->const *)const, >>const->f;
+                M+e1+plus op+e2+f);
+    [min op],  (is zero+e2, e1->f;
+                (was+const+e1,was+const+e2),
+                   subtr+const[e1]+const[e2]+e1,(*e1->const *)const, >>const->f;
+                M+e1+min op+e2+f);
+    [tim op],  (is zero+e1, e1->f;
+                is one+e1, e2->f;
+                is zero+e2, e2->f;
+                is one+e2, e1->f;
+                M+e1+tim op +e2+f);
+    [pow op],  (is one+e2,e1->f;
+                is zero+e2,c one->f;
+                M+e1+pow op+e2+f);
+    [div op],  (is one+e2,e1->f;
+                is zero+e1,e1->f;
+                is same+e1+e2,c one->f;
+                M+e1+div op+e2+f);
+    M+e1+op*expr[e]+e2+f).
+$ printing
+'a'print expr+>e: print expr1+0+e.
+$ print with or without parentheses
+'a'print expr1+>br+>e:
+  was+const+e,printf+"%d"+const[e];
+  was+var+e,print string+var+e;
+  (=op*expr[e]=
+   [min op],(is zero+left*expr[e],
+              (is+br,print char+/(/;+),
+              print char+/-/,print expr1+0+right*expr[e],
+              (is+br,print char+/)/;+);
+             print binop+br+e);
+   [plus op;tim op;div op;pow op],print binop+br+e;
+   print string+operator+op*expr[e],print char+/(/,
+       print expr1+0+right*expr[e],print char+/)/).
+'a'print binop+>br>+>e: $ it is a binary operator
+   (is+br,print char+/(/;+),
+   print expr1+1+left*expr[e],print string+operator+op*expr[e],
+   print expr1+1+right*expr[e],
+   (is+br,print char+/)/;+).
+
+'root'+.
+'pragmat'endif=compile.
+'end'
+'

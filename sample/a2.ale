@@ -1,6 +1,6 @@
+'pragmat'title="squaring numbers".
 $ reading numbers from STDIN, squaring them and 
 $  printing the result.
-'pragmat'title="squaring numbers".
 'a'intro:
    printf+"Type a number; I will compute its square.%n"
           "To quit, hit ^C, ^D or a non-number%n".

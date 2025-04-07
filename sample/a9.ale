@@ -1,0 +1,26 @@
+'pragmat'title="multiple push and pop".
+$ indexing error when popping too many elements
+
+'pragmat'bounds=on. $ check indexing 
+'action'push+[]st[]+@+>x:
+  (* x->st *)st,(shift affix block+@,:push;+).
+'action'pop+[]st[]+@+x>:
+  st->x,unstack+st,(shift affix block+@,:pop;+).
+
+'action'pop2+[]st[]+@+x>: pop+st+@. $ calls pop only
+'stack'[1]stack[]=(1,2,3,4,5,6,7).
+'stack'[](#,#)other[]=(1234:stptr). $ pointer definition
+
+'action'print+@+>x: $ mulitple print
+   print int+x,(shift affix block+@,:print;
+                print char+newline).
+
+'root'-a-b-c: print+stptr,
+              pop2+stack+a+b+c,print+a+b+c, $ 7,6,5
+              pop2+stack+b+c,print+b+c,     $ 4,3
+              push+stack+11+12+13+14,
+              pop2+stack+a,print+a,         $ 14
+              pop2+stack+a+b,print+a+b,     $ 13,12
+              pop2+stack+a+b+c,print+a+b+c, $ 11,2,1
+              pop2+stack+a,print+a.         $ error
+'end'

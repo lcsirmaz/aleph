@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "jslib simple hash" 32 
 4 61 "hash"
-62 142 "stdlib"
+62 143 "stdlib"
 .
 <rule> I1 16640 58 0 "stdlib" "@root"
 <rule> I2 20 35 3<formal table> 1 1<formal in><formal out> "stdlib" "blockhash"

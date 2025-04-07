@@ -1,0 +1,28 @@
+'pragmat'title="Recognizing a^n b^n c^n without counting".
+$ go over all arguments and check if they are of this form
+
+$ reading characters from the string STDIN[ptr]
+$ the next character is in chr, it is newline if we are at the end
+'variable'chr=/ /, cnt=0, ptr=0.
+
+'a'next char: string elem+STDARG+ptr+cnt+chr,incr+cnt;
+              newline->chr.
+'p'R+>x: chr=x,next char.
+
+'p'parse+@+>a:
+   R+/a/,parse+/a/+@;
+   expect+/b/+@,expect+/c/+@,R+newline.
+'p'expect+>ch+@+>cnt:
+   R+ch,shift affix block+@,:expect;
+   shift affix block+@,-;
+   +.
+
+'root'
+  >>STDARG->ptr,(nxt:
+  ptr<<<STDARG;
+  printf+"Testing ",printf+STDARG+ptr,0->cnt,next char,
+     (parse+/x/,printf+"%n    a^nb^nc^n recognized%n";
+                printf+"%n    not a^nb^nc^n%n"),
+     previous string+STDARG+ptr,:nxt).
+
+'end'

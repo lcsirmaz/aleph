@@ -1,8 +1,8 @@
+'pragmat'title="quicksort".
 $ quicksort with a comparison routine
 $ sort the element of the stack []a[] so that
 $  qless+x+y returns true when x precedes y
 $
-'pragmat'title="quicksort".
 
 'a'quicksort+>from+>to+[]a[]. $ prototype
 
@@ -31,9 +31,9 @@ $
 $ Now we use the algorithm to sort alphabetically or
 $ in the reverse
 
-'stack'[]A[]=(one,two,three,four,five,six,seven,eight,nine).
+'stack'[]A[]=(one,two,three,four,five,six,seven,eight,nine,ten).
 'table'B[]=("one":one,"two":two,"three":three,"four":four,"five":five,
-          "six":six,"seven":seven,"eight":eight,"nine":nine).
+          "six":six,"seven":seven,"eight":eight,"nine":nine,"ten":ten).
 
 'a'print A-idx:
    <<A->idx,(nxt:idx>>>A,putc+newline;

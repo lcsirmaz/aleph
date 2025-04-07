@@ -1,0 +1,15 @@
+'pragmat'title="Towers of Hanoi with simple file output".
+$ move n discs from peg A to peg C
+$ the output is a sequence of peg pairs XY meaning 
+$   move the top disc on peg X to peg Y.
+
+'charfile'CF=>"work/a9.txt". $write to this file
+'action'move tower+>height+>from+>via+>to:
+   height=0; $ nothing is to be done
+   decr+height,move tower+height+from+to+via,
+     move disc+from+to,move tower+height+via+from+to.
+'action'move disc+>peg1 + >peg2:
+   putchar+CF+peg1,putchar+CF+peg2,putchar+CF+/ /.
+
+'root'move tower+5+/A/+/B/+/C/,putchar+CF+newline.
+'end'

@@ -1,0 +1,13 @@
+'pragmat'title="Numbers in reverse order".
+$ store integers in a stack and print them in reverse order.
+'stack'[1]ST[].
+'a'push+>x: (* x->ST *)ST.
+'p'pop+x>: >>ST>=<<ST,ST->x,unstack+ST.
+
+'a'read-b: get int+STDIN+b,push+b,:read;+.
+'a'print-b: pop+b,print int+b,:print;+.
+
+'root'printf+"print several numbers, followed by a non-number%n"
+             "I will print them in reverse order:%n",
+      read,print.
+'end'

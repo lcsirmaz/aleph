@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "jslib get line" 32 
 4 48 "getline"
-49 129 "stdlib"
+49 130 "stdlib"
 .
 <rule> I1 98312 81 3<formal in><formal anchor><formal out> "stdlib" "@make"
 <rule> I2 16640 46 0 "stdlib" "@root"

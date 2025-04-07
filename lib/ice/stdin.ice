@@ -1,7 +1,7 @@
 $ ICE file, produced by ALEPH compiler v2.4
 'module' "stdlib" "jslib stdin" 32 
 4 37 "stdin"
-38 118 "stdlib"
+38 119 "stdlib"
 .
 <table> I1 8 -2 1 1 "" "@StringTable"
 <rule> I2 16640 35 0 "stdlib" "@root"

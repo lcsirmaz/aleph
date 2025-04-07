@@ -39,18 +39,18 @@ $ strings
       $ move back by string width
 'f' compare string+t1[]+>p1+t2[]+>p2+comp>,
     compare string n+t1[]+>p1+t2[]+>p2+>n+comp>.
-      $ compare two strings, up to n characters
+      $ compare two strings up to 'n' characters
 'q' string elem+t[]+>p+>n+chr>.
       $ retrieve the n-th character of the string
 'a' unstack string+[]st[].
-      $ remove a string from the top of the stack
-'a' pack string+from[]+>p+[]to[].
-      $ pack a string from the characters found in 
-      $    from[p] .. from[>>from]
+      $ remove the string from the top of the stack
+'a' pack string+from[]+>n+[]to[].
+      $ the last 'n' elements of 'from' are characters, pack them
+      $    to a string to the top of 'to'
 'a' unpack string+from[]+>p+[]to[].
       $ unpack characters of the string to the top of 'to'
 'a' copy string+from[]+>p+[]to[].
-      $ copy a string to the top of 'to'
+      $ copy the string to the top of 'to'
 $ files
 'p' open file+""f+>mode+t[]+>p.
       $ open a file with the given path, mode is /r/ or /w/

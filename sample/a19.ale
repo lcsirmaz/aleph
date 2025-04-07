@@ -1,7 +1,7 @@
 'pragmat'title="quicksort with different comparison routines".
 $ for more explanation how this program works, see
 $ the discussion in "Aleph Compiler 2.2", Section 5.4
-'pragmat'require=("a8m1","a8m2").
+'pragmat'require=("a19m1","a19m2").
 $ the first provides "sort", the second "sort reverse"
 
 $ this is the stack to be sorted

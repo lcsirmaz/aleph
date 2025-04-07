@@ -1,0 +1,11 @@
+'pragmat'title="numbers in reverse order - 2".
+$ store integers in affixes, print them in reverse order
+'a'read+@+>a-b:
+   get int+STDIN+b,read+b+@;
+   print+@.
+'a'print+@+>a-b:
+   a->b,(shift affix block+@,print int+b,:print;+).
+'root'printf+"print several numbers, followed by a non-number%n"
+             "I will print them in reverse order:%n",
+      read+0.
+'end'

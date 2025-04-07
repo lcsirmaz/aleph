@@ -1,0 +1,16 @@
+'pragmat'title="Command line arguments".
+'pragmat'warning="Printing command line arguments".
+'pragmat'warning="Usage: run a4 <arg1> <arg2> ...".
+'f'count arguments+n>-ptr:
+  0->n,>>STDARG->ptr,
+    (nxt:ptr<<<STDARG;
+         incr+n,previous string+STDARG+ptr,:nxt).
+'a'print arguments-ptr:
+   >>STDARG->ptr,
+   (nxt:ptr<<<STDARG;
+        print string+STDARG+ptr,print char+newline,
+           previous string+STDARG+ptr,:nxt).
+'root'-n:count arguments+n,
+   (n=0,printf+" *** No arguments%n";
+    printf+" *** The %d arguments:%n"+n,print arguments).
+'end'

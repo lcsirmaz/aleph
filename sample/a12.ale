@@ -1,0 +1,12 @@
+'pragmat'title="printing unicode characters".
+'stack'[1]A[],[1]B[].
+
+'root'-x:
+   200->x,(nxt: x<300,(* x->A *)A,incr+x,:nxt;+),
+   (* newline->A *)A,
+   99200->x,(nxt:x<99300,(* x->A *)A,incr+x,:nxt;+),
+   put line+STDOUT+A+new line,
+   list length+A+x,pack string+A+x+B,print string+B+>>B.
+'end'
+
+

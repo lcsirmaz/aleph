@@ -1,0 +1,21 @@
+'pragmat'title="overloading the equality sign".
+$ the test x=y translates to @equal+x+y
+$ redefining so that pointers to STR compare string equality
+$ The uneffected library routine equal+x+y checks for real equality
+
+'stack'[]STR[]=("string1":ptr1,"string1":ptr2,"string2":ptr3,"string2":ptr4).
+
+'pragmat'library mode=on.
+'q'@equal+>x+>y-eq:
+  (was+STR+x,was+STR+y),compare string+STR+x+STR+y+eq,equal+eq+0;
+  equal+x+y.
+'pragmat'library mode=off.
+
+'root'
+  (ptr4=1,print string+"ptr4=1 wrong";print string+"ptr4=1 OK"),
+  print char+newline,
+  (ptr1=ptr2,print string+"ptr1=ptr2 OK";print string+"ptr1=ptr2 wrong"),
+  print char+newline,
+  (ptr2=ptr3,print string+"ptr2=ptr3 wrong";print string+"ptr2=ptr3 OK"),
+  print char+newline.
+'end'

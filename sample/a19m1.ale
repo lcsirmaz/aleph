@@ -1,9 +1,9 @@
+'pragmat'module=sortascending,title="module a19m1".
 $ quicksort in ascending order
-'pragmat'module=sortascending,title="module a8m1".
 'a'sort+[]T[]. $ exported sorting algorithm
 
-'pragmat'if=compile.
-'pragmat'require="a8m3". $ the sorting algorithm is defined here
+'pragmat'if=compile. $ module body starts here
+'pragmat'require="a19m3". $ the sorting algorithm is defined here
 
 'a'sort+[]T[]: quick sort+<<T+>>T+T.
 

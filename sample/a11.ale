@@ -1,0 +1,44 @@
+'pragmat'title="Towers of Hanoi with visual printing".
+'pragmat'warning="The program waits 2 seconds between disc moves".
+
+$ The peg contents are stored in three stacks
+'action'move tower+>height+[]from[]+[]via[]+[]to[]:
+   height=0;
+   decr+height,move tower+height+from+to+via,
+     move disc+from+to,print towers,
+     move tower+height+via+from+to.
+$ move the topmost element of 'from' to 'to'
+'action'move disc+[]from[]+[]to[]:
+   (*from->to*)to,unstack+from.
+$ contents of pegs
+'stack'[1]A[],[1]B[],[1]C[].
+'var'total=4. $ number of initial discs on peg A
+'action'fill A+>n: $ put discs on peg A
+   n=0; (* n->A *)A, decr+n,:fill A.
+$ print the three towers
+'action'print towers-row:
+   total->row,putc+newline,
+   (nxt:row=0,msleep+2400;
+        decr+row,print disc+A+row,
+                 print disc+B+row,
+                 print disc+C+row,putc+newline,:nxt).
+'action'print disc+st[]+>row-idx:
+   add+row+<<st+idx,(was+st+idx,full disc+st[idx];empty disc).
+'action'full disc+>n-spaces:
+   subtr+total+n+spaces,
+   print chars+spaces+/ /,print chars+n+/*/,print chars+1+/*/,
+   print chars+n+/*/,print chars+spaces+/ /.
+'action'empty disc:
+   print chars+total+/ /,print chars+1+/*/,print chars+total+/ /.
+'action'print chars+>n+>chr:
+   n=0;print char+chr,decr+n,:print chars.
+
+'action'play game:
+   fill A+total,print towers,move tower+total+A+B+C.
+
+'root'
+  printf+"Towers of Hanoi with moves.%n"
+         "How many towers? Enter a number between 1 and 6:",
+  get int+STDIN+total,total>=1,total<=6,play game.
+
+'end'

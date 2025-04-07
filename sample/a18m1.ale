@@ -1,26 +1,30 @@
 $ define some library routines
 $ add a low level routine returning current time
-'pragmat'module=m1,title="module a9m1".
+'pragmat'module=a18m1,title="module a18m1".
 
-'a'print arr+t[],print int+>n.
+'a'c arr+t[],c int+>n,c char+>c,c str+t[]+>ptr.
 
 'pragmat'if=compile.
 $ this is the module body
-'a'print arr+t[]: put line+STDOUT+t+newline.
-'a'print int+>n:  put int+STDOUT+n.
+'a'c arr+t[]: put line+STDOUT+t+newline.
+'a'c int+>n:  put int+STDOUT+n.
+'a'c char+>c: put char+STDOUT.
+'a'c str+t[]+>p:put srting+STDOUT+t+p.
 
 'pragmat'library mode=on.
 $ this gets inserted at the front of the compiled javascript text
 $ returns hours, minutes, seconds
 'pragmat'front matter="function XXX(A){"
-  "A[0]=(new Date).getHours();"
-  "A[1]=(new Date).getMinutes();"
-  "A[2]=(new Date).getSeconds();}%n".
+  "let D=new Date;
+  "A[0]=D.getHours();"
+  "A[1]=D.getMinutes();"
+  "A[2]=D.getSeconds();}%n".
 'x''a'getTime+h>+m>+s>="XXX".
 'pragmat'library mode=off.
+
 $ this is the initialization for this module
 'root'-h-m-s:getTime+h+m+s,
-    printf+"Module a9m1 initialization at %d:%d:%d%n"+h+m+s.
+    printf+"Module a18m1 initialization at %d:%d:%d%n"+h+m+s.
 'pragmat'endif=compile.
 
 'end'

@@ -105,14 +105,14 @@ cmdlist+'\n'+
 const TOPICS = {
   start:
 'Commands for the impatient to start with:\n'+
-'  load a1           load the sample ALEPH program \'a1.ale\' (Hello World)\n'+
+'  load a1           load the sample ALEPH program \'a1.ale\' (Hello World!)\n'+
 '  edit a1.ale       open \'a1.ale\' in an editing window\n'+
 '  compile a1.ale    compile it\n'+
 '  run a1            and run it (assuming compiled without errors)\n\n'+
 'Some basic commands:\n'+
 ' mkpr, chpr  create a new project, change to the named project\n'+
-' load a1 .. a9   load one of the nine sample ALEPH programs with modules\n'+
-' edit, view  open a character file for editing or viewing\n'+
+' load a1, load a2, ... load one of the sample ALEPH programs\n'+
+' edit, view  open a character file for editing and viewing\n'+
 ' stdlib      show the standard ALEPH library\n'+
 ' dir, ls     list files\n'+
 ' cp, rm      copy, remove (delete) files\n'+
@@ -400,7 +400,7 @@ function viewstdlib(args){// stdlib
    xhr.send();
 }
 // load a sample ALEPH program
-// args[0]: 1 .. 9, load one or more files as a0<n>.ale, a0<n>m<j>.ale
+// args[0]: a1 .. a19, load one or more files as a<n>.ale, a<n>m<j>.ale
 function loadFile(n,url){
    if(FS.ffind(FS.cwp(),n,0)){P('file '+n+' exists, not overwritten');return;}
    const fObj=FS.ffind(FS.cwp(),n);
@@ -414,17 +414,14 @@ function loadFile(n,url){
    xhr.send();
 }
 function sample(args){
-  if(cmdhelp('load',args.length==1 && args[0].length==2))return;
-  const n=args[0].at(1);
-  if(args[0].at(0)!='a' || n<'1'||'9'<n){cmdhelp('load',false);return;}
-  loadFile('a'+n+'.ale','lib/'+n+'.ale');
-  if(n=='8'){ // we have m1,m2,m3 as well
-     loadFile('a8m1.ale','lib/8m1.ale');
-     loadFile('a8m2.ale','lib/8m2.ale');
-     loadFile('a8m3.ale','lib/8m3.ale');
-  }else if(n=='9'){
-     loadFile('a9m1.ale','lib/9m1.ale');
-     loadFile('a9m2.ale','lib/9m2.ale');
+  const modules={a18:2,a19:3,a20:2},maxsample=20;
+  if(cmdhelp('load',args.length==1 && /^a\d\d?$/.test(args[0])))return;
+  const n=parseInt(args[0].slice(1));
+  if(n>maxsample){chmdhelp('load',false);return;}
+  loadFile('a'+n+'.ale','sample/a'+n+'.ale');
+  const jj=modules[n]??0;
+  for(let j=1;j<=jj;j++){
+    loadFile('a'+n+'m'+j+',ale','sample/a'+n+'m'+j+'.ale');
   }
 }
 
@@ -598,12 +595,13 @@ const COMMANDS={
   help:      {f:helpcmd,s:'[<command>|-<topic>]',h:[
               'give help on a specific command or topic.','']},
   '?':       {alias:'help'},
-  load:      {f:sample,s:'a1 ... load a9',h:['load a sample ALEPH program.','\n'+
+  sample:    {alias:'load'},
+  load:      {f:sample,s:'a1 .. load a20',h:['load a sample ALEPH program.','\n'+
               'These ALEPH programs represent different features, starting from the\n'+
-              '"hello world" in \'a1.ale\' and advancing. The main program is aN.ale,\n'+
-              'the modules, if any, are aNm1.ale, aNm2.ale, etc. Use the command\n'+
-              '  edit aN.ale      to open this program in an editing window;\n'+
-              '  compile aN*.ale  to compile with all modules; finally\n'+
+              '"Hello World!" in \'a1\' and advancing. The main program is aN.ale, the\n'+
+              'modules, if any, are aNm1.ale, aNm2.ale, etc. Use\n'+
+              '  edit aN.ale      to open this program in an editing window\n'+
+              '  compile aN*.ale  to compile with all modules, finally\n'+
               '  run aN           to run the result.']},
   chpr:      {f:chpr,s:'<project>',h:['change to the specified project.','']},
   mkpr:      {f:mkpr,s:'<project>',h:['create a new empty project and change to it.','']},

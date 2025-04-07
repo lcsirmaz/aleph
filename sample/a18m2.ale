@@ -1,0 +1,19 @@
+'pragmat'module=a18m2 module,title="module a18m2".
+
+'a'dummy action. $ export this rule
+
+'pragmat'if=compile.
+'pragmat'require="a18m1". $ for c int, c str, c char
+$ this is the initialization for this module
+'root'c str+"Module a9m2 initialization:",c char+newline,
+      wait for+"a18m1",
+$ manifest constants
+      c str+_file_,c int+_line_,c char+newline,
+      c str+_title_,c char+newline,
+      c str+_rule_,c char+newline,
+      c str+_module_,c char+newline.
+
+'a'dummy action:+.
+
+'pragmat'endif=compile.
+'end'

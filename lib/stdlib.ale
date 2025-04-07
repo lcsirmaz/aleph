@@ -44,7 +44,7 @@ $ Arithmetic, string
     previous string+t[]+>p>,compare string+t1[]+>p1+t2[]+>p2+comp>,
     compare string n+t1[]+>p1+t2[]+>p2+>n+comp>.
 'q' string elem+t[]+>p+>n+chr>.
-'a' unstack string+[]st[],pack string+from[]+>p+[]to[],
+'a' unstack string+[]st[],pack string+from[]+>n+[]to[],
     unpack string+from[]+>p+[]to[],copy string+from[]+>p+[]to[].
 'f' string hash+t[]+>p+hash>, block hash+t[]+>p+hash>.
 $ Files

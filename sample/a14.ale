@@ -1,0 +1,24 @@
+'pragmat'title="table filling".
+'constant'four times = 4.
+'table'(a,b,c)T[] = (
+  (81->a,83->c->b)*2:p1, (204,205,206):p2, (cb->b,cc->c,ca->a):p3,
+  (301->c,400->*):p4,"A":p5,(73,74)*four times:p6,
+  (p1,p2,p3):p7,p7 ).
+'constant'ca=100,cb=ca+1,cc=cb+1.
+
+'a'print ptr+>i:
+  =i=
+  [p1],printf+" p1";
+  [p2],printf+" p2";
+  [p3],printf+" p3";
+  [p4],printf+" p4";
+  [p5],printf+" p5";
+  [p6],printf+" p6";
+  [p7],printf+" p7";
+  +.
+
+'root'-i:
+  subtr+<<T+<>T+i,(nxt:i>=>>T;
+    incr+i,print int+i,print int+c*T[i],print ptr+i,print char+newline,:nxt).
+'end'
+
