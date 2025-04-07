@@ -421,7 +421,7 @@ function sample(args){
   loadFile('a'+n+'.ale','sample/a'+n+'.ale');
   const jj=modules['a'+n]??0;
   for(let j=1;j<=jj;j++){
-    loadFile('a'+n+'m'+j+',ale','sample/a'+n+'m'+j+'.ale');
+    loadFile('a'+n+'m'+j+'.ale','sample/a'+n+'m'+j+'.ale');
   }
 }
 
