@@ -11,8 +11,6 @@ $ constants
 
 'a'M+>left+>op+>right+res>. $ add a new formula
 'a'add number+>v+res>.      $ add a number
-'q'is zero+>e,is one+>e.    $ check if it is a constant
-'q'is same+>e1+>e2.         $ check if they are equal
 'a'simplify+>e+f>.          $ simplify a formula
 'a'print expr+>e.           $ print a formula
 $ BODY *****************************************************

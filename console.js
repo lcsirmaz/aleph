@@ -66,7 +66,7 @@ var aCle = function(doc){
    // HighWater: when reaching that many lines in stdout or stderr
    //    linies are chopped to LowWater
    // ccBufLen: number of lines remembered in ccBuffer
-   const HighWater=750,LowWater=550,ccBufLen=50;
+   const HighWater=1550,LowWater=1250,ccBufLen=150;
    // channels, 0,1,2 for aCle.print()
    const CHS=[null,                   // stdin
               {lines:1,eol:1,D:null}, // stdout
