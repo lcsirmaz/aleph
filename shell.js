@@ -685,11 +685,14 @@ function EXEC(str){
    let b=[];
    str.split(/(?:\s+|\s*([{}])\s*)/).forEach((x)=>{if(x)b.push(x);});
    if(b.length>0){
-     let f=COMMANDS[b.shift()];if(f?.alias){f=COMMANDS[f.alias];}
+     const cmd=b.shift();
+     let f=COMMANDS[cmd];if(f?.alias){f=COMMANDS[f.alias];}
      if(f){
        // check help arguments
        if(b[0]?.startsWith('-h')|| b[0]?.startsWith('--h')){showHelp(f); }
        else {f.f(b);}
+     }else if(cmd.startsWith('-') && (f=TOPICS[cmd.slice(1)])){
+        P(f)
      }else{P("unknown command, use 'help' for a list of commands");}
    }
 }
