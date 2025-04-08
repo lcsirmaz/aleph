@@ -24,6 +24,8 @@ time error messages and for the `stderr` channel. For a quick start enter
 
 (with a dash) at the bottom line. Commands for the impatient are
 
+| command | description |
+| :----    | : ---- |
 | help     | give a general help |
 | load a1  | load the sample ALEPH program `a1.ale` (Hello World!) |
 | edit a1.ale | open this program in an editing window |
@@ -32,6 +34,7 @@ time error messages and for the `stderr` channel. For a quick start enter
 
 Some other basic commands:
 
+| command | description |
 | :---- | :---- |
 | mkpr, chpr | create a new project; change to the specified project |
 | load a1, ... load a20 | load one of the sample ALEPH programs |
