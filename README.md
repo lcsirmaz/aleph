@@ -1,7 +1,7 @@
-## aleph
+## Aleph
 Modular ALEPH programming language v2.4
 
-Aleph is a historical programming language; its name is an abbreviation for
+Aleph is a historical programming language; the name is an acronym for
 **A** **L**anguage **E**ncouraging **P**rogram **H**iearachy.
 This is an Aleph complier written in Aleph. The language is described
 in the [Aleph Manual](https://lcsirmaz.github.io/aleph/manual.html);
