@@ -15,7 +15,7 @@ where you can edit, compile and run ALEPH code immediately.
 
 The [PlayGround](https://lcsirmaz.github.io/aleph/) is a command-line based 
 online tool for creating, editing, compiling and running ALEPH programs.
-Commands are entered at the bottom line of the workplace. Above the command
+Commands are entered at the bottom line of the workspace. Above the command
 line is the console window where the entered commands as well as messages
 sent to the `stdout` channel appear. The top window is reserved for running
 time error messages and for the `stderr` channel. For a quick start enter
@@ -32,12 +32,12 @@ time error messages and for the `stderr` channel. For a quick start enter
 | `compile a1.ale` | compile it |
 | `run a1`  | and run it (assuming compiled without errors) |
 
-Some other basic commands:
+Some basic commands:
 
 | command | description |
 | :---- | :---- |
 | `mkpr` `chpr` | create a new project; change to the specified project |
-| `load a1` ... `load a20` | load one of the sample ALEPH programs |
+| `load a1` ... `load a21` | load one of the sample ALEPH programs |
 | `edit` `view` | open a character file for editing and viewing |
 | `stdlib` |     show the standard ALEPH library |
 | `dir` `ls` | list files |
