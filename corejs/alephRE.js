@@ -49,15 +49,15 @@
                    at the top of S (used by stdarg)
     a_cmpToStr(A,idx,"str")
                    check if "str" and the packed strings are the same (wait)
-*   a_Ite(A,idx,f) call f() for each UTF-8 char in the packed string
-*   a_Str(A,idx)   convert a packed string into a js string
+*   strIter(A,idx,f) call f() for each UTF-8 char in the packed string
+*   a2str(A,idx)   convert a packed string into a js string
 
 3) timeout
     a_async_a_sleep(ms)
                    return after ms milliseconds
 
 4) filesystem
-  Available file descriptors are stored in the a_FD[] array (written: F)
+  Available file descriptors are stored in the FD[] array (written: F)
     path     fully qualified name; <<xxx>>> for standard character files
     idx      fObj index, -1 if URL, -2 if created
     openw    -1 if RO (no writing, unlink), 1 if opened for writing
@@ -117,7 +117,7 @@
   opening and closing
     a_openfile(af,mode,A,ptr)
                    af: aleph file, mode: /r/ or /w/, (A,ptr): name
-*   a_tryopen(af,mode)
+*   tryOpen(af,mode)
                    try to open an aleph file, return 1 if OK success
     a_opentmp(af,A,ptr)
                    create a tmp file and open it for writing. The ending
@@ -128,10 +128,10 @@
     a_setfilepos(af,pos)
                    set position when buffered and opened for reading
 
-*   a_closeAll()   close all files; called when the program terminates
+*   closeAll()   close all files; called when the program terminates
 *   returnFiles()  return files using messages
-*   a_addFile(fname,idx,ro,buff)
-                   populate a_FD with the specified file; idx=-1 when URL
+*   addFile(fname,idx,ro,buff)
+                   populate FD with the specified file; idx=-1 when URL
 *   loadFile(fname,URL)
                    load the file from the given URL as RO
 
@@ -145,9 +145,9 @@
                    async version
 *   aChkIn(af)     check character input, return 1 on error, 0 on OK
 *   aChPos(F,f)    advance character position, read next UTF-8 char
-*   a_WaitForNextLine(channel)
+*   waitForNextline(channel)
                    promise which reolves to the received message
-*   a_SendLineBuffer(channel,str)
+*   sendLineBuffer(channel,str)
                    sent the string to the channel
 *   flushStdout()  before prompting at stdin, flush stdout
 *   asChar(f,F,P)  async character reading; return 0 on error or EOF,
@@ -192,13 +192,13 @@
 
 "use strict";
 let a_StdargArray=[];   // command line arguments, set by initial message
-let a_Job=-1;           // the job number, sent with each message
-let a_Exv=0;            // the exit value, if set
+let Jobno=-1;           // the job number, sent with each message
+let exval=0;            // the exit value, if set
 
 // constants 
-const a_MaxListSize=1e6;// maximal size of an ALEPH list in bytes
-const a_MaxFileSize=1e6;// opening a file for writing
-const a_CharBufExt=4096;// bytes character files are extended
+const MaxListSize=1e6;// maximal size of an ALEPH list in bytes
+const MaxFileSize=1e6;// opening a file for writing
+const CharBufExt=4096;// bytes character files are extended
 
 /* ******************************************************************** */
 /* Errors are reported as exceptions using a string 'cause' field */
@@ -223,7 +223,7 @@ class a_Array {
       this.alwb = lwb;    // actual lower bound
       this.aupb = lwb-cal;// actual upper bound, empty
       this.offs = cal-lwb-1; // see get() and set()
-      this.buffer = new ArrayBuffer(0, {maxByteLength:a_MaxListSize});
+      this.buffer = new ArrayBuffer(0, {maxByteLength:MaxListSize});
       this.data = new Int32Array(this.buffer);
       this.size=0;        // allocated size in words
       this.extension(fillsize);
@@ -237,7 +237,7 @@ class a_Array {
           }
           // make it a multiple of 1024, but don't go beyond vupb
           ns=Math.min((ns+1023)& ~0x3ff,this.vupb+this.calibre-this.alwb);
-          if(4*ns>a_MaxListSize){
+          if(4*ns>MaxListSize){
               toss('stack',this.name,'size',ns,'exceeds max memory','extension');
           }
           this.size=ns;
@@ -351,7 +351,7 @@ function a_UnpackString(A,idx,S) {
     if(n<0||n>32000){toss(
        'unpack string+',A.name,'+',idx,'+',S.name,'not a string','unpack string');}
     let Si=S.extension(n); S.aupb+=n; // extend the stack
-    a_Ite(A,idx,(c)=>{S.data[Si++]=c;});
+    strIter(A,idx,(c)=>{S.data[Si++]=c;});
 }
 // copy a packed string at A[idx] to the top of S as a string
 function a_CopyString(A,idx,S) {
@@ -365,16 +365,16 @@ function a_CopyString(A,idx,S) {
 }
 /* **************************************************************** */
 // INTERNAL string routines
-// a_Ite(A,idx,fn)
+// strIter(A,idx,fn)
 //    call fn(chr) for each character in the packed string
 // a_PushString(S,len,fn)
 //    fn(0),...,fn(len-1) return character values, pack the string
 //    at the top of the stack S. Uses two passes for the fn() calls
 // a_cmpToStr(A,idx,"string")
 //    check if the packed string is the same as the provided one
-// a_Str(A,idx)
+// a2str(A,idx)
 //    return the packed string as a javascript string
-function a_Ite(A,idx,fn){
+function strIter(A,idx,fn){
     // unpack the string and call fn for each character
     // throw error if there is an error in string
     const ii=A.offs+idx;const w=A.data[ii]-1;//index and width
@@ -384,7 +384,7 @@ function a_Ite(A,idx,fn){
     const u=new Uint8Array(A.buffer,4*(ii-w),4*w);
     for(let i=0;n>0;n--){
       if(i>4*w-4){toss(
-        A.name,'[',idx,'] not a string','iterate ALEPH string');}
+        A.name,'[',idx,'] is not a string','iterate ALEPH string');}
       let c=u[i++];
       const eb=(c>191)+(c>223)+(c>239);
       c &= [255,31,15,15][eb];
@@ -392,7 +392,7 @@ function a_Ite(A,idx,fn){
       2>eb||(c=(c<<6)|u[i++]&63);
       1>eb||(c=(c<<6)|u[i++]&63);
       if(c==0)toss(
-       A.name,'[',idx,'] not a string','iterate ALEPH string');
+       A.name,'[',idx,'] is not a string','iterate ALEPH string');
       fn(c);
     }
 }
@@ -425,11 +425,11 @@ function a_PushString(S,len,fn){
 function a_cmpToStr(A,idx,jstr){
    // check if the packed string A[str] is the same as jstr
    // used by waitfor
-   return jstr==a_Str(A,idx);
+   return jstr==a2str(A,idx);
 }
-function a_Str(A,idx){
+function a2str(A,idx){
    // create a java string from the packed ALEPH string
-   let res="";a_Ite(A,idx,(c)=>{
+   let res="";strIter(A,idx,(c)=>{
        res+=String.fromCodePoint(c);});
    return res;
 }
@@ -449,7 +449,7 @@ async function a_async_a_msleep(ms){ // wait ms milliseconds
    by the outer layer; all not tmp output files are passed to the outer
    layer for saving.
 Fields in a_FilesAvaiable[] 
-   F=a_FD[idx]
+   F=FD[idx]
    F.path:  the path string, identifying the file path
    F.idx:   received fileObj index; -1 if URL, null if created
    F.openw: -1: read only; +1: opened for writing; 0: can be opened for writing
@@ -499,30 +499,31 @@ data writing and reading
    f.inareas: arrays of {lwb,upb,diff} to correct the offsets
    f.startpos:when reading the very first position (for setting 0)
 */
-const a_FD=[
+const FD=[
 // stdin, stdout, stderr
 {path:"<<stdin>>",openw:-1,openr:0,type:1,changed:0,channel:"stdin"},
 {path:"<<stdout>>",openw:0,openr:-1,type:2,changed:0,channel:"stdout",ff:null},
 {path:"<<stderr>>",openw:0,openr:-1,type:2,changed:0,channel:"stderr",ff:null}
 ];
 
-const IOERR={ // IO error codes
-  EOPENED:	1,//open+F+ where F is opened
-  ENOTFOUND:	2,//"file" not found
-  EBUSY:	3,//"file" is opened for write or read only
-  EREADONLY:	4,//"file" cannot be opened for writing
-  EDIRECTION:	5,//Direction mismatch in file declaration
+const //IO error codes
+  IOERR_EOPENED=	1,//open+F+ where F is opened
+  IOERR_ENOTFOUND=	2,//"file" not found
+  IOERR_EBUSY=		3,//"file" is opened for write or read only
+  IOERR_EREADONLY=	4,//"file" cannot be opened for writing
+  IOERR_EDIRECTION=	5,//Direction mismatch in file declaration
                   //read on a file opened for writing or other way
-  EFILETYPE:    6,//char op on a datafile or the other way around
-  ENOTOPENED:	7,//not opened
-  EWRONGPTR:	8,//put data pointer not in any areas
-  EDATATRUNC:	9,//data file truncated
-  EEOF:        10,//End of file
-  ENOTALEPH:   11,//not and aleph binary file
-  ENOSEEK:     12,//cannot set position
-  ESEEK:       13,//wrong position value
-  ETEMP:       14,//open temp file string
-};
+  IOERR_EWRONGNAME=	6,//wrong filename
+  IOERR_EFILETYPE=	7,//char op on a datafile or the other way around
+  IOERR_ENOTOPENED=	8,//not opened
+  IOERR_EWRONGPTR=	9,//put data pointer not in any areas
+  IOERR_EDATATRUNC=	10,//data file truncated
+  IOERR_EEOF=		11,//End of file
+  IOERR_EWRONGVALUE=	12,//wrong pointer value
+  IOERR_ENOTALEPH=	13,//not an aleph binary file
+  IOERR_ENOSEEK=	14,//cannot set position
+  IOERR_ESEEK=		15,//wrong position value
+  IOERR_ETEMP=		16;//wrong temp file string
 
 const readArg=114;  //"r".charCodeAt(0);
 const writeArg=119; //"w".charCodeAt(0);
@@ -566,7 +567,7 @@ class a_DataFile {
 
 /* ***************************************************************** */
 /* Character input
-a_WaitForNextLine(<channel>)
+waitForNextline(<channel>)
    sending:    {cmd:"read",file:<channel>} ("stdin")
    waiting for:{cmd:"stdin",file:<channel>,eof:0/1,data:"reply"}
    newline char is added automatically when eof=0
@@ -575,7 +576,7 @@ aChPos(F,f)
 aChkIn(f)
    check file f for character input
 */
-function a_WaitForNextLine(fstr){//channel
+function waitForNextline(fstr){//channel
    return new Promise((resolve)=>{
      const listener=(e)=>{
        const ed=e.data;if(ed.cmd=="stdin"
@@ -584,7 +585,7 @@ function a_WaitForNextLine(fstr){//channel
           resolve(ed);
        }};
        self.addEventListener("message",listener);
-       self.postMessage({cmd:"read",job:a_Job,file:fstr});
+       self.postMessage({cmd:"read",job:Jobno,file:fstr});
 });}
 
 //f is an opened a_CharFile, advance the character position
@@ -602,29 +603,29 @@ function aChPos(F,f){
     f.nextch=c;
 }
 function aChkIn(f){
-   if(f.type!=1){f.errno=IOERR.EFILETYPE;return 1;}
-   if(f.direction==0){if(!a_tryopen(f,readArg)){return 1;}}
-   else if(f.direction!=1){f.errno=IOERR.EDIRECTION;return 1;}
-   if(f.eof){f.errno=IOERR.EEOF;return 1;}
+   if(f.type!=1){f.errno=IOERR_EFILETYPE;return 1;}
+   if(f.direction==0){if(!tryOpen(f,readArg)){return 1;}}
+   else if(f.direction!=1){f.errno=IOERR_EDIRECTION;return 1;}
+   if(f.eof){f.errno=IOERR_EEOF;return 1;}
    return 0;
 }
 function flushStdout(){
-   for(let F of a_FD){
+   for(let F of FD){
      if(F.type==2 && F.channel=="stdout" && F.openw>0 && F.ff.CollectLine){
-        a_SendLineBuffer(F.channel,F.ff.CollectLine);
+        sendLineBuffer(F.channel,F.ff.CollectLine);
         F.ff.CollectLine=""; }}
 }
 async function asChar(f,F,aP){
    if(f.linePtr>=f.lineBuf.length){
-      if(f.lineEOF){f.eof=1;f.errno=IOERR.EEOF; return 0;} // EOF reached, no next character
+      if(f.lineEOF){f.eof=1;f.errno=IOERR_EEOF; return 0;} // EOF reached, no next character
       // before waiting flush stdout, if not empty ...
       flushStdout();
-      const nx=await a_WaitForNextLine(F.channel);
+      const nx=await waitForNextline(F.channel);
       f.lineEOF=nx.eof;f.lineBuf.length=0;// clear it
       for(const cc of nx.data){f.lineBuf.push(cc.codePointAt(0));}
       if(!f.lineEOF){f.lineBuf.push(10);} // add a newline char
       f.linePtr=0;
-      if(f.lineBuf.length==0){f.eof=1;f.errno=IOERR.EEOF; return 0; }
+      if(f.lineBuf.length==0){f.eof=1;f.errno=IOERR_EEOF; return 0; }
    }
    f.errno=0;aP[0]=f.lineBuf[f.linePtr];
    return 1;
@@ -632,20 +633,20 @@ async function asChar(f,F,aP){
 // peek at the next character
 async function a_async_a_aheadchar(f,aP){
    if(aChkIn(f)) return 0;
-   const F=a_FD[f.fidx];
+   const F=FD[f.fidx];
    if(F.type==0){f.errno=0;aP[0]=f.nextch; return 1;}
    return await asChar(f,F,aP);
 }
 function a_aheadchar(f,aP){
    if(aChkIn(f)) return 0;
-   if(a_FD[f.fidx].type==0){f.errno=0;aP[0]=f.nextch;return 1;}
+   if(FD[f.fidx].type==0){f.errno=0;aP[0]=f.nextch;return 1;}
    toss(f.name,'attached to <<stdin>>, use -async for linking','ahead char');
    return 0;
 }
 //'p'get char+""f"+char>.
 async function a_async_a_getchar(f,aP){
    if(aChkIn(f)) return 0;
-   const F=a_FD[f.fidx];
+   const F=FD[f.fidx];
    if(F.type==0){f.errno=0;aP[0]=f.nextch;aChPos(F,f);
          return 1;}
    if(await asChar(f,F,aP)){f.linePtr++; return 1;}
@@ -653,7 +654,7 @@ async function a_async_a_getchar(f,aP){
 }
 function a_getchar(f,aP){
    if(aChkIn(f)) return 0;
-   const F=a_FD[f.fidx];
+   const F=FD[f.fidx];
    if(F.type==0){f.errno=0;aP[0]=f.nextch;aChPos(F,f);return 1;}
    toss(f.name,'attached to <<stdin>>, use --async for linking','get char');
    return 0;
@@ -661,25 +662,28 @@ function a_getchar(f,aP){
 
 /* ------------------------------------------------------------------ */
 /* character output */
-function a_SendLineBuffer(chan,str){
-   self.postMessage({cmd:"write",job:a_Job,file:chan,data:str});
+function sendLineBuffer(chan,str){
+   self.postMessage({cmd:"write",job:Jobno,file:chan,data:str});
 }
 //'a'putchar+""f+>ch
 function a_putchar(f,ch){
-    if(f.type!=1){ f.errno=IOERR.EFILETYPE; return;}
+    if(f.type!=1){ f.errno=IOERR_EFILETYPE; return;}
     if(f.direction==0){ // not opened yet
-      if(!a_tryopen(f,writeArg)){ return; }
-    } else if(f.direction==1){f.errno=IOERR.EDIRECTION; return;}
+      if(!tryOpen(f,writeArg)){ return; }
+    } else if(f.direction==1){f.errno=IOERR_EDIRECTION; return;}
     // it is opened
     f.errno=0;ch|=0;// normalize the value to be written
-    const F=a_FD[f.fidx];F.changed=1;
+    if(ch<1||ch>0x10FFFF) toss(
+      'invalid charcode',ch,'for charfile',f.name,'putchar');
+    const F=FD[f.fidx];F.changed=1;
     if(F.type==2){//line buffered
        if(ch==10){
-          a_SendLineBuffer(F.channel,f.CollectLine);f.CollectLine="";return;
-       } else{f.CollectLine+=String.fromCodePoint(ch); return;}}
+          sendLineBuffer(F.channel,f.CollectLine);f.CollectLine="";
+       }else{f.CollectLine+=String.fromCodePoint(ch);}
+       return;}
     const bw=1+(ch>=0x80)+(ch>=0x800)+(ch>=0x10000);
     if(f.fpos+bw>=F.bufflen){//extend the charfile
-       F.bufflen+=a_CharBufExt;F.buff.resize(F.bufflen);}
+       F.bufflen+=CharBufExt;F.buff.resize(F.bufflen);}
     let i=f.fpos;f.fpos+=bw;const w=(v)=>{f.buffer[i++]=v;};
     switch(bw){
       default: w(ch);break;
@@ -696,20 +700,20 @@ function a_putchar(f,ch){
 
 //'p'put datap+""f+>data+>type
 function a_putdatap(f,data,dt){
-    if(0!=f.type){f.errno=IOERR.EFILETYPE;return 0;}
-    if(0==f.direction){if(!a_tryopen(f,writeArg)){return 0;}}
-    else if(f.direction!=2){f.errno=IOERR.EDIRECTION;return 0;}
+    if(0!=f.type){f.errno=IOERR_EFILETYPE;return 0;}
+    if(0==f.direction){if(!tryOpen(f,writeArg)){return 0;}}
+    else if(f.direction!=2){f.errno=IOERR_EDIRECTION;return 0;}
     // it is opened for writing
     if(dt!=0 && data!=0 && data!=-1){// pointer, check where it is
       let cnt=0;
       for(;cnt<f.areas.length 
           && (data<f.areas[cnt].lwb||data>f.areas[cnt].upb);cnt++);
-      if(cnt>=f.areas.length){f.errno=IOERR.EWRONGPTR;return 0;}
+      if(cnt>=f.areas.length){f.errno=IOERR_EWRONGPTR;return 0;}
     }
     f.errno=0;
     if((1023==(f.fpos&1023))){// buffer is full, flush it
        f.buffer[31]=f.iflag;f.fpos++;
-       const F=a_FD[f.fidx];
+       const F=FD[f.fidx];
        F.changed=1;
        F.bufflen=(f.fpos+1024)*4;
        F.buff.resize(F.bufflen);
@@ -731,14 +735,14 @@ function a_putdata(f,data,dt){
 }
 //'p'get data+""f+data>+type>
 function a_getdata(f,aP){// aP[0],aP[1]
-   if(f.type!=0){f.errno=IOERR.EFILETYPE;return 0;}
-   if(f.direction==0){if(!a_tryopen(f,readArg)){return 0;}}
-   else if(f.direction!=1){f.errno=IOERR.EDIRECTION;return 0;}
-   if(f.eof){f.errno=IOERR.EEOF;return 0;}
-   const F=a_FD[f.fidx];
+   if(f.type!=0){f.errno=IOERR_EFILETYPE;return 0;}
+   if(f.direction==0){if(!tryOpen(f,readArg)){return 0;}}
+   else if(f.direction!=1){f.errno=IOERR_EDIRECTION;return 0;}
+   if(f.eof){f.errno=IOERR_EEOF;return 0;}
+   const F=FD[f.fidx];
    // advance f.fpos
    if((f.fpos&1023)==1023){
-      if(F.bufflen<f.fpos*4+4096){f.errno=IOERR.EDATATRUNC;return 0;}
+      if(F.bufflen<f.fpos*4+4096){f.errno=IOERR_EDATATRUNC;return 0;}
       f.fpos++;
       f.buffer=new Int32Array(F.buff,f.fpos*4,1024);
       f.fpos+=32;f.iflag=f.buffer[1];
@@ -749,25 +753,25 @@ function a_getdata(f,aP){// aP[0],aP[1]
    aP[0]=f.buffer[f.fpos&1023];aP[1]=0;
    if(f.iflag&0x80000000){// pointer
       aP[1]=1;
-      if(aP[0]==-1){f.errno=IOERR.EEOF;return 0;}// EOF
+      if(aP[0]==-1){f.errno=IOERR_EEOF;return 0;}// EOF
       if(aP[0]==0){return 1;}// null pointer
       let DO=1;
       f.inareas.forEach((V)=>{
          if(DO && V.lwb<=aP[0]&&aP[0]<=V.upb){DO=0;aP[0]+=V.diff;}});
-      if(DO){f.errno=IOERR.WRONGVALUE;return 0;}
+      if(DO){f.errno=IOERR_EWRONGVALUE;return 0;}
    }
    return 1;
 }
 
 /* ******************************************************************* */
-function a_tryopen(file,mode){
+function tryOpen(file,mode){
     // not opened yet, check direction compability, then
     // open with the specified string
     const towrite=(mode==writeArg);
     switch(file.arg.d){
       case 2: if(towrite) break;
-      case 0: file.errno=IOERR.EDIRECTION; return 0;
-      case 1: if(towrite){ file.errno=IOERR.EDIRECTION; return 0; }
+      case 0: file.errno=IOERR_EDIRECTION; return 0;
+      case 1: if(towrite){ file.errno=IOERR_EDIRECTION; return 0; }
       default: break;
     }
     return a_openfile(file,mode,file.arg.T,file.arg.idx);
@@ -775,36 +779,38 @@ function a_tryopen(file,mode){
 //'p'openfile+""f+>dir+T[]+>ptr
 function a_openfile(file,mode,A,ptr,tmpfile=0){
    // check if we have a file with this name
-   if(file.direction){ file.errno=IOERR.EOPENED; return 0; }
+   if(file.direction){ file.errno=IOERR_EOPENED; return 0; }
    file.errno=0;
    const towrite=(mode==writeArg);
-   const fname=a_Str(A,ptr);
+   const fname=a2str(A,ptr);
+   if(!fname || fname.length>96 || /[\x00-\x1f]/.test(fname)){
+      file.errno=IOERR_EWRONGNAME; return 0; }
    let i=0;
-   while(i<a_FD.length){
-      if(a_FD[i].path==fname) break;
+   while(i<FD.length){
+      if(FD[i].path==fname) break;
       i++;
    }
-   if(i==a_FD.length){ // not found
-      if(!towrite){file.errno=IOERR.ENOTFOUND; return 0; }
-      a_FD.push(
+   if(i==FD.length){ // not found
+      if(!towrite){file.errno=IOERR_ENOTFOUND; return 0; }
+      FD.push(
         {path:fname,idx:-2,openw:0,openr:0,changed:0,type:0,buff:null,bufflen:0,ff:null});
    }
    // a_FileAvailable[i] is the file entry, let's see what to do
-   const F=a_FD[i];
+   const F=FD[i];
    if(towrite){// open for writing
-     if(F.openw<0){file.errno=IOERR.READONLY;return 0;}
-     if(F.openw!=0 || F.openr>0){file.errno=IOERR.EBUSY; return 0;}
+     if(F.openw<0){file.errno=IOERR_EREADONLY;return 0;}
+     if(F.openw!=0 || F.openr>0){file.errno=IOERR_EBUSY; return 0;}
      F.buff=null;
      if(file.type==1){ //charfile, write (or create)
         if(F.type==2){file.CollectLine="";file.fpos=-1;} // direct output
         else{
-          F.buff=new ArrayBuffer(a_CharBufExt,{maxByteLength:a_MaxFileSize});
-          F.bufflen=a_CharBufExt;file.buffer=new Uint8Array(F.buff);
+          F.buff=new ArrayBuffer(CharBufExt,{maxByteLength:MaxFileSize});
+          F.bufflen=CharBufExt;file.buffer=new Uint8Array(F.buff);
         }
         file.fpos=0;
      } else {//datafile write
-        if(F.type==2){file.errno=IOERR.EBUSY;return 0;}
-        F.buff=new ArrayBuffer(4*1024,{maxByteLength:a_MaxFileSize});
+        if(F.type==2){file.errno=IOERR_EBUSY;return 0;}
+        F.buff=new ArrayBuffer(4*1024,{maxByteLength:MaxFileSize});
         F.bufflen=4*1024;file.buffer=new Int32Array(F.buff,0,1024);
         file.iflag=0;file.fpos=32;
         const n=file.areas.length;
@@ -820,10 +826,10 @@ function a_openfile(file,mode,A,ptr,tmpfile=0){
      if(tmpfile)F.tmpfile=1;
      return 1;
    } else { //open for reading
-     if(F.openw>0||F.openr<0){file.errno=IOERR.EBUSY;return 0;}
+     if(F.openw>0||F.openr<0){file.errno=IOERR_EBUSY;return 0;}
      if(file.type==1){//charfile, read
        if(F.type==1){ // stdin
-         if(F.openr!=0){file.errno=IOERR.EBUSY; return 0; }// only one can read it
+         if(F.openr!=0){file.errno=IOERR_EBUSY; return 0; }// only one can read it
          file.lineEOF=0;file.lineBuf=[];file.linePtr=1;
          file.eof=0;file.fpos=-1;
        }else{//for ArrayBuffer
@@ -837,13 +843,13 @@ function a_openfile(file,mode,A,ptr,tmpfile=0){
        return 1;
      } else {// datafile read
        file.eof=0;
-       if(F.bufflen<4096){file.errno=IOERR.ENOTALEPH;return 0;}
+       if(F.bufflen<4096){file.errno=IOERR_ENOTALEPH;return 0;}
        file.buffer=new Int32Array(F.buff,0,1024);
        file.fpos=32;const n=file.buffer[file.fpos++];
-       if(n<0 || n>=32){file.errno=IOERR.ENOTALEPH;return 0;}
+       if(n<0 || n>=32){file.errno=IOERR_ENOTALEPH;return 0;}
        const VA=file.areas;file.inareas=[];
        for(let i=0;i<n;i++){
-          if(i!=file.buffer[file.fpos++]){file.errno=IOERR.ENOTALEPH;return 0;}
+          if(i!=file.buffer[file.fpos++]){file.errno=IOERR_ENOTALEPH;return 0;}
           const lw=file.buffer[file.fpos++];const up=file.buffer[file.fpos++];
           if(i<VA.length){file.inareas.push({lwb:lw,upb:up,diff:VA[i].lwb-lw});}
        }
@@ -867,7 +873,7 @@ function a_opentmp(file,A,ptr){
    // replaced. If this is not the case, return 0
    if(u[i]!=0 || i<6 || u[i-1]!=tempArg || u[i-2]!=tempArg ||
       u[i-5]!=tempArg|| u[i-6]!=tempArg){
-        file.errno=IOERR.ETEMP;return 0; }
+        file.errno=IOERR_ETEMP;return 0; }
    // replace them by random letters
    for(let j=i-6;j<i;j++){u[j]=codeA+(Math.random()*26|0);}
    return a_openfile(file,writeArg,A,ptr,1);
@@ -875,8 +881,8 @@ function a_opentmp(file,A,ptr){
 
 //'a'close file+""f
 function a_closefile(file){
-   if(file.direction==0){file.errno=IOERR.ENOTOPENED;return;}
-   const F=a_FD[file.fidx];
+   if(file.direction==0){file.errno=IOERR_ENOTOPENED;return;}
+   const F=FD[file.fidx];
    file.errno=0;
    if(file.type==1){//charfile
       if(file.direction==1){ // reading
@@ -884,7 +890,7 @@ function a_closefile(file){
          return;
       }else{//writing
          if(F.type==2){// line buffered
-           if(file.CollectLine!="")a_SendLineBuffer(F.channel,file.CollectLine);
+           if(file.CollectLine!="")sendLineBuffer(F.channel,file.CollectLine);
            file.CollectLine="";
          }else{
            file.buffer=null;F.bufflen=file.fpos;F.buff=F.buff.transferToFixedLength(F.bufflen);
@@ -909,21 +915,21 @@ function a_closefile(file){
 }
 //'a'set file pos+""f+>pos
 function a_setfilepos(f,p){
-   if(f.direction==0){f.errno=IOERR.ENOTOPENED;return;}
-   const F=a_FD[f.fidx];
-   if(f.direction!=1||F.type!=0){f.errno=IOERR.ESEEK;return;}
-   if((p|=0)<0){f.errno=IOERR.ESEEK;return;}
+   if(f.direction==0){f.errno=IOERR_ENOTOPENED;return;}
+   const F=FD[f.fidx];
+   if(f.direction!=1||F.type!=0){f.errno=IOERR_ENOSEEK;return;}
+   if((p|=0)<0){f.errno=IOERR_ESEEK;return;}
    if(f.type==1){//charfile, reading
       f.errno=0;f.eof=0;f.nextpos=p;aChPos(F,f);
    }else{//datafile
       if(p==0){p=f.startpos;}
-      if((p&1023)<32){f.errno=IOERR.ESEEK;return;}
+      if((p&1023)<32){f.errno=IOERR_ESEEK;return;}
       f.errno=0;
       if(p==f.fpos){return;}
       f.eof=0;
       if((p&~1023)!=(f.fpos & ~1023)){// read the block
           const offs=(p&~1023)*4;
-          if(F.bufflen<offs+4096){f.errno=IOERR.ESEEK;return;}
+          if(F.bufflen<offs+4096){f.errno=IOERR_ESEEK;return;}
           // when reading the next data it loads the block
           if((p&1023)==1023){f.fpos=p;return;}
           f.buffer=new Int32Array(F.buff,offs,1024);
@@ -933,18 +939,18 @@ function a_setfilepos(f,p){
 }
 //'a'unlink file+A[]+>ptrl; do not unlink RO files
 function a_unlinkfile(A,ptr){
-   const fname=a_Str(A,ptr);
-   for(let i=0;i<a_FD.length;i++){
-    if(fname==a_FD[i].path){
-       const F=a_FD[i];
+   const fname=a2str(A,ptr);
+   for(let i=0;i<FD.length;i++){
+    if(fname==FD[i].path){
+       const F=FD[i];
        if(F.openw>=0){F.path="/.Trash/"+fname;
          if(F.openw==0 && F.openr==0 && F.buff){F.buff=null;F.bufflen=0;}}
        return;
    }}
 }
 // when the program ends, close all files opened for writing
-function a_closeAll(){
-   a_FD.forEach((F)=>{
+function closeAll(){
+   FD.forEach((F)=>{
      if(F.openw>0 && F.ff){
       a_closefile(F.ff);}
    });
@@ -955,10 +961,10 @@ function a_closeAll(){
 //   replace then entry with the same path string
 function addFile(fname,idx,ro,fbuff){
    let i=0,flen=fbuff.byteLength;
-   for(;i<a_FD.length;i++){ if(fname==a_FD[i].path) break;}
-   if(i==a_FD.length){a_FD.push({});}
+   for(;i<FD.length;i++){ if(fname==FD[i].path) break;}
+   if(i==FD.length){FD.push({});}
    ro=ro?-1:0;
-   Object.assign(a_FD[i],{
+   Object.assign(FD[i],{
      path:fname,// filename with extension
      idx: idx,  // fObj index; -1 for URL based files
      openw:ro,	// -1 if cannot be opened for writing and cannot be deleted
@@ -974,14 +980,14 @@ function addFile(fname,idx,ro,fbuff){
 // first return deleted files, after the rest;
 // one can delete <f> and later create another <f>
 function returnFiles(){
-   a_FD.forEach((F)=>{
+   FD.forEach((F)=>{
      if(F.type==0 && F.idx>=0 && !F.tmpfile && F.path.startsWith('/.Trash/')){
-        self.postMessage({cmd:'file',job:a_Job,idx:F.idx,filename:F.path,
+        self.postMessage({cmd:'file',job:Jobno,idx:F.idx,filename:F.path,
                rm:'yes'});
    }});
-   a_FD.forEach((F)=>{
+   FD.forEach((F)=>{
      if(F.type==0 && F.idx!=-1 && !F.tmpfile && !F.path.startsWith('/.Trash/')){
-        self.postMessage({cmd:'file',job:a_Job,idx:F.idx,changed:F.changed?1:0,
+        self.postMessage({cmd:'file',job:Jobno,idx:F.idx,changed:F.changed?1:0,
                filename:F.path,data:F.buff},[F.buff]);
    }});
 }
@@ -1011,9 +1017,9 @@ function runmsg(){
 function a_PrintStackFrame(){ // tr = {rule:idx,next:ptr}
    let tr=a_Tr(); let cnt=1;
    if(tr){
-     self.postMessage({cmd:'stack',job:a_Job,count:0,data:'Rule stack'});
+     self.postMessage({cmd:'stack',job:Jobno,count:0,data:'Rule stack'});
      while(tr){
-       if(tr.rule>=0){ self.postMessage({cmd:"stack",job:a_Job,count:cnt,
+       if(tr.rule>=0){ self.postMessage({cmd:"stack",job:Jobno,count:cnt,
           data:a_RuleNames[tr.rule]}); cnt++; }
        tr=tr.next;}}
 }
@@ -1026,7 +1032,7 @@ function a_TraceRule(rn,n){
       const v=arguments[i+2];
       msg += '+'+(typeof v=='object' ? v.name : v);
    }
-   self.postMessage({cmd:"trace",job:a_Job,data:msg});
+   self.postMessage({cmd:"trace",job:Jobno,data:msg});
 }
 // when profiling enabled, statistics is sent
 function dump_Profile(pf){
@@ -1042,9 +1048,9 @@ function dump_Profile(pf){
      }
    }
    pf=head.next;
-   self.postMessage({cmd:'profile',job:a_Job,data:'Call counts',count:-1});
+   self.postMessage({cmd:'profile',job:Jobno,data:'Call counts',count:-1});
    while(pf){
-      self.postMessage({cmd:"profile",job:a_Job,
+      self.postMessage({cmd:"profile",job:Jobno,
         data:a_RuleNames[pf.rule],count:pf.count});
       pf=pf.next;
    }
@@ -1059,7 +1065,7 @@ function a_AreaFailed(val,str){// fatal error
     toss('Classification failed in rule',str,'with value',val,'classification');
 }
 function a_exit(v){ // exit called
-    a_Exv=v;
+    exval=v;
     toss('exit with value',v,"exit");
 }
 /* ************************************************************* */
@@ -1068,22 +1074,22 @@ async function runRoot(){
     let ret=0;
     try{await a_ROOT();}
     catch(error){// exit or error
-          if(error.cause=="exit"){// exit code is in a_Exv
+          if(error.cause=="exit"){// exit code is in exval
             ret=1;
           } else {// error, probably from a toss()
-            ret=2; a_Exv="Error: "+error.message+", type: "+error.cause;
+            ret=2; exval="Error: "+error.message+", type: "+error.cause;
           }
     }
-    terminate(ret,a_Exv); // disable forthcoming 'kill' messages
+    terminate(ret,exval); // disable forthcoming 'kill' messages
 }
 // 0: terminated, 1: exit, 2: error, 3: kill; mm: message (number or string)
 function terminate(ret,mm){
-    a_closeAll();
-    self.postMessage({cmd:'exit',job:a_Job,data:ret,msg:mm});
+    closeAll();
+    self.postMessage({cmd:'exit',job:Jobno,data:ret,msg:mm});
     if(ret!=0) a_PrintStackFrame();
     if(ret<=1) dump_Profile(a_PROFILE);
     returnFiles();
-    self.postMessage({cmd:'terminated',job:a_Job});
+    self.postMessage({cmd:'terminated',job:Jobno});
     self.close();
 }
 
@@ -1121,8 +1127,8 @@ sent messages:
 self.addEventListener("message",(e)=>{
    const ed=e.data;
    if(ed.cmd=='init'){ // first message, store job number
-       a_Job=ed.job;
-       self.postMessage({cmd:'ready',job:a_Job});
+       Jobno=ed.job;
+       self.postMessage({cmd:'ready',job:Jobno});
    }else if(ed.cmd=="stdarg"){// store stdarg array
        a_StdargArray=ed.data;
    }else if(ed.cmd=="file"){// populate the filesystem

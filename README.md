@@ -4,20 +4,53 @@ Modular ALEPH programming language v2.4
 Aleph is a historical programming language; its name is an abbreviation for
 **A** **L**anguage **E**ncouraging **P**rogram **H**iearachy.
 This is an Aleph complier written in Aleph. The language is described
-in the [Aleph Manual](https://lcsirmaz.github.io/aleph/);
+in the [Aleph Manual](https://lcsirmaz.github.io/aleph/manual.html);
 while the implemented Aleph language is discussed in
 [Aleph Compiler 2.4](https://lcsirmaz.github.io/aleph/alephcomp.html).
 Try out the language features in the interactive
-[Aleph PlayGround](https://lcsirmaz.github.io/aleph/play.html),
-where you can edit, compile and run ALEPH code without installing anything.
+[Aleph PlayGround](https://lcsirmaz.github.io/aleph/),
+where you can edit, compile and run ALEPH code immediately.
+
+## Aleph Playground
+
+The [PlayGround](https://lcsirmaz.github.io/aleph/) is a command-line based 
+online tool for creating, editing, compiling and running ALEPH programs.
+Commands are entered at the bottom line of the workplace. Above the command
+line is the console window where the entered commands as well as messages
+sent to the `stdout` channel appear. The top window is reserved for running
+time error messages and for the `stderr` channel. For a quick start enter
+
+    -start
+
+(with a dash) at the bottom line. Commands for the impatient are
+
+|:---------|:----------|
+| help     | give a general help |
+| load a1  | load the sample ALEPH program `a1.ale` (Hello World!) |
+| edit a1.ale | open this program in an editing window |
+| compile a1.ale | compile it |
+| run a1  | and run it (assuming compiled without errors) |
+
+Some other basic commands:
+
+|:----------|:-------------|
+| mkpr, chpr | create a new project; change to the specified project |
+| load a1, ... load a20 | load one of the sample ALEPH programs |
+| edit, view | open a character file for editing and viewing |
+| stdlib |     show the standard ALEPH library |
+| dir, ls | list files |
+| cp, rm | copy, remove (delete) files |
+| compile | compile and link an ALEPH program with modules |
+| run | run a compiled ALEPH program |
+
 
 ## Source files
 
 The ALEPH compiler, optimizer and linker are written in Modular ALEPH itself.
 Files with extension `.ale` are Aleph source files. The compiler produces
-an intermediate ALICE code. The intermediate code is linked either to C
-(which can be compiled by a C compiler), or to javascript (to be run
-directly by a browser).
+an intermediate ALICE code. The intermediate code is optimized, and then 
+linked either to C (which can be compiled by a C compiler), or to javascript
+(to be run directly by a javascript engine, e.g., in a browser).
 
 * [comp](comp) Aleph compiler modules (aleph code)
 * [opt](opt) Module optimizer (aleph code)
@@ -46,21 +79,20 @@ Compile the `acomp.c`, `aopt.c` and `alink.c` files in the [C](C) directory:
    
 ## Compiling, linking and running aleph files using C target
 
-The `acomp` program produces intermediate `.ice` files from Aleph modules and 
-from the main Aleph file.
-The `aopt` program performs some optimization on the `.ice` file.
-Linking '.ice' files is done by `alink` which generates a C source code.
+`acomp` produces intermediate `.ice` files from Aleph source.
+`aopt` performs some optimization on these `.ice` files.
+Linking is done by `alink` which generates a C source code.
 The additional header and C files needed to compile the generated C program
-are in the directory `coreC`.
+are in the directory 'coreC`.
 
-The directory containing standard library files can be specified after the `-L`
+Directory containing standard library files can be specified after the `-L`
 argument; these are `stdlib` and `stdC` for the compiler and the linker,
 respectively. The following commands, given in the main directory, compile, link,
 and run the `ex2.ale` sample program from the [sample](sample) directory.
 
     C/acomp -L stdlib sample/ex2  # generate ex2.ice
-    C/aopt  sample/ex2            # optimize ex2.ice
-    C/alink -L stdC  ex2          # generate ex2.c
-    gcc -I coreC -o ex2 ex2.c coreC/*.c
-    ./ex2                         # run it
+    C/aopt  ex2                   # optimize ex2.ice
+    C/alink -L stdC ex2           # generate ex2.c
+    gcc -I coreC -o ex2 ex2.c coreC/*.c # compile the C source
+    ./ex2                         # and run it
 

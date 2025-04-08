@@ -100,7 +100,7 @@ $   copy string+t+p+to    the string is copied to the top of stack 'to'.
     compare string+t1[]+>p1+t2[]+>p2+comp>,
     compare string n+t1[]+>p1+t2[]+>p2+>n+comp>.
 'q' string elem+t[]+>p+>n+chr>.
-'a' unstack string+[]st[],pack string+from[]+>p+[]to[],
+'a' unstack string+[]st[],pack string+from[]+>n+[]to[],
     unpack string+from[]+>p+[]to[],copy string+from[]+>p+[]to[].
 $ Simple hash producing a word size hash
 $   string hash+t+p+hash  compute a hash value for the string

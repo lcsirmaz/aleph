@@ -206,6 +206,7 @@ $   G: don't print for the next node
 $   n: newline
 $   p: pointer
 $   d: integer
+$   m: shorthand for *%d 
 $   s: LEXT string, replace %n by newline
 $   t: target number
 $   W: await if the argument is not zero
@@ -223,6 +224,7 @@ $   S: async if the argument is not zero
        [/n/],print char+newline,incr+ptr,:nxt;
        [/T/],(call stack=0;print str+";aTr=aLtr"),incr+ptr,:nxt;
        [/d/],(shift affix block+@,print int+fmt;TE+6),incr+ptr,:nxt;
+       [/m/],(shift affix block+@,(fmt=1;print char+/*/,print int+fmt);TE+6),incr+ptr,:nxt;
        [/p/],(shift affix block+@,print ptr+fmt;TE+7),incr+ptr,:nxt;
        [/s/],(shift affix block+@,print nlptr+fmt;TE+8),incr+ptr,:nxt;
        [/t/],(shift affix block+@,print number+fmt;TE+9),incr+ptr,:nxt;
@@ -612,7 +614,7 @@ $   T+"let aL%d;"+minloc,incr+minloc,incr+locptr,:declare locals.
 'a'declare callargs+>item+>C2+>C3-cnt:
    (C2=0;T+"const aP=[",(nxt:C2=0,T+"];";print char+/,/,decr+C2,:nxt)),
    (C3=0;get anchor count+item+cnt,$ even if cnt=1 $
-        T+"const aD=new Array(%d+%d*aC);"+C3+cnt),
+        T+"const aD=new Array(%d+aC%m);"+C3+cnt),
    print char+newline.
 'a'rule declaration head+>rule+>C2+>C3+>rn+>minloc+>maxloc+>locptr:
    $ rule declaration head, prototype, trace and count
@@ -917,7 +919,7 @@ $   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
       T+"aD[%d]="+out,T affix+ptr,print char+/;/),
      incr+dn,(dn<n;rep->dn),decr+cnt,incr+out,next affix+ptr,:nxt),
     (size>=0; $ done, otherwise copy repeat block to aD[out ...] $
-     T+"for(let ar=0;ar<aC*%d;ar++){aD[%d+ar]=aV[aVoff+ar];}"+bsz+out).
+     T+"for(let ar=0;ar<aC%m;ar++){aD[%d+ar]=aV[aVoff+ar];}"+bsz+out).
 'a'regular call preload+>ptr-n-cnt-out-type:
    get number of formals+called rule+n,0->cnt->out,
    $ before @ inout affixes go to aA[out]
@@ -974,7 +976,7 @@ $   for exit rule, texit=0, add "return" or "return 1" (GOTO -1)
        +),
       incr+dn,(dn<n;rep->dn),decr+cnt,incr+out,next affix+ptr,:nxt),
    (size>=0; $ done, otherwise copy back repeat block from aD[out] $
-    T+"for(let ar=0;ar<aC*%d;ar++){aV[aVoff+ar]=aD[%d+ar];}"+bsz+out).
+    T+"for(let ar=0;ar<aC%m;ar++){aV[aVoff+ar]=aD[%d+ar];}"+bsz+out).
 'a'regular call postload+>ptr-n-cnt-out-type:
    get number of formals+called rule+n,0->cnt->out,
    (nxt:cnt=n;

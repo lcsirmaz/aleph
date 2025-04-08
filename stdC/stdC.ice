@@ -1,4 +1,4 @@
-$ aleph standard files
+$ aleph C standard ice files
 'include' "iceC/base"
 'include' "iceC/getint"
 'include' "iceC/getline"

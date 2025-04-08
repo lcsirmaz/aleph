@@ -40,7 +40,7 @@ $ error callback routines
    $ the actual source is not stblib
 'q'runtime char+>n+ch>.
    $ return the n-th character of the runtime library
-   $ BODY ************************************************ $
+$ BODY ************************************************ $
 'pragmat'if=compile.
 
 'pragmat'require=("config","lexical","error","item","target").
