@@ -47,7 +47,7 @@ filesystem:
    FS.rmfile(fObj)    remove the file, return 1 on error
 
 console:
-   aCcle.print(ch,text,nl=1) print ch=1,2; nl: add nl at the end
+   aCle.print(ch,text,nl=1) print ch=1,2; nl: add nl at the end
    aCle.read(prompt,f(),opt) read, call f() when done
    aCle.font(size)    set font size
 
