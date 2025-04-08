@@ -25,9 +25,9 @@ time error messages and for the `stderr` channel. For a quick start enter
 (with a dash) at the bottom line. Commands for the impatient are
 
 | command | description |
-| :----    | : ---- |
-| help     | give a general help |
-| load a1  | load the sample ALEPH program `a1.ale` (Hello World!) |
+| :----    | :---- |
+| `help`     | give a general help |
+| `load a1`  | load the sample ALEPH program `a1.ale` (Hello World!) |
 | edit a1.ale | open this program in an editing window |
 | compile a1.ale | compile it |
 | run a1  | and run it (assuming compiled without errors) |
