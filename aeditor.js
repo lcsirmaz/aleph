@@ -454,8 +454,10 @@ var AE=function(document){
     match: /(["'])(\\[^]|(?!\1)[^\r\n\\])*\1?/g},
   { type: "kwd",
     match: /=>|\b(this|set|get|as|async|await|break|case|catch|class|const|constructor|continue|debugger|default|delete|do|else|enum|export|extends|finally|for|from|function|if|implements|import|in|instanceof|interface|let|var|of|new|package|private|protected|public|return|static|super|switch|throw|throws|try|typeof|void|while|with|yield)\b/g},
+  { type: "regex",
+    match: /\/(?:[^\/\\]|\\.)+\/[dgims]*/g},
   { type: "num",
-    match: /\b(NaN|null|undefined|[A-Z][A-Z_]*)\b/g},
+    match: /\b(NaN|null|undefined)\b/g},
   { type: "func",
     match: /[a-zA-Z$_][\w$_]*(?=\s*((\?\.)?\s*\(|=\s*(\(?[\w,{}\[\])]+\)? =>|function\b)))/g},
  ]
