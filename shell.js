@@ -89,8 +89,8 @@ function helpcmd(args){// help
 'running ALEPH programs. For a quick start enter\n'+
 '  -start\n'+
 'at the bottom line of this workspace.\n'+
-'To get help on a command use \'help <command>\' or \'<command> -h\'. Use\n'+
-'\'help -<topic>\' (with a dash) to get help on a topic. Accepted commands:\n'+
+'To get help on a command use \'help <command>\' or \'<command> -h\'. Enter\n'+
+'\'-<topic>\' (with a dash) to get help on a topic. Accepted commands are:\n'+
 cmdlist+'\n'+
 'Topics (start with a dash):\n'+tlist);
       return;} 
@@ -108,16 +108,16 @@ const TOPICS = {
 '  load a1           load the sample ALEPH program \'a1.ale\' (Hello World!)\n'+
 '  edit a1.ale       open \'a1.ale\' in an editing window\n'+
 '  compile a1.ale    compile it\n'+
-'  run a1            and run it (assuming compiled without errors)\n\n'+
+'  run a1            and run it (assuming compiled without errors)\n'+
 'Some basic commands:\n'+
-' mkpr, chpr  create a new project, change to the named project\n'+
-' load a1, load a2, ... load one of the sample ALEPH programs\n'+
-' edit, view  open a character file for editing and viewing\n'+
-' stdlib      show the standard ALEPH library\n'+
-' dir, ls     list files\n'+
-' cp, rm      copy, remove (delete) files\n'+
-' compile     compile and link an ALEPH program and modules\n'+
-' run         run a compiled ALEPH program',
+'  mkpr, chpr  create a new project, change to the named project\n'+
+'  load a1, load a2, ... load one of the sample ALEPH programs\n'+
+'  edit, view  open a character file for editing and viewing\n'+
+'  stdlib      show the standard ALEPH library\n'+
+'  dir, ls     list files\n'+
+'  cp, rm      copy, remove (delete) files\n'+
+'  compile     compile and link an ALEPH program and modules\n'+
+'  run         run a compiled ALEPH program',
 
   cmdline:
 'Commands are typed at the bottom line of the workspace. Above this line is\n'+
@@ -133,13 +133,13 @@ const TOPICS = {
 'closes the channel for further use for this program.\n',
 
   project: 
-'The ALEPH PlayGround is organized around projects. Each project contains all\n'+
-'files it can work with. A project can run a single program at a time and the\n'+
-'program can use project files only.\n'+
-'Projects are created by \'mkpr\', deleted by \'rmpr\', and changed to by \'chpr\'.\n'+
-'The current project name is shown above the command line. The default\n'+
-'project is \'aleph\' which cannot be deleted. A project name cannot contain\n'+
-'space nor ?*{}/\'", and cannot start with - or +.',
+'The ALEPH PlayGround is organized around projects. Each project contains\n'+
+'all files it can work with. A project can run a single program at a time\n'+
+'and the program can use project files only.\n'+
+'Projects are created by \'mkpr\', deleted by \'rmpr\', and changed to by\n'+
+'\'chpr\'. The current project name is shown above the command line. The\n'+
+'default project is \'aleph\' which cannot be deleted. A project name cannot\n'+
+'contain space nor ?*{}/\'", and cannot start with - or +.',
 
   file:
 'Each PlayGround file belongs to a unique project. Files in the current project\n'+
@@ -205,9 +205,9 @@ const TOPICS = {
 'programs simultaneously. Running programs have dedicated job numbers,\n'+
 'the command \'jobs\' lists all running jobs. Project files available to the\n'+
 'running program are moved to the Worker, and are retrieved when the Worker\n'+
-'stops running. In case the Worker is killed by a \'kill\' command, then\n'+
-'those files might be lost and should be recreated. In such cases files in\n'+
-'the Local Storage are automatically recovered, but others are truncated.',
+'stops running. In the case the Worker is killed by a \'kill\' command these\n'+
+'files might be lost. Files in the Local Storage are automatically recovered,\n'+
+'but others are truncated to zero.',
 
   jobs:
 'Editor and viewer windows as well as running programs have dedicated job\n'+
@@ -217,8 +217,18 @@ const TOPICS = {
 'first to the controlling Worker. This takes effect only when the Worker\n'+
 'either waits for console input or sleeps. A second \'kill\' terminates\n'+
 'the Worker itself, but in this case files held by the Worker are lost.\n'+
-'Among them those in the Local Storage are automatically recovered, but\n'+
-'others are truncated to zero.',
+'Those in the Local Storage are automatically recovered, but others are\n'+
+'truncated to zero.',
+
+  storage:
+'Character files with attribute +s are stored in the Local Storage; this\n'+
+'part of the browser\'s local cache. Storage content is preserved between\n'+
+'consecutive sessions: files stored here are automatically recovered when\n'+
+'opening a new PlayGround session. In incognito mode Local Storage content\n'+
+'is deleted immediately after closing the current session. Only character\n'+
+'files can be stored in the Local Storage. The command \'storage\' lists\n'+
+'files in the storage. Use \'attrib\' to set or revoke the +s flag for\n'+
+'individual files.',
 
   about:
 'ALEPH PlayGround is a command line based runtime environment for editing,\n'+
