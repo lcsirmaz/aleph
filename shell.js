@@ -223,11 +223,11 @@ const TOPICS = {
   storage:
 'Character files with the +s attribute are stored in the Local Storage.\n'+
 'These files are automatically restored when starting a new PlayGround\n'+
-'session. The Local Storage is part of the browser\'s local cache, its\n'+
-'content is *not saved* when the browser runs in incognito mode. Only\n'+
-'character files are restored correctly. The command \'storage\' lists all\n'+
-'saved files with their size in bytes. Use \'attrib\' to set or revoke the\n'+
-'+s flag for individual files.',
+'session. The Local Storage is part of the browser\'s local cache, the\n'+
+'content, however, is *not saved* when the browser runs in incognito mode.\n'+
+'Use for character files only. The command \'storage\' lists all files in\n'+
+'the Local Storage together with the file size. Use \'attrib\' to set or\n'+
+'revoke the +s (store) flag for individual files.',
 
   about:
 'ALEPH PlayGround is a command line based runtime environment for editing,\n'+
