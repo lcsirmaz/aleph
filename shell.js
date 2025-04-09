@@ -154,7 +154,7 @@ const TOPICS = {
 'These are character files.\n'+
 'Files can be uploaded to and downloaded from the PlayGround, and manipulated\n'+
 'by running ALEPH programs. Only character files can be edited, compiled,\n'+
-'run, and saved in the local dtorage. The lifetime of a PlayGround file is\n'+
+'run, and saved in the local storage. The lifetime of a PlayGround file is\n'+
 'the current session. Files in the local storage, however, are restored\n'+
 'when starting a new session, see the \'attrib\' command. Character files\n'+
 'can be edited or created by \'edit\', inspected by \'view\'; .ale files can\n'+
@@ -207,8 +207,8 @@ const TOPICS = {
 'the command \'jobs\' lists all running jobs. Project files available to the\n'+
 'running program are moved to the worker, and are retrieved when the worker\n'+
 'stops. If the worker is killed by a \'kill\' command, these files might\n'+
-'be lost. Files in the local storage are automatically recovered,\n'+
-'but others are truncated.',
+'be lost. Files in the local storage are automatically recovered, but\n'+
+'others are truncated.',
 
   jobs:
 'Editor and viewer windows (as well as running programs) have dedicated job\n'+
