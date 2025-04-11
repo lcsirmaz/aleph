@@ -406,7 +406,7 @@ var AE=function(document){
   { type: "err", // error
     match: /"[^"]*$/g},
   { type: "comm",// comment 
-    match: /#\s*[a-zA-Z][a-zA-Z0-9\s]*/g},
+    match: /#\s*[a-zA-Z0-9][a-zA-Z0-9\s]*/g},
   { type: "kwd", // keyword
     match: /'(?:a|act|action|charfile|cons|constant|datafile|e|end|exit|external|f|func|function|p|pragmat|pred|predicate|q|que|question|root|stack|static|table|var|variable|x)'/g},
   { type: "err",
