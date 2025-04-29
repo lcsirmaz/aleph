@@ -29,7 +29,7 @@ $  LLOC - local tags (such as formal, local, label)
        (calibre,ssel,flag,ftype,repr,ttag) LLOC.
 
 $ message handling
-'p'was tag pointer+>ptr.
+'p'was tag pointer+>ptr, was qtag pointer+>ptr.
    $ for error and warning messages. If ptr is TTAG LADM or LLOC,
    $  add the coresponding string to the top of BUFFER.
 
@@ -246,7 +246,7 @@ $         flag       type       tag
 
 $ ************************************************************** $
 $ LLOC selectors
-$ formal, local variables and labels are stores in LLOC
+$ formal, local variables and labels are stored in LLOC
 $   calibre: calibre of formal list, -1: no field list
 $   ssel:    standard selector of formal list, -1: none
 $   flag:    used in later rounds
@@ -262,10 +262,13 @@ $ ************************************************************** $
 'p'was tag pointer+>ptr:
    $ string representation of a pointer (for messages)
    was+TTAG+ptr,previous+TTAG+ptr,copy string+TTAG+ptr+BUFFER;
-   was+LADM+ptr, $ check if it has a qualifier
-      (was tag pointer+scope*LADM[ptr],extend BUFFER+/:/,extend BUFFER+/:/;+),
-      tag*LADM[ptr]->ptr,:was tag pointer;
+   was+LADM+ptr, tag*LADM[ptr]->ptr,:was tag pointer;
    was+LLOC+ptr,ttag*LLOC[ptr]->ptr,:was tag pointer.
+'p'was qtag pointer+>ptr-q-t:
+  $ if qualified, put first the tag and then the qualifier
+  was+LADM+ptr,scope*LADM[ptr]->q,tag*LADM[ptr]->t,
+    was+TTAG+q,was+TTAG+t,previous+TTAG+q,previous+TTAG+t,
+    copy string+TTAG+t+BUFFER,copy string+TTAG+q+BUFFER.
 
 $ ************************************************************** $
 $ get/set fields of LADM $

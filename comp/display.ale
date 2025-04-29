@@ -166,6 +166,10 @@ $ formated printing $
    ptr=0, print+"[NULL]";
    was+MESSAGE+ptr,print+MESSAGE+ptr;
    was+BUFFER+ptr,print+BUFFER+ptr;
+   was qtag pointer+ptr,
+      print+BUFFER+>>BUFFER,unstack string+BUFFER,
+      print char+/:/,print char+/:/,
+      print+BUFFER+>>BUFFER,unstack string+BUFFER;
    (was lexical pointer+ptr;
     was tag pointer+ptr;
     was type pointer+ptr),
