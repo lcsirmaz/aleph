@@ -405,7 +405,7 @@ function viewstdlib(args){// stdlib
    },false);
    xhr.send();
 }
-function manualcmd{(args){// manual
+function manualcmd(args){// manual
    if(cmdhelp('manual',args.length==0))return;
    window.open('manual.html','ALEPH manual');
 }
