@@ -702,7 +702,7 @@ function EXEC(str){
        if(b[0]?.startsWith('-h')|| b[0]?.startsWith('--h')){showHelp(f); }
        else {f.f(b);}
      }else if(cmd=='-' && b.length>0 && (f=TOPICS[b[0]])){
-        P{f};
+        P(f);
      }else if(cmd.startsWith('-') && (f=TOPICS[cmd.slice(1)])){
         P(f);
      }else{P("unknown command, use 'help' for a list of commands");}
