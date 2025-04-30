@@ -128,7 +128,7 @@ const TOPICS = {
 'while Enter and Ctrl+D execute it. To list all accepted commands, type\n'+
 '\'help\' without any arguments. The command line is also used as the console\n'+
 'input by ALEPH programs. This usage is indicated by a different background\n'+
-'color, and the project name is changed to that of the running program. Hitting'+
+'color, and the project name is changed to that of the running program. Hitting\n'+
 'Ctrl-C kills the running program; finishing the line with Ctrl+D instead of\n'+
 'Enter closes the channel for further use for the current program.\n',
 
@@ -164,7 +164,7 @@ const TOPICS = {
 'File attributes are s,r,d for save, readonly and data. They are off when\n'+
 'the file is created, and can be manipulated by the \'attrib\' command.\n'+
 'To see file attributes, use \'ls -l <pattern>\'.\n'+
-' +s  save the file in the Local Storage. Saved files are automatically\n'+
+' +s  save the file in the local storage. Saved files are automatically\n'+
 '     recovered when the PlayGround is opened or reloaded. Use for\n'+
 '     character files only. The local storage is part of the browser\'s\n'+
 '     local cache, and is not saved when in incognito mode.\n'+
@@ -202,24 +202,23 @@ const TOPICS = {
 
   run:
 'Compiled ALEPH programs are executed by dedicated web workers. A project\n'+
-'can run one program at a time, but different projects can run several\n'+
+'can run one program at a time, while different projects can run several\n'+
 'programs simultaneously. Running programs have dedicated job numbers;\n'+
 'the command \'jobs\' lists all running jobs. Project files available to the\n'+
-'running program are moved to the worker, and are retrieved when the worker\n'+
-'stops. If the worker is killed by a \'kill\' command, these files might\n'+
+'running program are moved to the worker and are retrieved when the worker\n'+
+'terminated. If the worker is killed by a \'kill\' command, these files might\n'+
 'be lost. Files in the local storage are automatically recovered, but\n'+
 'others are truncated.',
 
   jobs:
-'Editor and viewer windows (as well as running programs) have dedicated job\n'+
-'entries. Jobs can be listed using \'jobs\'. Jobs can be killed using\n'+
-'\'kill\'; killing an editor or viewer closes their window immediately,\n'+
-'discarding any unsaved changes. When killing a running program a "stop"\n'+
-'message is sent first to the controlling worker. This takes effect only\n'+
-'when the worker is either waiting for console input or is sleeping. A second\n'+
-'\'kill\' terminates the worker itself, but in this case files held by the\n'+
-'worker are lost. Files saved in the local storage are automatically recovered,\n'+
-'but others are truncated.',
+'Editor and viewer windows and running programs have dedicated job entries.\n'+
+'Jobs can be listed using \'jobs\'; can be killed by \'kill\'. Killing an\n'+
+'editor or viewer closes the window immediately, discarding any unsaved\n'+
+'changes. Killing a running program sends a "stop" signal to the controlling\n'+
+'worker. This takes effect only when the worker is either waiting for\n'+
+'console input or is sleeping. A second \'kill\' terminates the worker\n'+
+'itself, but in this case files held by the worker are lost. Files in the\n'+
+'local storage are automatically recovered, but others are truncated.',
 
   storage:
 'Character files with the +s attribute are stored in local storage.\n'+
@@ -598,6 +597,7 @@ function compcmd(args){
    LAUNCH.compile(pObj,copt,lopt,files);
 }
 /* --------------------------------------------------------------- */
+let cfont=0.8, efont=0.9;
 const COMMANDS={
   help:      {f:helpcmd,s:'[<command>|-<topic>]',h:[
               'give help on a specific command or topic.','']},
@@ -672,13 +672,15 @@ const COMMANDS={
               '  file patterns.']},
  'font-size':{alias:'fontsize'},
   fontsize:  {f:(b)=>{const x=parseFloat(b[0]||'');if(isNaN(x) || !(0.5<=x && x<=2.0)){
-                     P("usage: fontsize <s> with 0.5<= s <=2.0");}
-                   else{ aCle.font(x);}},
+                     P("usage: fontsize <s> with 0.5<= s <=2.0\n"+
+                       "       font size now: "+cfont);}
+                   else{ cfont=x; aCle.font(x);}},
               s:'<s> where 0.5<= s <= 2.0',h:['change console font size.','']},
  'edit-size':{alias:'editsize'},
   editsize:  {f:(b)=>{const x=parseFloat(b[0]||'');if(isNaN(x) || !(0.5<=x && x<=2.0)){
-                     P("usage: editsize <s> with 0.5<= s <=2.0");}
-                   else{ AE.setFont(x);}},
+                     P("usage: editsize <s> with 0.5<= s <=2.0\n"+
+                       "       exit size now: "+efont);}
+                   else{ efont=x; AE.setFont(x);}},
               s:'<s> where 0.5<= s <=2.0',h:['change edit window font size.','']},   
   storage:   {f:()=>{let sum=0;LS.list().forEach((v)=>{
                      const attr=parseInt(v.attr.at(0)),len=v.attr.slice(1);
@@ -686,7 +688,7 @@ const COMMANDS={
                      P('--s'+((attr&1)?'r':'-')+((attr&2)?'d':'-')+
                      len.padStart(7)+' '+v.file);});
                    P('Total storage: '+sum);},
-              s:'',h:['list files in the Local Storage.','']},
+              s:'',h:['list files in the local storage.','']},
 };
 
 function EXEC(str){
@@ -699,8 +701,10 @@ function EXEC(str){
        // check help arguments
        if(b[0]?.startsWith('-h')|| b[0]?.startsWith('--h')){showHelp(f); }
        else {f.f(b);}
+     }else if(cmd=='-' && b.length>0 && (f=TOPICS[b[0]])){
+        P{f};
      }else if(cmd.startsWith('-') && (f=TOPICS[cmd.slice(1)])){
-        P(f)
+        P(f);
      }else{P("unknown command, use 'help' for a list of commands");}
    }
 }
