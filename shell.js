@@ -407,7 +407,7 @@ function viewstdlib(args){// stdlib
 }
 function manualcmd(args){// manual
    if(cmdhelp('manual',args.length==0))return;
-   window.open('manual.html','ALEPH manual');
+   window.open('manual.html','Aleph manual');
 }
 // load a sample ALEPH program
 // args[0]: a1 .. a19, load one or more files as a<n>.ale, a<n>m<j>.ale
@@ -646,7 +646,7 @@ const COMMANDS={
   view:      {f:viewcmd,s:'<file>',h:[
               'view an existing character file.','']},
   stdlib:    {f:viewstdlib,s:'',h:['show standard ALEPH library.','']},
-  manual:    {f:manualcmd,s:'',h:['open ALEPH manual in a new windows.','']},
+  manual:    {f:manualcmd,s:'',h:['open the ALEPH manual in a new window.','']},
   upload:    {f:upcmd,s:'',h:['upload character files to the current project.','']},
   download:  {f:downcmd,s:'<file>',h:['save a character file on the local machine.','']},
   jobs:      {f:jobscmd,s:'',h:['list all running jobs.','']},
