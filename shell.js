@@ -121,32 +121,32 @@ const TOPICS = {
 
   cmdline:
 'Commands are typed at the bottom of the workspace. Above this line is the\n'+
-'actual project name, then the console window where the commands entered and\n'+
-'messages sent to the \'stdout\' channel appear. The top window is reserved\n'+
-'for error messages and the \'stderr\' channel. The \'up\' and \'down\' \n'+
+'actual project name, then the console window where the entered commands and\n'+
+'the output sent to the \'stdout\' channel appear. The top window is reserved\n'+
+'for error messages and for the \'stderr\' channel. The \'up\' and \'down\' \n'+
 'arrows navigate between previously entered commands. Ctrl+C clears this line,\n'+
-'while Enter and Ctrl+D execute it. To list all accepted commands, type\n'+
-'\'help\' without any arguments. The command line is also used as the console\n'+
-'input by ALEPH programs. This usage is indicated by a different background\n'+
-'color, and the project name is changed to that of the running program. Hitting\n'+
-'Ctrl-C kills the running program; finishing the line with Ctrl+D instead of\n'+
-'Enter closes the channel for further use for the current program.\n',
+'while Enter and Ctrl+D execute it. To list accepted commands, type \'help\'\n'+
+'without arguments. The command line is also used as the console input by\n'+
+'ALEPH programs. This usage is indicated by a different background color,\n'+
+'and the project name is changed to that of the running program. Hitting\n'+
+'Ctrl+C kills the running program; finishing the line with Ctrl+D instead\n'+
+'of Enter closes this channel for further use for the current program.\n',
 
   project: 
 'The ALEPH PlayGround is organized around projects. Each project contains\n'+
-'all the files visible to it. A project can run one single program at a time,\n'+
-'and the program can only use files in the current project.\n'+
-'Projects are created by \'mkpr\', deleted by \'rmpr\', and switched by\n'+
+'all files it can use. A project can run one single program at a time, and\n'+
+'the running program can only use files belonging to the project.\n'+
+'Projects are created by \'mkpr\', deleted by \'rmpr\', and switched to by\n'+
 '\'chpr\'. The current project name is shown above the command line. The\n'+
-'default project is \'aleph\', which cannot be deleted. A project name cannot\n'+
-'contain space nor ?*{}/\'", and cannot start with - or +.',
+'default project is \'aleph\', which cannot be deleted. The project name cannot\n'+
+'contain space, ?*{}/\'", and cannot start with - or +.',
 
   file:
 'Each PlayGround file belongs to one project. Files in the current project\n'+
 'can be referred to as \'<filename>\', otherwise use \'/<project>/<filename>\'.\n'+
-'A filename cannot contain a space or ?*{}\'\", cannot start with\n'+
-'+-/, and cannot end with /. To list all files, use the command \'ls\' or\n'+
-'\'dir\'. The type of each file is determined by its extension. The following\n'+
+'A filename cannot contain space, ?*{}\'\", cannot start with +-/, and\n'+
+'cannot end with /. To list all files, use the command \'ls\' or \'dir\'.\n'+
+'The type of each file is determined by its extension. The following\n'+
 'extensions are recognized:\n'+
 '  .ale    ALEPH program source\n'+
 '  .ice    intermediate ALICE code\n'+
@@ -167,17 +167,17 @@ const TOPICS = {
 ' +s  save the file in the local storage. Saved files are automatically\n'+
 '     recovered when the PlayGround is opened or reloaded. Use for\n'+
 '     character files only. The local storage is part of the browser\'s\n'+
-'     local cache, and is not saved when in incognito mode.\n'+
-' +r  the file is passed to a running ALEPH program as \'read only\', thus\n'+
-'     the program cannot modify or delete this file. These files, however,\n'+
+'     local cache; it is not saved when used in incognito mode.\n'+
+' +r  the file, if passed to a running ALEPH program, is \'read only\', thus\n'+
+'     the program cannot modify or delete this file. The file, however,\n'+
 '     can be edited and deleted using command line tools.\n'+
 ' +d  the file is automatically available to the running ALEPH program\n'+
-'     in this project. The program can modify and delete this file.',
+'     in this project. The program can modify or even delete this file.',
 
   pattern:
-'Many commands require a pattern as an argument. In a pattern, ? matches\n'+
+'Many commands require a pattern as an argument. In a pattern ? matches\n'+
 'any character different from slash (/), and * matches a sequence of\n'+
-'such characters, including the empty sequence.\n'+
+'non-slash characters, including the empty sequence.\n'+
 'Patterns starting with / search all projects; others search files in the\n'+
 'current project only. Thus \'ls /*\' lists project names only, while\n'+
 '\'ls *\' lists all file names in the current project which have no\n'+
@@ -185,15 +185,15 @@ const TOPICS = {
 
   edit:
 'The command \'edit <file>\' opens the file in a new editor window, creating\n'+
-'the file if it is not found. Only character files are handled correctly. A\n'+
-'file can be opened for editing only once, but can have many view instances.\n'+
-'Changes to the file in the background are not tracked. Due to the used\n'+
-'technology, selecting and highlighting is limited to a single line.',
+'the file if it was not found. Only character files can be edited. A file is\n'+
+'opened for editing only once, otherwise it is opened for vieweing.\n'+
+'Background changes to the file are not tracked. Due to the used technology,\n'+
+'selecting and highlighting is limited to a single line.',
 
   compile:
 'To compile a main ALEPH program together with all necessary modules, use\n'+
 '  compile [<flags>] <source files>\n'+
-'Source files can be specified using patterns. Compilation requires several\n'+
+'Source files can be specified using patterns. Compilation is done in several\n'+
 'stages. First, source files are compiled into ALICE code. Second, these\n'+
 'intermediate files are optimized. Finally, the .ice files are linked to\n'+
 'the final javascript code. The process stops at the first error. Flags\n'+
@@ -206,7 +206,7 @@ const TOPICS = {
 'programs simultaneously. Running programs have dedicated job numbers;\n'+
 'the command \'jobs\' lists all running jobs. Project files available to the\n'+
 'running program are moved to the worker and are retrieved when the worker\n'+
-'terminated. If the worker is killed by a \'kill\' command, these files might\n'+
+'terminates. If the worker is killed by a \'kill\' command, these files might\n'+
 'be lost. Files in the local storage are automatically recovered, but\n'+
 'others are truncated.',
 
@@ -214,8 +214,8 @@ const TOPICS = {
 'Editor and viewer windows and running programs have dedicated job entries.\n'+
 'Jobs can be listed using \'jobs\'; can be killed by \'kill\'. Killing an\n'+
 'editor or viewer closes the window immediately, discarding any unsaved\n'+
-'changes. Killing a running program sends a "stop" signal to the controlling\n'+
-'worker. This takes effect only when the worker is either waiting for\n'+
+'change. Killing a running program sends a "stop" signal to the controlling\n'+
+'worker. Signals are checked only when the worker is either waiting for\n'+
 'console input or is sleeping. A second \'kill\' terminates the worker\n'+
 'itself, but in this case files held by the worker are lost. Files in the\n'+
 'local storage are automatically recovered, but others are truncated.',
@@ -226,7 +226,7 @@ const TOPICS = {
 'session. The local storage is part of the browser\'s local cache, the\n'+
 'content, however, is *not saved* when the browser runs in incognito mode.\n'+
 'Use for character files only. The command \'storage\' lists all files in\n'+
-'the local storage together with the file size. Use \'attrib\' to set or\n'+
+'the local storage together with their size. Use \'attrib\' to set or\n'+
 'revoke the +s (store) flag for individual files.',
 
   about:
@@ -404,6 +404,10 @@ function viewstdlib(args){// stdlib
      startstdview(fObj);
    },false);
    xhr.send();
+}
+function manualcmd{(args){// manual
+   if(cmdhelp('manual',args.length==0))return;
+   window.open('manual.html','ALEPH manual');
 }
 // load a sample ALEPH program
 // args[0]: a1 .. a19, load one or more files as a<n>.ale, a<n>m<j>.ale
@@ -642,6 +646,7 @@ const COMMANDS={
   view:      {f:viewcmd,s:'<file>',h:[
               'view an existing character file.','']},
   stdlib:    {f:viewstdlib,s:'',h:['show standard ALEPH library.','']},
+  manual:    {f:manualcmd,s:'',h:['open ALEPH manual in a new windows.','']},
   upload:    {f:upcmd,s:'',h:['upload character files to the current project.','']},
   download:  {f:downcmd,s:'<file>',h:['save a character file on the local machine.','']},
   jobs:      {f:jobscmd,s:'',h:['list all running jobs.','']},
@@ -673,13 +678,13 @@ const COMMANDS={
  'font-size':{alias:'fontsize'},
   fontsize:  {f:(b)=>{const x=parseFloat(b[0]||'');if(isNaN(x) || !(0.5<=x && x<=2.0)){
                      P("usage: fontsize <s> with 0.5<= s <=2.0\n"+
-                       "       font size now: "+cfont);}
+                       "       fontsize now: "+cfont);}
                    else{ cfont=x; aCle.font(x);}},
               s:'<s> where 0.5<= s <= 2.0',h:['change console font size.','']},
  'edit-size':{alias:'editsize'},
   editsize:  {f:(b)=>{const x=parseFloat(b[0]||'');if(isNaN(x) || !(0.5<=x && x<=2.0)){
                      P("usage: editsize <s> with 0.5<= s <=2.0\n"+
-                       "       exit size now: "+efont);}
+                       "       editsize now: "+efont);}
                    else{ efont=x; AE.setFont(x);}},
               s:'<s> where 0.5<= s <=2.0',h:['change edit window font size.','']},   
   storage:   {f:()=>{let sum=0;LS.list().forEach((v)=>{
