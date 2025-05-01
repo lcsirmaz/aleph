@@ -32,7 +32,7 @@ dd p.indent2 {text-indent: 2em; margin-top: 0pt;}
    background-color: #f4f4f0;}
 .ec-lmtt-9x-x-94{font-size:85%; font-family: monospace,monospace;}
 .ec-lmtk-10x-x-92{font-size:85%; font-family: monospace,monospace;color: #206020;
-   background-color: #f4f4f0;}
+   font-weight:bold;background-color: #f4f4f0;}
 .cmr-17{font-size:170%;}
 .cmr-12{font-size:120%;}
 .cmtt-10{font-family: monospace,monospace;}
