@@ -1,12 +1,12 @@
-'pragmat'module=a18m2 module,title="module a18m2".
+'pragmat'module=a20m2 module,title="module a20m2".
 
 'a'dummy action. $ export this rule
 
 'pragmat'if=compile.
-'pragmat'require="a18m1". $ for c int, c str, c char
+'pragmat'require="a20m1". $ for c int, c str, c char
 $ this is the initialization for this module
-'root'c str+"Module a9m2 initialization:",c char+newline,
-      wait for+"a18m1",
+'root'c str+"Module a20m2 initialization:",c char+newline,
+      wait for+"a20m1",
 $ manifest constants
       c str+_file_,c int+_line_,c char+newline,
       c str+_title_,c char+newline,

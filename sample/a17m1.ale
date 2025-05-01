@@ -5,7 +5,7 @@ $ ******* module head
 $ ******* module body
 'pragmat'if=compile,macro=qless.
 'constant'ascending=1,descending=0.
-'variable'direction=0;
+'variable'direction=0.
 'question'qless+>x+>y: is+direction,x<y;y<x.
 'action'sort+>how+[]st[]:
    how->direction,quicksort+<<st+>>st+st.
@@ -21,7 +21,7 @@ $ ******* module body
               incr+left,:push right),
            (push left:
               from>right;
-              qsort less+a[right]+amiddle;
+              qless+a[right]+amiddle;
               decr+right,:push left),
            (left<right,(-elem:a[left]->elem,a[right]->a[left],elem->a[right]),
               incr+left,decr+right,:split;

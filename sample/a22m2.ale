@@ -1,10 +1,10 @@
-'pragmat'module=a20m2,title="parsing a formula".
+'pragmat'module=a22m2,title="parsing a formula".
 $ parsing a formula given as a string in STDARG. On error
 $   print message and exit.
 $ HEADER ***************************************************
 'a'parse formula+>ptr+e>.
 $ BODY *****************************************************
-'pragmat'if=compile,require="a20m1".
+'pragmat'if=compile,require="a22m1".
 $ ptr  pointer in STDARG
 $ cnt  position in the string
 $ chr  next character to look at

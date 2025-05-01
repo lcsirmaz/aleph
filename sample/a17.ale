@@ -8,7 +8,7 @@ $ the stact to be sorted
 
 'action'print V-v:
     <<V->v, (nxt: v>>>V,printf+"%n"; printf+"%d "+V[v],incr+v,:nxt).
-'root':
+'root'
    print V,
    sort+ascending+V,print V,
    sort+descending+V,print V.

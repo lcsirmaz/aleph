@@ -1,4 +1,4 @@
-'pragmat'module=a20m1,title="formula definitions".
+'pragmat'module=a22m1,title="formula definitions".
 $ a formula is stored as a tree; nodes are operators
 $ (binary and unary), leaves are constants or a variable
 $ HEADER ***************************************************

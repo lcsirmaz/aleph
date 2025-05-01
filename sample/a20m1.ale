@@ -1,6 +1,6 @@
 $ define some library routines
 $ add a low level routine returning current time
-'pragmat'module=a18m1,title="module a18m1".
+'pragmat'module=a20m1,title="module a20m1".
 
 'a'c arr+t[],c int+>n,c char+>c,c str+t[]+>ptr.
 
@@ -24,7 +24,7 @@ $ returns hours, minutes, seconds
 
 $ this is the initialization for this module
 'root'-h-m-s:getTime+h+m+s,
-    printf+"Module a18m1 initialization at %d:%d:%d%n"+h+m+s.
+    printf+"Module a20m1 initialization at %d:%d:%d%n"+h+m+s.
 'pragmat'endif=compile.
 
 'end'

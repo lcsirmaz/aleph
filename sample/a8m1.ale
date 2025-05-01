@@ -1,13 +1,14 @@
 'pragmat'title="next permutation".
 $ the module generates the lexicographically next permutation
-'pragmat'module=permuation.
+'pragmat'module=permutation.
 $ it defined 'next perm' as a macro, and defines 'tail perm'
 $  which does the main work
 'predicate'next perm+[]st[]:tail perm+<<st+st.
+'predicate'tail perm+>i+[]st[].
 'pragmat'macro=next perm.
 
 'pragmat'if=compile. $ module body starts here
-'predicate'tail perm+>i>[]st[]-p-elem:
+'predicate'tail perm+>i+[]st[]-p-q-elem:
   i = >>st,-;
   add+i+1+p,
     (tail perm+p+st;   $ next tail perm

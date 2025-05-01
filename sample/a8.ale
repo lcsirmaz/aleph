@@ -8,6 +8,6 @@ $ and fails if elements of st are decreasing.
 $ elements of V are in increasing order, this is the first
 'stack'[]V[]=(/a/,/b/,/c/,/d/).
 'root'(rep: put line+STDOUT+V+newline,
-            (next perm+V,:rep;+).
+            (next perm+V,:rep;+)).
 'end'
 

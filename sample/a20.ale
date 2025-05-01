@@ -1,7 +1,7 @@
 'pragmat'title="getting time, module initializations".
 $ creating new external library rule; testing bounds
 'pragmat'warning="Compile with stack trace: -X -g".
-'pragmat'require=("a18m1","a18m2").
+'pragmat'require=("a20m1","a20m2").
 
 'table'(a,b,c)T[]=(/a/,/b/,/c/,/x/,/y/,/z/).
 'table'(a,b,c)(#,#,test)test[]=((1,2,3),(11,12,13),(21,22,23),(31,32,33)).

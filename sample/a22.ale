@@ -1,7 +1,7 @@
 'pragmat'title="symbolic derivation".
 $ parse a formula provided as an input, then compute the derivative
 $
-'pragmat'require=("a20m1","a20m2").
+'pragmat'require=("a22m1","a22m2").
 
 'action'derivate+>e+de>-f-df-g-dg-n1-n2-n3:
   was+const+e, c zero->de;
