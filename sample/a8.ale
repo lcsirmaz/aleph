@@ -1,24 +1,13 @@
-'pragmat'title="generating the next permutation".
-$ generating all permutations
-$ starting with an increasing order of the elements
-$ take the next permutation of the tail. If it is decreasing,
-$ determine the lexicographically next permutation.
+'pragmat'title="printing permutations".
+'pragmat'require="a8m1".
+$ the module a8m1 provides the rule
+$   'predicate'next perm+[]st[].
+$ which generates the lexicographically next permutation of st,
+$ and fails if elements of st are decreasing.
 
-'predicate'next perm+>i+[]st[]-p-q-elem:
-  i = >>st,-;
-  add+i+1+p,
-    (next perm+p+st;
-     st[i] > st[p],-;
-     >>st->q,(rep: q<=p;
-                   st[q]->elem,st[p]->st[q],elem->st[p],
-                     incr+p,decr+q,:rep),
-             add+i+1+p,st[i]->elem,
-                   (rep:elem>st[p],incr+p,:rep;
-                         st[p]->st[i],elem->st[p])
-            ).
-$ and apply it here, elements of V are increasing
+$ elements of V are in increasing order, this is the first
 'stack'[]V[]=(/a/,/b/,/c/,/d/).
-'root'(rep:put line+STDOUT+V+newline,(next perm+<<V+V,:rep;+)).
-
+'root'(rep: put line+STDOUT+V+newline,
+            (next perm+V,:rep;+).
 'end'
 

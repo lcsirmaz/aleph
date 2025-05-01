@@ -1,0 +1,24 @@
+'pragmat'title="next permutation".
+$ the module generates the lexicographically next permutation
+'pragmat'module=permuation.
+$ it defined 'next perm' as a macro, and defines 'tail perm'
+$  which does the main work
+'predicate'next perm+[]st[]:tail perm+<<st+st.
+'pragmat'macro=next perm.
+
+'pragmat'if=compile. $ module body starts here
+'predicate'tail perm+>i>[]st[]-p-elem:
+  i = >>st,-;
+  add+i+1+p,
+    (tail perm+p+st;   $ next tail perm
+     st[i] >= st[p],-; $ decreasing, no more premutation
+     >>st->q,(rep: q<=p;
+                   st[q]->elem,st[p]->st[q],elem->st[p],
+                     incr+p,decr+q,:rep),
+             add+i+1+p,st[i]->elem,
+                   (rep:elem>st[p],incr+p,:rep;
+                         st[p]->st[i],elem->st[p])
+            ).
+'root'+. $ no initialization is necessary
+'pragmat'endif=compile.
+'end'

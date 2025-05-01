@@ -1,65 +1,19 @@
-'pragmat'module=a20m2,title="parsing a formula".
-$ parsing a formula given as a string in STDARG. On error
-$   print message and exit.
-$ HEADER ***************************************************
-'a'parse formula+>ptr+e>.
-$ BODY *****************************************************
-'pragmat'if=compile,require="a20m1".
-$ ptr  pointer in STDARG
-$ cnt  position in the string
-$ chr  next character to look at
-'variable'chr=/ /,cnt=0,ptr=0.
-'a'init parsing+>p:
-   p->ptr,0->cnt,next char.
-'a'next char:
-   string elem+STDARG+ptr+cnt+chr,incr+cnt;
-   newline->chr.
-'e'error+t[]+@+>msg-n-v:
-   printf+"Parsing error: ",printf+t+@,printf+"%n-",0->n,
-   (nxt:n<cnt,print char+/-/,incr+n,:nxt;+),
-   printf+"v%n  ",0->n,
-   (nxt:string elem+STDARG+ptr+n+v,print char+v,incr+n,:nxt;+),
-   exit+1.
+'pragmat'module=a18m2 module,title="module a18m2".
 
-'p'R+>x: chr=x,next char.
-'a'must+>x: R+x;error+"expected %c"+x.
-'p'is digit+x>: =chr= [/0/:/9/],subtr+chr+/0/+x,next char;-.
-'p'is const+e>-n-d:
-   is digit+n,(nxt:is digit+d,addmult+n+10+d+n,:nxt;+),
-     add number+n+e.
-'p'is string+t[]+>p-oldc-n-v:
-   0->n,cnt->oldc,
-   (nxt:string elem+t+p+n+v,(R+v,incr+n,:nxt;oldc->cnt,-);
-        +).
-'p'base+e>:
-   is const+e;
-   is string+var+x var,x var->e;
-   R+/(/,(form+e;error+"expression expected"),must+/)/;
-   func+log op+e;
-   func+exp op+e;
-   func+sin op+e;
-   func+cos op+e.
-'p'func+>f+e>-arg:
-   is string+operator+f,must+/(/,(form+arg;error+"argument expected"),
-     must+/)/,M+c zero+f+arg+e.
-'p'powterm+e>-e2:
-   base+e,(R+/^/,(powterm+e2;error+"expression ^"),M+e+pow op+e2+e;
-           +).
-'p'factor+e>-e2:
-   R+/-/, $ unary minus sign
-     (factor+e2;error+"factor expected"),M+c zero+min op+e2+e;
-   powterm+e,(nxt:R+/*/,(powterm+e2;error+"factor *"),M+e+tim op+e2+e,:nxt;
-                   R+///,(powterm+e2;error+"factor /"),M+e+div op+e2+e,:nxt;
-                   +).
-'p'form+e>-e2:
-   factor+e,(nxt:R+/+/,(factor+e2;error+"form +"),M+e+plus op+e2+e,:nxt;
-                 R+/-/,(factor+e2;error+"form -"),M+e+min op+e2+e,:nxt;
-                 +).
+'a'dummy action. $ export this rule
 
-'a'parse formula+>ptr+e>:
-   ptr< <<STDARG,error+"no formula specified";
-   init parsing+ptr,(form+e;error+"no formula"),
-      (R+newline;error+"extra characters").
-'root'+.
+'pragmat'if=compile.
+'pragmat'require="a18m1". $ for c int, c str, c char
+$ this is the initialization for this module
+'root'c str+"Module a9m2 initialization:",c char+newline,
+      wait for+"a18m1",
+$ manifest constants
+      c str+_file_,c int+_line_,c char+newline,
+      c str+_title_,c char+newline,
+      c str+_rule_,c char+newline,
+      c str+_module_,c char+newline.
+
+'a'dummy action:+.
+
 'pragmat'endif=compile.
 'end'

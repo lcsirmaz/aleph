@@ -1,49 +1,16 @@
-'pragmat'title="quicksort".
-$ quicksort with a comparison routine
-$ sort the element of the stack []a[] so that
-$  qless+x+y returns true when x precedes y
-$
+'pragmat'title="applying quicksort".
+$ using the quicksort module, which sorts a complete stack
+$  either ascending or descending order
+'pragmat'require="a17m1".
 
-'a'quicksort+>from+>to+[]a[]. $ prototype
+$ the stact to be sorted
+'stack'[]V[]=(10,7,-3,-99,30,8,12,4,14,5,10,-3,-80).
 
-'a'quicksort+>from+>to+[]a[]-left-middle-right-amiddle:
-   from >= to; $ done
-   from->left,to->right,
-   add+from+to+middle,div+middle+2+middle,
-   a[middle]->amiddle,
-   (split: (push right:
-              left>to;
-              qsort less+amiddle+a[left];
-              incr+left,:push right),
-           (push left:
-              from>right;
-              qsort less+a[right]+amiddle;
-              decr+right,:push left),
-           (left<right,(-elem:a[left]->elem,a[right]->a[left],elem->a[right]),
-              incr+left,decr+right,:split;
-            middle<right,
-              a[right]->a[middle],amiddle->a[right],decr+right;
-            left<middle,
-              a[left]->a[middle],amiddle->a[left],incr+left;
-            +)
-   ),quicksort+from+right+a,quicksort+left+to+a.
-
-$ Now we use the algorithm to sort alphabetically or
-$ in the reverse
-
-'stack'[]A[]=(one,two,three,four,five,six,seven,eight,nine,ten).
-'table'B[]=("one":one,"two":two,"three":three,"four":four,"five":five,
-          "six":six,"seven":seven,"eight":eight,"nine":nine,"ten":ten).
-
-'a'print A-idx:
-   <<A->idx,(nxt:idx>>>A,putc+newline;
-    print string+B+A[idx],putc+newline,next+A+idx,:nxt).
-
-'root' printf+"sorting, enter 1 for alphabetically, 0 for reverse%n",
-       get int+STDIN+reverse, print A, quicksort+<<A+>>A+A, print A.
-'var'reverse=0.
-$ sort alphabetically or in the reverse
-'q'qsort less+>x+>y-cmp:
-     compare string+B+x+B+y+cmp,(is+reverse,cmp<0;cmp>0).
+'action'print V-v:
+    <<V->v, (nxt: v>>>V,printf+"%n"; printf+"%d "+V[v],incr+v,:nxt).
+'root':
+   print V,
+   sort+ascending+V,print V,
+   sort+descending+V,print V.
 'end'
 

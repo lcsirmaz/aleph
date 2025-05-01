@@ -1,40 +1,28 @@
-'pragmat'title="symbolic derivation".
-$ parse a formula provided as an input, then compute the derivative
-$
-'pragmat'require=("a20m1","a20m2").
+'pragmat'title="getting time, module initializations".
+$ creating new external library rule; testing bounds
+'pragmat'warning="Compile with stack trace: -X -g".
+'pragmat'require=("a18m1","a18m2").
 
-'action'derivate+>e+de>-f-df-g-dg-n1-n2-n3:
-  was+const+e, c zero->de;
-  was+var+e,   c one ->de;
-  left*expr[e]->f,derivate+f+df,
-  right*expr[e]->g, derivate+g+dg,
-  (= op*expr[e] =
-   [plus op],M+df+plus op+dg+de;
-   [min op], M+df+min op+dg+de;
-   [tim op], M+df+tim op+g+n1,M+f+tim op+dg+n2,
-                M+n1+plus op+n2+de;
-   [div op], M+df+tim op+g+n1,M+f+tim op+dg+n2,
-                M+n1+min op+n2+n1,M+g+pow op+c two+n2,
-                M+n1+div op+n2+de;
-   [pow op], M+g+min op+c one+n1,M+f+pow op+n1+n1,
-             M+df+tim op+g+n2,M+n2+tim op+n1+n1,
-             M+c zero+log op+f+n2,M+n2+tim op+dg+n2,
-             M+f+pow op+g+n3,M+n2+tim op+n3+n2,
-             M+n1+plus op+n2+de;
-   [exp op], M+dg+tim op+e+de;
-   [log op], M+dg+div op+g+de;
-   [sin op], M+c zero+cos op+g+n1,M+dg+tim op+n1+de;
-   [cos op], M+c zero+sin op+g+n1,M+dg+tim op+n1+n2,
-             M+c zero+min op+n2+de
-   ).
+'table'(a,b,c)T[]=(/a/,/b/,/c/,/x/,/y/,/z/).
+'table'(a,b,c)(#,#,test)test[]=((1,2,3),(11,12,13),(21,22,23),(31,32,33)).
 
-'a'intro: printf+
-"Give a function of 'x' using integers, operations + - * / ^%n"
-" (exponentiation) and functions exp,log,sin,cos (no spaces)%n"
-" I compute its derivative.".
+'pragmat'bounds=on.
+$ go ahead until zero or 1 is entered
+'a'read 01+how>-i:
+   c str+"zero for up, one for down: ",
+   (get char+STDIN+i,(=i=
+      [/0/],0->how;
+      [/1/],1->how;
+      c str+"wrong input",exit+1);
+    c str+"no input",exit+0).
+$ this is an exit rule, no return
+'e'test bounds-how-idx:
+   read01+how,(how=0,<<test->idx,
+      (nxt:c int+idx,c int+test[idx],c char+newline,incr+idx,:nxt);
+   >>test->idx,
+      (nxt:c int+idx,c int+test[idx],c char+newline,decr+idx,:nxt)).
+'pragmat'bounds=off.
+'root' dummy action,c arr+T,test bounds.
 
-'root'-e-de: >>STDARG<<<STDARG,intro; $ no arguments given
-      parse formula+>>STDARG+e,derivate+e+de,
-      simplify+de+e,print expr+e.
 'end'
 

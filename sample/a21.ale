@@ -1,75 +1,51 @@
-'pragmat'title="checking binary input/output".
+'pragmat'title="simple symbolic derivation".
+$ formally derivate a formula specified as structure
+’stack’[10](op,left,right)expr[].
+’table’operator[]=("+":plus op, "-":min op, "*":tim op,
+    "/":div op, "^":pow op,
+    "log ": log op $ log(f) is represented as 0 "log" f $),
+   const[]=("0": c zero, "1": c one, "2": c two),
+   var[]=("x": x var).
+’action’derivate+>e+de>-f-df-g-dg-n1-n2-n3:
+   was+const+e, c zero->de;
+   was+var+e,   c one->de;
+   left*expr[e]->f, right*expr[e]->g,
+   derivate+f+df, derivate+g+dg,
+   (=op*expr[e]=
+    [plus op],M+df+plus op+dg+de;
+    [min op], M+df+min op+dg+de;
+    [tim op], M+df+tim op+g+n1,M+f+tim op+dg+n2,
+                 M+n1+plus op+n2+de;
+    [div op], M+df+tim op+g+n1,M+f+tim op+dg+n2,
+                 M+n1+min op+n2+n1,M+g+pow op+c two+n2,
+                 M+n1+div op+n2+de;
+    [log op], M+dg+div op+g+de;
+    [pow op], M+g+min op+c one+n1,M+f+pow op+n1+n1,
+              M+df+tim op+g+n2,M+n2+tim op+n1+n1,
+              M+c zero+log op+f+n2,M+n2+tim op+dg+n2,
+              M+f+pow op+g+n3,M+n2+tim op+n3+n2,
+              M+n1+plus op+n2+de
+    ).
+’action’M+>left+>op+>right+res>:
+  (*left->left, op->op,right->right*) expr, >>expr->res.
+’action’print expr+>e:
+   print expr1+e,print char+newline.
+’action’print expr1+>e:
+   was+const+e,print string+const+e;
+   was+var+e,print string+var+e;
+   print char+/(/,(= op*expr[e] =
+     [plus op; min op; tim op; div op; pow op],
+       print expr1+left*expr[e];+),
+     print string+operator+op*expr[e],
+     print expr1+right*expr[e],print char+/)/.
+$ create function representations: x^x, log x/x, log x
+’stack’expr=((xvar->left->right,pow op->op): x to x,
+             (log x->left, xvar->right,div op->op): log x by x,
+             (c zero->left,xvar->right,log op->op): log x).
+$ compute the first and second derivative and print
+’action’test+>f-df-ddf:
+   derivate+f+df,derivate+df+ddf,
+   print expr+f,print expr+df,print expr+ddf.
+’root’test+x to x, test+log x by x, test+log x.
+’end’
 
-'stack'[3](a,b,c)T1[], [4]T2[],[=654=]T3[].
-'stack'[]tmpname[]=("/tmp/aXXXXXX":tmp).
-
-'datafile'DISC[T1;T2;T3]=>"tmp">.
-
-'var'round=1,total=0.
-
-'f'nextptr+t[]+>idx>:
-   incr+idx,(idx>>>t,<<t->idx;+).
-
-'action'write+t[]+>n-i-idx:
-$ write 4 pointers then 7 numbers. Numbers start from 3456789
-   printf+"writing round %d%n"+round,incr+round,
-   3456789->i,<<t->idx,(nxt:n<=0;
-   decr+n,put data+DISC+i+numerical,incr+i,
-          put data+DISC+idx+pointer,nextptr+t+idx,
-          put data+DISC+i+numerical,incr+i,
-          put data+DISC+i+numerical,incr+i,
-          put data+DISC+idx+pointer,nextptr+t+idx,
-          put data+DISC+i+numerical,incr+i,
-          put data+DISC+i+numerical,incr+i,
-          put data+DISC+i+numerical,incr+i,
-          put data+DISC+idx+pointer,nextptr+t+idx,
-          put data+DISC+idx+pointer,nextptr+t+idx,
-          put data+DISC+i+numerical,incr+i,
-          :nxt).
-
-'action'is same+>n1+>n2+>v+>p-dv-dp-pos:
-   get data+DISC+dv+dp,incr+total,get file pos+DISC+pos,
-     ((dv=v,dp=p);
-      printf+"data different, total=%d,pos=%d (%d/%d) v=%d,p=%d (%d,%d)%n"
-             +total+pos+n2+n1+dv+dp+v+p, exit+7);
-   printf+"unexpected error or eof (%d,%d)%n"+v+p,exit+8.
-
-'action'check+t[]+>n-i-idx:
-   printf+"checking round %d%n"+round,incr+round,
-   3456789->i,<<t->idx,(nxt:n<=0;
-   decr+n,is same+1+n+i+numerical,incr+i,
-          is same+2+n+idx+pointer,nextptr+t+idx,
-          is same+3+n+i+numerical,incr+i,
-          is same+4+n+i+numerical,incr+i,
-          is same+5+n+idx+pointer,nextptr+t+idx,
-          is same+6+n+i+numerical,incr+i,
-          is same+7+n+i+numerical,incr+i,
-          is same+8+n+i+numerical,incr+i,
-          is same+9+n+idx+pointer,nextptr+t+idx,
-          is same+10+n+idx+pointer,nextptr+t+idx,
-          is same+11+n+i+numerical,incr+i,
-          :nxt).
-
-'action'allcheck-pos:
-  open file+DISC+/r/+tmpname+tmp,1->round,
-    check+T1+444,check+T2+567,check+T3+890,
-    check+T1+1444,check+T2+1567,check+T3+1890,
-    get file pos+DISC+pos,
-    check+T2+2121,check+T3+3121,check+T1+3321,
-    (get data+DISC+#+#,printf+"Should be EOF%n",exit+6;
-     set file pos+DISC+pos,
-     check+T2+2121,check+T3+3121,check+T1+3321,
-     close file+DISC,get file error+DISC+pos,
-     printf+"Finished with error=%d%n"+pos);
-  printf+"Cannot open tmp file%n".
-'action'allwrite:
-  (open temp file+DISC+tmpname+tmp,
-   write+T1+444,write+T2+567,write+T3+890,
-   write+T1+1444,write+T2+1567,write+T3+1890,
-   write+T2+2121,write+T3+3121,write+T1+3321,
-   close file+DISC;
-  printf+"Cannot create tmp file%n").
-
-'root' allwrite,allcheck.
-
-'end'

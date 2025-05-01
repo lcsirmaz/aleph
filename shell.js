@@ -423,8 +423,9 @@ function loadFile(n,url){
    },false);
    xhr.send();
 }
+const maxsample=23;
 function sample(args){
-  const modules={a18:2,a19:3,a20:2},maxsample=21;
+  const modules={a8:1,a17:1,a19:3,a20:2,a22:2};
   if(cmdhelp('load',args.length==1 && /^a\d\d?$/.test(args[0])))return;
   const n=parseInt(args[0].slice(1));
   if(n>maxsample){cmdhelp('load',false);return;}
@@ -607,7 +608,7 @@ const COMMANDS={
               'give help on a specific command or topic.','']},
   '?':       {alias:'help'},
   sample:    {alias:'load'},
-  load:      {f:sample,s:'a1 .. load a21',h:['load a sample ALEPH program.','\n'+
+  load:      {f:sample,s:'a1 .. load a'+maxsample,h:['load a sample ALEPH program.','\n'+
               'These ALEPH programs represent different features, starting from the\n'+
               '"Hello World!" in \'a1\' and advancing. The main program is aN.ale, the\n'+
               'modules, if any, are aNm1.ale, aNm2.ale, etc. Use\n'+
