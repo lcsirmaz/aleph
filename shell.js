@@ -192,12 +192,12 @@ const TOPICS = {
 
   compile:
 'To compile a main ALEPH program together with all necessary modules, use\n'+
-'  compile [<flags>] <source files>\n'+
+'  compile [<compiler flags>] [-X >linker flags>] <source files>\n'+
 'Source files can be specified using patterns. Compilation is done in several\n'+
-'stages. First, source files are compiled into ALICE code. Second, these\n'+
+'stages. First, the source files are compiled into ALICE code. Second, these\n'+
 'intermediate files are optimized. Finally, the .ice files are linked to\n'+
 'the final javascript code. The process stops at the first error. Flags\n'+
-'after the \'compile\' command start with a dash (-). Those before \'-X\'\n'+
+'after the \'compile\' command must start with a dash (-). Those before \'-X\'\n'+
 'are passed to the compiler; and those after \'-X\' are passed to the linker.',
 
   run:
@@ -223,7 +223,7 @@ const TOPICS = {
   storage:
 'Character files with the +s attribute are stored in local storage.\n'+
 'These files are automatically restored when starting a new PlayGround\n'+
-'session. The local storage is part of the browser\'s local cache, the\n'+
+'session. The local storage is part of the browser\'s local cache. Its\n'+
 'content, however, is *not saved* when the browser runs in incognito mode.\n'+
 'Use for character files only. The command \'storage\' lists all files in\n'+
 'the local storage together with their size. Use \'attrib\' to set or\n'+
@@ -486,8 +486,8 @@ function jobscmd(args){// jobs
    JOB.jobs().forEach((idx)=>{cnt++;
      let J=JOB.get(idx),t=J.type;if(t=='run'){t+='+'+J.stat;}
      if(t=='edit'&&J.gw.aechanged){t+='*';}
-     if(cnt==1){P('### type project command');}
-     P(`${idx} ${t} ${J.pr.name} "${J.cmd}"`);
+     if(cnt==1){P('### type  project  command');}
+     P(`${idx} ${t}  ${J.pr.name}  "${J.cmd}"`);
      });
    if(cnt==0){P('no jobs');}
 }
@@ -652,11 +652,11 @@ const COMMANDS={
   download:  {f:downcmd,s:'<file>',h:['save a character file on the local machine.','']},
   jobs:      {f:jobscmd,s:'',h:['list all running jobs.','']},
   kill:      {f:killcmd,s:'<jobno>',h:['kill the specified job.','']},
-  run:       {f:runcmd,s:'<program> {<files>} <args>',h:['run an ALEPH program.','\n'+
+  run:       {f:runcmd,s:'<program> { <files> } <args>',h:['run an ALEPH program.','\n'+
               '  <program>  compiled program with or without the .js extension\n'+
               '  {<files>}  list of + and file patterns. These files are made available\n'+
               '             for the running program. + means files with attribute +d.\n'+
-              '             If this part is missing, it is equivalent to {+}\n'+
+              '             If this part is missing, it is equivalent to { + }\n'+
               '  <args>     command line arguments.\n'+
               'Both the <program> and all <files> must be in the current project.']},
   compile:   {f:compcmd,s:'[<compiler flags>] [-X <linker flags>] <.ale files>',
