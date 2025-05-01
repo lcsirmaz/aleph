@@ -105,13 +105,13 @@ cmdlist+'\n'+
 const TOPICS = {
   start:
 'Quickstart:\n'+
-'  load a1           load the sample ALEPH program \'a1.ale\' (Hello World!)\n'+
+'  sample a1         load the sample ALEPH program \'a1.ale\' (Hello World!)\n'+
 '  edit a1.ale       open \'a1.ale\' in an editing window\n'+
 '  compile a1.ale    compile it...\n'+
 '  run a1            and run it (assuming it compiled without errors)\n'+
 'Some basic commands:\n'+
 '  mkpr, chpr        create a new project / change to the named project\n'+
-'  load a1, load a2, ... load one of the sample ALEPH programs\n'+
+'  sample a1, sample a2, ... load one of the sample ALEPH programs\n'+
 '  edit, view        open a character file for editing and viewing\n'+
 '  stdlib            show the standard ALEPH library\n'+
 '  dir, ls           list files\n'+
@@ -426,9 +426,9 @@ function loadFile(n,url){
 const maxsample=23;
 function sample(args){
   const modules={a8:1,a17:1,a19:3,a20:2,a22:2};
-  if(cmdhelp('load',args.length==1 && /^a\d\d?$/.test(args[0])))return;
+  if(cmdhelp('sample',args.length==1 && /^a\d\d?$/.test(args[0])))return;
   const n=parseInt(args[0].slice(1));
-  if(n>maxsample){cmdhelp('load',false);return;}
+  if(n>maxsample){cmdhelp('sample',false);return;}
   loadFile('a'+n+'.ale','sample/a'+n+'.ale');
   const jj=modules['a'+n]??0;
   for(let j=1;j<=jj;j++){
@@ -607,14 +607,14 @@ const COMMANDS={
   help:      {f:helpcmd,s:'[<command>|-<topic>]',h:[
               'give help on a specific command or topic.','']},
   '?':       {alias:'help'},
-  sample:    {alias:'load'},
-  load:      {f:sample,s:'a1 .. load a'+maxsample,h:['load a sample ALEPH program.','\n'+
+  sample:    {f:sample,s:'a1 .. sample a'+maxsample,h:['load a sample ALEPH program.','\n'+
               'These ALEPH programs represent different features, starting from the\n'+
               '"Hello World!" in \'a1\' and advancing. The main program is aN.ale, the\n'+
               'modules, if any, are aNm1.ale, aNm2.ale, etc. Use\n'+
               '  edit aN.ale      to open this program in an editing window\n'+
               '  compile aN*.ale  to compile with all modules, finally\n'+
               '  run aN           to run the result.']},
+  load:      {alias:'sample'},
   chpr:      {f:chpr,s:'<project>',h:['change to the specified project.','']},
   mkpr:      {f:mkpr,s:'<project>',h:['create a new empty project and change to it.','']},
   lspr:      {f:pwpr,s:'',h:['print the current project name.','']},
