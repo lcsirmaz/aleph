@@ -2123,16 +2123,16 @@ class="cmss-10">rule-prototype</span>. Syntax:
 class="list">
    <!--l. 1070--><p class="indent" >      <span 
 class="cmss-10">rule-declaration:</span>
-   <!--l. 1072--><p class="indent" >      <span 
+   <!--l. 1072--><p class="indent2" >      <span 
 class="cmss-10">typer, rule-head, actual-rule, point-symbol.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 1073--><p class="indent" >      <span 
 class="cmss-10">typer:</span>
-   <!--l. 1075--><p class="indent" >      <span 
+   <!--l. 1075--><p class="indent2" >      <span 
 class="cmss-10">action-symbol; function-symbol; predicate-symbol;</span>
-   <!--l. 1077--><p class="indent" >      <span 
+   <!--l. 1077--><p class="indent2" >      <span 
 class="cmss-10">question-symbol; exit-symbol.</span>
        </dd><dt class="list">
    </dt><dd 
@@ -2144,7 +2144,7 @@ class="cmss-10">rule-head: rule-tag, formal-affix-sequence.</span>
 class="list">
    <!--l. 1079--><p class="indent" >      <span 
 class="cmss-10">rule-prototype:</span>
-   <!--l. 1081--><p class="indent" >      <span 
+   <!--l. 1081--><p class="indent2" >      <span 
 class="cmss-10">typer, rule-head, (comma-symbol, rule-head)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span></dd></dl>
@@ -2854,28 +2854,28 @@ class="cmss-10">constant-source: constant-value; table-element.</span>
 class="list">
    <!--l. 1433--><p class="indent" >      <span 
 class="cmss-10">destination:</span>
-   <!--l. 1435--><p class="indent" >      <span 
+   <!--l. 1435--><p class="indent2" >      <span 
 class="cmss-10">variable-tag; stack-element; dummy-symbol.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 1436--><p class="indent" >      <span 
 class="cmss-10">constant-value:</span>
-   <!--l. 1438--><p class="indent" >      <span 
+   <!--l. 1438--><p class="indent2" >      <span 
 class="cmss-10">integral-denotation; character-denotation; constant-tag; limit.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 1447--><p class="indent" >      <span 
 class="cmss-10">table-element:</span>
-   <!--l. 1449--><p class="indent" >      <span 
+   <!--l. 1449--><p class="indent2" >      <span 
 class="cmss-10">[selector, of-symbol], table-tag, [sub-symbol, source, bus-symbol].</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 1450--><p class="indent" >      <span 
 class="cmss-10">stack-element:</span>
-   <!--l. 1452--><p class="indent" >      <span 
+   <!--l. 1452--><p class="indent2" >      <span 
 class="cmss-10">[selector, of-symbol], stack-tag, [sub-symbol, source, bus-symbol].</span></dd></dl>
 <!--l. 1467--><p class="noindent" >Example of a <span 
 class="cmss-10">transport</span> (assignment):
@@ -2933,7 +2933,7 @@ class="cmss-10">hex-digit</span> sequence following
 class="cmss-10">hex-symbol</span>,  also  negated  when  preceded  by  a  <span 
 class="cmss-10">minus-symbol</span>;  or  the
    numerical value of the <span 
-class="cmss-10">manifest-constant</span> as determined by the compiler.
+class="cmss-10">manifest-integral</span> as determined by the compiler.
    </li>
    <li class="itemize">
    <!--l. 1500--><p class="noindent" >If the <span 
@@ -3122,7 +3122,7 @@ class="cmss-10">comparison: source, relation, source.</span>
 class="list">
    <!--l. 1586--><p class="indent" >      <span 
 class="cmss-10">relation:</span>
-   <!--l. 1588--><p class="indent" >      <span 
+   <!--l. 1588--><p class="indent2" >      <span 
 class="cmss-10">lt-symbol; le-symbol; eq-symbol; ne-symbol; ge-symbol; gt-symbol.</span></dd></dl>
 <!--l. 1590--><p class="noindent" >Both <span 
 class="cmss-10">source</span>s are evaluated as described above. The two resulting values are considered
@@ -3738,7 +3738,7 @@ Syntax:
 class="list">
    <!--l. 1919--><p class="indent" >      <span 
 class="cmss-10">compound-member: open-symbol, [local-part, colon-symbol],</span>
-   <!--l. 1921--><p class="indent" >      <span 
+   <!--l. 1921--><p class="indent2" >      <span 
 class="cmss-10">rule-body, close-symbol.</span>
        </dd><dt class="list">
    </dt><dd 
@@ -3922,7 +3922,7 @@ class="cmss-10">, bus-symbol.</span>
 class="list">
    <!--l. 2002--><p class="indent" >      <span 
 class="cmss-10">zone: [constant-value], up-to-symbol, [constant-value];</span>
-   <!--l. 2004--><p class="indent" >      <span 
+   <!--l. 2004--><p class="indent2" >      <span 
 class="cmss-10">constant-value; list-tag.</span></dd></dl>
 <!--l. 2006--><p class="noindent" >A <span 
 class="cmss-10">list-tag</span> in a <span 
@@ -4161,24 +4161,24 @@ files, all file handling is done through externals. Syntax:
 class="list">
    <!--l. 2101--><p class="indent" >      <span 
 class="cmss-10">data-declaration:</span>
-   <!--l. 2103--><p class="indent" >      <span 
+   <!--l. 2103--><p class="indent2" >      <span 
 class="cmss-10">constant-declaration; variable-declaration; static-variable-declaration;</span>
-   <!--l. 2105--><p class="indent" >      <span 
+   <!--l. 2105--><p class="indent2" >      <span 
 class="cmss-10">table-declaration; stack-declaration; static-stack-declaration;</span>
-   <!--l. 2107--><p class="indent" >      <span 
+   <!--l. 2107--><p class="indent2" >      <span 
 class="cmss-10">table-filling; stack-filling;</span>
-   <!--l. 2109--><p class="indent" >      <span 
+   <!--l. 2109--><p class="indent2" >      <span 
 class="cmss-10">file-declaration.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2110--><p class="indent" >      <span 
 class="cmss-10">data-prototype:</span>
-   <!--l. 2112--><p class="indent" >      <span 
+   <!--l. 2112--><p class="indent2" >      <span 
 class="cmss-10">constant-prototype; variable-prototype; static-variable-prototype;</span>
-   <!--l. 2114--><p class="indent" >      <span 
+   <!--l. 2114--><p class="indent2" >      <span 
 class="cmss-10">table-prototype; stack-prototype; static-stack-prototype;</span>
-   <!--l. 2116--><p class="indent" >      <span 
+   <!--l. 2116--><p class="indent2" >      <span 
 class="cmss-10">file-prototype.</span></dd></dl>
 <!--l. 2119--><p class="noindent" >
    <h4 class="subsectionHead"><span class="titlemark">4.1   </span> <a 
@@ -4211,7 +4211,7 @@ class="cmss-10">unary-operator: minus-symbol; complement-symbol.</span>
 class="list">
    <!--l. 2131--><p class="indent" >      <span 
 class="cmss-10">binary-opeator: times-symbol; by-symbol; plus-symbol; minus-symbol;</span>
-   <!--l. 2133--><p class="indent" >      <span 
+   <!--l. 2133--><p class="indent2" >      <span 
 class="cmss-10">or-symbol; and-symbol; xor-symbol.</span></dd></dl>
 <!--l. 2135--><p class="noindent" >Examples:
   <!--l. 2136--><p class="noindent" ><div class="obeylines-v">
@@ -4267,7 +4267,7 @@ class="cmss-10">constant-tag</span>. This relationship is fixed and does not cha
 class="list">
    <!--l. 2161--><p class="indent" >      <span 
 class="cmss-10">constant-declaration: constant-symbol, constant-description,</span>
-   <!--l. 2164--><p class="indent" >      <span 
+   <!--l. 2164--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, constant-description)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
@@ -4281,7 +4281,7 @@ class="cmss-10">constant-description: constant-tag, equals-symbol, expression.</
 class="list">
    <!--l. 2168--><p class="indent" >      <span 
 class="cmss-10">constant-prototype: constant-symbol, constant-tag,</span>
-   <!--l. 2171--><p class="indent" >      <span 
+   <!--l. 2171--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, constant-tag)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span></dd></dl>
@@ -4340,7 +4340,7 @@ class="cmss-10">local-affix-sequence</span>.
 class="list">
    <!--l. 2201--><p class="indent" >      <span 
 class="cmss-10">variable-declaration: variable-symbol, variable-description,</span>
-   <!--l. 2203--><p class="indent" >      <span 
+   <!--l. 2203--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, variable-description)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
@@ -4359,7 +4359,7 @@ class="cmss-10">static-variable-declaration: static-symbol, variable-declaration
 class="list">
    <!--l. 2209--><p class="indent" >      <span 
 class="cmss-10">variable-prototype: variable-symbol, variable-tag,</span>
-   <!--l. 2211--><p class="indent" >      <span 
+   <!--l. 2211--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, variable-tag)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
@@ -4568,7 +4568,7 @@ class="cmr-9">address </span><span
 class="cmr-9">&#x00A0;</span><span 
 class="cmr-9">&#x00A0;</span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-5-1-2"  
 class="td11"><span 
-class="cmr-9">contents</span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-5-1-3"  
+class="cmr-9">content</span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-5-1-3"  
 class="td11"><span 
 class="cmr-9">belongs to</span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-5-1-4"  
 class="td11"><span 
@@ -5017,7 +5017,7 @@ compile time and cannot change. Syntax:
 class="list">
    <!--l. 2417--><p class="indent" >      <span 
 class="cmss-10">table-declaration: table-symbol, table-description,</span>
-   <!--l. 2419--><p class="indent" >      <span 
+   <!--l. 2419--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, table-description)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
@@ -5036,7 +5036,7 @@ class="cmss-10">table-head: [field-definition], table-tag.</span>
 class="list">
    <!--l. 2424--><p class="indent" >      <span 
 class="cmss-10">table-prototype: table-symbol, table-head,</span>
-   <!--l. 2426--><p class="indent" >      <span 
+   <!--l. 2426--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, table-head)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span></dd></dl>
@@ -5093,7 +5093,7 @@ class="cmss-10">stacks-declaration</span>s. Syntax:
 class="list">
    <!--l. 2455--><p class="indent" >      <span 
 class="cmss-10">stack-declaration: stack-symbol, stack-description,</span>
-   <!--l. 2457--><p class="indent" >      <span 
+   <!--l. 2457--><p class="indent2" >      <span 
 class="cmss-10">(comma symbol, stack-description)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
@@ -5102,16 +5102,16 @@ class="cmss-10">, point-symbol.</span>
 class="list">
    <!--l. 2458--><p class="indent" >      <span 
 class="cmss-10">static-stack-declaration:</span>
-   <!--l. 2460--><p class="indent" >      <span 
+   <!--l. 2460--><p class="indent2" >      <span 
 class="cmss-10">static-symbol, stack-declaration.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2461--><p class="indent" >      <span 
 class="cmss-10">stack-description:</span>
-   <!--l. 2463--><p class="indent" >      <span 
+   <!--l. 2463--><p class="indent2" >      <span 
 class="cmss-10">sub-symbol, size-estimate, bus-symbol, stack-head, sub-bus,</span>
-   <!--l. 2465--><p class="indent" >      <span 
+   <!--l. 2465--><p class="indent2" >      <span 
 class="cmss-10">[equals-symbol, filling].</span>
        </dd><dt class="list">
    </dt><dd 
@@ -5140,7 +5140,7 @@ class="cmss-10">relative-size: constant-value.</span>
 class="list">
    <!--l. 2478--><p class="indent" >      <span 
 class="cmss-10">stack-prototype: [static-symbol], stack-symbol, stack-head,</span>
-   <!--l. 2480--><p class="indent" >      <span 
+   <!--l. 2480--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, stack-head)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span></dd></dl>
@@ -5218,21 +5218,21 @@ follows.
 class="list">
    <!--l. 2522--><p class="indent" >      <span 
 class="cmss-10">table-filling:</span>
-   <!--l. 2524--><p class="indent" >      <span 
+   <!--l. 2524--><p class="indent2" >      <span 
 class="cmss-10">table-symbol, table-head, equals-symbol, filling.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2526--><p class="indent" >      <span 
 class="cmss-10">stack-filling:</span>
-   <!--l. 2528--><p class="indent" >      <span 
+   <!--l. 2528--><p class="indent2" >      <span 
 class="cmss-10">stack-symbol, stack-head, equals-symbol, filling.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2530--><p class="indent" >      <span 
 class="cmss-10">filling: open-symbol, filling-unit,</span>
-   <!--l. 2532--><p class="indent" >      <span 
+   <!--l. 2532--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, filling-unit)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, close-symbol.</span>
@@ -5241,19 +5241,19 @@ class="cmss-10">, close-symbol.</span>
 class="list">
    <!--l. 2533--><p class="indent" >      <span 
 class="cmss-10">filling-unit:</span>
-   <!--l. 2535--><p class="indent" >      <span 
+   <!--l. 2535--><p class="indent2" >      <span 
 class="cmss-10">constant-value, [multiplier], pointer-initialization</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">;</span>
-   <!--l. 2537--><p class="indent" >      <span 
+   <!--l. 2537--><p class="indent2" >      <span 
 class="cmss-10">open-symbol, compound-block, close-symbol,</span>
-   <!--l. 2539--><p class="indent" >      <span 
+   <!--l. 2539--><p class="indent2" >      <span 
 class="cmss-10">&#x00A0; </span><span 
 class="cmss-10">&#x00A0; </span><span 
 class="cmss-10">&#x00A0; [multiplier], pointer-initialization</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">;</span>
-   <!--l. 2541--><p class="indent" >      <span 
+   <!--l. 2541--><p class="indent2" >      <span 
 class="cmss-10">string-denotation, pointer-initialization</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">.</span>
@@ -5277,11 +5277,11 @@ class="cmss-10">pointer-initialization: colon-symbol, constant-tag.</span>
 class="list">
    <!--l. 2547--><p class="indent" >      <span 
 class="cmss-10">value-block:</span>
-   <!--l. 2549--><p class="indent" >      <span 
+   <!--l. 2549--><p class="indent2" >      <span 
 class="cmss-10">(constant-value, comma-symbol)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, constant-value,</span>
-   <!--l. 2551--><p class="indent" >      <span 
+   <!--l. 2551--><p class="indent2" >      <span 
 class="cmss-10">&#x00A0; </span><span 
 class="cmss-10">&#x00A0; </span><span 
 class="cmss-10">&#x00A0; [times-symbol], (comma-symbol, constant-value)</span><span 
@@ -5292,7 +5292,7 @@ class="cmss-10">.</span>
 class="list">
    <!--l. 2553--><p class="indent" >      <span 
 class="cmss-10">selector-block:</span>
-   <!--l. 2555--><p class="indent" >      <span 
+   <!--l. 2555--><p class="indent2" >      <span 
 class="cmss-10">fill-transport, (comma-symbol, fill-transport)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">.</span>
@@ -5416,7 +5416,7 @@ Syntax:
 class="list">
    <!--l. 2624--><p class="indent" >      <span 
 class="cmss-10">file-declaration: file-typer, file-description,</span>
-   <!--l. 2627--><p class="indent" >      <span 
+   <!--l. 2627--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, file-description)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point symbol.</span>
@@ -5430,14 +5430,14 @@ class="cmss-10">file-typer: charfile-symbol; datafile-symbol.</span>
 class="list">
    <!--l. 2629--><p class="indent" >      <span 
 class="cmss-10">file-description: file-tag, [file-area], equals-symbol,</span>
-   <!--l. 2631--><p class="indent" >      <span 
+   <!--l. 2631--><p class="indent2" >      <span 
 class="cmss-10">[right-symbol], string-denotation, [right-symbol].</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2632--><p class="indent" >      <span 
 class="cmss-10">file-area:</span>
-   <!--l. 2634--><p class="indent" >      <span 
+   <!--l. 2634--><p class="indent2" >      <span 
 class="cmss-10">sub-symbol, list-tag, (semicolon-symbol, list-tag)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, bus-symbol.</span>
@@ -5446,7 +5446,7 @@ class="cmss-10">, bus-symbol.</span>
 class="list">
    <!--l. 2637--><p class="indent" >      <span 
 class="cmss-10">file-prototype:</span>
-   <!--l. 2639--><p class="indent" >      <span 
+   <!--l. 2639--><p class="indent2" >      <span 
 class="cmss-10">file-typer, file-tag, (comma symbol, file-tag)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
@@ -5642,16 +5642,16 @@ Syntax:
 class="list">
    <!--l. 2764--><p class="indent" >      <span 
 class="cmss-10">external-declaration:</span>
-   <!--l. 2766--><p class="indent" >      <span 
+   <!--l. 2766--><p class="indent2" >      <span 
 class="cmss-10">external-rule-declaration; external-data-declaration.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2768--><p class="indent" >      <span 
 class="cmss-10">external-rule-declaration:</span>
-   <!--l. 2770--><p class="indent" >      <span 
+   <!--l. 2770--><p class="indent2" >      <span 
 class="cmss-10">external-symbol, typer, external-rule-description,</span>
-   <!--l. 2772--><p class="indent" >      <span 
+   <!--l. 2772--><p class="indent2" >      <span 
 class="cmss-10">&#x00A0; </span><span 
 class="cmss-10">&#x00A0; </span><span 
 class="cmss-10">&#x00A0; (comma-symbol, external-rule-description)</span><span 
@@ -5662,7 +5662,7 @@ class="cmss-10">, point-symbol.</span>
 class="list">
    <!--l. 2774--><p class="indent" >      <span 
 class="cmss-10">external-rule-description:</span>
-   <!--l. 2776--><p class="indent" >      <span 
+   <!--l. 2776--><p class="indent2" >      <span 
 class="cmss-10">rule-head, equals-symbol, string-denotation.</span></dd></dl>
 <!--l. 2779--><p class="noindent" >Example:
   <!--l. 2781--><p class="noindent" ><div class="obeylines-v">
@@ -5736,9 +5736,9 @@ Syntax:
 class="list">
    <!--l. 2804--><p class="indent" >      <span 
 class="cmss-10">external-data-declaration:</span>
-   <!--l. 2806--><p class="indent" >      <span 
+   <!--l. 2806--><p class="indent2" >      <span 
 class="cmss-10">external-symbol, data-typer, external-data-description,</span>
-   <!--l. 2808--><p class="indent" >      <span 
+   <!--l. 2808--><p class="indent2" >      <span 
 class="cmss-10">&#x00A0; </span><span 
 class="cmss-10">&#x00A0; </span><span 
 class="cmss-10">&#x00A0; (comma-symbol, external-data-description)</span><span 
@@ -5749,27 +5749,27 @@ class="cmss-10">, point-symbol.</span>
 class="list">
    <!--l. 2810--><p class="indent" >      <span 
 class="cmss-10">data-typer: constant-symbol; variable-symbol;</span>
-   <!--l. 2812--><p class="indent" >      <span 
+   <!--l. 2812--><p class="indent2" >      <span 
 class="cmss-10">table-symbol; stack-symbol; file-symbol.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2814--><p class="indent" >      <span 
 class="cmss-10">external-data-description:</span>
-   <!--l. 2816--><p class="indent" >      <span 
+   <!--l. 2816--><p class="indent2" >      <span 
 class="cmss-10">data-head, equals-symbol, string-denotation.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2818--><p class="indent" >      <span 
 class="cmss-10">data-head:</span>
-   <!--l. 2820--><p class="indent" >      <span 
+   <!--l. 2820--><p class="indent2" >      <span 
 class="cmss-10">[field-definition], list-tag;</span>
-   <!--l. 2822--><p class="indent" >      <span 
+   <!--l. 2822--><p class="indent2" >      <span 
 class="cmss-10">constant-tag;</span>
-   <!--l. 2824--><p class="indent" >      <span 
+   <!--l. 2824--><p class="indent2" >      <span 
 class="cmss-10">variable-tag;</span>
-   <!--l. 2826--><p class="indent" >      <span 
+   <!--l. 2826--><p class="indent2" >      <span 
 class="cmss-10">file-tag.</span></dd></dl>
 <!--l. 2828--><p class="noindent" >Examples:
   <!--l. 2829--><p class="noindent" ><div class="obeylines-v">
@@ -5812,7 +5812,7 @@ in the program may be significant. Syntax:
 class="list">
    <!--l. 2856--><p class="indent" >      <span 
 class="cmss-10">pragmat: pragmat-symbol, pragmat-item,</span>
-   <!--l. 2858--><p class="indent" >      <span 
+   <!--l. 2858--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, pragmat-item)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
@@ -5821,16 +5821,16 @@ class="cmss-10">, point-symbol.</span>
 class="list">
    <!--l. 2859--><p class="indent" >      <span 
 class="cmss-10">pragmat item:</span>
-   <!--l. 2861--><p class="indent" >      <span 
+   <!--l. 2861--><p class="indent2" >      <span 
 class="cmss-10">pragmat-tag, equals-symbol, pragmat-value;</span>
-   <!--l. 2863--><p class="indent" >      <span 
+   <!--l. 2863--><p class="indent2" >      <span 
 class="cmss-10">pragmat-tag, equals-symbol, pragmat-value-list.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2865--><p class="indent" >      <span 
 class="cmss-10">pragmat-value-list: open-symbol, pragmat-value,</span>
-   <!--l. 2867--><p class="indent" >      <span 
+   <!--l. 2867--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, pragmat-value)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, close-symbol.</span>
@@ -5839,11 +5839,11 @@ class="cmss-10">, close-symbol.</span>
 class="list">
    <!--l. 2868--><p class="indent" >      <span 
 class="cmss-10">pragmat-value:</span>
-   <!--l. 2870--><p class="indent" >      <span 
+   <!--l. 2870--><p class="indent2" >      <span 
 class="cmss-10">tag;</span>
-   <!--l. 2872--><p class="indent" >      <span 
+   <!--l. 2872--><p class="indent2" >      <span 
 class="cmss-10">integral-denotation;</span>
-   <!--l. 2874--><p class="indent" >      <span 
+   <!--l. 2874--><p class="indent2" >      <span 
 class="cmss-10">string-denotation.</span></dd></dl>
 <!--l. 2876--><p class="noindent" >Example:
   <!--l. 2877--><p class="noindent" ><div class="obeylines-v">
@@ -5870,11 +5870,8 @@ class="ec-lmtt-9x-x-102">&#x00A0;bits).</span>
 </div>
 <!--l. 2882--><p class="noindent" >The <span 
 class="cmss-10">tag</span> in a <span 
-class="cmss-10">pragmat</span> must be an identifier, it cannot have a qualifier. Similarly, the
-<span 
-class="cmss-10">string-denotation</span> must be a <span 
-class="cmss-10">proper-string</span> and not a <span 
-class="cmss-10">manifest-string</span>,
+class="cmss-10">pragmat-value</span> must be an identifier, this <span
+class="cmss-10">tag</span> cannot have a qualifier.
 <!--l. 2887--><p class="indent" >   Before a <span 
 class="cmss-10">pragmat</span> is evaluated, it is preprocessed: the <span 
 class="cmss-10">pragmat-value-list</span> is removed
@@ -5951,11 +5948,11 @@ class="ec-lmtt-9x-x-102">0</span> being the most verbose. The default
    value is 4.
 <!--l. 2927--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;error=</span><span 
-class="cmss-10">proper-string</span>.
+class="cmss-10">string-denotation</span>.
    <!--l. 2927--><p class="noindent" >Issues a compilation error with the given message.
 <!--l. 2930--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;warning=</span><span 
-class="cmss-10">proper-string</span>.
+class="cmss-10">string-denotation</span>.
    <!--l. 2930--><p class="noindent" >Issues a compilation warning at level 9 with the given message.
 <!--l. 2933--><p class="noindent" >
    <h4 class="subsectionHead"><span class="titlemark">6.2   </span> <a 
@@ -6021,7 +6018,7 @@ class="ec-lmtt-9x-x-102">back matter</span> pragmats are allowed
    in library mode only.
 <!--l. 2972--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;front matter=</span><span 
-class="cmss-10">proper-string</span>.
+class="cmss-10">string-denotation</span>.
    <!--l. 2972--><p class="noindent" >The string, without quote marks, is copied to the front of the generated code. In
    the string the character pair <span 
 class="ec-lmtt-9x-x-102">%n</span> is replaced by the newline character. This
@@ -6032,7 +6029,7 @@ class="ec-lmtt-9x-x-102">on</span>. The order in which strings
 class="ec-lmtt-9x-x-102">front matter</span> pragmats appear is unspecified.
 <!--l. 2979--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;back matter=</span><span 
-class="cmss-10">proper-string</span>.
+class="cmss-10">string-denotation</span>.
    <!--l. 2979--><p class="noindent" >This pragmat is handled similarly to <span 
 class="ec-lmtt-9x-x-102">front matter</span>, only the supplied string is
    copied to the end of the generated code.
@@ -6153,7 +6150,7 @@ class="ec-lmtt-9x-x-102">&#39;pragmat&#39;compile=on/off.</span>
 <a href="#x1-540007">Chapter 7</a>. It cannot be manipulated directly in the program text.
 <!--l. 3057--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;title=</span><span 
-class="cmss-10">proper-string</span>.
+class="cmss-10">string-denotation</span>.
    <!--l. 3057--><p class="noindent" >This pragmat is ignored if the pragmat <span 
 class="ec-lmtt-9x-x-102">compile</span> is <span 
 class="ec-lmtt-9x-x-102">off</span>, otherwise it sets the title
@@ -6196,7 +6193,7 @@ class="ec-lmtt-9x-x-102">prototype</span> pragmat to
 class="ec-lmtt-9x-x-102">import</span>.
 <!--l. 3078--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;require=</span><span 
-class="cmss-10">proper-string</span>.
+class="cmss-10">string-denotation</span>.
    <!--l. 3078--><p class="noindent" >The string specifies a filename, and the <span 
 class="cmss-10">ALEPH </span>source in that file must be a
    <span 
@@ -6208,7 +6205,7 @@ class="cmss-10">unit</span> under
 class="cmti-10">required </span>source files to be processed.
 <!--l. 3084--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;library=</span><span 
-class="cmss-10">proper-string</span>.
+class="cmss-10">string-denotation</span>.
    <!--l. 3084--><p class="noindent" >Add the filename specified by the string, if it is not there, to the pool of <span 
 class="cmss-10">ALEPH</span>
    source files to be processed as a <span 
@@ -6219,7 +6216,7 @@ class="ec-lmtt-9x-x-102">compile</span> is <span
 class="ec-lmtt-9x-x-102">on</span>.
 <!--l. 3089--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;include=</span><span 
-class="cmss-10">proper-string</span>.
+class="cmss-10">string-denotation</span>.
    <!--l. 3089--><p class="noindent" >Add the filename specified by the string to the pool of <span 
 class="cmss-10">ALEPH </span>source files to be
    processed as an addendum to the current source file.
@@ -7978,21 +7975,29 @@ location of the denotation. Syntax:
 <!--l. 3946--><p class="indent" >
        <dl class="list1"><dt class="list">
    </dt><dd 
+class="cmss-10">denotation:</span>
+   <!--l. 3949--><p class="indent2" >      <span 
+class="cmss-10">integral-denotation; character-denotation;
+   string-denotation.</span>
+       </dd><dt class="list">
+   </dt><dd 
 class="list">
    <!--l. 3947--><p class="indent" >      <span 
 class="cmss-10">integral-denotation:</span>
-   <!--l. 3949--><p class="indent" >      <span 
+   <!--l. 3949--><p class="indent2" >      <span 
 class="cmss-10">[minus-symbol], digit</span><span 
 class="ec-lmtt-9x-x-102">+</span><span 
 class="cmss-10">;</span>
-   <!--l. 3951--><p class="indent" >      <span 
+   <!--l. 3951--><p class="indent2" >      <span 
 class="cmss-10">[minus-symbol], hex-symbol, hex-digit</span><span 
 class="ec-lmtt-9x-x-102">+</span><span 
 class="cmss-10">;</span>
-   <!--l. 3953--><p class="indent" >      <span 
-class="cmss-10">manifest-constant.</span>
+   <!--l. 3953--><p class="indent2" >      <span 
+class="cmss-10">manifest-integral.</span>
        </dd><dt class="list">
    </dt><dd 
+class="list">
+   <!--l. 3947--><p class="indent" >      <span 
 class="list">
    <!--l. 3955--><p class="indent" >      <span 
 class="cmss-10">character-denotation: absolute-symbol, visible-character, absolute-symbol.</span>
@@ -8001,30 +8006,20 @@ class="cmss-10">character-denotation: absolute-symbol, visible-character, absolu
 class="list">
    <!--l. 3958--><p class="indent" >      <span 
 class="cmss-10">string-denotation:</span>
-   <!--l. 3960--><p class="indent" >      <span 
-class="cmss-10">proper-string;</span>
-   <!--l. 3962--><p class="indent" >      <span 
-class="cmss-10">manifest-string.</span>
-       </dd><dt class="list">
-   </dt><dd 
-class="list">
-   <!--l. 3964--><p class="indent" >      <span 
-class="cmss-10">proper-string:</span>
-   <!--l. 3966--><p class="indent" >      <span 
+   <!--l. 3960--><p class="indent2" >      <span 
 class="cmss-10">quote-symbol, string-elem</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
-class="cmss-10">, quote-symbol.</span>
+class="cmss-10">, quote-symbol;</span>
+   <!--l. 3962--><p class="indent2" >      <span 
+class="cmss-10">manifest-string.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 3968--><p class="indent" >      <span 
 class="cmss-10">string-elem:</span>
-   <!--l. 3970--><p class="indent" >      <span 
+   <!--l. 3970--><p class="indent2" >      <span 
 class="cmss-10">non-quote-character; quote-image-symbol.</span></dd></dl>
-<!--l. 3972--><p class="noindent" >The notion <span 
-class="cmss-10">proper-string</span> has been introduced to explicitly forbid <span 
-class="cmss-10">manifest-string</span>s at
-certain locations. Example of <span 
+<!--l. 3972--><p class="noindent" >Example of <span 
 class="cmss-10">integral-</span>, <span 
 class="cmss-10">character-</span> and <span 
 class="cmss-10">string-denotation</span>s:
@@ -8038,7 +8033,7 @@ class="ec-lmtt-9x-x-102">&#x00A0;</span><span
 class="ec-lmtt-9x-x-102">_file</span><span 
 class="ec-lmtt-9x-x-102">_,</span>
 </div>
-<!--l. 3979--><p class="noindent" >here the last one is a <span 
+<!--l. 3979--><p class="noindent" >the last one is a <span 
 class="cmss-10">manifest-string</span>. The implemented manifest constants and strings
 are the following.
    <div class="tabular"> <table id="TBL-8" class="tabular" 
@@ -8050,7 +8045,7 @@ id="TBL-8-2"></colgroup><tr
 class="td11"><span 
 class="ec-lmtt-9x-x-102">_line_</span>
 </td><td  style="white-space:normal; text-align:left;" id="TBL-8-1-2"  
-class="td11"><!--l. 3986--><p class="noindent" >constant, the source line number this constant appears,    </td>
+class="td11"><!--l. 3986--><p class="noindent" >integral, the source line number this constant appears,    </td>
 </tr><tr  
  style="vertical-align:baseline;" id="TBL-8-2-"><td  style="white-space:nowrap; text-align:left;" id="TBL-8-2-1"  
 class="td11"><span 
@@ -8082,7 +8077,7 @@ class="td11"><!--l. 3992--><p class="noindent" >string, the rule name (without t
 an <span 
 class="cmss-10">actual-rule</span>.                                                          </td> 
 </tr></table></div>
-<!--l. 3997--><p class="noindent" >Only the listed characters are allowed between the two underscore characters. The
+<!--l. 3997--><p class="noindent" >Only the listed characters and no spaces are allowed between the underscore characters. The
 string returned by <span 
 class="ec-lmtt-9x-x-102">_module_</span>
  and <span 
@@ -8130,8 +8125,7 @@ class="ec-lmtt-9x-x-102">/</span>.
 class="cmss-10">non-quote-character</span> is a <span 
 class="cmss-10">visible-character</span> different from the quote mark <span 
 class="ec-lmtt-9x-x-102">"</span>.
-A <span 
-class="cmss-10">proper-string</span> is a (possibly empty) sequence of <span 
+A proper string is a (possibly empty) sequence of <span 
 class="cmss-10">non-quote-character</span>s and
 <span 
 class="cmss-10">quote-image-symbol</span>s (the latter is two consecutive quote marks) enclosed in quote
@@ -8140,8 +8134,11 @@ class="cmss-10">ALEPH</span>, therefore the newline character (and
 other control characters) cannot occur in a <span 
 class="cmss-10">string-denotation</span>.
 <!--l. 4034--><p class="indent" >   <span 
-class="cmss-10">ALEPH </span>allows long strings to be split into shorter ones. Consecutive
-strings separated by white spaces (even if they are in different lines) are
+class="cmss-10">ALEPH </span>allows strings between <span
+class="cmss-10">quote-symbol</span>s to be split 
+into shorter ones. Consecutive strings enclosed in <span
+class="cmss-10">quote-symbol</span>s and
+separated by white spaces (even if they are in different lines) are
 concatenated. Strings to be concatenated must be properly separated since inside
 a string two consecutive quote marks denote a single quote mark. Thus
    <div class="tabular"> <table id="TBL-9" class="tabular" 
