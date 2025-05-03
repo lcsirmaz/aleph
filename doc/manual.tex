@@ -1494,7 +1494,7 @@ If the \g{source} is an \g{integral-denotation}, its value is the numerical
 value of \g{digit} sequence considered as a number in decimal notation,
 negated if preceded by a \g{minus-symbol}; or the hexadecimal value of the
 \g{hex-digit} sequence following the \g{hex-symbol}, also negated when preceded by
-a \g{minus-symbol}; or the numerical value of the \g{manifest-constant} as
+a \g{minus-symbol}; or the numerical value of the \g{manifest-integral} as
 determined by the compiler.
 
 \item[b)]
@@ -2881,9 +2881,8 @@ Example:
     macro=(show integers, is value, set all bits).
 \end{program}
 \noindent
-The \g{tag} in a \g{pragmat} must be an identifier, it cannot have a
-qualifier. Similarly, the \g{string-denotation} must be a \g{proper-string}
-and not a \g{manifest-string},
+The \g{tag} in a \g{pragmat-value} must be an identifier, this \g{tag} cannot have a
+qualifier. 
 
 Before a \g{pragmat} is evaluated, it is preprocessed: the
 \g{pragmat-value-list} is removed in the following way.
@@ -2925,10 +2924,10 @@ finishes. The default is \pp|off|.
 Set the warning level between \pp|0| and \pp|9|, \pp|0| being the most verbose.
 The default value is 4.
 
-\XP|error=|\g{proper-string}.\Y
+\XP|error=|\g{string-denotation}.\Y
 Issues a compilation error with the given message.
 
-\XP|warning=|\g{proper-string}.\Y
+\XP|warning=|\g{string-denotation}.\Y
 Issues a compilation warning at level 9 with the given message.
 
 \subsection{Compilation pragmats}\label{6.1}
@@ -2970,14 +2969,14 @@ starting with \pp|@|. More importantly, \g{external-declaration}\/s and the
 \pp|front matter| and \pp|back matter| pragmats are allowed in library mode
 only.
 
-\XP|front matter=|\g{proper-string}.\Y
+\XP|front matter=|\g{string-denotation}.\Y
 The string, without quote marks, is copied to the front of the
 generated code. In the string the character pair \pp|\%n| is replaced by the
 newline character. This pragmat is accepted only when \pp|library mode| is
 \pp|on|. The order in which strings from different \pp|front
 matter| pragmats appear is unspecified.
 
-\XP|back matter=|\g{proper-string}.\Y
+\XP|back matter=|\g{string-denotation}.\Y
 This pragmat is handled similarly to \pp|front matter|, only the supplied
 string is copied to the end of the generated code.
 
@@ -3055,7 +3054,7 @@ The value of this pragmat is set automatically to facilitate module
 handling, see \Ref{Chapter sec:units}. It cannot be manipulated directly in
 the program text.
 
-\XP|title=|\g{proper-string}.\Y
+\XP|title=|\g{string-denotation}.\Y
 This pragmat is ignored if the pragmat \pp|compile| is \pp|off|, otherwise it
 sets the title of the unit under compilation. The default title, if none is
 specified, is \pp|"aleph"|. The title string is not used explicitly, but it
@@ -3076,18 +3075,18 @@ subsequent conditional pragmats. If \pp|compile| is \pp|off|, the
 \pp|module| pragmat specifies the name and namespace of the invoked module,
 and also sets the \pp|prototype| pragmat to \pp|import|.
 
-\XP|require=|\g{proper-string}.\Y
+\XP|require=|\g{string-denotation}.\Y
 The string specifies a filename, and the \A{} source in that file must be a
 \emph{module}. The module is added to the \emph{module hierarchy} of the
 \g{unit} under compilation, and the filename is added, if it is not there, 
 to the pool of the \emph{required} source files to be processed.
 
-\XP|library=|\g{proper-string}.\Y
+\XP|library=|\g{string-denotation}.\Y
 Add the filename specified by the string, if it is not there, to the pool of
 \A{} source files to be processed as a \emph{user library}. This \g{pragmat}
 is accepted only if \pp|compile| is \pp|on|.
 
-\XP|include=|\g{proper-string}.\Y
+\XP|include=|\g{string-denotation}.\Y
 Add the filename specified by the string to the pool of \A{} source files to
 be processed as an addendum to the current source file.
 
@@ -3463,7 +3462,7 @@ This value equals \pp|-1\,+\,<>T\,+\,>>T\,-\,<<T|.
 
 \XX|'action'unstack+[]st[].|\Y
 The stack \pp|st| must contain at least one block. The right-most block of
-\pp|st| is removed; this operation decreases \pp|>>st| y \pp|<>st|. The 
+\pp|st| is removed; this operation decreases \pp|>>st| by \pp|<>st|. The 
 location of the removed block can be reclaimed by an \g{extension}, its 
 contents are lost.
 
@@ -3945,46 +3944,44 @@ determining an integral constant, or implicit when the value is supplied by
 the compiler depending on the exact location of the denotation. Syntax:
 
 \begin{grammar}
+\item denotation:
+
+   integral-denotation; character-denotation; string-denotation.
+
 \item integral-denotation:
 
    [minus-symbol], digit\plus;
 
    [minus-symbol], hex-symbol, hex-digit\plus;
 
-   manifest-constant.
+   manifest-integral.
 
 \item character-denotation:
    absolute-symbol, visible-character, absolute-symbol.
 
 \item string-denotation:
 
-   proper-string;
+   quote-symbol, string-elem\ast, quote-symbol.
 
    manifest-string.
-
-\item proper-string:
-
-   quote-symbol, string-elem\ast, quote-symbol.
 
 \item string-elem:
 
    non-quote-character; quote-image-symbol.
 \end{grammar}
 \noindent
-The notion \g{proper-string} has been introduced to explicitly forbid
-\g{manifest-string}\/s at certain locations.
 Example of \g{integral-}, \g{character-} and \g{string-denotation}\/s:
 \begin{program}
 -0xffef, /t/, """quoted string""", \_file\_,
 \end{program}
 \noindent
-here the last one is a \g{manifest-string}. The implemented manifest
+the last one is a \g{manifest-string}. The implemented manifest
 constants and strings are the following.
 
 \smallskip
 
 \begin{tabular}{lp{0.74\textwidth}}
-\pp|\_line\_| & constant, the source line number this constant appears,\\
+\pp|\_line\_| & integral, the source line number this constant appears,\\
 \pp|\_file\_| & string, the name of the source file,\\
 \pp|\_module\_| &  string, module name as set by the \pp|module=.\!.\!.|
 \g{pragmat}, \\
@@ -3996,7 +3993,7 @@ inside an \g{actual-rule}.
 
 
 \smallskip\noindent 
-Only the listed characters are allowed between the two underscore
+Only the listed characters and no spaces are allowed between the underscore
 characters. The string returned by \pp|\_module\_| and \pp|\_title\_| is the
 empty string before encountering the \pp|module| or the \pp|title| pragmats.
 The manifest string \pp|\_rule\_| similarly returns the empty string if used outside
@@ -4026,13 +4023,14 @@ provides the code of the character between the two \g{absolute-symbol}\/s
 \smallskip
 
 A \g{non-quote-character} is a \g{visible-character} different from the
-quote mark \pp|"|. A \g{proper-string} is a (possibly empty) sequence of
+quote mark \pp|"|. A proper string is a (possibly empty) sequence of
 \g{non-quote-character}\/s and \g{quote-image-symbol}\/s (the
 latter is two consecutive quote marks) enclosed in quote marks. There is no
 escape character in \A{}, therefore the newline character (and other control
 characters) cannot occur in a \g{string-denotation}.
 
-\A{} allows long strings to be split into shorter ones. Consecutive strings
+\A{} allows strings between \g{quote-symbol}\/s to be split into shorter ones. 
+Consecutive strings enclosed in \g{quote-symbol}\/s and
 separated by white spaces (even if they are in different lines) are
 concatenated. Strings to be concatenated must be properly separated since
 inside a string two consecutive quote marks denote a single quote mark. Thus
