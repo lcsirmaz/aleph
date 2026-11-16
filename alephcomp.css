@@ -12,6 +12,7 @@ body {clear: both; margin: 20px auto; padding: 15px;
 .likesectionHead, .sectionHead{font-size:1.5em; margin-block-start:1.5em;}
 .subsectionHead {font-size: 1.3em; }
 .subsubsectionHead {font-size: 1.11em; }
+.titlemark{ padding-right:0.3em;}
 dd.trivlist {display: list-item; list-style-type: disc; }
 .grammar {background-color:#f4f4f0; border-left:10px solid #a0b0e0;}
 .grammar dd {margin-inline-start: 15px;}
@@ -193,5 +194,8 @@ div.abstract {width:100%;}
 .rotatebox{display: inline-block;}
 #TBL-2-1{border-left: 1px solid black;}
 #TBL-2-5{border-right:1px solid black;}
+#TBL-6-1{border-left: 1px solid black;}
+#TBL-6-5{border-right:1px solid black;}
+.cmr-7{font-size:70%; vertical-align: bottom; margin-left: -2px; margin-right:2px;}
 /* end css.sty */
 

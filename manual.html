@@ -7,14 +7,17 @@
 <!-- html --> 
 <meta name="src" content="manual.tex"> 
 <link rel="stylesheet" type="text/css" href="manual.css"> 
-</head><body >
+</head>
+<body >
    <div class="maketitle">
 <h2 class="titleHead">Aleph Manual</h2>
-<div class="author" ><span 
-class="cmr-12">Laszlo Csirmaz</span></div><br>
-<div class="date" ><span 
-class="cmr-12">April 29, 2025</span></div>
-   </div>
+<div class="author cmr-12">Revised for the Aleph compiler v2.5<sup>*</sup><br>
+Laszlo Csirmaz</div><br>
+<div class="date">November, 2026</div><br>
+<div class="date"><sup>*</sup>Based on the original Aleph manual by R. Bosch, D.
+Grune and L.G.L.T. Meertens, fourth printing, Matematisch Centrum, Amsterdam,
+1982
+   </div></div>
    <h3 class="likesectionHead"><a 
  id="x1-1000"></a>Preface</h3>
 <!--l. 175--><p class="noindent" ><span 
@@ -65,19 +68,31 @@ program representation in
 <a href="#x1-740009">Chapter 9</a>,
 and sample programs in <a href="#x1-7800010">Chapter 10</a>
 close the Manual.
-<!--l. 207--><p class="indent" >   This version describes the language as it has been implemented in <span class="cite">[<a 
+<!--l. 207--><p class="indent" >This version describes the language as it has been implemented in <span class="cite">[<a 
 href="#Xalephcomp">1</a>]</span>. The
-                                                                  
-
-                                                                  
-Manual is based on, and repeats large parts of the fourth printing from 1982 <span class="cite">[<a 
-href="#Xmanual">2</a>]</span>.
+Manual is based on, and repeats large parts of the fourth printing from 1982 <span class="cite"><a 
+href="#Xmanual">[2]</a></span>.
 Many paragraphs have been kept identical, while many others were rewritten to
 reflect the implemented language.
-<!--l. 213--><p class="indent" >
-                                                                  
 
-                                                                  
+<p class="indent">
+<h3 class="likesectionHead">Acknowledgments</h3>
+
+<p class="noindent">The original <span 
+class="cmss-10">ALEPH Manual</span> was written by R. Bosch, D. Grune and
+L.G.L.T. Meertens, and was published by the Stichting Mathematisch Centrum
+(now CWI), Amsterdam <span class="cite"><a 
+href="#Xmanual">[2]</a></span>. Large parts of the present text, including the
+tutorial in <a 
+href="#x1-30001">Chapter 1</a> and some of the examples, are reproduced from it with
+onyl minor changes. The present revision is an independent work: the
+original authors took no part in its preparation, and the revised alone is
+reponsible for the changes and for any error they may contain. <span 
+class="cmss-10">ALEPH</span> owes much to the affix grammars and the
+compiler description language <span class="cmss-10">CDL</span> of C.H.A
+Koster <span class="cite"><a href="#Xkoster71b">[3]</a></span>.
+
+<!--l. 213--><p class="indent" >
    <h3 class="likesectionHead"><a 
  id="x1-2000"></a>Contents</h3>
    <div class="tableofcontents">
@@ -1245,8 +1260,7 @@ class="ec-lmtt-9x-x-102">&#39;strings.</span>
 class="cmss-10">prototype</span> and not a <span 
 class="cmss-10">declaration</span>.
 <!--l. 714--><p class="indent" >   The module body is enclosed between conditional <span 
-class="cmss-10">pragmat</span>s to ensure that it is
-executed only when the module is compiled. The module body must also contain a
+class="cmss-10">pragmat</span>s to ensure that it is processed only when the module is compiled. The module body must also contain a
 <span 
 class="cmss-10">root</span>. This root is executed before the main root, so it can perform all necessary
 initializations. If no initializations are necessary, this root can consist of a sole
@@ -1439,8 +1453,8 @@ class="ec-lmtt-9x-x-102">&#39;</span><span
 class="ec-lmtk-10x-x-92">pragmat</span><span 
 class="ec-lmtt-9x-x-102">&#39;require="base".</span>
 </div>
-<!--l. 756--><p class="noindent" >This pragmat specifies the source file name (possibly with path information and
-without extension) enclosed in quote marks, and not the module name. The main
+<!--l. 756--><p class="noindent" >This pragmat specifies the source file name (possibly with path information; the extension <span 
+class="ec-lmtt-9x-x-102">.ale</span> can be omitted) enclosed in quote marks, and not the module name. The main
 program could use rules, variables, constants, tables, etc., exported by the module
 exactly the same way as if they were declared there. Error strings can be added to
 the <span 
@@ -1452,7 +1466,7 @@ main program, such as
 class="ec-lmtt-9x-x-102">&#39;</span><span 
 class="ec-lmtk-10x-x-92">table</span><span 
 class="ec-lmtt-9x-x-102">&#39;strings=("Right</span><span 
-class="ec-lmtt-9x-x-102">&#x00A0;parent</span><span 
+class="ec-lmtt-9x-x-102">&#x00A0;parenthesis</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;missing":no</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;paren).</span>
   <br><span 
@@ -1516,7 +1530,7 @@ class="ec-lmtt-9x-x-102">&#x00A0;</span><span
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
-class="ec-lmtt-9x-x-102">&#x00A0;inc+cnt,next1+out+tbl+str+cnt;</span>
+class="ec-lmtt-9x-x-102">&#x00A0;incr+cnt,next1+out+tbl+str+cnt;</span>
   <br><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
@@ -1756,7 +1770,7 @@ class="ec-lmtt-9x-x-102">&#x00A0;3+&#x003E;res&#x003E;+r&#x003E;:</span>
   <br><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
-class="ec-lmtt-9x-x-102">&#x00A0;is+symbol+/+/,expression</span><span 
+class="ec-lmtt-9x-x-102">&#x00A0;is&#x00A0;symbol+/+/,expression</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;3+r,add+res+r+res;+.</span>
 </div>
 <!--l. 875--><p class="noindent" >
@@ -1874,7 +1888,7 @@ class="ec-lmtt-9x-x-102">&#x00A0;</span><span
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;put</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;many</span><span 
-class="ec-lmtt-9x-x-102">&#x00A0;string+STDOUT+@.</span>
+class="ec-lmtt-9x-x-102">&#x00A0;strings+STDOUT+@.</span>
 </div>
 <!--l. 938--><p class="indent" >
    <h3 class="sectionHead"><span class="titlemark">2   </span> <a 
@@ -1887,7 +1901,7 @@ Alternatives are separated by semicolons; successive notions in an alternative a
 separated by commas. Each grammatical notion is written as one or more words
 connected with dash characters. To make the grammar more succinct, enclosing one
 or more notions in square brackets indicates that the group may or may not be
-present, i.e., it is optional. Similarly, either a notion, or a group ot notions
+present, i.e., it is optional. Similarly, either a notion, or a group of notions
 enclosed in parentheses, can be followed by a star <span 
 class="ec-lmtt-9x-x-102">*</span> or by a plus <span 
 class="ec-lmtt-9x-x-102">+</span>. The star
@@ -2018,7 +2032,7 @@ class="cmss-10">declaration: rule-declaration; data-declaration; external-declar
    </dt><dd 
 class="list">
    <!--l. 1005--><p class="indent" >      <span 
-class="cmss-10">prototype: rule-prototye; data-prototype.</span></dd></dl>
+class="cmss-10">prototype: rule-prototype; data-prototype.</span></dd></dl>
 <!--l. 1007--><p class="noindent" >This grammar says that a <span 
 class="cmss-10">unit</span> must contain exactly one <span 
 class="cmss-10">root</span>, and must end with an
@@ -2060,8 +2074,7 @@ class="ec-lmtt-9x-x-102">module=...</span> <span
 class="cmss-10">pragmat</span>; this pragmat defines both
 the module name and its name-space. The <span 
 class="cmss-10">unit</span> is a <span 
-class="cmti-10">main program </span>if it contains no
-such a pragmat; the above example is a main program.
+class="cmti-10">main program </span>if it contains no such pragmat; the above example is a main program.
 <!--l. 1027--><p class="indent" >   A complete <span 
 class="cmss-10">ALEPH </span>program is <span 
 class="cmti-10">linked </span>from a main program and from zero
@@ -2277,10 +2290,7 @@ class="cmti-10">exit</span>, </dt><dd
 class="list">
    <!--l. 1133--><p class="noindent" >when it never returns, consequently has side effects.</dd></dl>
 <!--l. 1136--><p class="noindent" >The rule type is checked against the logical construction of the <span 
-class="cmss-10">actual-rule</span>. If an action or
-function is found to be able to fail, an exit rule to be able to return, or a non-exit
-rule not able to return, an error message is given. In other cases, if a discrepancy is
-found, a warning is given.
+class="cmss-10">actual-rule</span>. If an action or function is found to be able to fail, a question or function to have side effects, an exit rule to be able to return, or a non-exit rule not able to return, an error message is given. In other cases, namely when a predicate or question cannot fail, or a predicate or action has no side effects, a warning is given.
 <!--l. 1144--><p class="indent" >   With each of the following <span 
 class="cmss-10">rule-prototype</span> examples a summary of what the rule
 does is provided. From this explanation it should be clear why the rule was specified
@@ -2728,7 +2738,7 @@ class="ec-lmtt-9x-x-102">table</span> and
 <span 
 class="ec-lmtt-9x-x-102">ptr</span>.
 <!--l. 1375--><p class="indent" >   All affix tags in the <span 
-class="cmss-10">formal-affix-sequence</span> must be different. The cannot have
+class="cmss-10">formal-affix-sequence</span> must be different. They cannot have
 qualifiers, and also must be different from the <span 
 class="cmss-10">rule-tag</span> that precedes this
 sequence.
@@ -2819,11 +2829,8 @@ class="cmti-10">uninitialized </span>at the beginning of each
 <span 
 class="cmss-10">alternative</span> of the <span 
 class="cmss-10">actual-rule</span> or <span 
-class="cmss-10">compound-member</span>. Its attribute must be <span 
-class="cmti-10">initialized</span>
-at the end of at least one <span 
-class="cmss-10">alternative</span>, meaning that the variable has been
-used.
+class="cmss-10">compound-member</span>. If a <span 
+class="cmss-10">local-tag</span> is not used, a warning is given.
 <!--l. 1422--><p class="noindent" >
    <h4 class="subsectionHead"><span class="titlemark">3.3   </span> <a 
  id="x1-230003.3"></a>Operations</h4>
@@ -3853,7 +3860,7 @@ class="ec-lmtt-9x-x-102">&#x00A0;do</span><span
 class="ec-lmtt-9x-x-102">&#x00A0;something;</span>
 </div>
 <!--l. 1970--><p class="noindent" >fails (because the value of <span 
-class="ec-lmtt-9x-x-102">m</span> is not one)), the side effect of changing <span 
+class="ec-lmtt-9x-x-102">m</span> is not one), the side effect of changing <span 
 class="ec-lmtt-9x-x-102">n</span> remains in
 effect and the guard of the second <span 
 class="cmss-10">alternative</span> will never succeed.
@@ -3897,7 +3904,7 @@ class="cmss-10">classifier-box: box-symbol, source, box-symbol.</span>
    </dt><dd 
 class="list">
    <!--l. 1995--><p class="indent" >      <span 
-class="cmss-10">class-chain: (class, semicolon symbol)</span><span 
+class="cmss-10">class-chain: (class, semicolon-symbol)</span><span 
 class="ec-lmtt-9x-x-102">+</span><span 
 class="cmss-10">, last-class.</span>
        </dd><dt class="list">
@@ -3926,12 +3933,11 @@ class="cmss-10">zone: [constant-value], up-to-symbol, [constant-value];</span>
 class="cmss-10">constant-value; list-tag.</span></dd></dl>
 <!--l. 2006--><p class="noindent" >A <span 
 class="cmss-10">list-tag</span> in a <span 
-class="cmss-10">zone</span> must identify a global (and not local or eternal) stack or table;
+class="cmss-10">zone</span> must identify a global (and not formal or external) stack or table;
 moreover the <span 
 class="cmss-10">constant-value</span> cannot be an actual upper or lower limit, nor an
 external <span 
-class="cmss-10">constant-tag</span> (as these values are not known during compilation
-time.
+class="cmss-10">constant-tag</span> (as these values are not known during compilation time).
 <!--l. 2013--><p class="noindent" >Example 1:
   <!--l. 2015--><p class="noindent" ><div class="obeylines-v">
   <span 
@@ -4112,9 +4118,12 @@ class="cmmi-10">V  </span>is in the virtual address space (see
    assigned to that list.</li></ul>
 <!--l. 2064--><p class="noindent" ><span 
 class="cmss-10">Area</span>s may coincide partially, but it is an error if an <span 
-class="cmss-10">area</span> cannot be reached by some
-value of the <span 
-class="cmss-10">source</span>.
+class="cmss-10">area</span> cannot be reached by some value of the <span 
+class="cmss-10">source</span>; in particular, no <span 
+class="cmss-10">class</span> may follow an <span 
+class="cmss-10">area</span> which contains every value, such as <span 
+class="ec-lmtt-9x-x-102">[:]</span>. It is also an error if the left boundary of a <span 
+class="cmss-10">zone</span> exceeds its right boundary.
 <!--l. 2067--><p class="indent" >   A <span 
 class="cmss-10">classification</span> can fail only if one of its <span 
 class="cmss-10">alternative</span>s fail; and has side-effects if at
@@ -4138,7 +4147,7 @@ four integer-based data types:
    </li>
    <li class="itemize">
    <!--l. 2082--><p class="noindent" >ordered lists of locations that contain integers (stacks).</li></ul>
-<!--l. 2084--><p class="noindent" >Integers used in data declarations can be given in the form of expressions.
+<!--l. 2084--><p class="noindent" >Integers in constant and variable declarations can be given in the form of expressions; elsewhere only constant values are allowed.
 <!--l. 2086--><p class="indent" >   The basic way of routing information into and out of the program is through files.
 There are two file types:
    <ul class="itemize0">
@@ -4210,7 +4219,7 @@ class="cmss-10">unary-operator: minus-symbol; complement-symbol.</span>
    </dt><dd 
 class="list">
    <!--l. 2131--><p class="indent" >      <span 
-class="cmss-10">binary-opeator: times-symbol; by-symbol; plus-symbol; minus-symbol;</span>
+class="cmss-10">binary-operator: times-symbol; by-symbol; plus-symbol; minus-symbol;</span>
    <!--l. 2133--><p class="indent2" >      <span 
 class="cmss-10">or-symbol; and-symbol; xor-symbol.</span></dd></dl>
 <!--l. 2135--><p class="noindent" >Examples:
@@ -4245,8 +4254,10 @@ class="cmss-10">expression</span> is the integral value that results from evalua
 class="cmss-10">expression</span> according to the standard rules of arithmetic. Operators applied in the
 order of their priorities; operators of equal priority are applied from left to right.
 Unary operators have the highest priority. They are followed by multiplication and
-division, then addition and subtraction. The Boolean (bitwise) operators have the
-lowest priority.
+division, then addition and subtraction. The Boolean (bitwise) operators have the lowest priorities: first <span 
+class="ec-lmtt-9x-x-102">|</span> (or), then <span 
+class="ec-lmtt-9x-x-102">&amp;</span> (and), and finally <span 
+class="ec-lmtt-9x-x-102">^</span> (xor), which has the lowest priority of all.
 <!--l. 2150--><p class="indent" >   An <span 
 class="cmss-10">expression</span> through the <span 
 class="cmss-10">constant-value</span> (<a href="#x1-230003.3">Section 3.3</a>) cannot contain actual
@@ -4367,7 +4378,7 @@ class="cmss-10">, point-symbol.</span>
    </dt><dd 
 class="list">
    <!--l. 2212--><p class="indent" >      <span 
-class="cmss-10">static-variable-prototype: static symbol, variable-prototype.</span></dd></dl>
+class="cmss-10">static-variable-prototype: static-symbol, variable-prototype.</span></dd></dl>
 <!--l. 2215--><p class="noindent" >Examples:
   <!--l. 2216--><p class="noindent" ><div class="obeylines-v">
   <span 
@@ -4398,12 +4409,9 @@ class="cmss-10">source</span>s and
 class="cmss-10">destination</span>s. They cannot be used in <span 
 class="cmss-10">expression</span>s.
 <!--l. 2226--><p class="indent" >   A static <span 
-class="cmss-10">variable-tag</span> behaves as a variable in the module it is declared, but in
-other modules it behaves like a <span 
-class="cmss-10">constant-tag</span>. The content of a <span 
-class="cmss-10">variable-tag</span> can only be
-manipulated by rules in its defining module; in other modules such a variable is &#8220;read
-only&#8221;.
+class="cmss-10">variable-tag</span> behaves as a variable in the module it is declared, but in other modules such a variable is &#8220;read only&#8221;: its value can be used in a <span 
+class="cmss-10">source</span>, but cannot be changed. The content of a static <span 
+class="cmss-10">variable-tag</span> can only be manipulated by rules in its defining module.
 <!--l. 2231--><p class="noindent" >
    <h4 class="subsectionHead"><span class="titlemark">4.2   </span> <a 
  id="x1-380004.2"></a>Tables and stacks</h4>
@@ -4548,8 +4556,8 @@ class="ec-lmtt-9x-x-102">&#x00A0;</span><span
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
-class="ec-lmtt-9x-x-102">&#x00A0;((365,113):pi,</span><span 
-class="ec-lmtt-9x-x-102">&#x00A0;(191,71):e).</span>
+class="ec-lmtt-9x-x-102">&#x00A0;((355,113):pi,</span><span 
+class="ec-lmtt-9x-x-102">&#x00A0;(193,71):e).</span>
 </div>
 <!--l. 2292--><p class="noindent" >Assuming that the virtual memory is indexed from 10000 to 99999, the virtual
 address space could have the following layout:
@@ -4735,7 +4743,7 @@ class="ec-lmtk-10x-x-92">&#x003C;&#x003C;st</span>     </td>
 </tr><tr  
  style="vertical-align:baseline;" id="TBL-00000005-27-"><td  style="white-space:nowrap; text-align:right;" id="TBL-00000005-27-1"  
 class="td11">                                                             <span 
-class="ec-lmtt-9x-x-94">10020-32327</span><span 
+class="ec-lmtt-9x-x-94">10021-32327</span><span 
 class="ec-lmtt-9x-x-94">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-94">&#x00A0;</span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-00000005-27-2"  
 class="td11">     <span 
@@ -4808,7 +4816,7 @@ class="ec-lmtt-9x-x-94">32332</span><span
 class="ec-lmtt-9x-x-94">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-94">&#x00A0;</span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-00000000005-38-2"  
 class="td11">    <span 
-class="ec-lmtt-9x-x-94">191</span> </td><td  style="white-space:nowrap; text-align:center;" id="TBL-00000000005-38-3"  
+class="ec-lmtt-9x-x-94">193</span> </td><td  style="white-space:nowrap; text-align:center;" id="TBL-00000000005-38-3"  
 class="td11">   <span 
 class="ec-lmtk-10x-x-92">ax    </span></td><td  style="white-space:nowrap; text-align:center;" id="TBL-00000000005-38-4"  
 class="td11"> <span 
@@ -4863,8 +4871,7 @@ class="ec-lmtk-10x-x-92">&#x003E;ax</span>           </td>
 <!--l. 2327--><p class="indent" >   A stack can be extended to the right while raising its actual upper limit through
 an <span 
 class="cmss-10">extension</span> (<a href="#x1-260003.3.3">Section 3.3.3</a>).
-Items can be removed from the right of a stack through a call of a
-run in the Standard Library (see 
+Items can be removed from the right of a stack through a call of a rule in the Standard Library (see 
 <a href="#x1-660008.2">Section 8.2</a>) such as <span 
 class="ec-lmtt-9x-x-102">unstack</span> or <span 
 class="ec-lmtt-9x-x-102">unstack to</span>, after which
@@ -4980,7 +4987,7 @@ class="cmss-10">limit-token: static-limit; dynamic-limit.</span>
    </dt><dd 
 class="list">
    <!--l. 2393--><p class="indent" >      <span 
-class="cmss-10">static-limit: vlwb-symbol vupb-symbol; calibre-symbol.</span>
+class="cmss-10">static-limit: vlwb-symbol; vupb-symbol; calibre-symbol.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
@@ -5004,8 +5011,7 @@ class="cmss-10">limit</span> of
 the corresponding global list. In particular, the <span 
 class="cmss-10">calibre</span> of a <span 
 class="cmss-10">formal-affix</span> is
-the calibre of the corresponding global list, and not the calibre of the local
-affix.
+the calibre of the corresponding global list, and not the calibre of the formal affix.
 <!--l. 2412--><p class="noindent" >
    <h5 class="subsubsectionHead"><span class="titlemark">4.2.4   </span> <a 
  id="x1-420004.2.4"></a>Tables</h5>
@@ -5087,14 +5093,14 @@ unspecified.
    <h5 class="subsubsectionHead"><span class="titlemark">4.2.5   </span> <a 
  id="x1-430004.2.5"></a>Stacks</h5>
 <!--l. 2453--><p class="noindent" >Stacks originate from <span 
-class="cmss-10">stacks-declaration</span>s. Syntax:
+class="cmss-10">stack-declaration</span>s. Syntax:
        <dl class="list1"><dt class="list">
    </dt><dd 
 class="list">
    <!--l. 2455--><p class="indent" >      <span 
 class="cmss-10">stack-declaration: stack-symbol, stack-description,</span>
    <!--l. 2457--><p class="indent2" >      <span 
-class="cmss-10">(comma symbol, stack-description)</span><span 
+class="cmss-10">(comma-symbol, stack-description)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
        </dd><dt class="list">
@@ -5184,9 +5190,8 @@ class="cmss-10">size-estimate</span> is empty, the allocated virtual memory will
 size of <span 
 class="cmss-10">filling</span>s. The <span 
 class="cmss-10">absolute-size</span> specifies the number of requested virtual locations
-(not blocks); this number must be positive. The <span 
-class="cmss-10">relative-size</span> must be positive and at
-most 100. The <span 
+(not blocks); this number must be positive and at most 100000. The <span 
+class="cmss-10">relative-size</span> must be positive and at most 100. For a value out of these ranges a warning is given, and the value is chopped automatically to the nearest allowed one. The <span 
 class="cmss-10">constant-value</span> in the <span 
 class="cmss-10">size-estimate</span> cannot depend on values which are
 determined after the distribution of the virtual memory, such as virtual limits or
@@ -5419,7 +5424,7 @@ class="cmss-10">file-declaration: file-typer, file-description,</span>
    <!--l. 2627--><p class="indent2" >      <span 
 class="cmss-10">(comma-symbol, file-description)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
-class="cmss-10">, point symbol.</span>
+class="cmss-10">, point-symbol.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
@@ -5447,7 +5452,7 @@ class="list">
    <!--l. 2637--><p class="indent" >      <span 
 class="cmss-10">file-prototype:</span>
    <!--l. 2639--><p class="indent2" >      <span 
-class="cmss-10">file-typer, file-tag, (comma symbol, file-tag)</span><span 
+class="cmss-10">file-typer, file-tag, (comma-symbol, file-tag)</span><span 
 class="ec-lmtt-9x-x-102">*</span><span 
 class="cmss-10">, point-symbol.</span>
        </dd></dl>
@@ -5523,7 +5528,7 @@ class="ec-lmtt-9x-x-102">ch</span>,
 class="ec-lmtt-9x-x-102">put char+""file+&#x003E;ch</span> adds  the  unicode  character  <span 
 class="ec-lmtt-9x-x-102">ch</span> to  the  file  written,
    ignoring the request if <span 
-class="ec-lmtt-9x-x-102">ch</span> is illegal or zero.
+class="ec-lmtt-9x-x-102">ch</span> is not a valid Unicode character code.
    </dd><dt class="list">
 Linewise: </dt><dd 
 class="list">
@@ -5750,7 +5755,7 @@ class="list">
    <!--l. 2810--><p class="indent" >      <span 
 class="cmss-10">data-typer: constant-symbol; variable-symbol;</span>
    <!--l. 2812--><p class="indent2" >      <span 
-class="cmss-10">table-symbol; stack-symbol; file-symbol.</span>
+class="cmss-10">table-symbol; stack-symbol; charfile-symbol; datafile-symbol.</span>
        </dd><dt class="list">
    </dt><dd 
 class="list">
@@ -5855,7 +5860,7 @@ class="ec-lmtt-9x-x-102">&#39;module=basic,</span>
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
-class="ec-lmtt-9x-x-102">&#x00A0;require=("mod1","mod2),</span>
+class="ec-lmtt-9x-x-102">&#x00A0;require=("mod1","mod2"),</span>
   <br><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;</span><span 
@@ -5904,15 +5909,13 @@ class="ec-lmtt-9x-x-102">&#39;pragmat&#39;tab width=</span><span
 class="cmss-10">integer</span>.
    <!--l. 2903--><p class="noindent" >The right hand side of the <span 
 class="ec-lmtt-9x-x-102">tab width</span> <span 
-class="cmss-10">pragmat</span> must be a positive integer less than
-   100. The value will be used as the tab size for program text printing. The default
+class="cmss-10">pragmat</span> must be an integer between 1 and 20. The value will be used as the tab size for program text printing. The default
    value is <span 
 class="ec-lmtt-9x-x-102">8</span>.
 <!--l. 2908--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;right margin=</span><span 
 class="cmss-10">integer</span>.
-   <!--l. 2908--><p class="noindent" >Sets the right margin for program text and dictionary printing. The default value
-   is <span 
+   <!--l. 2908--><p class="noindent" >Sets the right margin for program text and dictionary printing; the value must be between 20 and 1000. The default value is <span 
 class="ec-lmtt-9x-x-102">120</span>.
 <!--l. 2912--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;list=on/off.</span>
@@ -6002,14 +6005,13 @@ class="cmss-10">rule-tag</span> cannot have a
    qualifier.
 <!--l. 2962--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;library mode=on/off.</span>
-   <!--l. 2962--><p class="noindent" >Turn library mode on or off. The value determines whether library extensions are
-   allowed or not. The default of <span 
+   <!--l. 2962--><p class="noindent" >Turn library mode on or off. The value determines whether library extensions are allowed or not. The default is <span 
 class="ec-lmtt-9x-x-102">off</span>.
    <!--l. 2965--><p class="noindent" >If <span 
 class="ec-lmtt-9x-x-102">library mode</span> is <span 
 class="ec-lmtt-9x-x-102">on</span>, the <span 
 class="ec-lmtt-9x-x-102">@</span> character is considered to be a letter, thus private tags
-   can be created. Directory listing ignores tags starting with <span 
+   can be created. Dictionary listing ignores tags starting with <span 
 class="ec-lmtt-9x-x-102">@</span>. More importantly,
    <span 
 class="cmss-10">external-declaration</span>s and the <span 
@@ -6164,10 +6166,9 @@ class="ec-lmtt-9x-x-102">_</span>, and it also appears in the intermediate <span
 class="cmtt-10">ALICE</span>
    code, as well as in the linked final code.
 <!--l. 3065--><p class="pnoindent" ><span 
-class="ec-lmtt-9x-x-102">&#39;pragmat&#39;std library=on/off.</span>
-   <!--l. 3065--><p class="noindent" >Enable or disable Standard Library source files. The default value is <span 
-class="ec-lmtt-9x-x-102">on</span>. This
-   pragmat is accepted only when <span 
+class="ec-lmtt-9x-x-102">&#39;pragmat&#39;std library=off.</span>
+   <!--l. 3065--><p class="noindent" >Disable processing the Standard Library source files, which are processed by default. The only accepted value is <span 
+class="ec-lmtt-9x-x-102">off</span>. This pragmat has an effect only when <span 
 class="ec-lmtt-9x-x-102">compile</span> is <span 
 class="ec-lmtt-9x-x-102">on</span>.
 <!--l. 3069--><p class="pnoindent" ><span 
@@ -6210,7 +6211,7 @@ class="cmss-10">string-denotation</span>.
 class="cmss-10">ALEPH</span>
    source files to be processed as a <span 
 class="cmti-10">user library</span>. This <span 
-class="cmss-10">pragmat</span> is accepted only if
+class="cmss-10">pragmat</span> has an effect only if
    <span 
 class="ec-lmtt-9x-x-102">compile</span> is <span 
 class="ec-lmtt-9x-x-102">on</span>.
@@ -6222,10 +6223,11 @@ class="cmss-10">ALEPH </span>source files to be
    processed as an addendum to the current source file.
 <!--l. 3093--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;pragmat&#39;prototype=import/public/none/reverse.</span>
-   <!--l. 3093--><p class="noindent" >This pragmat has three possible values: <span 
+   <!--l. 3093--><p class="noindent" >This pragmat has four possible values: <span 
 class="ec-lmtt-9x-x-102">import</span>, <span 
-class="ec-lmtt-9x-x-102">public</span>, and <span 
-class="ec-lmtt-9x-x-102">none</span>; the default
+class="ec-lmtt-9x-x-102">public</span>, <span 
+class="ec-lmtt-9x-x-102">none</span>, and <span 
+class="ec-lmtt-9x-x-102">reverse</span>; the default
    value is <span 
 class="ec-lmtt-9x-x-102">none</span>. The pragmat determines how the compiler handles <span 
 class="cmss-10">prototype</span>s.
@@ -6294,7 +6296,7 @@ class="ec-lmtt-9x-x-102">prototype=none</span>.
    </li>
    <li class="itemize">
    <!--l. 3134--><p class="noindent" >If the source file was added by a <span 
-class="ec-lmtt-9x-x-102">request</span> or by a <span 
+class="ec-lmtt-9x-x-102">require</span> or by a <span 
 class="ec-lmtt-9x-x-102">library</span> pragmat, their
    values are <span 
 class="ec-lmtt-9x-x-102">compile=off</span> and <span 
@@ -6331,7 +6333,7 @@ source is concluded by the private part, or <span
 class="cmti-10">module body</span>, which defines the
 exported items together with the optional auxiliary, unexported items. The
 body is enclosed between <span 
-class="ec-lmtt-9x-x-102">ifdef=compile</span> and <span 
+class="ec-lmtt-9x-x-102">if=compile</span> and <span 
 class="ec-lmtt-9x-x-102">endif=compile</span> conditional
 pragmats.
 <!--l. 3161--><p class="indent" >   The module is compiled by submitting its source file to the <span 
@@ -6375,8 +6377,7 @@ class="cmss-10">ALEPH </span>constructs. A
 <span 
 class="ec-lmtt-9x-x-102">require</span> pragmat in the head automatically re-exports the imported items (using
 their original namespace), while declarations in the head are compiled into the
-invoking program locally, using the module&#39;s namespace. It may happen, without any
-program, that the head of module <span 
+invoking program locally, using the module&#39;s namespace. It may happen, without any problem, that the head of module <span 
 class="ec-lmtt-9x-x-102">A</span> requires module <span 
 class="ec-lmtt-9x-x-102">B</span>, while the head of module <span 
 class="ec-lmtt-9x-x-102">B</span>
@@ -6443,8 +6444,9 @@ class="cmss-10">declaration</span>s and import <span
 class="cmss-10">prototype</span>s) inherit the actual namespace. This
 namespace is empty in the main program; otherwise it is the same as the module
 name as defined by the <span 
-class="ec-lmtt-9x-x-102">module</span> pragmat. The explicit qualifier, if present, cannot be
-empty. A <span 
+class="ec-lmtt-9x-x-102">module</span> pragmat. The explicit qualifier, if present, cannot be empty. In module <span 
+class="ec-lmtt-9x-x-102">M</span> an explicit qualifier <span 
+class="ec-lmtt-9x-x-102">M::</span> in a definition is the same as no qualifier. A <span 
 class="cmss-10">tag</span> with a qualifier identifies only those definitions where the same implicit
 or explicit qualifier is used.
 <!--l. 3227--><p class="indent" >   The process of finding the defining occurrence of a <span 
@@ -6474,10 +6476,12 @@ class="ec-lmtt-9x-x-102">A</span> and the modules <span
 class="cmti-10">above </span><span 
 class="ec-lmtt-9x-x-102">A</span>. If <span 
 class="ec-lmtt-9x-x-102">x</span> has
-no explicit qualifier, then it matches any definition of <span 
-class="ec-lmtt-9x-x-102">x</span> in those modules; if <span 
-class="ec-lmtt-9x-x-102">x</span> has an
-explicit qualifier <span 
+no explicit qualifier, then it matches a definition of <span 
+class="ec-lmtt-9x-x-102">x</span> in those modules which either has no explicit qualifier, or whose explicit qualifier is the namespace of <span 
+class="ec-lmtt-9x-x-102">A</span> (in the main program, whose namespace is empty, only the former). A definition with any other explicit qualifier, say <span 
+class="ec-lmtt-9x-x-102">r::x</span>, is never matched by an unqualified tag, not even in the unit where it is defined: it is meant for the module named <span 
+class="ec-lmtt-9x-x-102">r</span>. If <span 
+class="ec-lmtt-9x-x-102">x</span> has an explicit qualifier <span 
 class="ec-lmtt-9x-x-102">q::x</span>, then it matches only those definitions where the qualifier is
 (explicitly or implicitly set to) <span 
 class="ec-lmtt-9x-x-102">q</span>. Among the candidate modules that one is chosen
@@ -6630,8 +6634,9 @@ class="cmss-10">tag</span> <span
 class="ec-lmtt-9x-x-102">x</span> in these modules matches definition (6) of <span 
 class="ec-lmtt-9x-x-102">t::x</span> in the main
 program, but not definition (7) of <span 
-class="ec-lmtt-9x-x-102">x</span> (which is without qualifier). Observe that
-definition (2) is not used at all; each occurence of <span 
+class="ec-lmtt-9x-x-102">x</span> (which is without qualifier). Conversely, <span 
+class="ec-lmtt-9x-x-102">x</span> in the main program matches definition (7), and not (6), as the qualifier <span 
+class="ec-lmtt-9x-x-102">t</span> differs from the (empty) namespace of the main program. Observe that definition (2) is not used at all; each occurrence of <span 
 class="ec-lmtt-9x-x-102">v</span> in <span 
 class="ec-lmtt-9x-x-102">"f2"</span> uses definition (4) from
 <span 
@@ -6738,7 +6743,7 @@ class="ec-lmtt-9x-x-102">&#39;macro+a&#x003E;+@+&#x003E;q:</span><span
 class="ec-lmtt-9x-x-102">&#x00A0;q-&#x003E;b,</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;get</span><span 
 class="ec-lmtt-9x-x-102">&#x00A0;affix</span><span 
-class="ec-lmtt-9x-x-102">&#x00A0;blocno+a+@.</span>
+class="ec-lmtt-9x-x-102">&#x00A0;blockno+a+@.</span>
 </div>
    <!--l. 3340--><p class="noindent" >where <span 
 class="ec-lmtt-9x-x-102">b</span> is some global variable. After verbatim substitution the repeat block
@@ -6764,7 +6769,7 @@ class="ec-lmtt-9x-x-102">macro+S+z</span>      <span
 class="cmsy-10">&#x21D2;   </span><span 
 class="ec-lmtt-9x-x-102">(S[ptr]-&#x003E;z)</span>
    <!--l. 3358--><p class="noindent" >while <span 
-class="ec-lmtt-9x-x-102">S</span> might not have a standard selector.
+class="ec-lmtt-9x-x-102">S</span> might not have a standard selector, or its standard selector may not be the last element of a block.
    </li>
    <li class="itemize">
    <!--l. 3360--><p class="noindent" >Out affixes get their values only after returning from a call. The rule call
@@ -6786,8 +6791,7 @@ the conditions are violated. For b), if the actual affix is the dummy affix <spa
 class="ec-lmtt-9x-x-102">#</span>, the formal
 out affix in the macro is replaced by a newly created anonymous local variable (which
 may be removed during optimization). For d) the macro substitution mechanism
-remembers the last substituted formal affix and uses that value for the standard
-selector what the rule call would do. For e) and other side effects, no warning is, or
+remembers the last substituted formal affix and uses the same standard selector as the rule call would do. For e) and other side effects, no warning is, or
 can be, given, but substitution clearly changes the semantics. So use macros with
 care.
 <!--l. 3385--><p class="indent" >
@@ -6813,6 +6817,14 @@ class="ec-lmtt-9x-x-102">min int</span> is the smallest (most
 class="ec-lmtt-9x-x-102">int size</span> is the number of decimal digits
    necessary to represent <span 
 class="ec-lmtt-9x-x-102">max int</span>.
+<p class="pnoindent" ><span 
+class="ec-lmtt-9x-x-102">&#39;</span><span 
+class="ec-lmtk-10x-x-92">constant</span><span 
+class="ec-lmtt-9x-x-102">&#39; nil, false, true.</span>
+   <p class="noindent" ><span 
+class="ec-lmtt-9x-x-102">nil</span> is zero, the null pointer, which differs from every virtual address; <span 
+class="ec-lmtt-9x-x-102">false</span> and <span 
+class="ec-lmtt-9x-x-102">true</span> are zero and one, respectively.
 <!--l. 3403--><p class="noindent" >
    <h5 class="subsubsectionHead"><span class="titlemark">8.1.2   </span> <a 
  id="x1-630008.1.2"></a>Arithmetical operations</h5>
@@ -6846,7 +6858,7 @@ class="ec-lmtk-10x-x-92">function</span><span
 class="ec-lmtt-9x-x-102">&#39;incr+&#x003E;x&#x003E;, decr+&#x003E;x&#x003E;, get abs+&#x003E;x+y&#x003E;, min+&#x003E;x+&#x003E;y&#x003E;, max+&#x003E;x+&#x003E;y&#x003E;.</span>
    <!--l. 3414--><p class="noindent" ><span 
 class="ec-lmtt-9x-x-102">incr</span> increases, <span 
-class="ec-lmtt-9x-x-102">decr</span> decreaseseases its affix by one; <span 
+class="ec-lmtt-9x-x-102">decr</span> decreases its affix by one; <span 
 class="ec-lmtt-9x-x-102">get abs</span> yields the absolute
    value of <span 
 class="ec-lmtt-9x-x-102">x</span> in <span 
@@ -6900,7 +6912,7 @@ class="ec-lmtt-9x-x-102">y</span>.
 <!--l. 3438--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;</span><span 
 class="ec-lmtk-10x-x-92">function</span><span 
-class="ec-lmtt-9x-x-102">&#39;bool and+&#x003E;x+&#x003E;y+&#x003E;z&#x003E;, bool or+&#x003E;x+&#x003E;y+z&#x003E;, bool xor+&#x003E;x+&#x003E;y+z&#x003E;.</span>
+class="ec-lmtt-9x-x-102">&#39;bool and+&#x003E;x+&#x003E;y+z&#x003E;, bool or+&#x003E;x+&#x003E;y+z&#x003E;, bool xor+&#x003E;x+&#x003E;y+z&#x003E;.</span>
    <!--l. 3438--><p class="noindent" >Bitwise Boolean operations.
 <!--l. 3441--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;</span><span 
@@ -6950,7 +6962,7 @@ class="ec-lmtt-9x-x-102">&#39;list length+T[]+len&#x003E;.</span>
 class="ec-lmtt-9x-x-102">T</span> is yielded in <span 
 class="ec-lmtt-9x-x-102">len</span>. This value
    equals <span 
-class="ec-lmtt-9x-x-102">-1+&#x003C;&#x003E;T+&#x003E;&#x003E;T-&#x003C;&#x003C;T</span>.
+class="ec-lmtt-9x-x-102">&#x003C;&#x003E;T+&#x003E;&#x003E;T-&#x003C;&#x003C;T</span>.
 <!--l. 3463--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;</span><span 
 class="ec-lmtk-10x-x-92">action</span><span 
@@ -6983,7 +6995,7 @@ class="ec-lmtt-9x-x-102">st</span> are removed. The locations can be reclaimed t
 class="cmss-10">extension</span>s, but the contents are lost. After this operation <span 
 class="ec-lmtt-9x-x-102">&#x003E;&#x003E;st</span> will be equal to
    <span 
-class="ec-lmtt-9x-x-102">-1+&#x003C;&#x003C;st-&#x003C;&#x003E;st</span>.
+class="ec-lmtt-9x-x-102">&#x003C;&#x003C;st-&#x003C;&#x003E;st</span>.
 <!--l. 3488--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;</span><span 
 class="ec-lmtk-10x-x-92">action</span><span 
@@ -7031,8 +7043,8 @@ class="ec-lmtt-9x-x-102">&#39;string width+T[]+&#x003E;p+n&#x003E;.</span>
 class="ec-lmtt-9x-x-102">n</span>.
 <!--l. 3515--><p class="pnoindent" ><span 
 class="ec-lmtt-9x-x-102">&#39;</span><span 
-class="ec-lmtk-10x-x-92">action</span><span 
-class="ec-lmtt-9x-x-102">&#39;previous string+T[]+&#x003E;p&#x003E;</span>
+class="ec-lmtk-10x-x-92">function</span><span 
+class="ec-lmtt-9x-x-102">&#39;previous string+T[]+&#x003E;p&#x003E;.</span>
    <!--l. 3515--><p class="noindent" >The pointer <span 
 class="ec-lmtt-9x-x-102">p</span> must point to a string block; <span 
 class="ec-lmtt-9x-x-102">p</span> is moved to the (possibly non
@@ -7331,7 +7343,7 @@ class="ec-lmtt-9x-x-102">&#39;</span><span
 class="ec-lmtk-10x-x-92">action</span><span 
 class="ec-lmtt-9x-x-102">&#39;put int+""f+&#x003E;int.</span>
    <!--l. 3671--><p class="noindent" >Exactly <span 
-class="ec-lmtt-9x-x-102">intsize+1</span> characters are written to <span 
+class="ec-lmtt-9x-x-102">int size+1</span> characters are written to <span 
 class="ec-lmtt-9x-x-102">f</span>. These characters are: zero or more
    spaces, the minus sign if <span 
 class="ec-lmtt-9x-x-102">int</span> is negative, followed by the characters of the decimal
@@ -7495,7 +7507,7 @@ class="ec-lmtt-9x-x-102">&#39;shift affix block+@.</span>
 class="ec-lmtt-9x-x-102">&#39;</span><span 
 class="ec-lmtk-10x-x-92">function</span><span 
 class="ec-lmtt-9x-x-102">&#39;get affix blockno+n&#x003E;+@.</span>
-   <!--l. 3749--><p class="noindent" >The number of pending, unseen affix blocks is yielded in <span 
+   <!--l. 3749--><p class="noindent" >The number of remaining affix blocks, including the visible one, is yielded in <span 
 class="ec-lmtt-9x-x-102">n</span>. This number is always
    positive, and it is 1 if and only if <span 
 class="ec-lmtt-9x-x-102">shift affix block</span> would fail. This rule cannot
@@ -7563,13 +7575,11 @@ class="ec-lmtt-9x-x-102">&#39;backtrack.</span>
 class="cmss-10">ALEPH </span>program is linked with the <span 
 class="ec-lmtt-9x-x-102">-g</span> flag, additional code is added which
    maintains the <span 
-class="cmti-10">call stack</span>, the list of embedded rule calls starting from the <span 
-class="cmss-10">root</span> of
-   the main program and ending at the <span 
-class="cmss-10">actual-rule</span> which is currently executed. In
-   this case a call of the rule <span 
-class="ec-lmtt-9x-x-102">backtrack</span> provides a printout of the rule names in this
-   stack. If the program was not linked with the <span 
+class="cmti-10">call stack</span>, the list of embedded rule calls from the <span 
+class="cmss-10">root</span> of the main program to the <span 
+class="cmss-10">actual-rule</span> which is currently executed. In this case a call of the rule <span 
+class="ec-lmtt-9x-x-102">backtrack</span> prints the rule names in this stack to the standard error stream, starting with the rule containing the call and ending with the <span 
+class="cmss-10">root</span>. If the program was not linked with the <span 
 class="ec-lmtt-9x-x-102">-g</span> flag, this rule does nothing and
    returns immediately.
 <!--l. 3788--><p class="pnoindent" ><span 
@@ -7594,7 +7604,7 @@ class="cmss-10">root</span>s would wait for each other producing a
    <h3 class="sectionHead"><span class="titlemark">9   </span> <a 
  id="x1-740009"></a>Program representation</h3>
 <!--l. 3803--><p class="noindent" >The program, produced by the notion <span 
-class="cmss-10">program</span>, consists of a series of terminals.
+class="cmss-10">unit</span>, consists of a series of terminals.
 Terminal notions fall into the following categories:
    <ul class="itemize0">
    <li class="itemize">
@@ -7975,6 +7985,7 @@ location of the denotation. Syntax:
 <!--l. 3946--><p class="indent" >
        <dl class="list1"><dt class="list">
    </dt><dd 
+class="list"><p class="indent" >        <span 
 class="cmss-10">denotation:</span>
    <!--l. 3949--><p class="indent2" >      <span 
 class="cmss-10">integral-denotation; character-denotation;
@@ -7996,8 +8007,6 @@ class="cmss-10">;</span>
 class="cmss-10">manifest-integral.</span>
        </dd><dt class="list">
    </dt><dd 
-class="list">
-   <!--l. 3947--><p class="indent" >      <span 
 class="list">
    <!--l. 3955--><p class="indent" >      <span 
 class="cmss-10">character-denotation: absolute-symbol, visible-character, absolute-symbol.</span>
@@ -9289,18 +9298,17 @@ class="ec-lmtt-9x-x-102">&#39;</span>
    <p class="bibitem" ><span class="biblabel">
  [1]<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
  id="Xalephcomp"></a>L.&#x00A0;Csirmaz, <span 
-class="cmti-10">Aleph Compiler, v2.4</span>, available at<br>
-   <a href="https://lcsirmaz.github.io/aleph/alephcomp.html" target="_blank_"><span 
+class="cmti-10">Aleph Compiler, v2.5</span>, available at<br>
+   <a href="https://lcsirmaz.github.io/aleph/alephcomp.html" target="blank_"><span 
 class="ec-lmtt-9x-x-102">https://lcsirmaz.github.io/aleph/alephcomp.html</span></a>
    </p>
    <p class="bibitem" ><span class="biblabel">
  [2]<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
- id="Xmanual"></a>D.&#x00A0;Grune,   R.&#x00A0;Bosch,   L.&#x00A0;G.&#x00A0;L.&#x00A0;T&#x00A0;   Meertens.   <span 
-class="cmti-10">Aleph   Manual   </span>in:
-   D.&#x00A0;Grune,  R.&#x00A0;Bosh:  <span 
-class="cmti-10">On  the  design  of  ALEPH</span>,  <span 
-class="cmti-10">Mathematical  Centre</span>,
-   Amsterdam, 1986
+ id="Xmanual"></a>R.&#x00A0;Bosch, D.&#x00A0;Grune, L.&#x00A0;G.&#x00A0;L.&#x00A0;T.&#x00A0;Meertens, <span 
+class="cmti-10">ALEPH Manual</span>, fourth printing, <span 
+class="cmti-10">Mathematical Centre</span>, Amsterdam, 1982. Also in: D.&#x00A0;Grune, <span 
+class="cmti-10">On the design of ALEPH</span>, PhD thesis, Universiteit van Amsterdam, 1982, pp.&#x00A0;131&#8211;194; CWI Tract&#x00A0;13, <span 
+class="cmti-10">Centre for Mathematics and Computer Science</span>, Amsterdam, 1986
    </p>
    <p class="bibitem" ><span class="biblabel">
  [3]<span class="bibsp">&#x00A0;&#x00A0;&#x00A0;</span></span><a 
@@ -9319,5 +9327,6 @@ class="cmbx-10">8</span>, pp
 </body></html> 
 
                                                                   
+
 
 

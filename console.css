@@ -10,8 +10,11 @@
 .console-combo {
     position:relative; left: 30px; top: 0px;
     margin: 5px;
-  .con-sep1{ height: 2px; }
-  .console-inner {
+}
+.console-combo .con-sep1{ height: 2px; }
+.console-combo .con-sep1,.console-combo .con-sep2,.console-combo .con-impt{ flex:none; }
+.console-combo .console-inner { /* column: stdout takes the free space, stdin always visible */
+    display:flex; flex-direction:column;
     border: 1px solid #aaa;
     min-width: 20em;
     min-height: 10em;
@@ -20,15 +23,14 @@
     resize: both;
     overflow:hidden;
     background-color: #f0f0f0;
-  }
-  #con-stdout{height:42em;}
-  #con-stderr{height:4em;}
-  #con-stdout,#con-stderr {
-    resize:vertical;
+}
+.console-combo #con-stdout{height:42em; flex:1 1 auto; min-height:3em;}
+.console-combo #con-stderr{height:4em; flex:0 1 auto; min-height:2em; resize:vertical;}
+.console-combo #con-stdout,.console-combo #con-stderr {
     outline:none;
     border:1px solid #b0c0d0;
-  }
-  textarea { white-space: pre-wrap; word-break: break-all; resize:none;
+}
+.console-combo textarea { white-space: pre-wrap; word-break: break-all; resize:none;
     display:block; /* without this there is a 2px margin */
     overflow-wrap:anywhere;
     overflow-x:hidden;
@@ -38,14 +40,14 @@
     box-sizing:border-box;
     font-family:Monaco,"Dejavu Sans Mono",monospace;
     font-size: var(--con-fontsize);
-  }
-  #con-stdin {
+}
+.console-combo #con-stdin {
     overflow-y:hidden;
     height: auto;
     field-sizing: content;
-  }
-  #con-stdin:focus-visible {outline:1px solid #a0b0c0;}
-  #con-prompt {
+}
+.console-combo #con-stdin:focus-visible {outline:1px solid #a0b0c0;}
+.console-combo #con-prompt { /* fixed height: the layout does not jump when emptied */
+    display:block; min-height:1.25em;
     font-family:Monaco,"Dejavu Sans Mono",monospace;
     font-size:var(--con-fontsize); color:#777;}
-}

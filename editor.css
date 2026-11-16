@@ -38,25 +38,27 @@ body {
   grid-template-columns: auto 1fr auto;
   grid-template-rows: 1fr;
   gap: 0;
-  
-   button {
+  position: sticky; /* stays visible when the lines are scrolled */
+  top: 0;
+  z-index: 3;       /* above the lines (z-index 1,2) */
+}
+.gutter-wrapper > .aetitle button {
   border-radius: 4px;
   border: 1px solid #a0a0a0;
   background-color: #e5e5e3;
   color: #101010;
-  }
-   button:hover {
+}
+.gutter-wrapper > .aetitle button:hover {
   background-color: #f7f7e7;
   cursor:pointer;
-  }
-   button:active {
-   background-color: #f372bc;
-    cursor:pointer;
-  }  
-   button:disabled{
-    color: #a0a0a0;
-    cursor: default;
-   }
+}
+.gutter-wrapper > .aetitle button:active {
+  background-color: #cfcfcc;
+  cursor:pointer;
+}
+.gutter-wrapper > .aetitle button:disabled{
+  color: #a0a0a0;
+  cursor: default;
 }
 
 .gutter-wrapper .aesave {
