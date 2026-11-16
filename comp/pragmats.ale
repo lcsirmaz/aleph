@@ -88,7 +88,7 @@ $ pragmat ID
    pgt text		=0x5607,  $ give text: on/off
    pgt compile		=0x5608,  $ compile:  on/off
    pgt dict             =0x5609,  $ dictionary: on/off
-   pgt bounds           =0x5601,  $ bounds: on/off
+   pgt bounds           =0x560a,  $ bounds: on/off
    pgt trace            =0x560b,  $ trace
    pgt count            =0x560c,  $ count
    pgt stdlib           =0x560d,  $ include std library on/off

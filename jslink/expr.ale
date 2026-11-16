@@ -60,6 +60,7 @@ $ read expressions, make sanitary checks for ID types
 'constant'tnodef=timported|texternal.
 
 'a'check list type+>item:
+    is item flag+item+texternal,reject external in expression+item;
     (=type*ITEM[item]=
       [Itable;Istack;Istatic stack],is item flag+item+tnodef;
       +), corrupt ice file+_rule_;
@@ -70,6 +71,7 @@ $ read expressions, make sanitary checks for ID types
       +), corrupt ice file+_rule_;
     +.
 'a'check constant type+>item+>strict:
+    is item flag+item+texternal,reject external in expression+item;
     (=type*ITEM[item]=
        [Ipointer constant],(strict=1;is item flag+item+tnodef);
        [Iconstant],is item flag+item+tnodef;
@@ -79,7 +81,7 @@ $ read expressions, make sanitary checks for ID types
 
 'a'read expression-item-ptr:
    $ I5 12 *(3 /'calibre'I2 +'lwb'I2 ^'upb'I3 )+-3 *'calibre'I3 &-12 .
-   must+Titem+item,check constant type+item+1,
+   must+Titem+item,item->expr item,check constant type+item+1,
      (adm*ITEM[item]=0;corrupt ice file+_rule_),
      push EXPR+item,>>EXPRESSION->ptr,push EXPR+link expr,ptr->link expr,
      >>EXPRESSION->adm*ITEM[item],(nxt:=inpt=
@@ -101,8 +103,15 @@ $ evalute expressions which do not depent on limits or
 $  pointer constants. Size estimates and repeaters must have
 $  a value after this round
 'table'MESSAGE=(
-  "%p: constant definition refers to itself (%i)": constant refers to itself
+  "%p: constant definition refers to itself (%i)": constant refers to itself,
+  "%p: division by zero (%i)": division by zero,
+  "%p: external %p cannot be used in a constant expression (%i)": external in expression
 ).
+'variable'expr item=0. $ the constant whose expression is being read
+'a'reject external in expression+>item:
+   error+external in expression+tag*ITEM[expr item]+tag*ITEM[item]+expr item.
+'variable'eval item=0,     $ the constant being evaluated
+          div zero item=0. $ the last one reported for division by zero
 'variable'eptr=0.
 'p'E+>x:
     EXPRESSION[eptr]=x,incr+eptr.
@@ -130,7 +139,13 @@ $   operator+>op+>reg2+>reg1, free register reg2
   [Dplus],reg operator+Aplus+w+v;
   [Dminus],reg operator+Aminus+w+v;
   [Dstar], reg operator+Atimes+w+v;
-  [Ddiv], reg operator+Adiv+w+v.
+  [Ddiv], (reg compare+Aeq0+w,
+             (div zero item=eval item; $ report only once
+              eval item->div zero item,
+              set item source+eval item,
+              error+division by zero+tag*ITEM[eval item]+eval item);
+           +),
+          reg operator+Adiv+w+v.
 
 'p'loose base+v>:  $ return the value in a register
    E+Dopen,loose expr+0+v,E+Dclose;
@@ -149,17 +164,19 @@ $   operator+>op+>reg2+>reg1, free register reg2
    clear item flag+item+teval,v->repr*ITEM[item],
      set item flag+item+tvalue.
 
-'a'loose eval+>item-oldptr-v:
+'a'loose eval+>item-oldptr-v-olditem:
    (is item flag+item+timported,internal error+_rule_;
    is item flag+item+tvalue); $ it has been computed
    is item flag+item+teval,
+         set item source+item,
          error+constant refers to itself+tag*ITEM[item]+item,
          get number zero+v,set final value+v+item;
    set item flag+item+teval,eptr->oldptr,adm*ITEM[item]->eptr,incr+eptr,
+      eval item->olditem,item->eval item,
       (was+EXPRESSION+eptr;corrupt ice file+_rule_),
       (loose expr+0+v,store register+v+v,set final value+v+item;
        clear item flag+item+teval),
-      oldptr->eptr.
+      oldptr->eptr,olditem->eval item.
 'a'loose evaluation-ptr:
    was error;
    link expr->ptr,(nxt:ptr=0;
@@ -187,16 +204,18 @@ $   release the EXPRESSION stack
 'a'final expr+>prio+v>-op-p-w: $ v is a register
    final base+v,(nxt:Eop+prio+op+p,final expr+p+w,optor+op+w+v,:nxt;+).
 
-'a'final eval+>item-v-oldptr:
+'a'final eval+>item-v-oldptr-olditem:
    (is item flag+item+timported,internal error+_rule_;
    is item flag+item+tvalue); $ has been computed
    is item flag+item+teval,
-      error+constant refers to itself+tag*ITEM[item]+item,
+      set item source+item,
+         error+constant refers to itself+tag*ITEM[item]+item,
       get number zero+v,set final value+v+item;
    set item flag+item+teval,eptr->oldptr,adm*ITEM[item]->eptr,incr+eptr,
+      eval item->olditem,item->eval item,
       (was+EXPRESSION+eptr;corrupt ice file+_rule_),
       final expr+0+v,store register+v+v,set final value+v+item,
-      oldptr->eptr.
+      oldptr->eptr,olditem->eval item.
 'a'final evaluation-ptr:
    link expr->ptr,(nxt:ptr=0;
      final eval+EXPRESSION[ptr],incr+ptr,EXPRESSION[ptr]->ptr,:nxt),

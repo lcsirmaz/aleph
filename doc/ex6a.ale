@@ -1,0 +1,6 @@
+'pragmat'title="printing permutations".
+'pragmat'require="perm".
+\smallskip
+'stack'[]T[]=(/a/,/b/,/c/,/d/).
+'root'(nxt: put line+STDOUT+T+newline,(next perm+T,:nxt;+)).
+'end'

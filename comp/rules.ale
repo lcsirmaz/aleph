@@ -65,7 +65,7 @@ $ ============================================================== $
 "rule %p: formal list with different calibre"
                                         :different calibre,
 "rule %p: formal selector syntax"       :wrong formal selector,
-"rule $p: formal selector tag expected" :formal selector tag expected,
+"rule %p: formal selector tag expected" :formal selector tag expected,
 "rule %p: formal affix syntax"          :formal tag expected,
 "rule %p: symbol %p is expected here"   :expected,
 "rule %p: error in rule head"           :in rule head,

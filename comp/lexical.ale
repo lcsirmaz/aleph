@@ -276,8 +276,8 @@ $ COMPOSITE SYMBOLS *******************************************
   $ look ahead after - skipping spaces
   =char=
   [/ /], next char, :read minus with spaces; $ skip spaces
-  [/0/], next char, read zero+1+x;
-  [/1/:/9/], read const+1+x;
+  [/0/], next char, 1->optor, read zero+1+x;
+  [/1/:/9/], 1->optor, read const+1+x;
   Sminus->x.
 $ CONSTANTS *************************************************** 
 'a'read zero+>sign+x>:

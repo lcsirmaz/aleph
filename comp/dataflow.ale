@@ -436,7 +436,7 @@ $   inout         E       E     E      .    .M     .M
  "%mlimit with ""%p"" cannot be used":limit cannot be used,
  "%m%p %p has incompatible type (%l)":provides wrong type,
  "%mdummy affix cannot be used here" :wrong dummy affix,
- "%m""%p"" maybe wrong index"        :maybe wrong index,
+ "%m""%p"" may be wrong index"        :maybe wrong index,
 
  "%maffix ""%p"" has calibre different from %d" :actual calibre different,
  "%mstandard selector of ""%p"" is different" :actual ssel different,
@@ -722,7 +722,7 @@ $ EXTENSION ------------------------------------------ $
 'table'MESSAGE=(
  "extension %p: must be a stack (%p)":stack expected,
  "extension %p: field #%d defined twice":field doubly filled,
- "extension %p: not consecutive fiedls" :wrong extension block,
+ "extension %p: not consecutive fields" :wrong extension block,
  "extension %p: block size %d is smaller than calibre (%d)":short extension block
 ).
 
@@ -758,7 +758,8 @@ $ EXTENSION ------------------------------------------ $
 'a'extension-tag-type-calibre:
    must Ltag+tag,get type+tag+type,(=type=
      [Istatic stack],
-        (is tag flag+tag+timported,error+stack expected+tag+type;
+        (is tag flag+tag+timported,error+stack expected+tag+type,
+            Qskip+Dextension;
          get calibre+tag+calibre,transport+tag+calibre);
      [Istack],get calibre+tag+calibre,transport+tag+calibre;
      [Iformal stack],get local calibre+tag+calibre,

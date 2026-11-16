@@ -480,7 +480,7 @@ $
        first line offset+n,
        Xwarning+2+n+module redefined+mtag+string*INPUT[ptr];
     this source>=std lib offset; $ no warning for conflict in standard library
-    Xwarning+2+0+same module+string*INPUT[this source]+string*INPUT[ptr]+mtag.
+    Xwarning+5+0+same module+string*INPUT[this source]+string*INPUT[ptr]+mtag.
 
 'a'check same module tag+>old-ptr:
     this source->ptr,next+INPUT+ptr,

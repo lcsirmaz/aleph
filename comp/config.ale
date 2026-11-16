@@ -20,7 +20,7 @@ $ *************************************************************
 
 $ HEADER ****************************************************** $
 'constant' version major=2,
-           version minor=4.
+           version minor=5.
 'constant' target word size=32,
            max string length=8192.
 'constant' path separator=/:/,           $ or /;/ for MS 
@@ -73,10 +73,10 @@ $ BODY ******************************************************** $
  "If no output is specified, the name of the .ice file is derived from%n"
  "the first source file and generated in the current directory."
  : help message,
- "ALEPH-M to ICE complier version %d.%d%n"
+ "ALEPH-M to ICE compiler version %d.%d%n"
  "Copyright (C) 2020-2025 Laszlo Csirmaz%n"
  "This is a free software, see the source at https://github.com/lcsirmaz/aleph%n"
- "for copyright information. There is NO WARRANTY; not even merchantibility or%n"
+ "for copyright information. There is NO WARRANTY; not even merchantability or%n"
  "fitness for a particular purpose." 
  : version message
 ).

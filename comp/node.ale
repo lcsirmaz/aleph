@@ -283,8 +283,8 @@ $ actual rule --------------------------------------- $
    next+LLOC+ptr,(=ftype*LLOC[ptr]=
      [Ilabel],+;
      [Iformal in],   g handle affix+ptr+Uin,:g handle shiftrule;
-     [Iformal out],  g handle affix+ptr+Uout,:g handle shiftrule;
-     [Iformal inout],g handle affix+ptr+Uinout,:g handle shiftrule;
+     [Iformal out],  g handle affix+ptr+Uin,:g handle shiftrule; $ value goes to the caller
+     [Iformal inout],g handle affix+ptr+Uin,:g handle shiftrule; $ no set: would only warn
      :g handle shiftrule).
      
 'p'g limit:
@@ -714,16 +714,12 @@ $ replacement for L*L[>>L], figure out the standard selector
   (cnt>n;:w before vararg block).
 'a'w before shiftrule+>ptr:
   next+LLOC+ptr,(=ftype*LLOC[ptr]= [Ilabel],+;
-    [Iformal in;Iformal inout],push RULE+Uuse+0,:w before shiftrule;
+    [Iformal in;Iformal inout;Iformal out],push RULE+Uuse+0,:w before shiftrule;
     :w before shiftrule).
 'a'w after vararg block+>ptr+>tag+>n+>cnt-ftype:
   next+LLOC+ptr,get formal type+tag+cnt+ftype,incr+cnt,
   (=ftype=[Iformal out;Iformal inout],push RULE+Uset+0;+),
   (cnt>n;:w after vararg block).
-'a'w after shiftrule+>ptr:
-  next+LLOC+ptr,(=ftype*LLOC[ptr]= [Ilabel],+;
-   [Iformal out;Iformal inout],push RULE+Uset+0,:w after shiftrule;
-   :w after shiftrule).
 
 'a'w simple affix+>utype+anchor>-tag-type-local-x:
    0->anchor,
@@ -819,7 +815,7 @@ $ replacement for L*L[>>L], figure out the standard selector
     0->flabel), $ w label+flabel
    w after affixes+tag+n+oldBUFF+count+frep,
    (frep=0;
-    tag=Xshift affix,w after shiftrule+frep;
+    tag=Xshift affix; $ the shift sets nothing
     is tag flag+tag+rshiftrule;
     w after vararg block+frep+tag+n+anchor),
    push RULE+Utrue+0,w label+flabel,w label+RULEtop,W+Dcomma,

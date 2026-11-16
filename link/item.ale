@@ -69,6 +69,8 @@ $ error information about an item
    $ %i format: find line/source (module) for an item
 'f'find lineno+>old+line>+str>.
    $ %l format: find the line number in this module
+'a'set item source+>item.
+   $ messages between passes: report in the .ice file of item's module
 
 $ item flags $
 'constant'
@@ -484,6 +486,10 @@ $ find position ******************************************* $
    first module->ptr,
    (nxt:repr*ITEM[ptr]->nptr,((is+nptr,nptr<item),nptr->ptr,:nxt;+)),
    tag*ITEM[ptr]->module,search for line+ptr+lineno*ITEM[item]+line+str.
+'a'set item source+>item-ptr-nptr:
+   first module->ptr,
+   (nxt:repr*ITEM[ptr]->nptr,((is+nptr,nptr<item),nptr->ptr,:nxt;+)),
+   set source+type*ITEM[ptr].
 
 $ find definitions **************************************** $
 $ determine which modules should be kept

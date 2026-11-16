@@ -1,6 +1,5 @@
-$ towers of hanoi, full printing of the towers $
-'charfile'print="output">.
-'stack'[1]a,[1]b,[1]c.
+'pragmat'title="Towers of Hanoi, full printing".
+'stack'[=size=]a[],[=size=]b[],[=size=]c[].
 'constant'size=5.
 \smallskip
 'action'move tower+>length+[]from[]+[]via[]+[]to[]:
@@ -9,30 +8,26 @@ $ towers of hanoi, full printing of the towers $
    move disc+from+to,print towers,
    move tower+length+via+from+to.
 'action'move disc+[]st1[]+[]st2[]:
-   * st1[>>st1]-> st2 *st2, unstack+st1.
+   (* st1[>>st1]-> st2 *)st2, unstack+st1.
 \smallskip
 'action'print towers-ln:
    size->ln,
   (lines:
      ln=0;
-     print disc+a+ln,printdisc+b+ln,
-     print disc+c+ln,put char+print+new line,
-     decr+ln,:lines).
-'action'print disc+[]st[]+>line-index:
-   minus+line+1+index,plus+index+<<st+index,
+     print disc+a+ln, printdisc+b+ln, print disc+c+ln,
+     print char+new line, decr+ln,:lines).
+'action'print disc+st[]+>line-index:
+   subtr+line+1+index,add+index+<<st+index,
    (was+st+index,print actual disc+st[index];
     print blank disc).
 'action'print actual disc+>nmb-spc:
-   minus+size+nmb+spc,
+   subtr+size+nmb+spc,
    repeat+spc+/ /,repeat+nmb+/*/,repeat+1+/*/,
    repeat+nmb+/*/,repeat+spc+/ /.
 'action'print blank disc:
    repeat+size+/ /,repeat+1+/ /,repeat+size+/ /.
-'action'repeat+>cnt+>sb:
-   cnt=0; put char+print+sb,decr+cnt,:repeat.
-'action'play towers-n:
-   size->n,
-   (fill a: n=0; decr+n, * n->a *a, :fill a),
+'action'repeat+>cnt+>ch:
+   cnt=0; print char+ch,decr+cnt,:repeat.
+'root'-n: size->n,(fill a: n=0; decr+n, (* n->a *)a, :fill a),
    print towers,move tower+size+a+b+c.
-'root'play towers.
 'end'

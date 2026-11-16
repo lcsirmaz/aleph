@@ -200,22 +200,24 @@ $  link lists links all lists, ending with a -1 (not zero)
 
 'table'MESSAGE=(
   "%p: relative size estimator %d is out of range (%i)":relative size estimator,
-  "%p: size estimator %d is out or range (%i)":fix size estimator,
+  "%p: size estimator %d is out of range (%i)":fix size estimator,
   "%p: size estimator %p has no value (%i)":unknown estimator
 ).
 
 'a'relative size+>x+>item:
-   ((x<1;x>100),warning+relative size estimator+tag*ITEM[item]+x+item;+),
+   ((x<1;x>100),set item source+item,
+      warning+relative size estimator+tag*ITEM[item]+x+item;+),
    min+100+x,max+1+x,subtr+0+x+x,put vupb+item+x.
 'a'fix size+>x+>item:
-   ((x<1;x>max stack size),warning+fix size estimator+tag*ITEM[item]+x+item;+),
+   ((x<1;x>max stack size),set item source+item,
+      warning+fix size estimator+tag*ITEM[item]+x+item;+),
    min+max stack size+x,max+1+x,put vupb+item+x.
 'p'get const value+>tag+x>:
    get item def+tag,is item flag+tag+tvalue,
            get target number value+repr*ITEM[tag]+x.
 'a'get estimator+>tag+>list+x>:
    get const value+tag+x;
-   1->x,error+unknown estimator+tag*ITEM[list]+tag*ITEM[tag]+list.
+   1->x,set item source+list,error+unknown estimator+tag*ITEM[list]+tag*ITEM[tag]+list.
 
 $ *************************************************************
 $ read data section second time *******************************

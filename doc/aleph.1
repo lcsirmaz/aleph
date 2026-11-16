@@ -1,0 +1,284 @@
+.\" Manual page for the ALEPH-M tools: acomp, aopt, alink, jslink
+.TH ALEPH 1 "November 2026" "ALEPH-M v2.5" "ALEPH-M tools"
+.SH NAME
+acomp, aopt, alink, jslink \- compile, optimize and link ALEPH programs
+.SH SYNOPSIS
+.B acomp
+.RI [ options ]
+.IR file " ..."
+.br
+.B aopt
+.RB [ \-no\-rule ]
+.RB [ \-o
+.IR output ]
+.I input
+.br
+.B alink
+.RI [ options ]
+.IR file " ..."
+.br
+.B jslink
+.RI [ options ]
+.IR file " ..."
+.PP
+Each program also accepts
+.B \-\-help
+and
+.BR \-\-version .
+.SH DESCRIPTION
+An ALEPH program consists of a main program and any number of modules,
+each in its own source file with extension
+.BR .ale .
+Building a program takes three steps.
+.TP
+.B acomp
+compiles one source file (a main program or a module) into an
+intermediate file with extension
+.BR .ice .
+The .ice file is a readable text; among others it contains every rule as
+a graph of calls with success and failure continuations.
+.TP
+.B aopt
+optimizes an .ice file: removes entries which are not used, and merges
+identical nodes in the rule graphs.
+This step is optional.
+.TP
+.B alink
+links the .ice files of the main program, of all modules, and of the
+standard library into a single C program, to be compiled by a C compiler
+together with the files of the runtime core.
+.TP
+.B jslink
+does the same as
+.BR alink ,
+but generates a JavaScript program, which runs on top of the JavaScript
+runtime environment
+.BR alephRE.js .
+.PP
+The word size is 32 bits for both targets.
+.SH ACOMP
+The file arguments are source files; the extension
+.B .ale
+can be omitted.
+Usually a single source file is given, and each module is compiled
+separately.
+Modules mentioned in
+.B require
+pragmats are read (only their public parts are used), but they are not
+compiled.
+.SS Global options
+A later option of the same kind replaces an earlier one.
+.TP
+.BI \-o " file"
+The output file; the extension
+.B .ice
+is added.
+Without this option the name is derived from the first source file, and
+the output is written to the current directory.
+.TP
+.BI \-I " dir" : dir...
+Colon separated list of directories searched for source files.
+.TP
+.BI \-L " dir"
+The directory containing the standard library source
+.BR stdlib.ale .
+The default search path is
+.BR ./aleph:/usr/local/aleph .
+.SS Local options
+These are reset after each source file.
+.TP
+.B \-W
+Set the warning level to 3; the default is 4 (and 6 while reading
+library modules).
+Warnings below the warning level are not shown.
+.TP
+.B \-Wall
+Set the warning level to 0: show all warnings.
+.TP
+.B \-l
+Print the program text
+.RB ( list=on ).
+.TP
+.B \-d
+Print the dictionary of tag occurrences
+.RB ( dictionary=on ).
+.SS Other options
+.TP
+.BI \-D " tag"
+Same as the pragmat
+.BI define= tag\fR.
+.TP
+.BI \-m " file"
+Same as the pragmat
+.BI require=\(dq file \(dq\fR.
+.TP
+.BI \-y " file"
+Same as the pragmat
+.BI library=\(dq file \(dq\fR:
+process
+.I file
+as a user library.
+.TP
+.BI \-\- name = value
+Processed as
+.BI 'pragmat' name = value\fR.
+.PP
+If there are errors, no .ice file is written.
+.SH AOPT
+.TP
+.I input
+The .ice file to be optimized; the extension can be omitted.
+.TP
+.BI \-o " output"
+Write the optimized code to
+.IR output .
+Without this option
+.I input
+is replaced by the optimized code.
+.TP
+.B \-no\-rule
+Remove unused entries only; do not optimize the rule graphs.
+.SH ALINK
+The file arguments are the .ice files of the main program and of all
+modules it requires, in any order; the extension can be omitted.
+Exactly one of them must be a main program.
+The standard library is added automatically.
+.TP
+.BI \-o " target"
+The output file; the extension
+.B .c
+is added.
+Without this option the name of the main .ice file is used, and the
+output is written to the current directory.
+.TP
+.BI \-L " dir"
+The directory containing the compiled standard library
+.BR stdC.ice .
+The default search path is
+.BR ./aleph/stdice:/usr/local/aleph .
+.TP
+.B \-no\-stdlib
+Do not add the standard library.
+.TP
+.B \-W
+Report public items which are not used.
+.TP
+.B \-g
+Link with call stack information, used by the library rule
+.B backtrack
+and in the report printed when the program is aborted.
+.PP
+Constant expressions, list sizes, virtual addresses and classification
+areas are evaluated and checked by the linker, thus errors in them are
+reported at this stage.
+The generated C file is compiled together with the runtime core, for
+example
+.PP
+.nf
+.RS
+gcc \-O2 \-I stdcore \-o prog prog.c stdcore/*.c
+.RE
+.fi
+.SH JSLINK
+The file arguments and the options
+.BR \-o ,
+.BR \-L ,
+.B \-W
+and
+.B \-g
+are the same as for
+.BR alink ,
+with the following differences.
+The extension of the output file is
+.BR .js ;
+the compiled standard library is
+.BR stdjs.ice ,
+and the default search path is
+.BR ./aleph:/usr/local/aleph .
+.TP
+.B \-nostdlib
+Do not add the standard library.
+(Note the spelling: the corresponding
+.B alink
+option is
+.BR \-no\-stdlib .)
+.TP
+.B \-noasync
+Do not generate asynchronous calls.
+By default the generated code is asynchronous, so that the program can
+wait for input, e.g., from a console, without blocking.
+.TP
+.BI \-\-RE= file
+The name of the runtime library script the generated program loads; the
+default is
+.BR alephRE.js .
+.SH EXAMPLES
+Compile the main program
+.B prog.ale
+and the module
+.BR mod.ale ,
+link them, and build the executable:
+.PP
+.nf
+.RS
+acomp \-I stdlib \-o work/prog prog
+acomp \-I stdlib \-o work/mod mod
+aopt work/prog
+aopt work/mod
+alink \-L stdC \-o work/prog work/prog work/mod
+gcc \-O2 \-I stdcore \-o work/prog work/prog.c stdcore/*.c
+.RE
+.fi
+.PP
+Link the same .ice files into a JavaScript program:
+.PP
+.nf
+.RS
+jslink \-L stdjs \-o work/prog.js work/prog work/mod
+.RE
+.fi
+.PP
+Compile with all warnings and with a program listing:
+.PP
+.nf
+.RS
+acomp \-Wall \-l \-I stdlib prog
+.RE
+.fi
+.SH RUNNING THE PROGRAM
+Command line arguments of a compiled C program are available to the
+ALEPH program in the list
+.BR STDARG .
+If the program was compiled with the pragmat
+.BR trace=on ,
+tracing output is printed only when the first argument is
+.BR \-T .
+.SH FILES
+.TP
+.B stdlib.ale
+source of the standard library heads, read by
+.B acomp
+.TP
+.B stdC.ice
+compiled standard library for the C target, read by
+.B alink
+.TP
+.B stdjs.ice
+compiled standard library for the JavaScript target, read by
+.B jslink
+.TP
+.B stdcore/
+C sources and header files of the runtime core
+.TP
+.B alephRE.js
+JavaScript runtime environment
+.SH SEE ALSO
+.IR "ALEPH Manual" ,
+revised edition for the Aleph Compiler v2.5;
+.IR "Aleph Compiler, v2.5" ;
+both at
+.BR https://lcsirmaz.github.io/aleph/ .
+The sources are at
+.BR https://github.com/lcsirmaz/aleph .
+.SH AUTHOR
+Laszlo Csirmaz

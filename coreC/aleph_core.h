@@ -166,7 +166,7 @@ extern void a_list_fill(int *fill);
 *  compare an ALEPH atring and a C string for equality
 *    sID,soff list and pointer the an ALEPH string
 *    str      a C string
-*  return value: 1 - equal, 0 - not equal
+*  return value: as strcmp(): 0 - equal, nonzero - not equal
 *
 * void a_fatal(int code)
 *  abort the ALEPH program after an error
@@ -285,7 +285,7 @@ void a_trace_rule(const char*rname,int affixno,...);
 * list access with bound check
 *
 *  With bound checking enabled, list access is translated to
-*    to_LIST(L)->offset[a_listelem(L,idx,selector,rulename)]
+*    to_LIST(L)->offset[a_listelem(L,idx,rulename)]
 *  the procedure a_listelem() is defined here to be inlined
 *
 ********************************************************************/

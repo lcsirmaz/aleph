@@ -4,13 +4,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% grammar is typeset in \sf font.
 %% the {grammar} environment uses lines with \tem
-% add extra sapce around []
+% add extra space around []
 {\catcode`\[=\active\catcode`\]=\active%
 \gdef\mkoptions{\catcode`\[\active\def[{\kern0.05em\char91\kern0.12em\relax}%
 \catcode`\]\active\def]{\kern0.1em\char93\kern0.05em\relax}%
 }}%
 \newcommand\g[1]{{\color{blue!50!black}\sf #1}}
-%\renewcommand\ast{\,\raisebox{-0.2ex}{\bt*}}
 \renewcommand\ast{\kern0.08em{\tt*}}%{\,{\bt*}}
 \newcommand\plus{\kern0.08em{\tt+}}%{\,{\bt+}}
 \newcommand\no[1]{}
@@ -115,25 +114,10 @@
 \catcode`\>\active\def>{\char62\relax}%
 \catcode`\#=12\catcode`\^=12%
 \GREEN%
-%\tt
 }%
 }
 %% moving :: closer
 \def\cc{\kern-0.2pt:\kern-1pt:\kern-0.5pt}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% subsubsubsection
-%\makeatletter
-%\setcounter{secnumdepth}{4}
-%\newcounter{subsubsubsection}[subsubsection]
-%\newcommand*\l@subsubsubsection{\@dottedtocline{4}{7.0em}{4.1em}}
-%\renewcommand\thesubsubsubsection{\thesubsubsection.\@arabic\c@subsubsubsection}
-%\newcommand\subsubsubsectionmark[1]{}
-%\newcommand\subsubsubsection{%
-%\@startsection{subsubsubsection}{4}{\z@}%
-%   {-3.25ex\@plus -1ex \@minus -.2ex}% {3.25ex \@plus1ex \@minus.2ex}
-%   {1ex \@plus .5ex}%             {-1em}
-%   {\normalfont\normalsize\bfseries}}
-%\makeatother
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% keywords in two columns (7.2)
 \makeatletter
@@ -146,7 +130,6 @@
    \qquad }%
 }{}
 \makeatother
-\long\def\ignore#1\endignore{}
 
 \hyphenation{name-space}
 
@@ -160,15 +143,45 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand\A{{\sf ALEPH}}
 
-\title{Aleph Manual}
-%\author{D. Grune \and R. Bosch \and L.G.L.T Meertens}
-%\date{Fourth printing, 1982}
-\author{Laszlo Csirmaz}
-\date{April 29, 2025}
-
+\title{}\author{}\date{}
 
 \begin{document}
-\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% manual version of \maketitle
+\newpage\null\vskip 2em
+\begin{center}%
+{\LARGE \sf ALEPH Manual}
+
+\vskip 1.5em
+
+{\large Revised for the {\sf ALEPH Compiler v2.5}$^*$}
+
+\vskip 2.0em
+
+{\large L. Csirmaz$^\dagger$}
+
+\vskip 0.7em
+
+November 2026
+
+\vskip 2.0em
+{\large $^*$}\begin{minipage}[t]{0.8\textwidth}{\raggedright}
+Based on the original {\sf ALEPH Manual} by 
+R.\,Bosch, D.\,Grune and L.\,G.\,L.\,T.\,Meertens,
+fourth printing, Mathematisch Centrum, Amsterdam, 1982
+\end{minipage}
+
+\vskip 0.5em
+
+{\large $^\dagger$}\begin{minipage}[t]{0.8\textwidth}{\raggedright}
+R\'enyi Institute, Budapest, and UTIA, Prague
+\end{minipage}
+
+\end{center}%
+\par
+\vskip 1.5em
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section*{Preface}
 
@@ -209,6 +222,19 @@ This version describes the language as it has been implemented in
 fourth printing from 1982 \cite{manual}. Many paragraphs have been kept
 identical, while many others were rewritten to reflect the implemented
 language.
+
+\section*{Acknowledgments}
+
+The original {\A} Manual was written by R.\,Bosch, D.\,Grune and
+L.\,G.\,L.\,T.\allowbreak Meertens, and was published by the Stichting Mathematisch
+Centrum (now CWI), Amsterdam \cite{manual}. Large parts of the present text, including
+the tutorial in \hyperref[sec:1]{Chapter 1} and many of the examples, are
+reproduced from it with only minor changes. The present revision is an
+independent work: the original authors took no part in its preparation, and
+the reviser alone is responsible for the changes and for any errors they may
+contain. {\A} owes much to the affix
+grammars and the compiler description language {\sf CDL} of
+C.\,H.\,A.\,Koster \cite{koster71b}.
 
 \newpage
 \setcounter{tocdepth}{3}
@@ -401,9 +427,6 @@ error will be signaled. \pp|no paren| is a constant that will be specified
 later on.
 
 Writing a rule for reading an integer is trickier than it seems to be.
-%For a comprehensive account on how to obtain correct and incorrect versions
-%of it the reader is referred to \cite{koster71a}. We shall confine ourselves to
-%giving one correct version.
 Our version consists of two rules and is about as complicated as necessary.
 \begin{program}
 'action'integer+res>:
@@ -504,12 +527,6 @@ dummy question that always fails, denoted by the dash---will be chosen. The rule
 assuming that \pp|between+/0/+buff+/9/| succeeds if and only if the value of
 \pp|buff| is between \pp|/0/| and \pp|/9/|. Classification is analogous to the
 case statement in other programming languages.
-
-%All the arithmetic used here on symbols is based on the assumption that the
-%numerical codes associated with the characters \pp|0| through \pp|9| are a
-%set of consecutive integers in ascending order. The numerical value of a
-%digit symbol can then indeed be obtained by subtracting the code for \pp|0|
-%from its numerical value.
 
 One more input rule must be supplied:
 \begin{program}
@@ -712,7 +729,7 @@ to the head. The lack of the square brackets after the tag indicates
 that this is a \g{prototype} and not a \g{declaration}.
 
 The module body is enclosed between conditional \g{pragmat}\/s to ensure
-that it is executed only when the module is compiled. The module body must
+that it is processed only when the module is compiled. The module body must
 also contain a \g{root}. This root is executed before the main root, so it can
 perform all necessary initializations. If no initializations are necessary,
 this root can consist of a sole dummy action, written as \pp|'root'+.|
@@ -754,14 +771,14 @@ module using the ``require'' pragmat as follows:
 'pragmat'require="base".
 \end{program}
 \noindent
-This pragmat specifies the source file name (possibly with path information and
-without extension) enclosed in quote marks, and not the module name. The main program could use
+This pragmat specifies the source file name (possibly with path information;
+the extension \pp|.ale| can be omitted) enclosed in quote marks, and not the module name. The main program could use
 rules, variables, constants, tables, etc., exported by the module exactly the same
 way as if they were declared there. Error strings can be added to the \pp|strings|
 table exported by our module using \g{filling}\/s, which can spread across
 the main program, such as
 \begin{program}
-'table'strings=("Right parent missing":no paren).
+'table'strings=("Right parenthesis missing":no paren).
 'table'strings=("Integer missing":no int,
                 "Extra characters":no end).
 \end{program}
@@ -778,7 +795,7 @@ expressed in \A. We first propose the preliminary version \pp|put string 1|.
 \smallskip
 'action'next1+""out+tbl[]+>str+>cnt-symb:
    string elem+tbl+str+cnt+symb,put char+out+symb,
-     inc+cnt,next1+out+tbl+str+cnt;
+     incr+cnt,next1+out+tbl+str+cnt;
    +.
 \end{program}
 \noindent
@@ -869,7 +886,7 @@ version in \Ref{Section 1.2} exactly one must start from
 and
 \begin{program}
 'action'expression tail 3+>res>+r>:
-   is+symbol+/+/,expression 3+r,add+res+r+res;+.
+   is symbol+/+/,expression 3+r,add+res+r+res;+.
 \end{program}
 
 \subsection{Variable number of affixes}\label{1.9}
@@ -930,7 +947,7 @@ sends an unspecified number of strings to a particular \A{} file, say to
 \pp|STDOUT|, as follows.
 \begin{program}
 'action'print strings+@+table[]+>string:
-   put many string+STDOUT+@.
+   put many strings+STDOUT+@.
 \end{program}
 
 
@@ -946,7 +963,7 @@ semicolons; successive notions in an alternative are separated by commas.
 Each grammatical notion is written as one or more words connected with dash
 characters. To make the grammar more succinct, enclosing one or more notions
 in square brackets indicates that the group may or may not be present, i.e.,
-it is optional. Similarly, either a notion, or a group ot notions enclosed
+it is optional. Similarly, either a notion, or a group of notions enclosed
 in parentheses, can be followed by a star \g{\ast} or by a plus \g{\plus}.
 The star indicates that the notion, or the group of notions, can be repeated
 zero or more times; while the plus requires at least one, but otherwise
@@ -991,9 +1008,6 @@ modules. The \A{} compiler \emph{compiles} a single \g{unit} and produces an
 intermediate \texttt{ALICE} code. Complete \A{} programs are \emph{linked}
 from the \texttt{ALICE} codes of a main program and several modules.
 
-
-
-%\subsection{The Aleph unit}\label{3.1}
 \smallskip
 
 Syntax:
@@ -1002,7 +1016,7 @@ Syntax:
 \item information: declaration; prototype; pragmat.
 \item root: root-symbol, actual-rule, point-symbol.
 \item declaration: rule-declaration; data-declaration; external-declaration.
-\item prototype: rule-prototye; data-prototype.
+\item prototype: rule-prototype; data-prototype.
 \end{grammar}
 This grammar says that a \g{unit} must contain exactly one
 \g{root}, and must end with an \g{end-symbol}. The order in which
@@ -1021,7 +1035,7 @@ and the third line contains the \g{end-symbol}. For complete examples see
 
 The \g{unit} is a \emph{module} if it contains a \pp|module=.\!.\!.| \g{pragmat};
 this pragmat defines both the module name and its name-space. The \g{unit}
-is a \emph{main program} if it contains no such a pragmat; the above example
+is a \emph{main program} if it contains no such pragmat; the above example
 is a main program.
 
 A complete \A{} program is \emph{linked} from a main program and from zero
@@ -1043,7 +1057,6 @@ program finishes with a termination state of \pp|0|. If program termination
 is due to calling the Standard Library rule \pp|exit|, then the termination
 state is specified by the value of the affix to this rule. In other cases
 the termination state is not defined.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
@@ -1134,12 +1147,11 @@ when it always succeeds \emph{and} has no side effects;
 when it never returns, consequently has side effects.
 \end{list}
 The rule type is checked against the logical construction of the
-\g{actual-rule}. If an action or function is found to be able to fail, an
-exit rule to be able to return, or a non-exit rule not able to return, an
-error message is given. In other cases, if a discrepancy is found, a warning
-is given.
-
-%\subsubsection*{Examples}
+\g{actual-rule}. If an action or function is found to be able to fail, a
+question or function to have side effects, an exit rule to be able to
+return, or a non-exit rule not able to return, an error message is given.
+In other cases, namely when a predicate or question cannot fail, or a
+predicate or action has no side effects, a warning is given.
 
 With each of the following \g{rule-prototype} examples a summary of what the
 rule does is provided. From this explanation it should be clear why the
@@ -1243,8 +1255,6 @@ If the chosen \g{alternative} succeeded, the \g{actual-rule} succeeds; if it
 failed, the \g{actual-rule} fails. This completes the execution of the
 \g{actual-rule}.
 
-%Restrictions.
-%
 The sequence of \g{alternative}\/s must satisfy the following restrictions.
 \begin{itemize}
 \item[a)]
@@ -1355,9 +1365,6 @@ respectively. If the \g{field-definition} (\Ref{Section selectors}) is
 absent, the formal list is supposed to have one \g{selector}: the tag of
 this \g{selector} is the same as the tag of the formal list itself. For
 example, \pp|[]list[]| has the same meaning as \pp|[](list)list[]|.
-% If the
-%formal affix has more than one \g{field-list pack}\/s, all must specify the
-%same block length. The selectors they define, however, are accumulated.
 
 A \g{formal-file} defines a file, which can be both character and data
 file.
@@ -1372,8 +1379,8 @@ matched against any \g{actual-affix}. In the example
 the repeat affix block has length two and is formed by the affixes
 \pp|table| and \pp|ptr|.
 
-All affix tags %\g{variable-}, \g{stack-}, \g{table-} and \g{file-tag}s 
-in the \g{formal-affix-sequence} must be different. The cannot have
+All affix tags
+in the \g{formal-affix-sequence} must be different. They cannot have
 qualifiers, and also must
 be different from the \g{rule-tag} that precedes this sequence.
 
@@ -1415,9 +1422,8 @@ Example of a \g{local-affix-sequence}:
 None of the tags in the \g{local-affix-sequence} can have a qualifier, and
 all these tags must be different. A \g{local-tag}
 has the attribute \emph{uninitialized} at the beginning of each
-\g{alternative} of the \g{actual-rule} or \g{compound-member}. Its attribute
-must be \emph{initialized} at the end of at least one \g{alternative},
-meaning that the variable has been used.
+\g{alternative} of the \g{actual-rule} or \g{compound-member}. If a
+\g{local-tag} is not used, a warning is given.
 
 \subsection{Operations}\label{3.4}
 
@@ -1427,7 +1433,6 @@ and adding new elements to a stack (\g{extension}). Syntax:
 \begin{grammar}
 \item operation: transport; comparison; extension.
 \smallskip
-%\item transport: source, (arrow-symbol, destination)\plus.
 \item source: constant-source; destination.
 \item constant-source: constant-value; table-element.
 \item destination:
@@ -1436,31 +1441,12 @@ and adding new elements to a stack (\g{extension}). Syntax:
 \item constant-value:
    
    integral-denotation; character-denotation; constant-tag; limit.
-%\item integral-denotation:
-%
-%   [minus-symbol], digit\plus; 
-%
-%   [minus-symbol], hex-symbol, hex-digit\plus;
-%
-%   manifest-constant.
-%\item character-denotation: absolute-symbol, visible-character, absolute-symbol.
 \item table-element:
 
  [selector, of-symbol], table-tag, [sub-symbol, source, bus-symbol].
 \item stack-element:
 
  [selector, of-symbol], stack-tag, [sub-symbol, source, bus-symbol].
-%\smallskip
-%\item comparison: source, relation, source.
-%\item relation:
-%
-%   lt-symbol; le-symbol; eq-symbol; ne-symbol; ge-symbol; gt-symbol.
-%\smallskip
-%\item extension: 
-%   left-of-symbol, field-transport-list, right-of-symbol, stack-tag.
-%\item field-transport-list:
-% field-transport, (comma-symbol, field-transport)\ast.
-%\item field-transport: source, (arrow-symbol, selector-tag)\plus.
 \end{grammar}
 
 \medskip
@@ -1865,12 +1851,6 @@ Syntax:
 \item terminator: jump; success-symbol; failure-symbol.
 \item jump: repeat-symbol, rule-tag.
 \end{grammar}
-%Examples of \g{terminator}\/s:
-%\begin{program}
-%  :order
-%  +
-%  -
-%\end{program}
 
 \subsubsection{Jumps}\label{3.6.1}
 The \g{rule-tag} after the \g{repeat-symbol} may be the \g{rule-tag} of the
@@ -1968,7 +1948,7 @@ local or formal tag, then if the guard of the first \g{alternative} in the rule 
   n=0, do something;
 \end{program}
 \noindent
-fails (because the value of \pp|m| is not one)), the side effect of changing
+fails (because the value of \pp|m| is not one), the side effect of changing
 \pp|n| remains in effect and the guard of the second \g{alternative} will
 never succeed.
 
@@ -1992,7 +1972,7 @@ cost of a less versatile selection mechanism. Syntax:
 \begin{grammar}
 \item classification: classifier-box, class-chain.
 \item classifier-box: box-symbol, source, box-symbol.
-\item class-chain: (class, semicolon symbol)\plus, last-class.
+\item class-chain: (class, semicolon-symbol)\plus, last-class.
 \item class: area, comma-symbol, alternative.
 \item last-class: class; alternative.
 
@@ -2004,10 +1984,10 @@ cost of a less versatile selection mechanism. Syntax:
        constant-value; list-tag.
 \end{grammar}
 \noindent
-A \g{list-tag} in a \g{zone} must identify a global (and not local or
-eternal) stack or table; moreover the \g{constant-value} cannot be an actual
+A \g{list-tag} in a \g{zone} must identify a global (and not formal or
+external) stack or table; moreover the \g{constant-value} cannot be an actual
 upper or lower limit, nor an external \g{constant-tag} (as these values are
-not known during compilation time.
+not known during compilation time).
 
 \smallskip
 \noindent
@@ -2062,7 +2042,9 @@ If the \g{zone} is a \g{list-tag}, this \g{list-tag} must identify a global
 address space (see \Ref{Section 4.1.4}) assigned to that list.
 \end{itemize}
 \g{Area}\/s may coincide partially, but it is an error if an \g{area} cannot
-be reached by some value of the \g{source}.
+be reached by some value of the \g{source}; in particular, no \g{class} may
+follow an \g{area} which contains every value, such as \pp|[:]|. It is also
+an error if the left boundary of a \g{zone} exceeds its right boundary.
 
 A \g{classification} can fail only if one of its \g{alternative}\/s
 fail; and has side-effects if at least one of the \g{alternative}\/s has
@@ -2070,7 +2052,6 @@ side-effects.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\newpage
 \section{Data} \label{sec:4}
 
 The basic way of representing information in \A{} is through integers. There
@@ -2081,7 +2062,8 @@ are four integer-based data types:
 \item[c)] ordered lists of integers (tables), and
 \item[d)] ordered lists of locations that contain integers (stacks).
 \end{itemize}
-Integers used in data declarations can be given in the form of expressions.
+Integers in constant and variable declarations can be given in the form of
+expressions; elsewhere only constant values are allowed.
 
 The basic way of routing information into and out of the program is through
 files. There are two file types:
@@ -2128,7 +2110,7 @@ Syntax:
   [unary-operator], base, (binary-operator, base)\ast.
 \item base: constant-value; open-symbol, expression, close-symbol.
 \item unary-operator: minus-symbol; complement-symbol.
-\item binary-opeator: times-symbol; by-symbol; plus-symbol; minus-symbol;
+\item binary-operator: times-symbol; by-symbol; plus-symbol; minus-symbol;
 
    or-symbol; and-symbol; xor-symbol.
 \end{grammar}
@@ -2145,7 +2127,8 @@ Operators applied in the order of their priorities; operators of equal
 priority are applied from left to right. Unary operators have the highest
 priority. They are followed by multiplication and division, then addition
 and subtraction. The Boolean (bitwise) operators have the lowest
-priority.
+priorities: first {\tt|} (or), then \pp|\&| (and), and finally \pp|^|
+(xor), which has the lowest priority of all.
 
 An \g{expression} through the \g{constant-value} (\Ref{Section 3.4}) cannot
 contain actual upper or lower limits, and cannot contain external
@@ -2210,7 +2193,7 @@ local variable originates from a \g{local-affix-sequence}.
 
    (comma-symbol, variable-tag)\ast, point-symbol.
 \item static-variable-prototype: 
-   static symbol, variable-prototype.
+   static-symbol, variable-prototype.
 \end{grammar}
 Examples:
 \begin{program}
@@ -2224,9 +2207,9 @@ Variables can be used in \g{source}\/s and \g{destination}\/s. They cannot be
 used in \g{expression}\/s.
 
 A static \g{variable-tag} behaves as a variable in the module it is
-declared, but in other modules it behaves like a \g{constant-tag}. The content
-of a \g{variable-tag} can only be manipulated by rules in its defining module;
-in other modules such a variable is ``read only''.
+declared, but in other modules such a variable is ``read only'': its value
+can be used in a \g{source}, but cannot be changed. The content of a static
+\g{variable-tag} can only be manipulated by rules in its defining module.
 
 \subsection{Tables and stacks}
 
@@ -2287,7 +2270,7 @@ Suppose, for example, that the following list declarations (see \Ref{Section
 'stack' [= 5 =] dg []=(0),
         [ 30  ] st [],
         [ 50  ] (num,denom) ax[] =
-                ((365,113):pi, (191,71):e).
+                ((355,113):pi, (193,71):e).
 \end{program}
 \noindent
 Assuming that the virtual memory is indexed from 10000 to 99999, the
@@ -2312,12 +2295,12 @@ address ~~ & contents & belongs to & selector & pointer \\[2pt]
 \a{10015-10018}& \K{---}  & \multicolumn{2}{l}{ unassigned } & \\
 \a{10019}& \K{---} & \multicolumn{2}{l}{ unassigned }& \pp|>>st|\\[-1pt]
 \a{10020}& \K{---}        &\tt st     &     & \pp|<st|, \pp|<<st|\\[-1pt]
-\a{10020-32327}& \K{---}  &\tt st   &     &               \\[-1pt]
+\a{10021-32327}& \K{---}  &\tt st   &     &               \\[-1pt]
 \a{32328}& \K{---}        &\tt st   &     & \pp|>st| \\
 \a{32329}& \K{---} & \multicolumn{2}{l}{ unassigned } & \\
 \a{32330}& \K{355} &\tt ax    &\tt num~~  &               \\[-1pt]
 \a{32331}& \K{113} &\tt ax    &\tt denom   & \pp|<ax|, \pp|<<ax|, \pp|pi|\\[-1pt]
-\a{32332}& \K{191} &\tt ax    &\tt num~~   &               \\[-1pt]
+\a{32332}& \K{193} &\tt ax    &\tt num~~   &               \\[-1pt]
 \a{32333}& \K{71}  &\tt ax    &\tt denom   & \pp|>>ax|, \pp|e|\\[-1pt]
 \a{32334-99998}& \K{---} &\tt ax  &  &                   \\[-1pt]
 \a{99999}& \K{---}       &\tt ax  &   &  \pp|>ax|       \\
@@ -2326,7 +2309,7 @@ address ~~ & contents & belongs to & selector & pointer \\[2pt]
 
 A stack can be extended to the right while raising its actual upper limit
 through an \g{extension} (\Ref{Section 3.4.3}). Items can be removed from
-the right of a stack through a call of a run in the Standard Library (see
+the right of a stack through a call of a rule in the Standard Library (see
 \Ref{Section 5.2.4}) such as \pp|unstack| or \pp|unstack to|, after which
 the discarded address space can be reclaimed again, but not the values in
 it.
@@ -2391,7 +2374,7 @@ Syntax:
 \begin{grammar}
 \item limit: limit-token, list-tag.
 \item limit-token: static-limit; dynamic-limit.
-\item static-limit: vlwb-symbol vupb-symbol; calibre-symbol.
+\item static-limit: vlwb-symbol; vupb-symbol; calibre-symbol.
 \item dynamic-limit: alwb-symbol; aupb-symbol.
 \end{grammar}
 Examples:
@@ -2408,7 +2391,7 @@ a table do not change.
 If the \g{list-tag} in the \g{limit} is a formal affix, the returned value
 is the \g{limit} of the corresponding global list. In particular, the
 \g{calibre} of a \g{formal-affix} is the calibre of the corresponding global
-list, and not the calibre of the local affix.
+list, and not the calibre of the formal affix.
 
 \subsubsection{Tables}\label{4.1.5}
 
@@ -2451,11 +2434,11 @@ optionally added at the declaration. The final order in which the different
 \g{filling}\/s are stored in the table is unspecified.
 
 \subsubsection{Stacks}\label{4.1.6}
-Stacks originate from \g{stacks-declaration}\/s. Syntax:
+Stacks originate from \g{stack-declaration}\/s. Syntax:
 \begin{grammar}
 \item stack-declaration: stack-symbol, stack-description,
 
-   (comma symbol, stack-description)\ast,  point-symbol.
+   (comma-symbol, stack-description)\ast,  point-symbol.
 \item static-stack-declaration:
 
   static-symbol, stack-declaration.
@@ -2500,8 +2483,9 @@ A \g{stack-declaration} declares a stack, specifying the required virtual
 memory. If the \g{size-estimate} is empty, the allocated virtual memory will
 be determined by the total size of \g{filling}\/s. The \g{absolute-size}
 specifies the number of requested virtual locations (not blocks); this
-number must be positive. The \g{relative-size} must be positive and at most
-100. The \g{constant-value} in the \g{size-estimate} cannot depend on values
+number must be positive and at most 100000. The \g{relative-size} must be
+positive and at most 100. For a value out of these ranges a warning is
+given, and the value is chopped automatically to the nearest allowed one. The \g{constant-value} in the \g{size-estimate} cannot depend on values
 which are determined after the distribution of the virtual memory, such as
 virtual limits or pointer constants.
 
@@ -2625,7 +2609,7 @@ reading and writing simultaneously. Syntax:
 \begin{grammar} \item file-declaration:
 file-typer, file-description,
 
-    (comma-symbol, file-description)\ast, point symbol.
+    (comma-symbol, file-description)\ast, point-symbol.
 \item file-typer: charfile-symbol; datafile-symbol.
 \item file-description: file-tag, [file-area], equals-symbol,
 
@@ -2637,7 +2621,7 @@ file-typer, file-description,
 \smallskip
 \item file-prototype:
 
-  file-typer, file-tag, (comma symbol, file-tag)\ast, point-symbol.
+  file-typer, file-tag, (comma-symbol, file-tag)\ast, point-symbol.
 
 \end{grammar}
 Examples:
@@ -2687,8 +2671,8 @@ when a character file \pp|file| is opened for reading, each call of the
 external predicate \pp|get char+""file+ch>| yields the next unicode
 character in \pp|ch|, failing when the end of file is reached. When opened
 for writing, the action \pp|put char+""file+>ch| adds the unicode character
-\pp|ch| to the file written, ignoring the request if \pp|ch| is illegal or
-zero.
+\pp|ch| to the file written, ignoring the request if \pp|ch| is not a valid
+unicode character code.
 
 \item[Linewise: ]
 the predicate \pp|get line+""file+[]stack[]+ch>| extends the \pp|stack| with
@@ -2810,7 +2794,7 @@ An \A{} program can access and manipulate system data using
 
 \item data-typer: constant-symbol; variable-symbol; 
 
-  table-symbol; stack-symbol; file-symbol.
+  table-symbol; stack-symbol; charfile-symbol; datafile-symbol.
 
 \item external-data-description:
 
@@ -2877,7 +2861,7 @@ string-denotation.
 Example:
 \begin{program}
 'pragmat'module=basic,
-    require=("mod1","mod2),
+    require=("mod1","mod2"),
     macro=(show integers, is value, set all bits).
 \end{program}
 \noindent
@@ -2901,13 +2885,13 @@ as \pp|require="mod1", require="mod2"|.
 Pragmats in this group control the output of the \A{} compiler.
 
 \XP|tab width=|\g{integer}.\Y
-The right hand side of the \pp|tab width| \g{pragmat} must be a positive
-integer less than 100. The value will be used as the tab size for 
+The right hand side of the \pp|tab width| \g{pragmat} must be an
+integer between 1 and 20. The value will be used as the tab size for 
 program text printing. The default value is \pp|8|.
 
 \XP|right margin=|\g{integer}.\Y
-Sets the right margin for program text and dictionary printing. 
-The default value is \pp|120|.
+Sets the right margin for program text and dictionary printing; the value
+must be between 20 and 1000. The default value is \pp|120|.
 
 \XP|list=on/off.|\Y
 The \g{tag} on the right hand side of the \pp|list| \g{pragmat} can be
@@ -2956,15 +2940,15 @@ code is added which prints out the rule name and the value of its \g{in-} and
 In the compilation unit of this \g{pragmat}, calls of the \g{actual-rule}
 corresponding to the specified \g{rule-tag} are implemented by textual
 replacement. The replacement, however, can result in a syntactically
-incorrect program text or in a different semantics, see \Ref{ection macros}.
+incorrect program text or in a different semantics, see \Ref{Section macros}.
 The \g{rule-tag} cannot have a qualifier.
 
 \XP|library mode=on/off.|\Y
 Turn library mode on or off. The value
-determines whether library extensions are allowed or not. The default of
+determines whether library extensions are allowed or not. The default is
 \pp|off|.\Y
 If \pp|library mode| is \pp|on|, the \pp|@| character is considered to be a
-letter, thus private tags can be created. Directory listing ignores tags
+letter, thus private tags can be created. Dictionary listing ignores tags
 starting with \pp|@|. More importantly, \g{external-declaration}\/s and the
 \pp|front matter| and \pp|back matter| pragmats are allowed in library mode
 only.
@@ -2983,7 +2967,6 @@ string is copied to the end of the generated code.
 \subsection{Conditional pragmats}\label{cond-pragmat}
 
 \def\pgaaif#1{\pp|'pragmat'#1=}
-%\def\pgaif#1{\setbox0\hbox to 30em{\pgaaif{#1}\endgroup\g{tag}\hfil}\unhbox0}
 \def\pgaif#1{\hbox to 0.3\textwidth{\pgaaif{#1}\endgroup\g{tag}.\hfil}}
 \def\pgif#1{\rule{0pt}{0pt}\pgaif{#1}\pgaif{else}\pgaif{endif}}
 
@@ -3062,9 +3045,10 @@ can be included in the program text by the \g{manifest-string}
 \pp|\_title\_|, and it also appears in the intermediate \texttt{ALICE} code, as
 well as in the linked final code.
 
-\XP|std library=on/off.|\Y
-Enable or disable Standard Library source files. The default value is
-\pp|on|. This pragmat is accepted only when \pp|compile| is \pp|on|.
+\XP|std library=off.|\Y
+Disable processing the Standard Library source files, which are processed
+by default. The only accepted value is \pp|off|. This pragmat has an effect
+only when \pp|compile| is \pp|on|.
 
 \XP|module=|\g{tag}.\Y
 If \pp|compile| is \pp|on|, the current compilation unit is defined to be a
@@ -3084,15 +3068,15 @@ to the pool of the \emph{required} source files to be processed.
 \XP|library=|\g{string-denotation}.\Y
 Add the filename specified by the string, if it is not there, to the pool of
 \A{} source files to be processed as a \emph{user library}. This \g{pragmat}
-is accepted only if \pp|compile| is \pp|on|.
+has an effect only if \pp|compile| is \pp|on|.
 
 \XP|include=|\g{string-denotation}.\Y
 Add the filename specified by the string to the pool of \A{} source files to
 be processed as an addendum to the current source file.
 
 \XP|prototype=import/public/none/reverse.|\Y
-This pragmat has three possible values: \pp|import|, \pp|public|, and
-\pp|none|; the default value is \pp|none|. The pragmat determines how the
+This pragmat has four possible values: \pp|import|, \pp|public|,
+\pp|none|, and \pp|reverse|; the default value is \pp|none|. The pragmat determines how the
 compiler handles \g{prototype}\/s. The case \pp|prototype=import| indicates
 that the \g{tag} in a \g{prototype} has a declaration outside this \g{unit}
 (and then it cannot occur in a \g{declaration} in this \g{unit}). In the
@@ -3132,7 +3116,7 @@ default values (see \Ref{Chapter sec:6}), except for the \pp|compile| and
 If the source file was submitted directly for compilation, these pragmats are set
 to \pp|compile=on|, and \pp|prototype=none|.
 \item[b)]
-If the source file was added by a \pp|request| or by a \pp|library| pragmat,
+If the source file was added by a \pp|require| or by a \pp|library| pragmat,
 their values are \pp|compile=off| and \pp|prototype=import|.
 \item[c)]
 If the source file was added by an \pp|include| pragmat, both \pp|compile| and
@@ -3156,7 +3140,7 @@ head contains the prototypes of the (public) tags to be exported by, and defined
 in, this module. The module source is concluded by the private part, or
 \emph{module body}, which defines the exported items together with the
 optional auxiliary, unexported items. The body is enclosed between
-\pp|ifdef=compile| and \pp|endif=compile| conditional pragmats.
+\pp|if=compile| and \pp|endif=compile| conditional pragmats.
 
 The module is compiled by submitting its source file to the \A{} compiler.
 The source file is opened with \pp|compile=on| and \pp|prototype=none|. The
@@ -3180,7 +3164,7 @@ Next to \g{prototype}\/s, the module head may contain additional \A{}
 constructs. A \pp|require| pragmat in the head automatically re-exports
 the imported items (using their original namespace), while declarations in
 the head are compiled into the invoking program locally, using the module's
-namespace. It may happen, without any program, that the head of module
+namespace. It may happen, without any problem, that the head of module
 \pp|A| requires module \pp|B|, while the head of module \pp|B| requires
 module \pp|A|.
 
@@ -3220,9 +3204,10 @@ the qualifier. Without providing an explicit qualifier, \g{tag}\/s in
 definitions (\g{declaration}\/s and import \g{prototype}\/s) inherit the
 actual namespace. This namespace is empty in the main program; otherwise it
 is the same as the module name as defined by the \pp|module| pragmat. The
-explicit qualifier, if present, cannot be empty. A \g{tag} with a qualifier
-identifies only those definitions where the same implicit or explicit
-qualifier is used.
+explicit qualifier, if present, cannot be empty. In module \pp|M| an explicit
+qualifier \pp|M{\cc}| in a definition is the same as no qualifier. A \g{tag}
+with a qualifier identifies only those definitions where the same implicit
+or explicit qualifier is used.
 
 The process of finding the defining occurrence of a \g{tag} in the module
 hierarchy goes as follows. Suppose the \g{tag} with identifier \pp|x| occurs
@@ -3237,9 +3222,14 @@ subsec:hierarchy}) is chosen.
 
 If this step does not give result, then consider \pp|A| and the modules
 \emph{above} \pp|A|. If \pp|x| has no explicit qualifier, then it matches
-any definition of \pp|x| in those modules; if \pp|x| has an explicit
-qualifier \pp|q{\cc}x|, then it matches only those definitions where the
-qualifier is (explicitly or implicitly set to) \pp|q|. Among the candidate
+a definition of \pp|x| in those modules which either has no explicit
+qualifier, or whose explicit qualifier is the namespace of \pp|A| (in the
+main program, whose namespace is empty, only the former). A definition with
+any other explicit qualifier, say \pp|r{\cc}x|, is never matched by an
+unqualified tag, not even in the unit where it is defined: it is meant for
+the module named \pp|r|. If \pp|x| has an explicit qualifier \pp|q{\cc}x|,
+then it matches only those definitions where the qualifier is (explicitly
+or implicitly set to) \pp|q|. Among the candidate
 modules that one is chosen which has the smallest rank above \pp|A|.
 If this search does not yield a unique definition, then it is an error.
 
@@ -3282,7 +3272,9 @@ module from file \pp|"f2"|) has the implicit qualifier \pp|t|, therefore it
 does not match definition (5) in the main program. The \g{tag}
 \pp|x| in these modules matches definition (6) of \pp|t{\cc}x| in the main
 program, but not definition (7) of \pp|x| (which is without qualifier).
-Observe that definition (2) is not used at all; each occurence of \pp|v| in 
+Conversely, \pp|x| in the main program matches definition (7), and not (6),
+as the qualifier \pp|t| differs from the (empty) namespace of the main
+program. Observe that definition (2) is not used at all; each occurrence of \pp|v| in 
 \pp|"f2"| uses definition (4) from \pp|"f1"|.
 
 \subsection{Macro rules}\label{macros}
@@ -3297,7 +3289,6 @@ semantics. The following examples illustrate these cases and explain the
 additional restrictions a macro rule must satisfy.
 
 \begin{itemize}%
-%\def\becomes{$\Rightarrow$\space}%
 \def\HH{\noindent\hbox to 0.25\linewidth\bgroup\hskip 10pt}%
 \def\HE{\hfil\egroup$\Rightarrow$\qquad}%
 \item[a)]
@@ -3335,7 +3326,7 @@ out all affixes and then the computation in \pp|math| would not be carried over.
 %
 Similarly, suppose the rule \pp|macro| is defined as
 \begin{program}
-'function'macro+a>+@+>q: q->b, get affix blocno+a+@.
+'function'macro+a>+@+>q: q->b, get affix blockno+a+@.
 \end{program}
 \noindent
 where \pp|b| is some global variable. After verbatim substitution the 
@@ -3355,7 +3346,8 @@ where \pp|ptr| is some global variable. After textual substitution
 
 \smallskip
 
-while \pp|S| might not have a standard selector.
+while \pp|S| might not have a standard selector, or its standard selector
+may not be the last element of a block.
 
 \item[e)] Out affixes get their values only after returning from a call.
 %
@@ -3375,8 +3367,8 @@ issued if the conditions are violated. For b), if the actual affix is the
 dummy affix \pp|\#|, the formal out affix in the macro is replaced by a
 newly created anonymous local variable (which may be removed during
 optimization). For d) the macro substitution mechanism remembers the last
-substituted formal affix and uses that value for the standard selector
-what the rule call would do. For e) and other side effects, no warning is, or
+substituted formal affix and uses the same standard selector as the rule
+call would do. For e) and other side effects, no warning is, or
 can be, given, but substitution clearly changes the semantics. So use macros
 with care.
 
@@ -3400,6 +3392,10 @@ can be redeclared.
 smallest (most negative) representable integer. \pp|int size| is the number
 of decimal digits necessary to represent \pp|max int|.
 
+\XX|'constant' nil, false, true.|\Y
+\pp|nil| is zero, the null pointer, which differs from every virtual
+address; \pp|false| and \pp|true| are zero and one, respectively.
+
 \subsubsection{Arithmetical operations}
 
 \XX|'function'add+>x+>y+z>, subtr+>x+>y+z>, mult+>x+>y+z>, div+>x+>y+z>.|\Y
@@ -3412,7 +3408,7 @@ result in the last affix
 in \pp|q| and the remainder in \pp|r|: \pp|x/y->q|, \pp|x-y*q->r|.
 
 \XX|'function'incr+>x>, decr+>x>, get abs+>x+y>, min+>x+>y>, max+>x+>y>.|\Y
-\pp|incr| increases, \pp|decr| decreaseseases its affix by one; \pp|get abs| yields
+\pp|incr| increases, \pp|decr| decreases its affix by one; \pp|get abs| yields
 the absolute value of \pp|x| in \pp|y|; \pp|min| and \pp|max| yield \pp|min(x,y)|
 and \pp|max(x,y)|, respectively, in \pp|y|.
 
@@ -3435,7 +3431,7 @@ succeeds if \pp|x| is zero, equivalent to the \g{comparison} \pp|x=0|.
 \XX|'function'bool invert+>x+y>.|\Y
 The bitwise complement of \pp|x| is stored in \pp|y|.
 
-\XX|'function'bool and+>x+>y+>z>, bool or+>x+>y+z>, bool xor+>x+>y+z>.|\Y
+\XX|'function'bool and+>x+>y+z>, bool or+>x+>y+z>, bool xor+>x+>y+z>.|\Y
 Bitwise Boolean operations.
 
 \XX|'function'left clear+>x>+>n.|\Y
@@ -3458,7 +3454,7 @@ pointer to the next or previous block, respectively.
 
 \XX|'function'list length+T[]+len>.|\Y
 The number of actual elements (not blocks) in \pp|T| is yielded in \pp|len|.
-This value equals \pp|-1\,+\,<>T\,+\,>>T\,-\,<<T|.
+This value equals \pp|<>T\,+\,>>T\,-\,<<T|.
 
 \XX|'action'unstack+[]st[].|\Y
 The stack \pp|st| must contain at least one block. The right-most block of
@@ -3471,19 +3467,10 @@ Zero or more blocks are removed from the right hand side of \pp|st|, so that
 \pp|>>st| becomes equal to \pp|ptr|. If this cannot be done, an error
 message follows.
 
-%\X\pp|'action'unqueue+[]st[].|\Y
-%The stack \pp|st| must contain at least one block. The left-most block of
-%\pp|st| is removed. Its (virtual) locations and its contents are lost.
-%
-%\X\pp|'action'unqueue to+[]st[]+>pnt.|\Y
-%Zero or more block are removed from the left hand side of \pp|st|, so that
-%the \pp|min limit| of \pp|st|  becomes equal to \pp|pnt|. If this cannot be
-%done, an error message follows.
-
 \XX|'action'scratch+[]st[].|\Y
 All blocks in \pp|st| are removed. The locations can be reclaimed through
 \g{extension}\/s, but the contents are lost. After this operation \pp|>>st|
-will be equal to \pp|-1\,+\,<<st\,-\,<>st|.
+will be equal to \pp|<<st\,-\,<>st|.
 
 \XX|'action'release+[]st[].|\Y
 All blocks in \pp|st| are removed, as in a call of \pp|scratch|.
@@ -3512,7 +3499,7 @@ unicode characters in the string is yielded in \pp|n|.
 The number of locations in the string block (the block size) is yielded in
 \pp|n|.
 
-\XX|'action'previous string+T[]+>p>|\Y
+\XX|'function'previous string+T[]+>p>.|\Y
 The pointer \pp|p| must point to a string block; \pp|p| is moved to the
 (possibly non existing) location just before the string block. It is
 achieved by subtracting \pp|string width| from \pp|p|.
@@ -3554,10 +3541,6 @@ codes in left-to-right order.
 \XX|'action'copy string+T[]+>p+[]to[].|\Y
 The stack \pp|to| is extended by a string block identical to the one pointed
 by \pp|p| in the list \pp|T|.
-
-%\X\pp|'question'may be string pointer+text[]+>p>|\Y
-%Succeeds if \pp|p| points into \pp|text| and can be interpreted as the
-%address of a packed string. Otherwise fails.
 
 \subsection{Files}\label{5.2.5}
 
@@ -3669,7 +3652,7 @@ with \pp|f|. If \pp|cint| is not \pp|rest line|, this character is appended
 at the end.
 
 \XX|'action'put int+""f+>int.|\Y
-Exactly \pp|intsize+1| characters are written to \pp|f|. These characters
+Exactly \pp|int size+1| characters are written to \pp|f|. These characters
 are: zero or more spaces, the minus sign if \pp|int| is negative, followed
 by the characters of the decimal representation of the absolute
 value of \pp|int|.
@@ -3747,7 +3730,8 @@ moved into its place, assuming that there is still a pending, unseen block.
 If there is no more blocks, the rule fails. This rule cannot be redefined.
 
 \XX|'function'get affix blockno+n>+@.|\Y
-The number of pending, unseen affix blocks is yielded in \pp|n|. This number is
+The number of remaining affix blocks, including the visible one, is
+yielded in \pp|n|. This number is
 always positive, and it is 1 if and only if \pp|shift affix block| would
 fail. This rule cannot be redefined.
 
@@ -3779,9 +3763,10 @@ no-op and can be discarded.
 \XX|'action'backtrack.|\Y
 If the \A{} program is linked with the \pp|-g| flag, additional code is
 added which maintains the \emph{call stack}, the list of embedded rule calls
-starting from the \g{root} of the main program and ending at the
-\g{actual-rule} which is currently executed. In this case a call of the rule
-\pp|backtrack| provides a printout of the rule names in this stack. If the
+from the \g{root} of the main program to the \g{actual-rule} which is
+currently executed. In this case a call of the rule \pp|backtrack| prints
+the rule names in this stack to the standard error stream, starting with
+the rule containing the call and ending with the \g{root}. If the
 program was not linked with the \pp|-g| flag, this rule does nothing and 
 returns immediately.
 
@@ -3798,9 +3783,7 @@ if two module \g{root}\/s would wait for each other producing a deadlock.
 \newpage
 \section{Program representation}\label{sec:7}
 
-%\subsection{The program layout}\label{7.1}
-
-The program, produced by the notion \g{program}, consists of a series of
+The program, produced by the notion \g{unit}, consists of a series of
 terminals. Terminal notions fall into the following categories:
 \begin{itemize}
 \item[a)] \g{symbol}\/s,
@@ -3961,7 +3944,7 @@ the compiler depending on the exact location of the denotation. Syntax:
 
 \item string-denotation:
 
-   quote-symbol, string-elem\ast, quote-symbol.
+   quote-symbol, string-elem\ast, quote-symbol;
 
    manifest-string.
 
@@ -4046,9 +4029,6 @@ inside a string two consecutive quote marks denote a single quote mark. Thus
 \end{tabular} 
 
 
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 \section{Examples}\label{sec:8}
@@ -4084,30 +4064,19 @@ Main program:
 \newpage
 \section{References in the manual}
 \begin{thebibliography}{9}
-%\bibitem{bohm77}
-%A.~P.~W.~B\"ohm, 
-%ALICE: An Exercise in Program Portability,
-%IW 91/77, \emph{Mathematical Centre}, Amsterdam, 1977
 
 \bibitem{alephcomp}
-L.~Csirmaz, \emph{Aleph Compiler, v2.4},
+L.~Csirmaz, \emph{Aleph Compiler, v2.5},
 available at \hfill\allowbreak{\tt https:/\!/lcsirmaz.github.io\allowbreak/aleph/\allowbreak alephcomp.html}
 
 \bibitem{manual}
-D.~Grune, R.~Bosch, L.~G.~L.~T~ Meertens.
-\emph{Aleph Manual} in:
-D.~Grune, R.~Bosh: \emph{On the design of ALEPH}, 
-\emph{Mathematical Centre}, Amsterdam, 1986
-
-%\bibitem{GGV78}
-%R.~Glandorf, D.~Grune, J.~Verhagen,
-%A W-grammar of \A, IW 100/78, \emph{Mathematical Centre}, Amsterdam, 1978
-
-%\bibitem{koster71a}
-%C.~H.~A.~Koster, 
-%A Compiler Compiler, 
-%MR 127/71, \emph{Mathematical Centre},
-%Amsterdam (1971)
+R.~Bosch, D.~Grune, L.~G.~L.~T.~Meertens,
+\emph{ALEPH Manual}, fourth printing,
+\emph{Mathematical Centre}, Amsterdam, 1982.
+Also in: D.~Grune, \emph{On the design of ALEPH}, PhD thesis,
+Universiteit van Amsterdam, 1982, pp.~131--194;
+CWI Tract~13, \emph{Centre for Mathematics and Computer Science},
+Amsterdam, 1986
 
 \bibitem{koster71b}
 C.~H.~A.~Koster, 
@@ -4119,481 +4088,7 @@ D.~A.~Watt,
 The parsing problem for affix grammars,
 \emph{Acta Inf.} {\bf 8}, pp 1--20, 1977
 
-%\bibitem{wichmann77}
-%B.~A.~Wichmann,
-%How to call procedures, or second thoughts on Ackermann's function,
-%\emph{Software -- Practica \& Experience}, {\bf 7} pp 317--329 (1977)
-
 \end{thebibliography}
 
 \end{document}
-
-
-\ignore
-\subsubsection{Use of tags}\label{3.1.2}
-
-A \g{tag} is a sequence of letter and digits, the first of which is a
-letter. Symbols in a tag can be separated by spaces and tabular characters. 
-These white spaces inside the tag are ignored, and two sequences differing
-only in white spaces denote the same \g{tag}. A \g{tag}, however, cannot
-spread over multiple lines. Thus
-\begin{program}
-long name
-l o ngn a m e
-  l o n g n a m e
-\end{program}
-\noindent
-all denote the same \g{tag}, while
-\begin{program}
-long
-name
-\end{program}
-\noindent
-denotes two consecutive \g{tag}\/s (which cannot occur in a syntactically
-correct \A{} program).
-
-All \g{tag}s defined by \g{rule-declaration}s, \g{pointer-initialization}s,
-\g{constant-description}s, \g{variable-description}s,
-\g{table-head}s, \g{stack-heads} (except for those in
-\g{field-list-definition}\/s), \g{stack-head}s
-\g{file-description}s,
-\g{external-rule-description}s
-and \g{external-constant-description}s must differ from each
-other.
-
-\endignore
-
-\ignore
-Example: Suppose the following \g{rule}\/s are defined:
-\begin{program}
-'question'if a: $ some question $.
-'question'if b: $ another question $.
-'function'give value1+n>: 1->n.
-'function'give value2+n>: 2->n.
-'action'use value+>n: print+n.
-'action'print+>n:
-    $ some actual rule that prints the value of n $.
-\end{program}
-\noindent
-In the \g{actual-rule}
-\begin{program}
--loc: if a, give value1+loc, use value+loc, print+loc;
-      if b, give value2+loc, use value+loc.
-\end{program}
-\noindent
-\pp|loc| is \emph{uninitialized} at the colon and likewise at the first
-comma, \emph{initialized} at the second comma because of the restoring done
-by the call of \pp|give value1|, and keeps the attribute \emph{initialized}
-until the end of the \g{alternative}. Its value can be copied over to
-\pp|use value| and \pp|print|. At the beginning of the second alternative it
-is still has the attribute \emph{uninitialized} (still \emph{uninitialized},
-not again, since, if the beginning of the second \g{alternative} is reached,
-the initialization in the previous \g{alternative} will not have taken
-place). It keeps the attribute \emph{uninitialized} until the call of
-\pp|give value2| after (and by) which it obtains the attribute
-\emph{initialized}. Its subsequent application in \pp|use value| is correct.
-
-The \g{actual-rule}
-\begin{program}
--loc:if a, use value+loc, give value1+loc, print+loc.
-\end{program}
-\noindent
-is incorrect. \pp|loc| still has the attribute \emph{uninitialized} at the first comma and
-is then used as a \g{source} in the copying done by the call of \pp|use value|.
-\endignore
-
-
-\ignore
-The \g{formal-affix-sequence} mentioned in point e.~above is constructed as
-follows.
-\begin{itemize}
-\item[a.] A list is made of all tags in the \g{rule-body} that do not refer
-to global items and do not occur in the \g{local-affix-sequence} of $C$, if
-present.
-\item[b.] If the list is empty, the \g{formal-affix-sequence} is empty.
-\item[c.] For each tag in the list, if the corresponding item
-\begin{itemize}
-\item[c1.] is used as a \g{source} (either directly or through the affix
-mechanism) and is
-used as a \g{destination} (either directly or through the affix mechanism), it
-is entered
-into the \g{formal-affix-sequence} preceded and followed by a
-\g{right-symbol};
-\item[c2.] is used as a \g{source} (either directly or through the affix
-mechanism), it is
-entered into the \g{formal-affix-sequence} preceded by a \g{right-symbol};
-\item[c3.] is used as a \g{destination} (either directly or through the affix
-mechanism),
-it is entered into the \g{formal-affix-sequence} followed by a
-\g{right-symbol};
-\item[c4.] is used as a \g{stack-tag} (or \g{table-tag}), it is entered into
-the \g{formal-affix-sequence} as a
-\g{formal-stack} (or \g{formal-table}, respectively) with the same \g{field-list-pack}
-as that of the corresponding (formal or actual) stack (or table);
-\item[c5.] is used as an \g{actual-affix} where a file is required, it is
-entered into the \g{formal-affix-sequence} as a \g{formal-file}.
-\end{itemize}
-\item[d.] The items in the \g{formal-affix-sequence} are preceded by
-\g{formal-affix-symbol}\/s.
-\end{itemize}
-\endignore 
-
-\ignore
-This also implies that, if a \g{compound-member} fails, the changes it made
-to formal and local variables do not become effective. Compare
-\begin{program}
-   0->n,((1->n,-);
-         n=0,do something)
-\end{program}
-\noindent with
-\begin{program}
-   0->n,(spoil and fail+n;
-         n=0,do something)
-\end{program}
-\noindent where
-\begin{program}
-   'question'spoil and fail+n>:1->n, -.
-\end{program}
-\noindent
-Both cases behave in exactly the same way: the rule \pp|do something| will
-be called.
-
-\smallskip
-The \g{rule-tag}, if any, in a \g{compound-member} $C$ must be different
-from:
-\begin{itemize}
-\item[a.] the \g{rule-tag}\/s, if any, and all the \g{variable-tag}\/s in the
-\g{local-affix-sequence}\/s, if any, of all the \g{compound-member}\/s, if any, in which
-$C$ occurs,
-\item[b.] the \g{rule-tag} and all the \g{variable-tag}\/s,
-\g{stack-tag}\/s, \g{table-tag}\/s and \g{file-tag}\/s in the 
-\g{formal-affix-sequence}, if any, of the \g{rule-declaration} in which $C$ occurs.
-\end{itemize}
-\endignore
-
-\ignore
-\subsection{Criteria for side effects, failing and return}\label{3.9}
-
-This section describes the conditions for side effects, failing and return.
-
-%Where a list of conditions is given in this paragraph, the requirements for
-%this list are fulfilled if at least one of the conditions is fulfilled.
-
-\def\HI{\smallskip\noindent\hangindent 10pt}
-
-\subsubsection{Criteria for side effects}\label{3.9.1}
-In essence, a rule \emph{has side effects} if it changes some global
-information.
-
-\HI
-A rule has side effects if its \g{rule-body} has side effects.
-
-\HI
-A \g{rule-body} (i.e., an \g{alternative-series} or \g{classification}) has
-side effects if it contains at least one \g{member} that has side effects.
-
-\HI
-A \g{member} has side effects if at least one of the following conditions
-holds:
-\begin{itemize}
-\item[a)] it is an \g{affix form} that has side effects;
-\item[b)] it is a \g{transport} that has side effects;
-\item[c)] it is an \g{extension};
-\item[d)] it is a \g{compound-member} the \g{rule-body} of which has side
-effects.
-\end{itemize}
-
-\HI
-An \g{affix-form} has side effects if at least one of the following holds:
-\begin{itemize}
-\item[a)] the rule called is an \emph{action}, a \emph{predicate}, or an
-\emph{exit};
-\item[b)] the restoring part of the affix mechanism (see \Ref{Section 3.5}) causes a
-\g{transport} that has side effects.
-\end{itemize}
-A \g{transport} has side effects if (one of) its \g{destination}(s) identifies
-a global variable or is a \g{stack-element}.
-
-\subsubsection{Criteria for failure}\label{3.9.2}
-
-\HI
-A \g{member} can fail if
-\begin{itemize}
-\item[a)] it is an \g{affix-form} the rule of which is a
-\emph{predicate} or a \emph{question},
-\item[b)] it is a \g{comparison},
-\item[c)] it is a \g{compound-member} the \g{rule-body} of which can fail.
-\end{itemize}
-
-\HI
-A \g{terminator} can fail if
-\begin{itemize}
-\item[a)] it is the \g{failure-symbol} \pp|-|; or
-\item[b)] it is a \g{jump} to a rule or \g{compound-member} that can fail.
-\end{itemize}
-
-\HI
-A \g{rule-body} can fail if its \g{alternative-series} or \g{classification}
-can fail.
-
-\HI
-An \g{alternative-series} can fail if either
-\begin{itemize}
-\item[a)] the guard of its last \g{alternative} can fail; or
-\item[b)] it contains an \g{alternative} that contains a
-\g{member} or a \g{terminator}, other than its guard, that can fail.
-\end{itemize}
-
-\subsubsection{Criteria for return}\label{3.9.3}
-
-\HI
-A \g{member} cannot return if it is an \g{affix-form} the rule of 
-which is an \emph{exit}.
-
-\HI
-A \g{terminator} cannot return if it is a \g{jump} or it is the
-\g{failure-symbol} \pp|-|.
-
-\HI
-An \g{alternative} cannot return if its \g{last-member} cannot return.
-
-\HI
-An \g{alternative-series} or a \g{classification} cannot return 
-if none of its \g{alternative}\/s can return.
-
-\HI
-A \g{rule-body} cannot return if the
-
-\endignore
-
-\ignore
-
-
-A \emph{stack} is a (possibly empty) sequential list of locations that
-contain integral values. The structure of this list and its addressing
-scheme is parallel to that of a table. The initial values in the locations
-are determined by the \g{filling-list-pack} is a way analogous to that used
-for tables. the \pp|max limit| is equal to the address of the right-most
-location, the \pp|min limit| is equal to the address of the left-most
-location minus one plus the \pp|calibre| of the stack. Again these values
-are chosen by the compiles and are unique to the given stack.
-
-The value of the \g{expression} in the \g{size-estimate} must not depend,
-directly or indirectly, on the value of any \g{constant-tag} defined in a
-\g{pointer-initialization}.
-
-The values in the locations in a stack can be altered by transporting
-(\Ref{Section 3.4}) a value into an element of that stack. For ways of changing
-the size of the stack see \Ref{Section 4.1.4}.
-
-A \g{stack-tag} can be used in a \g{stack-element}, a \g{limit} or an
-\g{extension}, or as an \g{actual} in an \g{affix-form}, or to designate a
-\g{zone} in a \g{classification} or \g{file-description}.
-
-
-
-Examples:
-\begin{program}
-'table'messages =
-   ("tag undefined": bad tag,
-    "wrong number of parameters": wrong  parameters,
-    "quote "" where not allowed": bad quote).
-\smallskip
-'table'hexadec=
-   (/0/,/1/,/2/,/3/,/4/,/5/,/6/,/7/,
-    /8/,/9/,/a/,/b/,/c/,/d/,/e/,/f/).
-\smallskip
-'table'(wind,next)four winds=
-   ((north wind,east): north,
-    (east wind,south): east,
-    (south wind,west): south,
-    (west wind,north): west).
-\end{program}
-
-\subsubsubsection{The table head}\label{4.1.5.1}
-A \emph{table} is a sequential list of integral values. For referencing
-purposes these values are numbered sequentially. The numbers which can be
-used as addresses are chosen by the compiler and are unique for the given
-table, i.e., no two integral values in tables have the same address. The
-right-most item in the table has the largest address, which is known as the
-\pp|max limit| of the table. The left-most item has the smallest address,
-the smallest address minus one plus the calibre is known as the \pp|min
-limit| of the table. Consequently the number of values in the table is
-\pp|max limit - min limit + calibre|.
-
-If the \g{field-list-pack} is missing, a \g{field-list-pack} of the form
-\begin{grammar}
-\item open symbol, table tag, close symbol
-\end{grammar}
-where \g{table-tag} is the same is that of the \g{table-head}, is supposed to be present.
-For example, \pp|'table' messages| means \pp|'table'(messages)messages|.
-
-\subsubsubsection{The field list pack and the filling list}\label{4.1.5.2}
-
-The following applies to tables and stacks alike.
-
-\smallskip
-
-All \g{tag}\/s in a \g{field list pack} must differ one from another.
-
-The \pp|calibre| $C$ of a list is the number of \g{field}\/s in the
-\g{field-list-pack}. The list is considered to be subdivided into blocks of length
-$C$; this implies that \pp|max limit - min limit| is an integral multiple of
-$C$. The address of the right-most item in a block is considered the address
-of that block. Each value in a block can be referenced through a
-\g{selector}: the \g{field}\/s in the \g{field-list-pack} correspond, in that
-order, to the values in the block. A \g{field} is indicated by one of its
-\g{selector}\/s.
-
-\medskip\noindent
-Example 1:
-The \g{table-declaration} for \pp|for winds| (example 3 above) gives rise to
-the following list:
-\begin{center}%
-\def\K#1{\hbox to 6em{\tt~~#1\hss}}%
-\def\L#1{\hbox to 4.5em{\tt~~#1\hss}}%
-\begin{tabular}{ccc}
-address & selector & value \\[2pt]
-          & \tt wind & \K{north wind}\\[-1pt]
-\L{north} & \tt next & \K{east}       \\
-          & \tt wind & \K{east  wind} \\[-1pt]
-\L{east}  & \tt next & \K{south}      \\
-          & \tt wind & \K{south wind} \\[-1pt]
-\L{south} & \tt next & \K{west}       \\
-          & \tt wind & \K{west wind}  \\[-1pt]
-\L{west}  & \tt next & \K{north}     
-\end{tabular}
-\end{center}
-and \pp|wind*four winds[next*four winds[west]]| has the value \pp|north
-wind|.
-
-\medskip\noindent
-Example 2: the \g{table-declaration}
-\begin{program}
-'table'strings=("abcdefg":letters, "01234":digits)
-\end{program}
-\noindent
-could in some version on some computer generate:
-\begin{center}%
-\def\K#1{\hbox to 6em{\tt~~#1\hss}}%
-\def\ditto{\raisebox{-1pt}{\tt "}}%
-\begin{tabular}{ccc}
-address & selector & value \\[2pt]
-          & \tt strings &\K{13 14 15 16}\\[-1pt]
-          & \ditto      &\K{17 20 21 00}\\[-1pt]
-\K{letters}& \ditto     &\K{00 07 00 02}\\
-          & \ditto      &\K{01 02 03 04} \\[-1pt]
-          & \ditto      &\K{05 00 00 00} \\[-1pt]
-\K{digits}& \ditto      &\K{00 05 00 02}
-\end{tabular}
-\end{center}
-
-A \g{table-tag} can be used in a \g{table-element} or a \g{limit}, or as an
-\g{actual} in an \g{affix-form}, or to indicate a \g{zone} in a
-\g{classification} or \g{file-description}.
-
-\endignore
-
-
-
-Examples for \emph{manifest constants} and \emph{manifest strings} are
-\pp|\_line\_|, \pp|\_file\_|, etc. They denote either an integer or a string
-supplied by the compiler; the concrete value depends on where they appear in
-the program text. Manifest constants, strings, and their values are listed
-in Section \ref{7.3}.
-
-A \emph{visible character} is any unicode character which occupies a single
-character position. It includes the space character, but excludes the
-newline and tabular (and other control) characters. A
-\g{character-denotation} requires such a single visible character between
-two \g{absolute-symbol}\/s (\pp|/| characters), and provides the code of
-that character as an integer.
-
-Aa \A{} string is a sequence of \g{non-quote-character}\/s and
-\g{quote-image-symbol}\/s (the latter is two consecutive quote marks) enclosed
-in quote marks. These \g{non-quote-character}\/s are just the visible
-characters except for the quote mark. Since in \A{} there is no escape
-character, the newline and other control characters cannot occur in an \A{}
-string.
-
-Next to the \emph{decimal digits}, which are the characters from \pp|0| to
-\pp|9|, both the lower case letters from \pp|a| to \pp|f|, and the upper
-case letters from \pp|A| to \pp|F| are accepted as additional
-\emph{hexadecimal digits}.
-
-The formatting rules in \A{} are quite liberal. Any number of white spaces
-(space characters, tabs, new lines) are allowed before and after any
-terminal notion; spaces and tabular characters (but no newlines) are allowed
-(and ignored) inside identifiers, decimal, and hexadecimal constants. Thus
-\pp|new line|, \pp|newline|, and \pp|ne wli ne| represent the same \g{tag}.
-Similarly, \pp|1 000 000| is a legal representation of the number one
-million. There can be no space, however, in the head \pp|0x| of a
-hexadecimal constant (since it is the representation of the \g{hex-symbol}
-which is requiredto appear exactly), while there can be spaces after it and
-between the hexadecimal digits, such as \pp|0x ff e8|.
-
-Comments can be inserted as well before and after any terminal symbol. A
-long comment starts with a dollar sign \pp|\$| and ends either at the next
-dollar sign or at the end of the line, whichever comes sooner. A short
-comment starts with a sharp sign \pp|\#|, followed by letters, digits and
-spaces only, but a short comment must have at least one letter or digit.
-Naturally, a short comment cannot be followed by a \g{tag}, or a decimal or
-hexadecimal constant in the same line.
-
-Additional formatting rule allows long strings to be split into shorter
-ones. Consecutive string separated by white spaces (even if they are in
-different lines) are concatenated. Strings to be concatenated must be
-properly separated since in an \A{} string two consecutive quote marks,
-a \g{quote-image}, denotes a single quote mark. Thus
-
-
-\ignore
-at the notion \g{program}, with additional formatting rules, including
-instructions about how to insert comments and how to split the text into
-several
-
-together with additional formatting, including 
-sprinkled with 
-
-The abstract program produced by the \A{} grammar is a sequence of
-\emph{terminals}, that is, grammatical notions in the followiong categories:
-
-A syntactically correct \A{} \emph{compilation unit} is a character representation of the
-A \emph{syntactically correct} \g{program} is a character representation of
-the terminal sequence with additional formatting rules, including
-instructions about how to insert comments and how to split the program text
-into several files.
-
-Identifiers in \A{} start with a lower- or uppercase latin letter, and
-contain letters and digits only. A \emph{qualified} identifier is a
-\emph{qualifier}, followed by a \g{qualifier-symbol}, followed by an
-identifier. An example is \pp|q\cc id|, where the qualifier is \pp|q|.
-Terminals ending with \g{-tag} produce such identifiers, while providing
-additional contextual information about what kind of \g{tag}\/s are allowed
-at that place.
-
-A character denotation is a \emph{visible} character between two
-\g{absolute-symbol}\/s; and example is \pp|/\#/|. An integral denotation is a
-decimal number with an optional minus sign, or it is a hexadecimal number
-preceded by \pp|0x| (the representation of the \g{hex-symbol}). Strings are
-enclosed between quote marks, cannot contain newline characters, and
-quote marks inside a string must be doubled.
-
-\A{} formatting rules are quite liberal. Any number of space characters,
-tabs, and new lines are allowed before and after a terminal symbol; spaces
-and tabular characters (but no newlines) are allowed (and ignored) inside
-identifiers, decimal, and hexadecimal constants. Thus \pp|new\char32 line|,
-\pp|newline|, and \pp|ne\char32 wli\char32 ne| represent the same \g{tag}.
-
-Comments, which are not part of the grammar, can appear before and after any
-terminal symbol, but not inside a \g{tag} or a \g{denotation}. A comment
-starts with a dollar sign \pp|\$| and ends either at the next dollar sign or
-at the end of the line, whichever comes sooner.
-
- A short
-comment starts with a sharp sign \pp|\#|, followed by letters, digits and
-spaces only, but a short comment must have at least one letter or digit.
-Naturally, a short comment cannot be followed by a \g{tag}, or a decimal or
-hexadecimal constant in the same line.
-\endignore
 

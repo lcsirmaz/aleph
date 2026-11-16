@@ -65,7 +65,7 @@
     type     0: buffer based, 1: async message input, 2: async message output
     channel  string, when type=1 or type=2, stdin,stdout,stderr
     tmpfile  1 if created by mktemp
-    changed  0/1 indicating changes of the underlying buffer
+    changed  0/1 set when opened for writing; only changed files are returned
     ff       when opened for writing the associated aleph FILE
     buff     the underlying ArrayBuffer
     bufflen  valid only when *not* opened for writing
@@ -124,12 +124,12 @@
                    XXXXXX in (A,ptr) is replaced by random letgits
     a_closefile(af) close; if opened for writing, fix ArrayBuffer length
     a_unlinkfile(A,ptr)
-                   if found, prepend "./Trash/" to filename
+                   if found and buffer based, prepend "/.Trash/" to filename
     a_setfilepos(af,pos)
                    set position when buffered and opened for reading
 
 *   closeAll()   close all files; called when the program terminates
-*   returnFiles()  return files using messages
+*   returnFiles()  return changed and deleted files using messages
 *   addFile(fname,idx,ro,buff)
                    populate FD with the specified file; idx=-1 when URL
 *   loadFile(fname,URL)
@@ -254,8 +254,7 @@ class a_Array {
    }
    put(i,v){ this.data[i+this.offs]=v; }
    free(){ // free the allocated buffer
-      this.aupb=this.vlwb;
-      this.alwb=this.aupb+this.calibre;
+      this.aupb=this.alwb-this.calibre;
       this.size=0; 
       this.buffer.resize(0);
    }
@@ -310,12 +309,11 @@ function a_CompareStringN(A1,idx1,A2,idx2,n) {
     }
     const u1 = new Uint8Array(A1.buffer,4*(i1-w1),4*w1),
           u2 = new Uint8Array(A2.buffer,4*(i2-w2),4*w2);
-    let i=0;
-    while(n>0 && u1[i]==u2[i] && u1[i]!=0){
-       if((u1[i]&0xC0)!=0x80) n--;
-       i++;
+    // stop at the first byte of character n+1, not inside character n
+    for(let i=0;;i++){
+       if((u1[i]&0xC0)!=0x80){ if(n<=0) return 0; n--; }
+       if(u1[i]!=u2[i] || u1[i]==0) return u1[i]-u2[i];
     }
-    return n ? u1[i]-u2[i] : 0;
 }
 // get the cnt-th character from a string
 function a_StringElem(A,idx,cnt,Res){
@@ -438,7 +436,7 @@ function a2str(A,idx){
 /* msleep() function */
 function a_msleep(ms){
   // sync program calling sleep
-  toss('sleep(',ms,'), use -async for linking','sleep');
+  toss('sleep(',ms,') is not available, program linked with -noasync','sleep');
 }
 async function a_async_a_msleep(ms){ // wait ms milliseconds
   await new Promise((resolve)=>{setTimeout(resolve,ms);});
@@ -455,7 +453,7 @@ Fields in a_FilesAvaiable[]
    F.openw: -1: read only; +1: opened for writing; 0: can be opened for writing
    F.openr: -1: write only; >=0: number of aleph FILEs opening
    F.tmpfile    1 if created as tmp, otherwise undefined
-   F.changed    1 if a putchar or putdata is executed
+   F.changed    1 if opened for writing (emptied), or written
    F.ff:    if opened for writing, the associated aleph FILE
    F.type:  1 -- stdin, 2 -- stdout, {channel:"stdXX"} filled
             0 -- ArrayBuffer based, buff and bufflen are filled
@@ -537,7 +535,7 @@ class a_CharFile {
       this.name=name;
       this.type=1; // datafile: 0
       this.errno=0;
-      this.direction=0; // 0:not opened, 1:writing, 2:reading,
+      this.direction=0; // 0:not opened, 1:reading, 2:writing,
       this.fpos=-1;
       this.arg={d:dir,T:table,idx:ptr};
       // dir=4 for external, otherwise 0,1,2,3
@@ -595,7 +593,7 @@ function aChPos(F,f){
     const u=f.buffer;let i=f.fpos;let c=u[i++];
     const cc=(c>191)+(c>223)+(c>239);
     f.nextpos=f.fpos+1+cc;if(f.nextpos>F.bufflen){
-       f.pos=F.bufflen;f.eof=1;return;}
+       f.fpos=F.bufflen;f.eof=1;return;}
     c &= [255,31,15,15][cc];
     3>cc||(c=(c<<6)|u[i++]&63);
     2>cc||(c=(c<<6)|u[i++]&63);
@@ -640,7 +638,7 @@ async function a_async_a_aheadchar(f,aP){
 function a_aheadchar(f,aP){
    if(aChkIn(f)) return 0;
    if(FD[f.fidx].type==0){f.errno=0;aP[0]=f.nextch;return 1;}
-   toss(f.name,'attached to <<stdin>>, use -async for linking','ahead char');
+   toss(f.name,'attached to <<stdin>> cannot be read, program linked with -noasync','ahead char');
    return 0;
 }
 //'p'get char+""f"+char>.
@@ -656,7 +654,7 @@ function a_getchar(f,aP){
    if(aChkIn(f)) return 0;
    const F=FD[f.fidx];
    if(F.type==0){f.errno=0;aP[0]=f.nextch;aChPos(F,f);return 1;}
-   toss(f.name,'attached to <<stdin>>, use --async for linking','get char');
+   toss(f.name,'attached to <<stdin>> cannot be read, program linked with -noasync','get char');
    return 0;
 }
 
@@ -673,7 +671,7 @@ function a_putchar(f,ch){
     } else if(f.direction==1){f.errno=IOERR_EDIRECTION; return;}
     // it is opened
     f.errno=0;ch|=0;// normalize the value to be written
-    if(ch<1||ch>0x10FFFF) toss(
+    if(ch<1||ch>0x10FFFF||(0xD800<=ch&&ch<=0xDFFF)) toss(
       'invalid charcode',ch,'for charfile',f.name,'putchar');
     const F=FD[f.fidx];F.changed=1;
     if(F.type==2){//line buffered
@@ -682,8 +680,10 @@ function a_putchar(f,ch){
        }else{f.CollectLine+=String.fromCodePoint(ch);}
        return;}
     const bw=1+(ch>=0x80)+(ch>=0x800)+(ch>=0x10000);
-    if(f.fpos+bw>=F.bufflen){//extend the charfile
-       F.bufflen+=CharBufExt;F.buff.resize(F.bufflen);}
+    if(f.fpos+bw>F.bufflen){//extend the charfile
+       if(f.fpos+bw>MaxFileSize)toss(
+         'charfile',f.name,'exceeds the maximal file size',MaxFileSize,'putchar');
+       F.bufflen=Math.min(F.bufflen+CharBufExt,MaxFileSize);F.buff.resize(F.bufflen);}
     let i=f.fpos;f.fpos+=bw;const w=(v)=>{f.buffer[i++]=v;};
     switch(bw){
       default: w(ch);break;
@@ -712,6 +712,8 @@ function a_putdatap(f,data,dt){
     }
     f.errno=0;
     if((1023==(f.fpos&1023))){// buffer is full, flush it
+       if((f.fpos+1025)*4>MaxFileSize)toss(
+         'datafile',f.name,'exceeds the maximal file size',MaxFileSize,'put data');
        f.buffer[31]=f.iflag;f.fpos++;
        const F=FD[f.fidx];
        F.changed=1;
@@ -742,7 +744,7 @@ function a_getdata(f,aP){// aP[0],aP[1]
    const F=FD[f.fidx];
    // advance f.fpos
    if((f.fpos&1023)==1023){
-      if(F.bufflen<f.fpos*4+4096){f.errno=IOERR_EDATATRUNC;return 0;}
+      if(F.bufflen<(f.fpos+1)*4+4096){f.errno=IOERR_EDATATRUNC;return 0;}
       f.fpos++;
       f.buffer=new Int32Array(F.buff,f.fpos*4,1024);
       f.fpos+=32;f.iflag=f.buffer[1];
@@ -753,7 +755,7 @@ function a_getdata(f,aP){// aP[0],aP[1]
    aP[0]=f.buffer[f.fpos&1023];aP[1]=0;
    if(f.iflag&0x80000000){// pointer
       aP[1]=1;
-      if(aP[0]==-1){f.errno=IOERR_EEOF;return 0;}// EOF
+      if(aP[0]==-1){f.eof=1;f.errno=IOERR_EEOF;return 0;}// EOF
       if(aP[0]==0){return 1;}// null pointer
       let DO=1;
       f.inareas.forEach((V)=>{
@@ -800,7 +802,7 @@ function a_openfile(file,mode,A,ptr,tmpfile=0){
    if(towrite){// open for writing
      if(F.openw<0){file.errno=IOERR_EREADONLY;return 0;}
      if(F.openw!=0 || F.openr>0){file.errno=IOERR_EBUSY; return 0;}
-     F.buff=null;
+     F.buff=null;F.changed=1; // the file is emptied
      if(file.type==1){ //charfile, write (or create)
         if(F.type==2){file.CollectLine="";file.fpos=-1;} // direct output
         else{
@@ -843,6 +845,7 @@ function a_openfile(file,mode,A,ptr,tmpfile=0){
        return 1;
      } else {// datafile read
        file.eof=0;
+       if(F.type!=0){file.errno=IOERR_EBUSY;return 0;}// stdin
        if(F.bufflen<4096){file.errno=IOERR_ENOTALEPH;return 0;}
        file.buffer=new Int32Array(F.buff,0,1024);
        file.fpos=32;const n=file.buffer[file.fpos++];
@@ -871,9 +874,9 @@ function a_opentmp(file,A,ptr){
    let i=0;while(i<4*w-4 && u[i]!=0){i++;}
    // we must have i>=6, u[i]=0, u[i-1]...u[i-6]=/X/, these are
    // replaced. If this is not the case, return 0
-   if(u[i]!=0 || i<6 || u[i-1]!=tempArg || u[i-2]!=tempArg ||
-      u[i-5]!=tempArg|| u[i-6]!=tempArg){
-        file.errno=IOERR_ETEMP;return 0; }
+   let ok=(u[i]==0 && i>=6);
+   for(let j=1;ok && j<=6;j++){ok=(u[i-j]==tempArg);}
+   if(!ok){file.errno=IOERR_ETEMP;return 0; }
    // replace them by random letters
    for(let j=i-6;j<i;j++){u[j]=codeA+(Math.random()*26|0);}
    return a_openfile(file,writeArg,A,ptr,1);
@@ -930,8 +933,6 @@ function a_setfilepos(f,p){
       if((p&~1023)!=(f.fpos & ~1023)){// read the block
           const offs=(p&~1023)*4;
           if(F.bufflen<offs+4096){f.errno=IOERR_ESEEK;return;}
-          // when reading the next data it loads the block
-          if((p&1023)==1023){f.fpos=p;return;}
           f.buffer=new Int32Array(F.buff,offs,1024);
       }
       f.fpos=p;f.iflag=f.buffer[(p>>5)&31]<<(p&31);
@@ -943,7 +944,7 @@ function a_unlinkfile(A,ptr){
    for(let i=0;i<FD.length;i++){
     if(fname==FD[i].path){
        const F=FD[i];
-       if(F.openw>=0){F.path="/.Trash/"+fname;
+       if(F.type==0 && F.openw>=0){F.path="/.Trash/"+fname;
          if(F.openw==0 && F.openr==0 && F.buff){F.buff=null;F.bufflen=0;}}
        return;
    }}
@@ -976,8 +977,10 @@ function addFile(fname,idx,ro,fbuff){
      ff:null    //associated aleph FILE, always null
    });
 }
-// when the program ends, return files; skip URL and tmp files
-// first return deleted files, after the rest;
+// when the program ends, return the changed files: deleted, written,
+// or created; skip URL and tmp files. The main thread keeps its own
+// copy of all passed files, unchanged files need not be returned.
+// First return deleted files, after the rest;
 // one can delete <f> and later create another <f>
 function returnFiles(){
    FD.forEach((F)=>{
@@ -986,14 +989,19 @@ function returnFiles(){
                rm:'yes'});
    }});
    FD.forEach((F)=>{
-     if(F.type==0 && F.idx!=-1 && !F.tmpfile && !F.path.startsWith('/.Trash/')){
-        self.postMessage({cmd:'file',job:Jobno,idx:F.idx,changed:F.changed?1:0,
-               filename:F.path,data:F.buff},[F.buff]);
+     if(F.type==0 && F.idx!=-1 && F.changed && !F.tmpfile && !F.path.startsWith('/.Trash/')){
+        try{self.postMessage({cmd:'file',job:Jobno,idx:F.idx,changed:1,
+               filename:F.path,data:F.buff},[F.buff]);}
+        catch(e){}// not returned; the main thread keeps the old one
    }});
 }
 /* ------------------------------------------------------------- */
 // buffering the 'run' message until all files are loaded 
-let waitingForFiles=0,startRunning=0;
+let waitingForFiles=0,startRunning=0,loadError='';
+function startRoot(){// all files are here; run or report the loading error
+   if(loadError){terminate(2,loadError);}
+   else{runRoot();}
+}
 
 function loadFile(fname,url){
    let xhr=new XMLHttpRequest();
@@ -1001,16 +1009,17 @@ function loadFile(fname,url){
    xhr.responseType='arraybuffer';
    waitingForFiles++;
    xhr.addEventListener('loadend',()=>{
-     if(xhr.status!=200){self.postMessage({cmd:'error loading',url:url,status:xhr.status});}
+     if(xhr.status!=200){
+        if(!loadError)loadError='cannot load '+url+' (status '+xhr.status+')';}
      else{addFile(fname,-1,1,xhr.response);}
-     waitingForFiles--; if(waitingForFiles<=0 && startRunning){runRoot();}
+     waitingForFiles--; if(waitingForFiles<=0 && startRunning){startRoot();}
    },false);
    xhr.send();
 }
 // start program run after loading finishes
 function runmsg(){
    if(waitingForFiles){startRunning=1;}
-   else{runRoot();}
+   else{startRoot();}
 }
 /* ************************************************************* */
 // send the actual running stack 
@@ -1074,24 +1083,34 @@ async function runRoot(){
     let ret=0;
     try{await a_ROOT();}
     catch(error){// exit or error
-          if(error.cause=="exit"){// exit code is in exval
+          if(error?.cause=="exit"){// exit code is in exval
             ret=1;
           } else {// error, probably from a toss()
-            ret=2; exval="Error: "+error.message+", type: "+error.cause;
+            ret=2; exval="Error: "+(error?.message??error)+
+                         (error?.cause?", type: "+error.cause:"");
           }
     }
     terminate(ret,exval); // disable forthcoming 'kill' messages
 }
 // 0: terminated, 1: exit, 2: error, 3: kill; mm: message (number or string)
+// changed files are returned unless killed
+// runs only once; an error in any step does not prevent 'terminated'
+let terminating=0;
 function terminate(ret,mm){
-    closeAll();
-    self.postMessage({cmd:'exit',job:Jobno,data:ret,msg:mm});
-    if(ret!=0) a_PrintStackFrame();
-    if(ret<=1) dump_Profile(a_PROFILE);
-    returnFiles();
+    if(terminating)return;
+    terminating=1;
+    const T=(f)=>{try{f();}catch(e){console.log('terminate:',e);}};
+    T(closeAll);
+    T(()=>{self.postMessage({cmd:'exit',job:Jobno,data:ret,msg:mm});});
+    if(ret!=0) T(a_PrintStackFrame);
+    if(ret<=1) T(()=>{dump_Profile(a_PROFILE);});
+    if(ret!=3) T(returnFiles); // killed: files are not returned
     self.postMessage({cmd:'terminated',job:Jobno});
     self.close();
 }
+// last resort: an error escaping runRoot() ends the program
+self.addEventListener("unhandledrejection",(e)=>{
+    terminate(2,"Error: "+(e.reason?.message??e.reason));});
 
 /* received messages:
     init, job:nnn
@@ -1109,13 +1128,16 @@ sent messages:
   read,  file:FFF            read from channel FFF (stdin),
   write, file:FFF, data:str  write the channel FFF (stdout,stderr)
 
-  file   filename:FFF,idx, data:ArrayBuffer return a file when finished
-  file   filename:FFF,idx,rm:'yes' (idx==-2 for a new file)
+  file   filename:FFF,idx, data:ArrayBuffer return a changed or new file
+         when finished, not when killed (a file which cannot be returned
+         is skipped)
+  file   filename:FFF,idx,rm:'yes' a deleted file (idx==-2 for a new file)
   stack  count:n,data:'rulename'
   trace  data:'rule+a1+a2'  tracerule messages, can be huge
   profile  data:'rule',count:nnn  profile information at the end
 
-  exit   data:0/1/2/3,mgs:'error or kill'
+  exit   data:0/1/2/3,mgs:'error or kill'; a file which cannot be loaded
+         from its URL gives data:2 before running
   terminated                last message before closing
 
 */

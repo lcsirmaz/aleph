@@ -20,7 +20,7 @@ $ *************************************************************
 
 $ HEADER ***************************************************** $
 'constant' version major = 1,
-           version minor = 2.
+           version minor = 3.
 'constant' target word size = 32.
 'constant' path separator=/:/,		$ or /;/
            dir separator=///.		$ or /\/
@@ -75,7 +75,7 @@ $ BODY ******************************************************* $
  "ALEPH-M javascript linker, version %d.%d%n"
  "Copyright (C) 2024-2025 Laszlo Csirmaz%n"
  "This is a free software, see the source at https://github.com/lcsirmaz/aleph%n"
- "for copyright information. There is NO WARRANTY; not even mechantibility or%n"
+ "for copyright information. There is NO WARRANTY; not even merchantability or%n"
  "fitness for a particular purpose." 
  : version message
 ).

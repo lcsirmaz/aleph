@@ -83,6 +83,8 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
    $ read an interval from an area, lw and up are NUMBERs
    (RR+Tnumber+lw,lw->up,1->count;
     RR+Titem+tag,get item def+tag,
+      (is item flag+tag+texternal,reject external in area+tag,
+          get number zero+lw,lw->up,1->count;
       (=type*ITEM[tag]=
        [Iconstant;Ipointer constant],repr*ITEM[tag]->lw,lw->up,1->count;
        [Istack;Itable;Istatic stack], $ (lw+calibre-1,up)
@@ -91,14 +93,15 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
             reg operator+Aminus+w+v,load register+1+1+w,
             reg operator+Aplus+w+v,store register+v+lw,
           get vupb+tag+up,2->count;
-       corrupt ice file+_rule_);
+       corrupt ice file+_rule_));
     get number zero+lw,get number zero+up,0->count),
    (R+Dcolon,(count=0,target min int->lw;count=1;corrupt ice file+_rule_),
       (RR+Tnumber+up;
        RR+Titem+tag,get item def+tag,
+       (is item flag+tag+texternal,reject external in area+tag,get number zero+up;
        (=type*ITEM[tag]=
         [Iconstant;Ipointer constant],repr*ITEM[tag]->up;
-        corrupt ice file+_rule_);
+        corrupt ice file+_rule_));
        target max int->up);
     count=0,corrupt ice file+_rule_;
     +).
@@ -108,17 +111,24 @@ $ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - $
   "area at %l: this alternative never succeeds"      :cannot succeed,
   "last area at %l: not all cases are covered"       :area may fail,
   "classification at %l: always succeeds"            :classification succeeds,
-  "rule %p at %l: infinite loop including rule %p"   :loop in rule
+  "rule %p at %l: infinite loop including rule %p"   :loop in rule,
+  "area at %l: external %p cannot be used in an area" :external in area
 ).
+'variable'area line=0, $ line of the area being checked; 0: no message
+           area external=0. $ set when an external was reported
+'a'reject external in area+>tag:
+   area line=0;
+   1->area external,error+external in area+area line+tag*ITEM[tag].
 'a'check area+>set+dl>-new-lw-up-rlw-rup:
-   must+Tconst+dl,0->new,
+   must+Tconst+dl,dl->area line,0->area external,0->new,
    (nxt:read area interval+lw+up,
          load register+0+lw+rlw,load register+0+up+rup,
-         (reg compare2+Ale+rlw+rup,add interval+set+rlw+rup+new;
+         (is+area external,1->new; $ not added: no follow-up errors
+          reg compare2+Ale+rlw+rup,add interval+set+rlw+rup+new;
           error+larger lower bound+dl+lw+up),
          (R+Dsemicolon,:nxt;+)),
    merge intervals+set,
-   (is+new;error+cannot succeed+dl).
+   (is+new;error+cannot succeed+dl),0->area line.
     
 'a'check areas-set-dl-cnt-mark:
    $ looking at the first Darea; Dcomma is not touched

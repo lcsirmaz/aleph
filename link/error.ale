@@ -30,7 +30,7 @@ $ HEADER *********************************************** $
 
 $ BODY ************************************************* $
 'pragmat'if=compile.
-'pragmat'require=("input","lexical","item","target").
+'pragmat'require=("input","lexical","item","target","number").
 
 'table'MESSAGE[]=(
   "too many errors, further messages are suppressed" :too many errors,
@@ -112,6 +112,12 @@ $   was+BOLD+ptr,print+BOLD+ptr;
    (line<=0;print form+line),
    (source=Squote image;print char+///,print base+source).
 
+'a'print target number+>x-obuff-ptr:
+   $ print the target number NUMBER[x] in decimal
+   >>BUFFER->obuff->ptr,get number repr+x,
+     (nxt:>>BUFFER<=ptr,unstack to+BUFFER+obuff;
+          incr+ptr,print char+BUFFER[ptr],:nxt).
+
 'a'format print+@+>fmt-optr-ptr:
    >>BUFFER->optr,unpack string+MESSAGE+fmt+BUFFER,add+optr+1+ptr,
    (nxt:>>BUFFER<ptr;
@@ -125,6 +131,7 @@ $   was+BOLD+ptr,print+BOLD+ptr;
 $                     [/f/],(shift affix block+@,print form+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/l/],(shift affix block+@,print line+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/d/],(shift affix block+@,print int+fmt;print+"[?]"),incr+ptr,:nxt;
+                     [/t/],(shift affix block+@,print target number+fmt;print+"[?]"),incr+ptr,:nxt;
                      [/n/],print char+newline,incr+ptr,:nxt;
                      print char+BUFFER[ptr],incr+ptr,:nxt))),
    (shift affix block+@,print+"[...]";+),

@@ -125,9 +125,9 @@ $ size estimator: [XXX] or [=XXX=]
        (is number+#+esize,0->eqf,incr+etype,
           (=esize=
            [:0],warning+9+size estimator range+ltype+esize,1->esize;
+           [101:max stack size],(etype=1,warning+6+size estimator range+ltype+esize,100->esize;+);
            [max stack size:],warning+6+size estimator range+ltype+esize,
                  (etype=1,100->esize;max stack size->esize);
-           [101:],(etype=1,warning+6+size estimator range+ltype+esize,100->esize;+);
            +);
         is qtag+eqf+esize,add+etype+3+etype;
         ahead+Sbus,0->esize->eqf->etype;

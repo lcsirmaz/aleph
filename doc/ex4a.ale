@@ -1,0 +1,6 @@
+'pragmat'title="Applying quicksort".
+'pragmat'require="quicksort".
+\smallskip
+'stack'[]A[]=(/3/,/1/,/4/,/6/,/5/,/3/,/2/,/3/,/1/).
+'root'quicksort+<<A+>>A+A,put line+STDOUT+A+newline.
+'end'

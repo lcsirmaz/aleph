@@ -1,5 +1,5 @@
-$ towers of hanoi $
-'charfile'print="output">.
+'pragmat'title="Towers of Hanoi".
+'charfile'print=>"out.txt".
 \smallbreak
 'action'move tower+>length+>from+>via+>to:
    length=0;

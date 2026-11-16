@@ -107,12 +107,14 @@ void a_comparestring(int F1,int F2,int F3,int F4,int A[1]){
 void a_comparestringn(int F1,int F2,int F3,int F4,int F5,int A[1]){
   int *ptr1=to_LIST(F1)->offset+F2,
       *ptr2=to_LIST(F3)->offset+F4;
-  const char*chr1=(char*)(ptr1+1-*ptr1),
-            *chr2=(char*)(ptr2+1-*ptr2);
-  while(F5>0){
+  const unsigned char*chr1=(unsigned char*)(ptr1+1-*ptr1),
+                     *chr2=(unsigned char*)(ptr2+1-*ptr2);
+  // bytes are compared as unsigned, as strcmp() does; stop at the
+  // first byte of character n+1, not inside character n
+  for(;;){
+    if((*chr1&0xC0)!=0x80){ if(F5<=0){ break; } F5--; }
     A[0]=*chr1-*chr2;if(A[0]!=0){ return; }
     if(*chr1==0){ return; }
-    if((*chr1&0xC0)!=0x80){F5--;}
     chr1++; chr2++;
   }
   A[0]=0; return;
@@ -164,6 +166,8 @@ void a_packstring(int F1,int F2,int F3){
    }
    width/=4;
    int *goal=a_extension(F3,width);
+   // the extension can move the list; F1 and F3 can be the same
+   ptr=to_LIST(F1)->offset+to_LIST(F1)->aupb-F2+1;
    char *chr=(char*)goal;goal[width-3]=0;len=0;
    for(i=0;i<F2;i++){int c=ptr[i];
      if(c<=0||c>=0x110000) continue;
@@ -198,7 +202,9 @@ void a_unpackstring(int F1,int F2,int F3){
       a_fatal(a_FATAL_string);
    }
    unsigned *goal=(unsigned*)a_extension(F3,n);
-   char *chr=(char*)(ptr+1-*ptr);
+   // the extension can move the list; F1 and F3 can be the same
+   ptr=to_LIST(F1)->offset+F2;
+   unsigned char *chr=(unsigned char*)(ptr+1-*ptr);
    for(i=0;i<n;i++,goal++){
      *goal=*chr;chr++;
      if(*goal<0xC0) continue;
@@ -226,6 +232,8 @@ void a_copystring(int F1,int F2,int F3){
        a_fatal(a_FATAL_string);
    }
    int *goal=a_extension(F3,n)+(n-1);
+   // the extension can move the list; F1 and F3 can be the same
+   ptr=to_LIST(F1)->offset+F2;
    for(i=0;i<n;i++) goal[-i]=ptr[-i];
    to_LIST(F3)->aupb+=n;
 }
@@ -252,7 +260,8 @@ void a_msleep(int F1){
 #define EBADARG         10002   // mode is not /r/ or /w/ or /a/
 #define ETRUNCATED      10003   // file is truncated (end is missing)
 #define EWRONGALEPH     10004   // input datafile is not an aleph file
-#define EWRONGTYPE      10005   // getdata,putdata on char file
+#define EWRONGTYPE      10005   // read on a file opened for write, or write
+                                // on a file opened for read
 #define ENOTOPENED      10006   // getdata,putdata on unopened file
                                 // getchar, putchar on unopened file
 #define EWRONGVALUE     10007   // putdata/getdata pointer not in any area
@@ -650,7 +659,7 @@ int a_getdata(int F1,int A[2]){
 #   define df   to_DFILE(F1)
     if(!getfl_data(df)){ df->fileError=ENODATAFILE; return 0;}
     if(df->fhandle<=0){if(!a_tryopen(F1,'r')) return 0; }
-    if(getfl_rw(df)){ df->fileError=ENOTOPENED; return 0; }
+    if(getfl_rw(df)){ df->fileError=EWRONGTYPE; return 0; }
     if(getfl_eof(df)){df->fileError=EREADEOF; return 0;}
     // advance df->fpos
     if((df->fpos&1023)==1023){
@@ -729,12 +738,8 @@ void a_setfilepos(int F1,int F2){
     setfl_eof(df,0); // clear EOF indicator
     if((F2&~1023)!=(df->fpos & ~1023)){ // read the block
       offset=(off_t)(F2 & ~1023)*sizeof(int);
-      if((F2&1023)==1023) offset += 1024*sizeof(int);
       if(lseek(df->fhandle,offset,SEEK_SET)<0){ // error
          df->fileError=errno; return;
-      }
-      if((F2&1023)==1023){ // done
-          df->fpos=F2;df->fileError=0; return;
       }
       if(a_read_databuffer(df)){ // i/o error
          return;

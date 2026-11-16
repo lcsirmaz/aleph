@@ -130,7 +130,10 @@ $ *********************************************************************
                 free register+reg2;
    [Atimes],mult+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
                 free register+reg2;
-   [Adiv],div+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1],
+   [Adiv],(REGISTER[reg2]=0,0->REGISTER[reg1]; $ division by zero: 0
+           REGISTER[reg2]=-1, $ min int/-1 traps in C; negate (wraps)
+             subtr+0+REGISTER[reg1]+REGISTER[reg1];
+           div+REGISTER[reg1]+REGISTER[reg2]+REGISTER[reg1]),
                 free register+reg2;
    $ unary operators
    [Acomp],bool invert+REGISTER[reg1]+REGISTER[reg1];
