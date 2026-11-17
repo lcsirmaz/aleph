@@ -34,7 +34,8 @@ $ create a new expression
    e1=e2;
    was+const+e1,was+const+e2,const[e1]=const[e2];
    was+var+e1,was+var+e2,var[e1]=var[e2];
-   op*expr[e1]=op*expr[e2],is same+left*expr[e1]+left*expr[e2],
+   was+expr+e1,was+expr+e2,op*expr[e1]=op*expr[e2],
+        is same+left*expr[e1]+left*expr[e2],
         is same+right*expr[e1]+right*expr[e2].
 $ simplify the formula
 'action'simplify+>e+f>-e1-e2:
