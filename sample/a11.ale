@@ -26,10 +26,10 @@ $ print the three towers
    add+row+<<st+idx,(was+st+idx,full disc+st[idx];empty disc).
 'action'full disc+>n-spaces:
    subtr+total+n+spaces,
-   print chars+spaces+/ /,print chars+n+/*/,print chars+1+/*/,
+   print chars+spaces+/ /,print chars+n+/*/,print char+/*/,
    print chars+n+/*/,print chars+spaces+/ /.
 'action'empty disc:
-   print chars+total+/ /,print chars+1+/*/,print chars+total+/ /.
+   print chars+total+/ /,print char+/|/,print chars+total+/ /.
 'action'print chars+>n+>chr:
    n=0;print char+chr,decr+n,:print chars.
 
@@ -37,7 +37,7 @@ $ print the three towers
    fill A+total,print towers,move tower+total+A+B+C.
 
 'root'
-  printf+"Towers of Hanoi with moves.%n"
+  printf+"Towers of Hanoi with printing.%n"
          "How many towers? Enter a number between 1 and 6:",
   get int+STDIN+total,total>=1,total<=6,play game.
 
