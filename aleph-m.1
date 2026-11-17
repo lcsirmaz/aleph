@@ -1,5 +1,5 @@
 .\" Manual page for the ALEPH-M tools: acomp, aopt, alink, jslink
-.TH ALEPH 1 "November 2026" "ALEPH-M v2.5" "ALEPH-M tools"
+.TH ALEPH-M 1 "November 2026" "ALEPH-M v2.5" "ALEPH-M tools"
 .SH NAME
 acomp, aopt, alink, jslink \- compile, optimize and link ALEPH programs
 .SH SYNOPSIS
@@ -60,12 +60,15 @@ The word size is 32 bits for both targets.
 The file arguments are source files; the extension
 .B .ale
 can be omitted.
-Usually a single source file is given, and each module is compiled
+Usually a single source file is given, modules are compiled
 separately.
 Modules mentioned in
 .B require
-pragmats are read (only their public parts are used), but they are not
-compiled.
+and
+.B library
+pragmats (see
+.B Other options
+below) are read but are not compiled as only their public parts are used.
 .SS Global options
 A later option of the same kind replaces an earlier one.
 .TP
@@ -77,7 +80,11 @@ Without this option the name is derived from the first source file, and
 the output is written to the current directory.
 .TP
 .BI \-I " dir" : dir...
-Colon separated list of directories searched for source files.
+Colon separated list of directories searched for
+.B require
+and
+.B include
+source files.
 .TP
 .BI \-L " dir"
 The directory containing the standard library source
@@ -152,7 +159,7 @@ Without this option the name of the main .ice file is used, and the
 output is written to the current directory.
 .TP
 .BI \-L " dir"
-The directory containing the compiled standard library
+The directory containing the precompiled standard library
 .BR stdC.ice .
 The default search path is
 .BR ./aleph/stdice:/usr/local/aleph .
@@ -176,14 +183,15 @@ example
 .PP
 .nf
 .RS
-gcc \-O2 \-I stdcore \-o prog prog.c stdcore/*.c
+gcc \-O2 \-I coreC \-o prog prog.c coreC/*.c
 .RE
 .fi
 .SH JSLINK
 The file arguments and the options
 .BR \-o ,
 .BR \-L ,
-.B \-W
+.BR \-no\-stdlib ,
+.BR \-W ,
 and
 .B \-g
 are the same as for
@@ -191,19 +199,10 @@ are the same as for
 with the following differences.
 The extension of the output file is
 .BR .js ;
-the compiled standard library is
-.BR stdjs.ice ,
-and the default search path is
-.BR ./aleph:/usr/local/aleph .
+the precompiled standard library is
+.BR stdjs.ice .
 .TP
-.B \-nostdlib
-Do not add the standard library.
-(Note the spelling: the corresponding
-.B alink
-option is
-.BR \-no\-stdlib .)
-.TP
-.B \-noasync
+.B \-no\-async
 Do not generate asynchronous calls.
 By default the generated code is asynchronous, so that the program can
 wait for input, e.g., from a console, without blocking.
@@ -226,7 +225,7 @@ acomp \-I stdlib \-o work/mod mod
 aopt work/prog
 aopt work/mod
 alink \-L stdC \-o work/prog work/prog work/mod
-gcc \-O2 \-I stdcore \-o work/prog work/prog.c stdcore/*.c
+gcc \-O2 \-I coreC \-o work/prog work/prog.c coreC/*.c
 .RE
 .fi
 .PP
@@ -267,10 +266,10 @@ compiled standard library for the C target, read by
 compiled standard library for the JavaScript target, read by
 .B jslink
 .TP
-.B stdcore/
+.B coreC/
 C sources and header files of the runtime core
 .TP
-.B alephRE.js
+.B corejs/alephRE.js
 JavaScript runtime environment
 .SH SEE ALSO
 .IR "ALEPH Manual" ,

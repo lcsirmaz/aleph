@@ -436,7 +436,7 @@ function a2str(A,idx){
 /* msleep() function */
 function a_msleep(ms){
   // sync program calling sleep
-  toss('sleep(',ms,') is not available, program linked with -noasync','sleep');
+  toss('sleep(',ms,') is not available, program linked with -no-async','sleep');
 }
 async function a_async_a_msleep(ms){ // wait ms milliseconds
   await new Promise((resolve)=>{setTimeout(resolve,ms);});
@@ -638,7 +638,7 @@ async function a_async_a_aheadchar(f,aP){
 function a_aheadchar(f,aP){
    if(aChkIn(f)) return 0;
    if(FD[f.fidx].type==0){f.errno=0;aP[0]=f.nextch;return 1;}
-   toss(f.name,'attached to <<stdin>> cannot be read, program linked with -noasync','ahead char');
+   toss(f.name,'attached to <<stdin>> cannot be read, program linked with -no-async','ahead char');
    return 0;
 }
 //'p'get char+""f"+char>.
@@ -654,7 +654,7 @@ function a_getchar(f,aP){
    if(aChkIn(f)) return 0;
    const F=FD[f.fidx];
    if(F.type==0){f.errno=0;aP[0]=f.nextch;aChPos(F,f);return 1;}
-   toss(f.name,'attached to <<stdin>> cannot be read, program linked with -noasync','get char');
+   toss(f.name,'attached to <<stdin>> cannot be read, program linked with -no-async','get char');
    return 0;
 }
 

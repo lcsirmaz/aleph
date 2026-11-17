@@ -99,9 +99,9 @@ $ check argument list for options
     arg top < <<STDARG,error+no input;
     is first arg+"--help",message+help message+aleph runtime;
     is first arg+"--version",message+version message+version major+version minor;
-    is first arg+"-nostdlib",0->add stdlib,
+    is first arg+"-no-stdlib",0->add stdlib,
         previous string+STDARG+arg top,:nxt;
-    is first arg+"-noasync",0->gen async,previous string+STDARG+arg top,:nxt;
+    is first arg+"-no-async",0->gen async,previous string+STDARG+arg top,:nxt;
     is first arg+"-o",previous string+STDARG+arg top,
         (arg top < <<STDARG,error+missing argument+/o/;
          arg top->target file,previous string+STDARG+arg top,:nxt);
