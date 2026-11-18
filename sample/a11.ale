@@ -1,5 +1,5 @@
 'pragmat'title="Towers of Hanoi with visual printing".
-'pragmat'warning="The program waits 2 seconds between disc moves".
+'pragmat'warning="The program waits 2.4 seconds between disc moves".
 
 $ The peg contents are stored in three stacks
 'action'move tower+>height+[]from[]+[]via[]+[]to[]:
@@ -38,7 +38,7 @@ $ print the three towers
 
 'root'
   printf+"Towers of Hanoi with printing.%n"
-         "How many towers? Enter a number between 1 and 6:",
+         "How many discs? Enter a number between 1 and 6:",
   get int+STDIN+total,total>=1,total<=6,play game.
 
 'end'

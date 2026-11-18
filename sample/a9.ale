@@ -11,7 +11,7 @@ $ indexing error when popping too many elements
 'stack'[1]stack[]=(1,2,3,4,5,6,7).
 'stack'[](#,#)other[]=(1234:stptr). $ pointer definition
 
-'action'print+@+>x: $ mulitple print
+'action'print+@+>x: $ multiple print
    print int+x,(shift affix block+@,:print;
                 print char+newline).
 

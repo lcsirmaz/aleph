@@ -3,7 +3,7 @@ $ using the quicksort module, which sorts a complete stack
 $  either ascending or descending order
 'pragmat'require="a17m1".
 
-$ the stact to be sorted
+$ the stack to be sorted
 'stack'[]V[]=(10,7,-3,-99,30,8,12,4,14,5,10,-3,-80).
 
 'action'print V-v:

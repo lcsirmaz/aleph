@@ -16,7 +16,7 @@ $ it is a global variable changed by the called rule.
   print st,  $   0  10  20  30  40
     <<st->x,incr both+x+st[x],
     $ the second out value is stored at the
-    $ location deterimined by the new value or x
+    $ location determined by the new value or x
   print st,  $   0   1  20  30  40
     >>st->ptr,decr global+st[ptr],
     $ the out value is stored at a different location
