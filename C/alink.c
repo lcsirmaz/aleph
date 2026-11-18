@@ -5339,14 +5339,15 @@ a_G28:a_1426(a_1001,2130706348); return;
 static void a_1478(int a_A[1]){ /* readtargetnumber+a> */
 int a_L2;int a_L3;int a_P[1];
 a_L2=to_LIST(a_1452)->aupb;
-a_L3=0;
-a_G3:{ if(a_1459==45){ goto a_G4;}
- if((48<=a_1459 && a_1459<=57)){ goto a_G6;}
-  goto a_G7;}
-a_G4:a_L3=1;
-a_G5:a_1472(); goto a_G3;
-a_G6:a_1463(a_1459); goto a_G5;
-a_G7:a_1007(a_L3,a_L2,a_P);a_A[0]=a_P[0];
+if(!a_equal(a_1459,45)){ goto a_G5;}
+a_1472();
+a_L3=1; goto a_G6;
+a_G5:a_L3=0;
+a_G6:{ if(!((48<=a_1459 && a_1459<=57))){ goto a_G9;}
+}
+a_1463(a_1459);
+a_1472(); goto a_G6;
+a_G9:a_1007(a_L3,a_L2,a_P);a_A[0]=a_P[0];
 a_unstackto(a_1452,a_L2); return;
 } /* readtargetnumber */
 static void a_1464(int a_F1,int a_A[1]){ /* gettagdata+>a+a> */

@@ -1,4 +1,4 @@
-$ ICE file, produced by ALEPH compiler v2.4
+$ ICE file, produced by ALEPH compiler v2.5
 'module' "stdlib" "jslib base" 32 
 4 245 "base"
 246 327 "stdlib"
@@ -74,15 +74,15 @@ $ ICE file, produced by ALEPH compiler v2.4
 <rule> I69 276 206 2<formal stack> 1 1<formal in> "stdlib" "unstackto"
 <rule> I70 532 201 2<formal table> 1 1<formal in> "stdlib" "was"
 .
-'external'I10 "#3=#1+#2".
-'external'I64 "#3=#1-#2".
-'external'I45 "#3=#1*#2".
-'external'I11 "#4=#1*#2+#3".
+'external'I10 "#3=(#1+#2)|0".
+'external'I64 "#3=(#1-#2)|0".
+'external'I45 "#3=Math.imul(#1,#2)".
+'external'I11 "#4=(Math.imul(#1,#2)+#3)|0".
 'external'I23 "#3=(#1/#2)|0".
 'external'I24 "@00@01#4=#1%#2@10#3=0|#1/#2@11{const ar=#1%#2;#3=0|#1/#2;#4=ar;}".
 'external'I32 "#1++".
 'external'I22 "#1--".
-'external'I27 "#2=Math.abs(#1)".
+'external'I27 "#2=Math.abs(#1)|0".
 'external'I40 " if(#1>#2){#2=#1;}".
 'external'I41 " if(#1<#2){#2=#1;}".
 'external'I25 "#1==#2@#1!=#2".
@@ -106,7 +106,7 @@ $ ICE file, produced by ALEPH compiler v2.4
 'external'I16 "#3=#1|#2".
 'external'I17 "#3=#1^#2".
 'external'I36 "#1<<=#2".
-'external'I58 "#1>>>=#2".
+'external'I58 "(#1>>>=#2)|0".
 'external'I70 "#1.alwb<=#2&&#2<=#1.aupb@#2<#1.alwb||#2>#1.aupb".
 'external'I46 "#2+=#1.calibre".
 'external'I51 "#2-=#1.calibre".

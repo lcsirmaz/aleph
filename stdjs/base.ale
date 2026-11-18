@@ -157,16 +157,16 @@ $ functions with only dummy out affixes and questions with no branching
 $      are optimized out.
 
 $ arithmetic operators
-'x''f'add+>x+>y+z>            ="#3=#1+#2",	$ x+y -> x
-      subtr+>x+>y+z>          ="#3=#1-#2",	$ x-y -> z
-      mult+>x+>y+z>           ="#3=#1*#2",	$ x*y -> z
-      addmult+>x+>y+>z+u>     ="#4=#1*#2+#3",	$ x*y+z -> u
+'x''f'add+>x+>y+z>            ="#3=(#1+#2)|0",	$ x+y -> x
+      subtr+>x+>y+z>          ="#3=(#1-#2)|0",	$ x-y -> z
+      mult+>x+>y+z>           ="#3=Math.imul(#1,#2)",	$ x*y -> z
+      addmult+>x+>y+>z+u>     ="#4=(Math.imul(#1,#2)+#3)|0",	$ x*y+z -> u
       div+>x+>y+z>            ="#3=(#1/#2)|0",	$ x/y -> z
       divrem+>x+>y+z>+u>      =			$ x/y -> z, x%y-> u
       "@00@01#4=#1%#2@10#3=0|#1/#2@11{const ar=#1%#2;#3=0|#1/#2;#4=ar;}",
       incr+>x>                ="#1++",		$ x+1 -> x
       decr+>x>                ="#1--",		$ x-1 -> x
-      getabs+>x+y>            ="#2=Math.abs(#1)",$ |x| -> y
+      getabs+>x+y>            ="#2=Math.abs(#1)|0",$ |x| -> y
       max+>x+>y>              =" if(#1>#2){#2=#1;}",$ max(x,y) -> y
       min+>x+>y>              =" if(#1<#2){#2=#1;}".$ min(x,y) -> y
 $ relations
@@ -193,7 +193,7 @@ $ boolean operators
       bool or+>x+>y+z>        ="#3=#1|#2",	$ x|y -> z
       bool xor+>x+>y+z>       ="#3=#1^#2",	$ x^y -> z
       left clear+>x>+>n       ="#1<<=#2",	$ x<<n -> x
-      right clear+>x>+>n      ="#1>>>=#2".	$ x>>n -> x
+      right clear+>x>+>n      ="(#1>>>=#2)|0".	$ x>>n -> x
 $ stacks and tables
 'x''q'was+t[]+>p              ="#1.alwb<=#2&&#2<=#1.aupb@#2<#1.alwb||#2>#1.aupb".
 'x''f'next+t[]+>p>            ="#2+=#1.calibre",

@@ -132,9 +132,8 @@ $ NUMBER ********************************** $
         [/-/],next char,read index+1+x;
         corrupt ice file+_rule_.
 'a'read target number+x>-obuff-sign:
-   >>BUFFER->obuff,0->sign,
+   >>BUFFER->obuff,(char=/-/,next char,1->sign;0->sign),
    (nxt:=char=
-      [/-/],1->sign,next char,:nxt;
       [/0/:/9/],extend BUFFER+char,next char,:nxt;
       enter const string+sign+obuff+x,unstack to+BUFFER+obuff).
 
