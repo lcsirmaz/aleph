@@ -1,0 +1,45 @@
+'pragmat'title="sieve of Eratosthenes".
+$ List the primes up to N (default 200, at most 200000).
+$ Usage:  run sieve 1000
+$ Shows: a stack used as an array, its actual bounds <<P and >>P,
+$ extending a stack in a loop. The sandbox limits the size of a stack
+$ (to about 250000 elements), hence the upper limit for N.
+
+$ P[<<P+k] is 1 if k is still a prime candidate, 0 if crossed out
+'stack'[1]P[].
+
+'a'fill+>n-k: scratch+P,0->k,(nxt:k>n;(* 1->P *)P,incr+k,:nxt).
+
+'a'sieve+>n-k-m-i:
+   2->k,
+   (nxt:mult+k+k+m,
+        (m>n;
+         add+<<P+k+i,
+         (P[i]=0;
+          $ cross out k*k, k*k+k, ... ; smaller multiples are done
+          add+<<P+m+i,(cross:i>>>P;0->P[i],add+i+k+i,:cross)),
+         incr+k,:nxt)).
+
+'a'print primes+>n-k-i-cnt:
+   0->cnt,2->k,
+   (nxt:k>n;
+        add+<<P+k+i,
+        (P[i]=0;printf+" %d"+k,incr+cnt,
+           divrem+cnt+10+#+i,(i=0,printf+"%n";+)),
+        incr+k,:nxt),
+   divrem+cnt+10+#+i,(i=0;printf+"%n"),
+   printf+"There are %d primes up to %d%n"+cnt+n.
+
+'q'arg number+>ptr+n>-i-c:
+   0->n->i,string elem+STDARG+ptr+0+#,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +).
+
+'root'-n:
+   (>>STDARG<<<STDARG,200->n;
+    (arg number+>>STDARG+n,n>=2,n<=200000);
+    printf+"usage: run sieve <N>, where 2<=N<=200000%n",exit+1),
+   fill+n,sieve+n,print primes+n.
+'end'

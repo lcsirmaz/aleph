@@ -1,0 +1,38 @@
+'pragmat'title="write and read binary records".
+$ readings.dat holds a count followed by that many numerical words.
+
+'datafile'READINGS=>"readings.dat">.
+'table'VALUES[]=(-3,18,25),COMMAND[]=("read":read mode).
+
+'a'write readings-n-p:
+   list length+VALUES+n,put data+READINGS+n+numerical,
+   <<VALUES->p,
+   (nxt:p>>>VALUES;
+        put data+READINGS+VALUES[p]+numerical,incr+p,:nxt),
+   close file+READINGS.
+
+'e'bad data:
+   printf+"Cannot read the expected numerical data in readings.dat.%n",
+   exit+1.
+
+'e'usage:
+   printf+"Run records to write and read the sample.%n"
+          "To read a saved file: run records {readings.dat} read%n",
+   exit+1.
+
+'a'read word+value>-kind:
+   get data+READINGS+value+kind,(kind=numerical;bad data);
+   bad data.
+
+'a'read readings-n-i-value:
+   read word+n,(n<0,bad data;+),
+   printf+"%d readings in readings.dat:%n"+n,
+   0->i,(nxt:i>=n;read word+value,printf+"%d%n"+value,incr+i,:nxt),
+   close file+READINGS.
+
+'root'-cmp:
+   (>>STDARG<<<STDARG,write readings;
+    compare string+STDARG+>>STDARG+COMMAND+read mode+cmp,
+    (cmp=0;usage)),
+   read readings.
+'end'

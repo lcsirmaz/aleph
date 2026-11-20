@@ -1,0 +1,31 @@
+'pragmat'title="Recognizing a^n b^n c^n without counting".
+$ Recognize a^n b^n c^n by passing one affix block for each a.
+
+$ reading characters from the string STDARG[ptr]
+$ the next character is in chr, it is newline if we are at the end
+'variable'chr=/ /, cnt=0, ptr=0.
+
+'a'next char: string elem+STDARG+ptr+cnt+chr,incr+cnt;
+              newline->chr.
+'p'R+>x: chr=x,next char.
+
+$ Each recursive call adds a block. 'expect' walks the blocks twice,
+$ once for b and once for c, leaving the initial marker as a sentinel.
+'p'parse+@+>a:
+   R+/a/,parse+/a/+@;
+   expect+/b/+@,expect+/c/+@,R+newline.
+'p'expect+>ch+@+>cnt:
+   R+ch,shift affix block+@,:expect;
+   shift affix block+@,-;
+   +.
+
+'root'
+  >>STDARG->ptr,(nxt:
+  ptr<<<STDARG;
+  $ A failed parse may have consumed input, so reset for each argument.
+  printf+"Testing ",print string+STDARG+ptr,0->cnt,next char,
+     (parse+/x/,printf+"%n    a^nb^nc^n recognized%n";
+                printf+"%n    not a^nb^nc^n%n"),
+     previous string+STDARG+ptr,:nxt).
+
+'end'

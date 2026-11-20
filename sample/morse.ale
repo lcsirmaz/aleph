@@ -1,0 +1,76 @@
+'pragmat'title="Morse code".
+$ Type lines in the console (Ctrl+D ends). A line made of dots, dashes,
+$ spaces and slashes is decoded, any other line is encoded.
+$     SOS            ->  ... --- ...
+$     .- .-.. . .--. ....  ->  ALEPH
+$ Letters are separated by a space, words by " / ".
+$ Shows: a table of strings walked through once to build an index,
+$ comparing a collected string with the table entries.
+
+$ the codes of A..Z and 0..9 in this order
+'table'CODE[]=(".-","-...","-.-.","-..",".","..-.","--.","....","..",
+  ".---","-.-",".-..","--","-.","---",".--.","--.-",".-.","...","-",
+  "..-","...-",".--","-..-","-.--","--..","-----",".----","..---",
+  "...--","....-",".....","-....","--...","---..","----.").
+'stack'[1]IDX[],[1]LINE[],[1]BUF[],[1]TMP[].
+
+$ IDX[<<IDX+k] points to the code of the k-th symbol (A is 0)
+'a'make index-p-q:
+   scratch+IDX,>>CODE->p,
+   (nxt:p<<<CODE;(* p->IDX *)IDX,previous string+CODE+p,:nxt),
+   $ the codes were collected backwards; reverse IDX
+   <<IDX->p,>>IDX->q,
+   (nxt-x:p>=q;IDX[p]->x,IDX[q]->IDX[p],x->IDX[q],incr+p,decr+q,:nxt).
+
+'f'symbol number+>c+k>:
+   =c=
+   [/A/:/Z/],subtr+c+/A/+k;
+   [/a/:/z/],subtr+c+/a/+k;
+   [/0/:/9/],subtr+c+/0/+k,add+k+26+k;
+   [:],-1->k.
+
+'f'symbol char+>k+c>: (k<26,add+k+/A/+c;subtr+k+26+c,add+c+/0/+c).
+
+'q'is morse line-i:
+   <<LINE->i,
+   (nxt:i>>>LINE;
+        (=LINE[i]= [/./;/-/;/ /;///],incr+i,:nxt; -)).
+
+$ letters inside a word are separated by a space, words by " / "
+'a'encode-i-k-space:
+   <<LINE->i,0->space,
+   (nxt:i>>>LINE,printf+"%n";
+        symbol number+LINE[i]+k,
+        (k>=0,(space=1,putc+/ /;space=2,printf+" / ";+),
+              add+<<IDX+k+k,print string+CODE+IDX[k],1->space;
+         LINE[i]=/ /,(space=1,2->space;+);
+         +),
+        incr+i,:nxt).
+
+$ the code collected in BUF is decoded and printed
+'a'decode symbol-n-k-c:
+   >>BUF<<<BUF;
+   list length+BUF+n,pack string+BUF+n+TMP,scratch+BUF,0->k,
+   (nxt:k>=36,putc+/?/;
+        add+<<IDX+k+n,compare string+TMP+>>TMP+CODE+IDX[n]+c,
+        (c=0,symbol char+k+c,putc+c;incr+k,:nxt)),
+   unstack string+TMP.
+
+'a'decode-i:
+   <<LINE->i,scratch+BUF,
+   (nxt:i>>>LINE,decode symbol,printf+"%n";
+        (=LINE[i]=
+          [/ /],decode symbol;
+          [///],decode symbol,putc+/ /;
+          [:],(* LINE[i]->BUF *)BUF),
+        incr+i,:nxt).
+
+'root'
+   make index,
+   printf+"Type lines to encode or decode, finish with Ctrl+D%n",
+   scratch+LINE,
+   (nxt:get line+STDIN+LINE+#,
+          (>>LINE<<<LINE;is morse line,decode;encode),
+          scratch+LINE,:nxt;
+        +).
+'end'

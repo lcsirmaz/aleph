@@ -1,0 +1,63 @@
+'pragmat'title="Brainf*ck interpreter".
+$ An interpreter for the tiny language Brainf*ck. A program works on a
+$ row of byte cells with a pointer, using eight commands:
+$    > <   move the pointer         + -   change the current cell
+$    .     print the cell           ,     read a character into it
+$    [     jump past the matching ] if the cell is zero
+$    ]     jump back to the matching [ if the cell is not zero
+$ All other characters are comments.
+$ Usage:  run bf                   run the built-in "Hello World!"
+$         run bf {prog.bf} prog.bf  run a program from a file
+$ Shows: an interpreter loop with classification, precomputed jumps
+$ kept in a block next to each command.
+
+'table'HELLO[]=(
+  "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---."
+  "+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.":hello).
+
+'charfile'IN="input">.
+'stack'[1](cmd,jump)P[], $ the program; jump is set for [ and ]
+       [1]OPEN[],        $ positions of the [ not closed yet
+       [1]TAPE[].
+'constant'tape size=30000.
+
+'q'is command+>c: =c= [/>/;/</;/+/;/-/;/./;/,/;/[/;/]/],+; [:],-.
+
+'a'add command+>c:
+   is command+c,(* c->cmd,nil->jump *)P,
+     (c=/[/,(* >>P->OPEN *)OPEN;
+      c=/]/,(>>OPEN<<<OPEN,error+"unmatched ]";
+             OPEN->jump*P,>>P->jump*P[OPEN],unstack+OPEN);
+      +);
+   +.
+
+'e'error+t[]+>p: print string+t+p,printf+"%n",exit+1.
+
+'a'load string+t[]+>p-i-c:
+   0->i,(nxt:string elem+t+p+i+c,add command+c,incr+i,:nxt;+).
+'a'load file+""f-c: (nxt:get char+f+c,add command+c,:nxt;+).
+
+'a'run-pc-cell-c:
+   scratch+TAPE,0->c,(nxt:c>=tape size;(* 0->TAPE *)TAPE,incr+c,:nxt),
+   <<TAPE->cell,<<P->pc,
+   (nxt:pc>>>P;
+        (=cmd*P[pc]=
+          [/>/],incr+cell,(cell>>>TAPE,error+"tape overflow";+);
+          [/</],decr+cell,(cell<<<TAPE,error+"tape underflow";+);
+          [/+/],incr+TAPE[cell],bool and+TAPE[cell]+255+TAPE[cell];
+          [/-/],decr+TAPE[cell],bool and+TAPE[cell]+255+TAPE[cell];
+          [/./],putc+TAPE[cell];
+          [/,/],(get char+STDIN+c,c->TAPE[cell];0->TAPE[cell]);
+          [/[/],(TAPE[cell]=0,jump*P[pc]->pc;+);
+          [/]/],(TAPE[cell]!=0,jump*P[pc]->pc;+);
+          +), $ cannot happen: only commands are stored
+        next+P+pc,:nxt).
+
+'root'
+   scratch+P,scratch+OPEN,
+   (>>STDARG<<<STDARG,load string+HELLO+hello;
+    open file+IN+/r/+STDARG+>>STDARG,load file+IN,close file+IN;
+    error+"cannot open the program file"),
+   (>>OPEN<<<OPEN;error+"unmatched ["),
+   run.
+'end'

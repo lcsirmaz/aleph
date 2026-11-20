@@ -1,0 +1,28 @@
+'pragmat'title="greatest common divisor".
+$ Euclid's algorithm in a recursive rule and a loop with a label.
+
+'f'gcd rec+>a+>b+g>-r:
+   b=0,getabs+a+g;
+   divrem+a+b+#+r,gcd rec+b+r+g.
+
+'f'gcd loop+>a+>b+g>-r:
+   (nxt:b=0,getabs+a+g;
+        divrem+a+b+#+r,b->a,r->b,:nxt).
+
+$ lcm(a,b)=|a/gcd(a,b)*b|, and lcm(0,0)=0
+'f'lcm+>a+>b+l>-g:
+   gcd loop+a+b+g,(g=0,0->l;div+a+g+l,mult+l+b+l,getabs+l+l).
+
+'root'
+  printf+"Enter pairs of integers, for example 48 18.%n"
+         "Ctrl+D or a non-number stops.%n",
+  (nxt-a-b-g1-g2-l:
+     get int+STDIN+a,
+       $ Use the second read as the guard of its own alternative.
+       (get int+STDIN+b,
+          gcd rec+a+b+g1,gcd loop+a+b+g2,lcm+a+b+l,
+          printf+"gcd(%d,%d)=%d (loop: %d), lcm=%d%n"+a+b+g1+g2+l,:nxt;
+        printf+"the second number is missing%n");
+     +),
+  printf+"bye%n".
+'end'

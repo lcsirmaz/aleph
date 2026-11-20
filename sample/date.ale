@@ -1,0 +1,55 @@
+'pragmat'title="date and time".
+$ ALEPH has no standard rule which tells the date and the time, but a
+$ program can define its own external rules. In library mode
+$  - 'front matter' copies a string to the front of the compiled code,
+$    here the javascript function a_Now;
+$  - an external declaration ('x') names the target function which
+$    implements the rule. The function gets an array A and puts the
+$    values of the out affixes into A[0], A[1], ...
+$  - the string of an external declaration can also be a macro: #1, #2,
+$    ... are replaced by the affixes. This is simpler for a single out
+$    affix, and needs no front matter (see stdjs/base.ale).
+$ The code is javascript, so this program runs in the sandbox only.
+$ The module random gets its seed from the clock the same way.
+$ Shows: external rules, the front matter pragmat, library mode.
+
+'pragmat'library mode=on.
+'pragmat'front matter="function a_Now(A){const D=new Date;"
+  "A[0]=D.getFullYear();A[1]=D.getMonth()+1;A[2]=D.getDate();"
+  "A[3]=D.getDay();A[4]=D.getHours();A[5]=D.getMinutes();"
+  "A[6]=D.getSeconds();}%n".
+'x''a'now+year>+month>+day>+weekday>+hour>+min>+sec>="a_Now".
+$ minutes from local time to UTC, e.g. -60 in Central Europe in winter
+'x''f'utc offset+m>="#1=new Date().getTimezoneOffset()".
+'pragmat'library mode=off.
+
+'a'print weekday+>d:
+   =d=
+   [0],printf+"Sunday";   [1],printf+"Monday";  [2],printf+"Tuesday";
+   [3],printf+"Wednesday";[4],printf+"Thursday";[5],printf+"Friday";
+   [:],printf+"Saturday".
+
+'a'print month+>m:
+   =m=
+   [1],printf+"January";  [2],printf+"February";[3],printf+"March";
+   [4],printf+"April";    [5],printf+"May";     [6],printf+"June";
+   [7],printf+"July";     [8],printf+"August";  [9],printf+"September";
+   [10],printf+"October"; [11],printf+"November";
+   [:],printf+"December".
+
+$ two digits with a leading zero
+'a'pr2+>n: (n<10,putc+/0/;+),printf+"%d"+n.
+
+'root'-y-mo-d-wd-h-mi-s-z:
+   now+y+mo+d+wd+h+mi+s,
+   (=h= [0:11],printf+"Good morning!";
+        [12:17],printf+"Good afternoon!";
+        [:],printf+"Good evening!"),
+   printf+" Today is ",print weekday+wd,printf+", %d "+d,
+   print month+mo,printf+" %d, "+y,
+   pr2+h,putc+/:/,pr2+mi,putc+/:/,pr2+s,printf+"%n",
+   utc offset+z,subtr+0+z+z,
+   (z=0,printf+"Your clock shows UTC.%n";
+    z>0,printf+"Your clock is %d minutes ahead of UTC.%n"+z;
+    subtr+0+z+z,printf+"Your clock is %d minutes behind UTC.%n"+z).
+'end'

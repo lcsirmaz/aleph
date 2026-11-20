@@ -1,0 +1,39 @@
+'pragmat'title="palindromes".
+$ Check palindromes using ASCII letters and digits, ignoring case.
+
+'stack'[1]LINE[],[1]L[],[1]S[].
+
+$ lower case letters and digits are kept, upper case is converted
+'f'normalize+>c+d>:
+   =c=
+   [/a/:/z/;/0/:/9/],c->d;
+   [/A/:/Z/],add+c+32+d;
+   [:],0->d.
+
+$ the letters of LINE go to L
+'a'letters-i-c:
+   scratch+L,<<LINE->i,
+   (nxt:i>>>LINE;normalize+LINE[i]+c,(c=0;(* c->L *)L),incr+i,:nxt).
+
+'q'palindrome-i-j:
+   <<L->i,>>L->j,
+   (nxt:i>=j;L[i]=L[j],incr+i,decr+j,:nxt).
+
+$ print LINE backwards: copy reversed to L, make a string, print it
+'a'print backwards-i-n:
+   scratch+L,>>LINE->i,
+   (nxt:i<<<LINE;(* LINE[i]->L *)L,decr+i,:nxt),
+   list length+L+n,scratch+S,pack string+L+n+S,
+   print string+S+>>S,printf+"%n".
+
+'root'
+   printf+"Try: A man, a plan, a canal: Panama!%n"
+          "Enter more lines or finish with Ctrl+D.%n",scratch+LINE,
+   (nxt:get line+STDIN+LINE+#,
+          (>>LINE<<<LINE; $ empty line
+           print backwards,letters,
+             (palindrome,printf+"  This is a palindrome%n";
+              printf+"  Not a palindrome%n")),
+          scratch+LINE,:nxt;
+        +).
+'end'

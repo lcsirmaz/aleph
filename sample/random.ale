@@ -1,0 +1,38 @@
+'pragmat'module=random,title="pseudo-random numbers".
+$ A module providing pseudo-random numbers (Park-Miller "minimal
+$ standard" generator):   seed := 16807*seed mod (2^31-1).
+$ 16807*seed does not fit into 32 bits; Schrage's trick computes the
+$ same value using only numbers below 2^31. 
+$ The seed is a static variable: other modules can read it but cannot
+$ change it directly. 'randomize' takes the seed from the clock using a
+$ javascript expression, so this module works in the sandbox only.
+$ HEADER ******************************************************
+'a'randomize,set seed+>s.
+'a'random+r>.             $ next number, 1 <= r <= 2^31-2
+'a'random below+>n+r>.    $ 0 <= r < n, for 1 <= n
+'static''variable'seed.
+$ BODY ********************************************************
+'pragmat'if=compile.
+'static''variable'seed=1.
+'constant'a=16807,m=2147483647,q=127773,r=2836. $ m=a*q+r
+
+'a'random+x>-hi-lo:
+   divrem+seed+q+hi+lo,mult+lo+a+lo,mult+hi+r+hi,subtr+lo+hi+x,
+   (x<=0,add+x+m+x;+),x->seed.
+
+'a'random below+>n+x>: random+x,divrem+x+n+#+x.
+
+'a'set seed+>s:
+   divrem+s+m+#+s,(s<=0,add+s+m+s;+),(s=0,1->seed;s->seed).
+
+$ milliseconds since 1970, reduced modulo 2^31-1, from javascript;
+$ in the string of an external rule #1 stands for its first affix
+'pragmat'library mode=on.
+'x''f'clock+t>="#1=Date.now()%2147483647".
+'pragmat'library mode=off.
+
+'a'randomize-t: clock+t,set seed+t.
+
+'root'+.
+'pragmat'endif=compile.
+'end'

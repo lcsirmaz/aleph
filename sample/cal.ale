@@ -1,0 +1,68 @@
+'pragmat'title="calendar".
+$ Print the calendar of a month or of a whole year.
+$ Usage:  run cal 2026 11     November 2026
+$         run cal 2027        the whole year 2027
+$ Shows: tables with fillings, indexing a table, divrem, printf.
+
+$ Sakamoto's day-of-week method; index by month 1..12
+'table'OFFS[]=(0,3,2,5,0,3,5,1,4,6,2,4),
+       DAYS[]=(31,28,31,30,31,30,31,31,30,31,30,31),
+       NAME[]=("January":jan,"February","March","April","May","June",
+               "July","August","September","October","November",
+               "December":dec).
+
+$ i-th element (i=1,2,...) of a table with calibre 1
+'f'elem+t[]+>i+v>-p:
+   add+<<t+i+p,decr+p,t[p]->v.
+
+'q'leap+>y-r4-r100-r400:
+   divrem+y+4+#+r4,divrem+y+100+#+r100,divrem+y+400+#+r400,
+   r4=0,(r100!=0;r400=0).
+
+$ day of the week, 0=Sunday, 1=Monday, ... 6=Saturday
+'f'weekday+>y+>m+>d+w>-t-q:
+   (m<3,decr+y;+),elem+OFFS+m+t,
+   add+y+d+w,add+w+t+w,
+   div+y+4+q,add+w+q+w,div+y+100+q,subtr+w+q+w,div+y+400+q,add+w+q+w,
+   divrem+w+7+#+w.
+
+'f'days in+>y+>m+n>:
+   elem+DAYS+m+n,((m=2,leap+y),incr+n;+).
+
+$ month names; the first string is at 'jan', walk with 'previous string'
+'a'print month name+>m-p:
+   dec->p,(nxt:m>=12;previous string+NAME+p,incr+m,:nxt),
+   print string+NAME+p.
+
+'a'pr2+>n: (n<10,putc+/ /;+),printf+"%d"+n.
+
+'a'print month+>y+>m-n-d-col:
+   printf+"     ",print month name+m,printf+" %d%n"+y,
+   printf+"Mo Tu We Th Fr Sa Su%n",
+   days in+y+m+n,weekday+y+m+1+col,
+   $ the week starts on Monday: Sunday goes to column 6
+   (col=0,6->col;decr+col),
+   (-k:0->k,(nxt:k>=col;printf+"   ",incr+k,:nxt)),
+   1->d,
+   (nxt:d>n,(col=0;printf+"%n");
+        pr2+d,incr+d,incr+col,
+          (col=7,0->col,printf+"%n";(d>n;putc+/ /)),:nxt),
+   printf+"%n".
+
+'q'arg number+>ptr+n>-i-c:
+   0->n->i,string elem+STDARG+ptr+0+#,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +).
+
+'e'usage: printf+"usage: run cal <year> [<month>]%n",exit+1.
+
+'root'-p-y-m:
+   >>STDARG->p,
+   ((p>=<<STDARG,arg number+p+y,y>0),+;usage),
+   previous string+STDARG+p,
+   (p<<<STDARG,1->m,(nxt:m>12;print month+y+m,incr+m,:nxt);
+    (arg number+p+m,m>=1,m<=12),print month+y+m;
+    usage).
+'end'

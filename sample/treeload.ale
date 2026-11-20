@@ -1,0 +1,43 @@
+'pragmat'title="load a binary tree".
+$ Read back the tree saved by "treesave" and print it, also showing its
+$ shape. Usage:  run treeload {tree.dat}
+$ The lists of this program have different virtual addresses than those
+$ of treesave (there is an extra stack here); the data file mechanism
+$ translates the stored pointers anyway. The lists in the file area
+$ must come in the same order as when the file was written.
+
+'stack'[1]EXTRA[]=(1,2,3,4,5). $ only to shift the addresses
+'stack'[1]WORDS[],[1](word,left,right)T[].
+'datafile'TREE[WORDS;T]="tree.dat">.
+
+$ read the next item; stop the program if it is missing or wrong type
+'a'read+x>+>type-t:
+   get data+TREE+x+t,(t=type;printf+"tree.dat is corrupt%n",exit+1);
+   printf+"cannot read tree.dat; was it passed as {tree.dat}?%n",exit+1.
+
+'a'read words-n-x:
+   read+n+numerical,
+   (nxt:n<=0;read+x+numerical,(* x->WORDS *)WORDS,decr+n,:nxt).
+'a'read tree-n-w-l-r:
+   read+n+numerical,div+n+3+n,
+   (nxt:n<=0;read+w+pointer,read+l+pointer,read+r+pointer,
+             (* w->word,l->left,r->right *)T,decr+n,:nxt).
+
+'a'print tree+>node:
+   node=nil;
+   print tree+left*T[node],
+     print string+WORDS+word*T[node],putc+/ /,
+     print tree+right*T[node].
+
+$ print the tree sideways: the root on the left, right subtree above
+'a'show+>node+>depth-k:
+   node=nil;
+   add+depth+1+k,show+right*T[node]+k,
+   0->k,(nxt:k>=depth;printf+"    ",incr+k,:nxt),
+   print string+WORDS+word*T[node],putc+newline,
+   add+depth+1+k,show+left*T[node]+k.
+
+'root'-root:
+   read words,read tree,read+root+pointer,close file+TREE,
+   print tree+root,printf+"%n%nThe shape of the tree:%n",show+root+0.
+'end'

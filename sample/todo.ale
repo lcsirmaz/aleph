@@ -1,0 +1,69 @@
+'pragmat'title="priority queue".
+$ A to-do list kept in a binary heap. Type lines like
+$     2 buy milk
+$     1 pay the rent
+$ (priority first, smaller is more urgent), then Ctrl+D. The tasks are
+$ printed in order of urgency.
+$ Shows: a heap in a stack with selectors (prio,task), the task text
+$ kept as a string in another stack, get line, pack string.
+
+'stack'[1](prio,task)H[],[1]TEXT[],[1]BUF[].
+'constant'calibre=<>H. $ the block size of H, which is 2
+
+$ the pointer to the i-th block of H (i=1,2,...)
+'f'blk+>i+p>: subtr+i+1+p,mult+p+calibre+p,add+p+<<H+p.
+
+'f'heap size+n>: list length+H+n,div+n+calibre+n.
+
+'a'swap+>p+>q-x:
+   prio*H[p]->x,prio*H[q]->prio*H[p],x->prio*H[q],
+   task*H[p]->x,task*H[q]->task*H[p],x->task*H[q].
+
+$ the parent of block i is block i/2; move up while it is smaller
+'a'sift up+>i-j-p-q:
+   (nxt:i<=1;
+        div+i+2+j,blk+i+p,blk+j+q,
+        (prio*H[p]<prio*H[q],swap+p+q,j->i,:nxt;+)).
+
+$ the children of block i are 2i and 2i+1; move down while larger
+'a'sift down+>i-n-c-p-q:
+   heap size+n,
+   (nxt:add+i+i+c,
+        (c>n;
+         smaller child+c+n,blk+i+p,blk+c+q,
+         (prio*H[q]<prio*H[p],swap+p+q,c->i,:nxt;+))).
+$ c is the left child; switch to the right one if that is smaller
+'f'smaller child+>c>+>n-d-p-q:
+   (c<n,add+c+1+d,blk+c+p,blk+d+q,(prio*H[q]<prio*H[p],d->c;+);+).
+
+'a'insert+>pr+>t-n:
+   (* pr->prio,t->task *)H,heap size+n,sift up+n.
+
+$ remove the most urgent task; fail if the heap is empty
+'p'remove+pr>+t>-p:
+   >>H>=<<H,
+   prio*H[<<H]->pr,task*H[<<H]->t,
+   >>H->p,prio*H[p]->prio*H[<<H],task*H[p]->task*H[<<H],
+   unstack+H,sift down+1.
+
+$ read the priority, skip spaces, then the rest of the line is the text.
+$ 'ok' is set to zero at the end of the input.
+'a'read task+ok>-pr-c-n:
+   get int+STDIN+pr,1->ok,
+     (skip:ahead char+STDIN+c,(c=/ /,(get char+STDIN+#;+),:skip;+);+),
+     scratch+BUF,
+     $ careful: at a newline 'get line' would read the next line
+     (ahead char+STDIN+c,(c=newline;get line+STDIN+BUF+#;+);+),
+     list length+BUF+n,
+     (n=0,printf+"(task without text ignored)%n";
+      pack string+BUF+n+TEXT,insert+pr+>>TEXT);
+   0->ok.
+
+'root'-pr-t:
+   printf+"Type tasks as <priority> <text>, finish with Ctrl+D%n",
+   (nxt-ok:read task+ok,(is+ok,:nxt;+)),
+   printf+"Your tasks in order:%n",
+   (nxt:remove+pr+t,printf+"%d:  "+pr,print string+TEXT+t,printf+"%n",
+          :nxt;
+        +).
+'end'

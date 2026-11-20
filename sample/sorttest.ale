@@ -1,0 +1,14 @@
+'pragmat'title="sorting with a checking wrapper".
+$ The same as "sort", but the quicksort module is reached through the
+$ module "checksort", which checks every result.
+'pragmat'require="checksort".
+
+'stack'[]V[]=(10,7,-3,-99,30,8,12,4,14,5,10,-3,-80).
+
+'action'print V-v:
+    <<V->v, (nxt: v>>>V,printf+"%n"; printf+"%d "+V[v],incr+v,:nxt).
+'root'
+   print V,
+   sort+ascending+V,print V,
+   sort+descending+V,print V.
+'end'

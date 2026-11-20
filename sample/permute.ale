@@ -1,0 +1,10 @@
+'pragmat'title="printing permutations".
+'pragmat'require="nextperm".
+$ Start with distinct letters in increasing order.
+'stack'[]V[]=(/a/,/b/,/c/,/d/).
+
+$ For the aabc challenge, limit the loop to 12 printed lines first.
+$ If a line repeats, inspect the pivot search in nextperm.ale.
+'root'(rep: put line+STDOUT+V+newline,
+            (next perm+V,:rep;+)).
+'end'

@@ -1,0 +1,21 @@
+'pragmat'title="macro pitfall".
+$ A rule listed in a 'macro' pragmat is not called: its body is copied
+$ into the place of the call, with the formal affixes replaced by the
+$ actual ones. This is faster, but may change the meaning.
+$ Here 'swap' and 'swap macro' have the same body. Called as
+$ swap+x+y+x it exchanges x and y: the out affix gets its value only
+$ when the rule returns. Substituted as a macro, the body becomes
+$     (y->x, x->y)
+$ and both variables end up with the value of y.
+$ Shows: the macro pragmat, in/out affixes, why macros need care.
+
+'function'swap+>a+>b>+c>: b->c,a->b.
+'function'swap macro+>a+>b>+c>: b->c,a->b.
+'pragmat'macro=swap macro.
+
+'root'-x-y:
+   1->x,2->y,swap+x+y+x,
+   printf+"rule:  x=%d y=%d (exchanged)%n"+x+y,
+   1->x,2->y,swap macro+x+y+x,
+   printf+"macro: x=%d y=%d (not what we wanted)%n"+x+y.
+'end'

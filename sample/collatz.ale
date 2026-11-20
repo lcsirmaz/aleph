@@ -1,0 +1,44 @@
+'pragmat'title="Collatz sequences".
+$ Halve even n and replace odd n by 3n+1 until reaching 1.
+
+$ convert the argument STDARG[ptr] to a positive number; fail if
+$ it is not a sequence of digits
+'q'arg number+>ptr+n>-i-c:
+   0->n->i,string elem+STDARG+ptr+0+#,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +).
+
+$ Large starting values can overflow 3n+1 on the JS target.
+'f'collatz+>n+m>-r:
+   divrem+n+2+m+r,(r=0;addmult+n+3+1+m).
+
+$ number of steps to reach 1
+'f'steps+>n+k>:
+   0->k,(nxt:n<=1;collatz+n+n,incr+k,:nxt).
+
+$ print at most 12 numbers in a line
+'a'print sequence+>n-k-col:
+   steps+n+k,printf+"%d steps:%n"+k,0->col,
+   (nxt:printf+" %d"+n,incr+col,(col<12;printf+"%n",0->col),
+        (n<=1;collatz+n+n,:nxt)),
+   (col=0;printf+"%n").
+
+'a'longest+>limit-n-k-best-bestk:
+   1->n->best,0->bestk,
+   (nxt:n>=limit;
+        steps+n+k,(k>bestk,k->bestk,n->best;+),incr+n,:nxt),
+   printf+"Below %d the longest sequence starts at %d (%d steps)%n"
+         +limit+best+bestk.
+
+'root'-ptr-n:
+   $ With no arguments, also find the longest run below 100000.
+   >>STDARG<<<STDARG,print sequence+27,longest+100000;
+   >>STDARG->ptr,
+   (nxt:ptr<<<STDARG;
+        ((arg number+ptr+n,n>0),print sequence+n;
+         printf+"not a positive number: ",print string+STDARG+ptr,
+           printf+"%n"),
+        previous string+STDARG+ptr,:nxt).
+'end'

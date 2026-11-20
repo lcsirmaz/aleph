@@ -1,0 +1,21 @@
+'pragmat'module=manifest,title="manifest constants".
+$ Prints its manifest constants; its initialization waits for the
+$ module outlib.
+
+'a'show manifest. $ exported rule
+
+'pragmat'if=compile. $ the module body
+'pragmat'require="outlib". $ for c str, c int, c char
+
+'a'show manifest:
+   c str+"module '",c str+_module_,c str+"' (",c str+_title_,
+   c str+"), rule '",c str+_rule_,c str+"' in ",c str+_file_,
+   c str+", line ",c int+_line_,c char+newline.
+
+$ the initialization of this module
+'root'c str+"manifest: initialization, waiting for outlib",
+      c char+newline,
+      wait for+"outlib",
+      c str+"manifest: outlib is ready",c char+newline.
+'pragmat'endif=compile.
+'end'

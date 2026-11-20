@@ -1,0 +1,50 @@
+'pragmat'title="n queens".
+$ Place n queens on an n x n chessboard so that no two attack each
+$ other. Count all solutions and draw the first one.
+$ Usage:  run queens 8         (4 <= n <= 11, default 8)
+$ Shows: backtracking with a recursive rule, a stack holding the
+$ partial solution, questions (rules without side effects).
+
+$ Q[<<Q+r] is the column of the queen in row r
+'stack'[1]Q[],[1]FIRST[].
+'variable'n=8,solutions=0.
+
+$ can a queen go to row r, column c? check the rows above
+'q'free+>r+>c-i-d-k:
+   0->i,
+   (nxt:i>=r;
+        add+<<Q+i+k,Q[k]!=c,
+        subtr+r+i+d,subtr+c+Q[k]+k,getabs+k+k,k!=d,
+        incr+i,:nxt).
+
+'a'place+>r-c-r1:
+   r>=n,incr+solutions,(solutions=1,save first;+);
+   0->c,
+   (nxt:c>=n;
+        (free+r+c,(* c->Q *)Q,add+r+1+r1,place+r1,unstack+Q;+),
+        incr+c,:nxt).
+
+'a'save first-i: scratch+FIRST,<<Q->i,
+   (nxt:i>>>Q;(* Q[i]->FIRST *)FIRST,incr+i,:nxt).
+
+'a'draw-i-c:
+   <<FIRST->i,
+   (nxt:i>>>FIRST;
+        0->c,(col:c>=n;(c=FIRST[i],printf+" Q";printf+" ."),incr+c,:col),
+        printf+"%n",incr+i,:nxt).
+
+'q'arg number+>ptr+n>-i-c:
+   0->n->i,string elem+STDARG+ptr+0+#,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +).
+
+'root'-k:
+   (>>STDARG<<<STDARG;
+    (arg number+>>STDARG+k,k>=4,k<=11),k->n;
+    printf+"usage: run queens <n>, where 4<=n<=11%n",exit+1),
+   scratch+Q,place+0,
+   printf+"%d queens: %d solutions. The first one:%n"+n+solutions,
+   draw.
+'end'

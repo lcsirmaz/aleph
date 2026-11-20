@@ -1,0 +1,61 @@
+'pragmat'title="Caesar and Vigenere ciphers".
+$ Rotate ASCII letters by a fixed shift or a repeating key.
+
+$ the shift values; Caesar uses one, Vigenere one for each key letter
+'stack'[1]K[].
+'variable'kp=0. $ the key letter to be used next
+
+'q'arg number+>ptr+n>-i-c-s:
+   0->n->i,1->s,
+   ((string elem+STDARG+ptr+0+c,c=/-/),-1->s,1->i;+),
+   string elem+STDARG+ptr+i+#,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +),
+   mult+n+s+n.
+
+$ x mod 26, always between 0 and 25
+'f'mod26+>x+y>: divrem+x+26+#+y,(y<0,add+y+26+y;+).
+
+$ the key letters, upper or lower case; anything else is an error
+'a'set key+>ptr+>sign-i-c:
+   scratch+K,0->i,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/A/:/Z/],subtr+c+/A/+c;
+               [/a/:/z/],subtr+c+/a/+c;
+               usage),
+          mult+c+sign+c,(* c->K *)K,incr+i,:nxt;
+        +).
+
+'f'shift+>c+>base+>s+d>:
+   subtr+c+base+d,add+d+s+d,mod26+d+d,add+d+base+d.
+
+'a'encode+>c+d>-s:
+   =c=
+   [/A/:/Z/],K[kp]->s,shift+c+/A/+s+d,next key;
+   [/a/:/z/],K[kp]->s,shift+c+/a/+s+d,next key;
+   [:],c->d.
+'a'next key: incr+kp,(kp>>>K,<<K->kp;+).
+
+'e'usage:
+   printf+"usage: run caesar <shift>  or  run caesar <key> [-d]%n",
+   exit+1.
+
+'constant'encrypt=1,decrypt=-1.
+'a'key arguments+>p-c:
+   previous string+STDARG+p,
+   (p<<<STDARG,set key+>>STDARG+encrypt;
+    $ the second argument must be -d
+    (string elem+STDARG+p+0+c,c=/-/,string elem+STDARG+p+1+c,c=/d/),
+      set key+>>STDARG+decrypt;
+    usage).
+
+'root'-p-n-c-d:
+   (>>STDARG<<<STDARG,usage;+),>>STDARG->p,
+   (arg number+p+n,scratch+K,mod26+n+n,(* n->K *)K;
+    key arguments+p),
+   <<K->kp,
+   printf+"Enter text, then Ctrl+D.%n",
+   (nxt:get char+STDIN+c,encode+c+d,putc+d,:nxt;+).
+'end'

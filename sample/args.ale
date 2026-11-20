@@ -1,0 +1,20 @@
+'pragmat'title="Command line arguments".
+$ Printing command line arguments
+$ Usage: run args arg1, arg2, last argument
+$ Shows: manipulating stacks; counting strings in a list
+'pragmat'warning="Printing command line arguments".
+'pragmat'warning="Usage: run args <arg1> <arg2> ...".
+'f'count arguments+n>-ptr:
+  0->n,>>STDARG->ptr,
+    (nxt:ptr<<<STDARG;
+         incr+n,previous string+STDARG+ptr,:nxt).
+'a'print arguments-ptr:
+   >>STDARG->ptr,
+   (nxt:ptr<<<STDARG;
+        print string+STDARG+ptr,print char+newline,
+           previous string+STDARG+ptr,:nxt).
+'root'-n:count arguments+n,
+   (n=0,printf+" *** There are no arguments%n";
+    n=1,printf+" *** There is 1 argument:%n",print arguments;
+        printf+" *** There are %d arguments:%n"+n,print arguments).
+'end'

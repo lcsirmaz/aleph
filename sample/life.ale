@@ -1,0 +1,84 @@
+'pragmat'title="Game of Life".
+$ Conway's Game of Life: a cell with two or three live neighbours stays
+$ alive, an empty cell with exactly three live neighbours comes alive.
+$ The board is printed after each generation, with a short pause.
+$ Usage:  run life 30          (number of generations, default 20)
+$ Shows: two boards in stacks, a border of empty cells so that no index
+$ checking is needed, a table of neighbour offsets, msleep.
+
+$ the starting pattern: a glider, a blinker and a toad
+'table'START[]=(
+  "                              "
+  " #                            "
+  "  #                ###        "
+  "###                           "
+  "                              "
+  "                              "
+  "                              "
+  "                              "
+  "                    ###       "
+  "                   ###        "
+  "                              "
+  "                              ":start).
+'constant'width=30,height=12,
+         row=width+2,total=row*(height+2). $ with the border
+
+'stack'[1]A[],[1]B[].
+$ offsets of the eight neighbours; a filling cannot contain expressions,
+$ only constants, hence the names
+'constant'nw=-row-1,nn=-row,ne=-row+1,ww=-1,ee=1,sw=row-1,ss=row,se=row+1.
+'table'OFF[]=(nw,nn,ne,ww,ee,sw,ss,se).
+
+'a'clear-k: scratch+A,scratch+B,0->k,
+   (nxt:k>=total;(* 0->A *)A,(* 0->B *)B,incr+k,:nxt).
+
+$ the cell in row r, column c (both from 1) is A[<<A+r*row+c]
+'f'cell+>r+>c+p>: mult+r+row+p,add+p+c+p,add+p+<<A+p.
+
+'a'load-r-c-i-ch-p:
+   0->i,1->r,
+   (nxt:r>height;
+        1->c,(col:c>width;
+                (string elem+START+start+i+ch;/ /->ch),incr+i,
+                cell+r+c+p,(ch=/#/,1->A[p];+),incr+c,:col),
+        incr+r,:nxt).
+
+'a'show+>gen-r-c-p:
+   printf+"generation %d%n"+gen,1->r,
+   (nxt:r>height;
+        1->c,(col:c>width;cell+r+c+p,
+                (A[p]=1,putc+/#/;putc+/./),incr+c,:col),
+        putc+newline,incr+r,:nxt).
+
+'f'neighbours+>p+n>-i-q:
+   0->n,<<OFF->i,
+   (nxt:i>>>OFF;add+p+OFF[i]+q,add+n+A[q]+n,incr+i,:nxt).
+
+$ the new generation goes to B, then it is copied back to A
+'a'step-r-c-p-n-d:
+   subtr+<<B+<<A+d,1->r,
+   (nxt:r>height;
+        1->c,
+        (col:c>width;
+             cell+r+c+p,neighbours+p+n,add+p+d+p,
+             (=n= [3],1->B[p];
+                  [2],subtr+p+d+n,A[n]->B[p];
+                  [:],0->B[p]),
+             incr+c,:col),
+        incr+r,:nxt),
+   <<A->p,(copy:p>>>A;add+p+d+n,B[n]->A[p],incr+p,:copy).
+
+'q'arg number+>ptr+n>-i-c:
+   0->n->i,string elem+STDARG+ptr+0+#,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +).
+
+'root'-gens-g:
+   (>>STDARG<<<STDARG,20->gens;
+    arg number+>>STDARG+gens;
+    printf+"usage: run life <generations>%n",exit+1),
+   clear,load,0->g,show+g,
+   (nxt:g>=gens;msleep+400,step,incr+g,show+g,:nxt).
+'end'

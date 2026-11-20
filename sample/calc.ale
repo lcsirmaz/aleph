@@ -1,0 +1,93 @@
+'pragmat'title="calculator".
+$ An integer calculator with variables a..z. The JS target uses
+$ signed 32-bit arithmetic. ALEPH follows the target's arithmetic.
+
+'stack'[1]LINE[].
+'stack'[]VARS[]=(0*26).
+'variable'pos=0,chr=newline,err=0,errpos=0,errmsg=0.
+'table'MSG[]=("division by zero":e div,"negative exponent":e exp,
+              "missing )":e paren,"number, variable or ( expected":e opnd,
+              "unexpected character":e extra).
+
+$ input --------------------------------------------------------
+'a'next:
+   pos>=>>LINE,newline->chr;
+   incr+pos,LINE[pos]->chr.
+'a'skip: (chr=/ /,next,:skip;+).
+'p'R+>x: chr=x,next,skip.
+
+$ remember the first error, then pretend that the line has ended
+'a'error+>m+>p:
+   (err=0,1->err,m->errmsg,p->errpos;+),>>LINE->pos,newline->chr.
+
+$ grammar ------------------------------------------------------
+'a'expression+v>-w:
+   term+v,(nxt:R+/+/,term+w,add+v+w+v,:nxt;
+               R+/-/,term+w,subtr+v+w+v,:nxt;
+               +).
+'a'term+v>-w-p:
+   factor+v,
+   (nxt:R+/*/,factor+w,mult+v+w+v,:nxt;
+        R+///,pos->p,factor+w,(w=0,error+e div+p;div+v+w+v),:nxt;
+        R+/%/,pos->p,factor+w,(w=0,error+e div+p;divrem+v+w+#+v),:nxt;
+        +).
+'a'factor+v>:
+   R+/-/,factor+v,subtr+0+v+v;
+   power+v.
+$ 2^3^2 is 2^(3^2); -2^2 is -(2^2)
+'a'power+v>-w-p:
+   primary+v,(R+/^/,pos->p,factor+w,raise+v+w+p+v;+).
+'a'primary+v>-k:
+   R+/(/,expression+v,(R+/)/;error+e paren+pos);
+   number+v;
+   variable+k,add+<<VARS+k+k,VARS[k]->v;
+   error+e opnd+pos,0->v.
+'p'number+v>:
+   =chr=
+   [/0/:/9/],0->v,
+     (nxt:=chr=
+          [/0/:/9/],addmult+v+10+chr+v,subtr+v+/0/+v,next,:nxt;
+          [:],skip);
+   [:],-.
+'p'variable+k>: =chr= [/a/:/z/],subtr+chr+/a/+k,next,skip; [:],-.
+
+$ b^e by repeated squaring
+$ p is the position of the exponent, for the error message
+'a'raise+>b+>e+>p+r>-bit:
+   e<0,error+e exp+p,0->r;
+   1->r,(nxt:e=0;divrem+e+2+e+bit,(bit=1,mult+r+b+r;+),
+                 mult+b+b+b,:nxt).
+
+$ statements ---------------------------------------------------
+$ is it "letter =" ? look ahead in LINE without moving
+'q'assignment ahead-i:
+   =chr= [/a/:/z/],pos->i,
+          (nxt:incr+i,(LINE[i]=/ /,:nxt;LINE[i]=/=/));
+         [:],-.
+
+'a'statement-k-v:
+   assignment ahead,subtr+chr+/a/+k,next,skip,next,skip,
+     expression+v,end of line,
+     (err=0,add+<<VARS+k+k,v->VARS[k];+);
+   expression+v,end of line,(err=0,printf+"= %d%n"+v;+).
+'a'end of line: chr=newline;error+e extra+pos.
+
+'a'report error-k:
+   err=0;
+   subtr+errpos+<<LINE+k,incr+k,
+   print string+MSG+errmsg,printf+" at column %d:%n  "+k,
+   <<LINE->k,(nxt:k>=>>LINE;putc+LINE[k],incr+k,:nxt),
+   printf+"%n  ",
+   <<LINE->k,(nxt:k>=errpos;putc+/ /,incr+k,:nxt),printf+"^ here%n".
+
+'root'
+   printf+"Enter expressions or assignments, for example x=2^10.%n"
+          "Ctrl+D ends.%n",
+   scratch+LINE,
+   (nxt:get line+STDIN+LINE+#,
+          (* newline->LINE *)LINE, $ end marker
+          0->err,<<LINE->pos,LINE[pos]->chr,skip,
+          (chr=newline;statement,report error),
+          scratch+LINE,:nxt;
+        +).
+'end'

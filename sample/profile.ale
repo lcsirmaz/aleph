@@ -1,0 +1,23 @@
+'pragmat'title="profiling".
+$ Compare call counts for the same input, with an empty cache.
+'pragmat'count=on.
+'constant'example=24.
+
+'f'fib naive+>n+f>-a-b-m:
+   n<2,n->f;
+   subtr+n+1+m,fib naive+m+a,subtr+n+2+m,fib naive+m+b,add+a+b+f.
+
+$ MEMO[<<MEMO+n] is fib(n), or -1 if not known yet
+'stack'[1]MEMO[].
+'a'fib memo+>n+f>-a-b-m-i:
+   add+<<MEMO+n+i,
+   (MEMO[i]>=0,MEMO[i]->f;
+    n<2,n->f,f->MEMO[i];
+    subtr+n+1+m,fib memo+m+a,subtr+n+2+m,fib memo+m+b,add+a+b+f,
+      f->MEMO[i]).
+
+'root'-k-f:
+   scratch+MEMO,0->k,(nxt:k>example;(* -1->MEMO *)MEMO,incr+k,:nxt),
+   fib naive+example+f,printf+"naive:    fib(%d) = %d%n"+example+f,
+   fib memo+example+f,printf+"memoized: fib(%d) = %d%n"+example+f.
+'end'

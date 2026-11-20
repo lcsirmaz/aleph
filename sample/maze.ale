@@ -1,0 +1,71 @@
+'pragmat'title="shortest path in a maze".
+$ Find a shortest path from S to E by breadth-first search, then draw it.
+$ Usage:  run maze
+$ Shows: a stack with selectors (ch,from) holding the maze, a second
+$ stack used as a queue, pointers to blocks and moving between them.
+
+$ consecutive string denotations are concatenated: this is one string
+'table'MAZE[]=(
+  "#########################"
+  "#S    #     #           #"
+  "# ### # ### # ######### #"
+  "#   #   # #   #       # #"
+  "### ##### ##### ##### # #"
+  "#   #     #   #     #   #"
+  "# ### ##### # ##### #####"
+  "#     #     #     #     #"
+  "####### ######### ##### #"
+  "#       #       #   #   #"
+  "# ####### ##### ### # ###"
+  "#         #         #  E#"
+  "#########################":maze).
+'constant'width=25.
+
+$ one block for each square: the character and the square we came from
+'stack'[1](ch,from)G[],[1]Q[].
+'variable'start=0,goal=0.
+$ moving between neighboring squares; a block has two elements
+'constant'east=2,west=-2,south=width*2,north=-south.
+
+'a'load maze-i-c:
+   scratch+G,0->i,
+   (nxt:string elem+MAZE+maze+i+c,
+          (* c->ch,0->from *)G,
+          (c=/S/,>>G->start;c=/E/,>>G->goal;+),
+          incr+i,:nxt;
+        +).
+
+$ <<G and >>G point to the first and to the last block; 'next' steps
+$ to the following block
+'a'print maze-p-col:
+   <<G->p,0->col,
+   (nxt:p>>>G;
+        putc+ch*G[p],incr+col,(col=width,0->col,putc+newline;+),
+        next+G+p,:nxt).
+
+$ visit the neighbor of p in direction d if it is free and new
+'a'try+>p+>d-n:
+   add+p+d+n,
+   ((ch*G[n]!=/#/,from*G[n]=0),p->from*G[n],(* n->Q *)Q;+).
+
+$ the queue: Q[h] ... Q[>>Q] are waiting, new squares come to the top
+$ 'found' is set to 1 if the goal is reached
+'a'search+found>-h-p:
+   scratch+Q,(* start->Q *)Q,start->from*G[start],<<Q->h,
+   (nxt:h>>>Q,0->found;
+        Q[h]->p,incr+h,
+        (p=goal,1->found;
+         try+p+east,try+p+west,try+p+south,try+p+north,:nxt)).
+
+$ walk back from the goal and mark the path
+'a'mark path+len>-p:
+   0->len,from*G[goal]->p,
+   (nxt:p=start;/./->ch*G[p],incr+len,from*G[p]->p,:nxt),
+   incr+len.
+
+'root'-len-found:
+   load maze,print maze,search+found,
+   (is+found,mark path+len,
+      printf+"%nThe shortest path has %d steps:%n"+len,print maze;
+    printf+"There is no path from S to E%n").
+'end'

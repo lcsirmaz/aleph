@@ -1,0 +1,65 @@
+'pragmat'module=parser,title="parsing a formula".
+$ Parse one formula from STDARG.
+'a'parse formula+>ptr+e>.
+'pragmat'if=compile,require="formula".
+$ ptr  pointer in STDARG
+$ cnt  position in the string
+$ chr  next character to look at
+'variable'chr=/ /,cnt=0,ptr=0.
+'a'init parsing+>p:
+   p->ptr,0->cnt,next char.
+'a'next char:
+   string elem+STDARG+ptr+cnt+chr,incr+cnt;
+   newline->chr.
+'e'error+t[]+@+>msg-n-v:
+   printf+"Parsing error: ",printf+t+@,printf+"%n-",0->n,
+   (nxt:n<cnt,print char+/-/,incr+n,:nxt;+),
+   printf+"v%n  ",0->n,
+   (nxt:string elem+STDARG+ptr+n+v,print char+v,incr+n,:nxt;+),
+   exit+1.
+
+'p'R+>x: chr=x,next char.
+'a'must+>x: R+x;error+"expected %c"+x.
+'p'is digit+x>: =chr= [/0/:/9/],subtr+chr+/0/+x,next char;-.
+'p'is const+e>-n-d:
+   is digit+n,(nxt:is digit+d,addmult+n+10+d+n,:nxt;+),
+     add number+n+e.
+'p'is string+t[]+>p-oldcnt-oldchr-n-v:
+   0->n,cnt->oldcnt,chr->oldchr,
+   (nxt:string elem+t+p+n+v,
+        (R+v,incr+n,:nxt;oldcnt->cnt,oldchr->chr,-);
+        +).
+'p'base+e>:
+   is const+e;
+   is string+var+x var,x var->e;
+   R+/(/,(form+e;error+"expression expected"),must+/)/;
+   func+log op+e;
+   func+exp op+e;
+   func+sin op+e;
+   func+cos op+e.
+'p'func+>f+e>-arg:
+   is string+operator+f,must+/(/,(form+arg;error+"argument expected"),
+     must+/)/,M+c zero+f+arg+e.
+$ Power binds tighter than unary minus: -x^2 is -(x^2).
+'p'power+e>-e2:
+   base+e,(R+/^/,(unary+e2;error+"exponent expected"),M+e+pow op+e2+e;+).
+'p'unary+e>-e2:
+   R+/-/,(unary+e2;error+"operand expected"),M+c zero+min op+e2+e;
+   power+e.
+'p'factor+e>-e2:
+   unary+e,
+   (nxt:R+/*/,(unary+e2;error+"factor *"),M+e+tim op+e2+e,:nxt;
+        R+///,(unary+e2;error+"factor /"),M+e+div op+e2+e,:nxt;
+        +).
+'p'form+e>-e2:
+   factor+e,(nxt:R+/+/,(factor+e2;error+"form +"),M+e+plus op+e2+e,:nxt;
+                 R+/-/,(factor+e2;error+"form -"),M+e+min op+e2+e,:nxt;
+                 +).
+
+'a'parse formula+>ptr+e>:
+   ptr< <<STDARG,error+"no formula specified";
+   init parsing+ptr,(form+e;error+"no formula"),
+      (R+newline;error+"extra characters").
+'root'+.
+'pragmat'endif=compile.
+'end'

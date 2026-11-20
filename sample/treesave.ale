@@ -1,0 +1,50 @@
+'pragmat'title="save a binary tree".
+$ Build a binary search tree from the words given as arguments, print
+$ them in alphabetical order, and save the tree to the file "tree.dat".
+$ Usage:  run treesave the quick brown fox jumps over the lazy dog
+$ then:   run treeload {tree.dat}
+$ Shows: a tree in a stack with selectors, recursion, data files.
+$ A data file stores pointers so that they can be restored later even
+$ if the lists are at different (virtual) addresses in the other program.
+
+'stack'[1]WORDS[],[1](word,left,right)T[].
+$ only pointers into WORDS and T can be written to this file
+'datafile'TREE[WORDS;T]=>"tree.dat".
+'variable'root=nil. $ nil is zero, it is never a valid pointer
+
+$ insert the string WORDS[w] into the subtree whose root is at 'node'
+'a'insert+>w+>node>-c:
+   node=nil,(* w->word,nil->left,nil->right *)T,>>T->node;
+   compare string+WORDS+w+WORDS+word*T[node]+c,
+   (c<0,insert+w+left*T[node];
+    c>0,insert+w+right*T[node];
+    printf+"(duplicate word ignored)%n").
+
+'a'print tree+>node:
+   node=nil;
+   print tree+left*T[node],
+     print string+WORDS+word*T[node],putc+/ /,
+     print tree+right*T[node].
+
+$ write all elements of a list; 'type' tells which are pointers
+'a'write words-p-n:
+   list length+WORDS+n,put data+TREE+n+numerical,
+   <<WORDS->p,(nxt:p>>>WORDS;put data+TREE+WORDS[p]+numerical,
+                             incr+p,:nxt).
+'a'write tree-p-n:
+   list length+T+n,put data+TREE+n+numerical,
+   <<T->p,(nxt:p>>>T;put data+TREE+word*T[p]+pointer,
+                     put data+TREE+left*T[p]+pointer,
+                     put data+TREE+right*T[p]+pointer,next+T+p,:nxt).
+
+'root'-p:
+   >>STDARG<<<STDARG,
+     printf+"usage: run treesave word1 word2 ...%n";
+   >>STDARG->p,
+   (nxt:p<<<STDARG;
+        copy string+STDARG+p+WORDS,insert+>>WORDS+root,
+        previous string+STDARG+p,:nxt),
+   print tree+root,printf+"%n",
+   write words,write tree,put data+TREE+root+pointer,close file+TREE,
+   printf+"The tree is saved to tree.dat%n".
+'end'

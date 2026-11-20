@@ -1,0 +1,46 @@
+'pragmat'title="any number of affixes".
+$ Rules taking any number of arguments: maximum, minimum, mean, and a
+$ table printer which pads each number to a given width.
+$ Shows: the anchor @ in formal affixes, 'shift affix block' to see the
+$ next block, 'get affix blockno' to count the remaining blocks, and
+$ passing @ on to another rule.
+
+$ the largest of x and the remaining affixes
+'f'maximum+m>+@+>x:
+   x->m,(nxt:shift affix block+@,(x>m,x->m;+),:nxt;+).
+'f'minimum+m>+@+>x:
+   x->m,(nxt:shift affix block+@,(x<m,x->m;+),:nxt;+).
+
+$ the integer part of the mean; get affix blockno tells how many
+$ blocks are left, including the visible one
+'f'mean+avg>+@+>x-s-n:
+   get affix blockno+n+@,0->s,
+   (nxt:add+s+x+s,(shift affix block+@,:nxt;+)),
+   div+s+n+avg.
+
+$ passing all affixes on: the range is maximum minus minimum
+'f'range+r>+@+>x-a-b:
+   maximum+a+@,minimum+b+@,subtr+a+b+r.
+
+$ print n right-aligned in a field of the given width
+'a'pad+>n+>width-d-x:
+   1->d,getabs+n+x,(n<0,incr+d;+),
+   (nxt:x<10;div+x+10+x,incr+d,:nxt),
+   (nxt:d>=width;putc+/ /,incr+d,:nxt),
+   printf+"%d"+n.
+
+$ a row of a table; the affix block has two elements: value and width
+'a'row+@+>n+>width:
+   pad+n+width,(shift affix block+@,:row;putc+newline).
+
+'root'-a-b-c-d-k-sq-cu:
+   maximum+a+3+1+4+1+5+9+2+6,minimum+b+3+1+4+1+5+9+2+6,
+   mean+c+3+1+4+1+5+9+2+6,range+d+3+1+4+1+5+9+2+6,
+   printf+"Of 3 1 4 1 5 9 2 6: max=%d min=%d mean=%d range=%d%n"
+         +a+b+c+d,
+   maximum+a+42,printf+"The maximum of a single number 42 is %d%n"+a,
+   printf+"%n",
+   printf+"  n   n^2     n^3%n",
+   1->k,
+   (nxt:k>10;mult+k+k+sq,mult+sq+k+cu,row+k+3+sq+6+cu+8,incr+k,:nxt).
+'end'

@@ -1,0 +1,12 @@
+'pragmat'title="squaring numbers".
+$ On the JS target, 46340^2 fits in a signed word and 46341^2 wraps.
+'a'intro:
+   printf+"Type a number; I will compute its square.%n"
+          "To quit, hit Ctrl+D or type a non-number%n".
+'p'square and print-n-nn:
+   get int+STDIN+n,mult+n+n+nn,
+     printf+"the square of %d is %d%n"+n+nn.
+$ After a number is read and printed, :nxt repeats the block.
+$ If reading fails, the + alternative succeeds and ends the loop.
+'root'intro,(nxt:square and print,:nxt;+).
+'end'

@@ -1,0 +1,14 @@
+'pragmat'title="where failure goes".
+$ Predict which calls reach the second alternative of choose.
+
+'q'choose+>n+value>:
+   n>0,n<10,10->value;
+   20->value.
+
+$ A failed guard tries the next alternative. A later failure exits choose.
+'a'test+>n-value:
+   choose+n+value,printf+"%d gives %d%n"+n+value;
+   printf+"%d fails%n"+n.
+
+'root'test+-1,test+4,test+12.
+'end'

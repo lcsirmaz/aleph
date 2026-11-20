@@ -1,0 +1,40 @@
+'pragmat'title="Mandelbrot set".
+$ Draw the Mandelbrot set with characters. A point c belongs to the set
+$ if the sequence z := z*z + c, starting from z=0, stays bounded.
+$ Shows: fixed-point arithmetic. There are no fractions in ALEPH, so a
+$ number x is stored as the integer x*4096; a product must then be
+$ divided by 4096. All values stay well below 2^31.
+
+'constant'one=4096,four=4*one,
+         cols=72,lines=28,maxit=40.
+'table'SHADE[]=(" .:-=+*%#@":shade).
+
+$ the number of iterations before |z| exceeds 2 (at most maxit)
+'f'iterations+>cr+>ci+n>-zr-zi-r2-i2-t:
+   0->zr->zi->n,
+   (nxt:n>=maxit;
+        mult+zr+zr+r2,div+r2+one+r2,mult+zi+zi+i2,div+i2+one+i2,
+        add+r2+i2+t,
+        (t>four;
+         mult+zr+zi+t,div+t+one+t,add+t+t+zi,add+zi+ci+zi,
+         subtr+r2+i2+zr,add+zr+cr+zr,incr+n,:nxt)).
+
+$ x runs from -2.2 to 0.8, y from -1.2 to 1.2
+'constant'xmin=-9011,xspan=3*one,ymin=-4915,yspan=9830.
+
+'a'draw-row-col-cr-ci-n-k-c:
+   0->row,
+   (nxt:row>=lines;
+        mult+row+yspan+ci,div+ci+lines+ci,add+ci+ymin+ci,
+        0->col,
+        (cl:col>=cols;
+            mult+col+xspan+cr,div+cr+cols+cr,add+cr+xmin+cr,
+            iterations+cr+ci+n,
+            $ 0..maxit is mapped to the ten characters of SHADE
+            mult+n+9+k,div+k+maxit+k,
+            (string elem+SHADE+shade+k+c;/?/->c),putc+c,
+            incr+col,:cl),
+        putc+newline,incr+row,:nxt).
+
+'root'draw.
+'end'

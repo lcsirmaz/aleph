@@ -1,0 +1,35 @@
+'pragmat'title="count lines, words and characters".
+$ Count lines, words, and Unicode code points.
+
+'charfile'IN="input">. $ opened explicitly with 'open file'
+'variable'lines=0,words=0,chars=0.
+
+'q'is space+>c: =c= [/ /;9;newline;13], +; -.
+
+'a'count+""f-c-inword:
+   0->lines->words->chars->inword,
+   (nxt:get char+f+c,incr+chars,
+          (c=newline,incr+lines;+),
+          (is space+c,0->inword;
+           inword=0,1->inword,incr+words;
+           +),:nxt;
+        +).
+
+'a'report+t[]+>p:
+   printf+"%d lines, %d words, %d characters"+lines+words+chars,
+   (p=nil;printf+" in ",print string+t+p),printf+"%n".
+
+'root'-p-err:
+   >>STDARG<<<STDARG,
+     printf+"Type some text, finish with Ctrl+D%n",
+     count+STDIN,report+STDARG+nil;
+   $ In run wc {story.txt} story.txt, the braces pass the file and
+   $ the second story.txt names it. Expect 5 lines, 63 words, 322 chars.
+   >>STDARG->p,
+   (nxt:p<<<STDARG;
+        (open file+IN+/r/+STDARG+p,count+IN,close file+IN,
+            report+STDARG+p;
+         get file error+IN+err,printf+"cannot open ",
+            print string+STDARG+p,printf+" (error %d)%n"+err),
+        previous string+STDARG+p,:nxt).
+'end'

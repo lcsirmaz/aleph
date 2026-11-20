@@ -1,0 +1,20 @@
+'pragmat'title="module initialization".
+$ A module can have its own 'root': the initialization of the module.
+$ All of them run before the root of the main program. Their order is
+$ not specified, except that 'wait for' runs the initialization of the
+$ named module first, if it has not run yet; see manifest.ale.
+$ The manifest constants _file_, _line_, _title_, _module_ and _rule_
+$ are replaced by the compiler with the source file name, the line
+$ number, the title, the module name and the name of the rule in
+$ which they appear.
+$ Shows: module roots, wait for, manifest constants.
+'pragmat'require=("outlib","manifest").
+
+'a'where am i:
+   c str+"main program, rule '",c str+_rule_,c str+"' in ",
+   c str+_file_,c str+", line ",c int+_line_,c char+newline.
+
+'root'
+   c str+"The main program starts: ",c str+_title_,c char+newline,
+   where am i,show manifest.
+'end'

@@ -1,0 +1,25 @@
+'pragmat'module=checksort,title="checking wrapper for quicksort".
+$ This module replaces the rule 'sort' of the module quicksort by a
+$ version which checks the result. A program requiring this module
+$ instead of quicksort gets all resources of quicksort, but its calls
+$ of 'sort' go to the new definition. The new 'sort' calls the original
+$ one as quicksort::sort, with the module name as qualifier.
+$ HEADER ******************************************************
+'pragmat'require="quicksort". $ read and export the quicksort module
+'action'sort+>how+[]st[]. $ redefine this rule
+$ BODY ********************************************************
+'pragmat'if=compile.
+'action'sort+>how+[]st[]-i-j-n-bad:
+   quicksort::sort+how+st,
+   0->bad,list length+st+n,<<st->i,
+   (nxt:i>=>>st;
+        add+i+1+j,
+        ((how=ascending,st[i]>st[j]),incr+bad;
+         (how=descending,st[i]<st[j]),incr+bad;
+         +),
+        incr+i,:nxt),
+   (bad=0,printf+"[checked: %d elements in order]%n"+n;
+    printf+"[ERROR: %d elements out of order]%n"+bad).
+'root'+.
+'pragmat'endif=compile.
+'end'

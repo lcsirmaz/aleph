@@ -1,0 +1,14 @@
+'pragmat'title="guess the number".
+$ The computer thinks of a number between 1 and 100; you guess it.
+$ Shows: using the module "random" (in random.ale).
+'pragmat'require="random".
+
+'root'-secret-n-tries:
+   randomize,random below+100+secret,incr+secret,0->tries,
+   printf+"I thought of a number between 1 and 100. Your guess?%n",
+   (nxt:get int+STDIN+n,incr+tries,
+          (n<secret,printf+"%d is too small%n"+n,:nxt;
+           n>secret,printf+"%d is too large%n"+n,:nxt;
+           printf+"Yes, it is %d! You needed %d guesses.%n"+n+tries);
+        printf+"Giving up? It was %d.%n"+secret).
+'end'

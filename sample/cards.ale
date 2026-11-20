@@ -1,0 +1,47 @@
+'pragmat'title="shuffling cards".
+$ Shuffle a deck of 52 cards and deal four hands of 13 cards, each
+$ hand sorted by suit and rank.
+$ Shows: the Fisher-Yates shuffle with the module "random", Unicode
+$ suit symbols, sorting a part of a stack (insertion sort).
+'pragmat'require="random".
+
+$ card c: suit c/13 (0..3), rank c mod 13 (0 is the deuce, 12 the ace)
+'stack'[1]DECK[].
+'table'RANK[]=("2":r2,"3","4","5","6","7","8","9","10","J","Q","K",
+               "A":rA).
+'table'SUIT[]=(0x2660,0x2665,0x2666,0x2663). $ spade heart diamond club
+
+'a'new deck-c: scratch+DECK,0->c,(nxt:c>=52;(* c->DECK *)DECK,incr+c,:nxt).
+
+$ swap each card with a random one at or below it
+'a'shuffle-i-j-x-n:
+   >>DECK->i,
+   (nxt:i<=<<DECK;
+        subtr+i+<<DECK+n,incr+n,random below+n+j,add+j+<<DECK+j,
+        DECK[i]->x,DECK[j]->DECK[i],x->DECK[j],decr+i,:nxt).
+
+$ insertion sort of DECK[from] ... DECK[to]
+'a'sort+>from+>to-i-j-x-k:
+   add+from+1+i,
+   (nxt:i>to;
+        DECK[i]->x,i->j,
+        (back:j<=from;subtr+j+1+k,
+              (DECK[k]>x,DECK[k]->DECK[j],k->j,:back;+)),
+        x->DECK[j],incr+i,:nxt).
+
+'a'print card+>c-s-r-p-k:
+   divrem+c+13+s+r,add+<<SUIT+s+s,putc+SUIT[s],
+   $ the ace is the last string; walk backwards to rank r
+   rA->p,12->k,(nxt:k<=r;previous string+RANK+p,decr+k,:nxt),
+   print string+RANK+p,putc+/ /.
+
+'a'deal-h-i-from-to:
+   0->h,
+   (nxt:h>=4;
+        mult+h+13+from,add+from+<<DECK+from,add+from+12+to,
+        sort+from+to,incr+h,printf+"Hand %d: "+h,
+        from->i,(cards:i>to;print card+DECK[i],incr+i,:cards),
+        printf+"%n",:nxt).
+
+'root'randomize,new deck,shuffle,deal.
+'end'

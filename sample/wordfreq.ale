@@ -1,0 +1,66 @@
+'pragmat'title="word frequencies".
+$ Count words using ASCII, Latin-1, and Hungarian ő and ű.
+'pragmat'require="qsort".
+
+'charfile'IN="input">.
+'stack'[1]WORDS[],[1]BUF[],
+       [1](word,count,link)E[],  $ the entries
+       [1]ORDER[].               $ pointers to entries, to be sorted
+'constant'buckets=1024,half=512,mask=buckets-1,ecal=<>E.
+$ a repeat count in a filling is at most 1000, hence the two halves
+'stack'[]HEAD[]=(nil*half,nil*half). $ first entry of each chain
+
+'variable'total=0.
+
+$ Lowercase supported letters. Keep × and ÷ outside letter ranges.
+'f'letter+>c+d>:
+   =c=
+   [/a/:/z/;0xdf:0xf6;0xf8:0xff;0x151;0x171],c->d;
+   [/A/:/Z/;0xc0:0xd6;0xd8:0xde],add+c+32+d;
+   [0x150;0x170],add+c+1+d;
+   [:],0->d.
+
+$ the word is on BUF; find it or make a new entry
+'a'enter word-n-h-e-c:
+   list length+BUF+n,pack string+BUF+n+WORDS,scratch+BUF,incr+total,
+   string hash+WORDS+>>WORDS+h,bool and+h+mask+h,
+   add+<<HEAD+h+h,HEAD[h]->e,
+   (nxt:e=nil,(* >>WORDS->word,1->count,HEAD[h]->link *)E,>>E->HEAD[h];
+        compare string+WORDS+>>WORDS+WORDS+word*E[e]+c,
+        (c=0,incr+count*E[e],unstack string+WORDS;
+         link*E[e]->e,:nxt)).
+
+'a'read text+""f-c-d:
+   (nxt:get char+f+c,letter+c+d,
+          (d=0,(>>BUF<<<BUF;enter word);(* d->BUF *)BUF),:nxt;
+        (>>BUF<<<BUF;enter word)).
+
+$ the comparison rule called by the quicksort module: x comes before y
+$ if it is more frequent, or equally frequent and alphabetically first
+'q'qsort::qless+>x+>y-c:
+   count*E[x]>count*E[y];
+   count*E[x]=count*E[y],
+     compare string+WORDS+word*E[x]+WORDS+word*E[y]+c,c<0.
+
+'a'report+>max-e-i-n:
+   scratch+ORDER,<<E->e,
+   (nxt:e>>>E;(* e->ORDER *)ORDER,next+E+e,:nxt),
+   quick sort+<<ORDER+>>ORDER+ORDER,
+   list length+E+n,div+n+ecal+n,
+   printf+"%d words, %d different. The most frequent ones:%n"+total+n,
+   <<ORDER->i,
+   (nxt:i>>>ORDER;max<=0;
+        ORDER[i]->e,printf+"%d  "+count*E[e],
+        print string+WORDS+word*E[e],printf+"%n",
+        incr+i,decr+max,:nxt).
+
+'root'-p:
+   (>>STDARG<<<STDARG,
+      printf+"Type some text, finish with Ctrl+D%n",read text+STDIN;
+    >>STDARG->p,
+    (nxt:p<<<STDARG;
+         (open file+IN+/r/+STDARG+p,read text+IN,close file+IN;
+          printf+"cannot open ",print string+STDARG+p,printf+"%n"),
+         previous string+STDARG+p,:nxt)),
+   report+20.
+'end'

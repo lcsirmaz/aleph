@@ -1,0 +1,2 @@
+echo: copy the input
+,[.,]

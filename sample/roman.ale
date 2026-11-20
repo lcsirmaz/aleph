@@ -1,0 +1,63 @@
+'pragmat'title="Roman numerals".
+$ Convert numbers to Roman numerals and back.
+$ Usage:  run roman 1987 MMXXVI xiv 4000
+$ Shows: strings in a table with pointer constants, walking through the
+$ table with 'previous string', classification of characters.
+
+$ symbols in increasing order; the last one is at >>SYM
+'table'SYM[]=("I":r1,"IV":r4,"V":r5,"IX":r9,"X":r10,"XL":r40,"L":r50,
+              "XC":r90,"C":r100,"CD":r400,"D":r500,"CM":r900,"M":r1000).
+
+$ the value of the symbol pointed to by p
+'f'value+>p+v>:
+   =p=
+   [r1],1->v;    [r4],4->v;    [r5],5->v;    [r9],9->v;
+   [r10],10->v;  [r40],40->v;  [r50],50->v;  [r90],90->v;
+   [r100],100->v;[r400],400->v;[r500],500->v;[r900],900->v;
+   1000->v. $ the remaining case, r1000
+
+$ greedy: always take the largest symbol which still fits
+'a'to roman+>n-p-v:
+   >>SYM->p,
+   (nxt:n=0;
+        value+p+v,(n>=v,print string+SYM+p,subtr+n+v+n;
+                   previous string+SYM+p),:nxt).
+
+$ value of a single Roman digit, upper or lower case
+'q'digit value+>c+v>:
+   =c=
+   [/I/;/i/],1->v; [/V/;/v/],5->v; [/X/;/x/],10->v; [/L/;/l/],50->v;
+   [/C/;/c/],100->v; [/D/;/d/],500->v; [/M/;/m/],1000->v; -.
+
+$ a digit is subtracted when a larger one follows it (IV=4, XC=90)
+'q'from roman+t[]+>p+n>-i-c-v-w:
+   0->n->i,string elem+t+p+0+#,
+   (nxt:string elem+t+p+i+c,
+          (digit value+c+v,incr+i,
+             ((string elem+t+p+i+c,digit value+c+w,v<w),subtr+n+v+n;
+              add+n+v+n),:nxt;
+           -);
+        +).
+
+$ a decimal number
+'q'arg number+t[]+>p+n>-i-c:
+   0->n->i,string elem+t+p+0+#,
+   (nxt:string elem+t+p+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +).
+
+'a'convert+t[]+>p-n:
+   arg number+t+p+n,
+     (=n= [1:3999],printf+"%d = "+n,to roman+n,printf+"%n";
+          [:],printf+"%d is out of range (1..3999)%n"+n);
+   from roman+t+p+n,
+     print string+t+p,printf+" = %d%n"+n;
+   print string+t+p,printf+" is neither a number nor a Roman numeral%n".
+
+'root'-ptr:
+   >>STDARG<<<STDARG,printf+"usage: run roman 1987 MMXXVI xiv%n";
+   >>STDARG->ptr,
+   (nxt:ptr<<<STDARG;
+        convert+STDARG+ptr,previous string+STDARG+ptr,:nxt).
+'end'

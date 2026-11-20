@@ -1,0 +1,47 @@
+'pragmat'title="index checking and call trace".
+$ Reading or writing outside a list is a common error. After the pragmat
+$ bounds=on every indexing is checked while the program runs, and an
+$ index error stops the program with a message naming the rule and the
+$ list. Linking with -g (compile -X -g) adds the call stack to the
+$ message; the rule 'backtrack' prints the call stack at any time.
+$ Usage:  run bounds        print a list backwards, correctly
+$         run bounds 1      the same with an off-by-one error
+$ Shows: the bounds pragmat, the call stack, 'was' as a guard.
+'pragmat'warning="For the call stack compile as: compile -X -g bounds".
+
+'stack'[1]SQ[]. $ the squares 1, 4, 9, ...
+
+'a'fill+>n-k-x:
+   where,scratch+SQ,1->k,
+   (nxt:k>n;mult+k+k+x,(* x->SQ *)SQ,incr+k,:nxt).
+
+$ the call stack: empty unless linked with -g
+'a'where: printf+"The call stack (only if linked with -g):%n",backtrack.
+
+'pragmat'bounds=on. $ from here on, every indexing is checked
+
+$ The last element of SQ is at <<SQ+n-1, where n is the length.
+$ Forgetting the -1 is an off-by-one error: the first index used is
+$ just above >>SQ.
+'a'print backwards+>wrong-n-p:
+   list length+SQ+n,add+<<SQ+n+p,(is+wrong;decr+p),
+   (nxt:p<<<SQ,printf+"%n";printf+" %d"+SQ[p],decr+p,:nxt).
+
+'pragmat'bounds=off. $ checking can be switched on for a part only
+
+$ 'was' checks whether a pointer is inside a list; this version
+$ cannot go wrong even without bounds=on
+'a'print safely+>wrong-n-p:
+   list length+SQ+n,add+<<SQ+n+p,(is+wrong;decr+p),
+   (nxt:p<<<SQ,printf+"%n";
+        (was+SQ+p,printf+" %d"+SQ[p];printf+" (skipped)"),
+        decr+p,:nxt).
+
+'root'-wrong-c:
+   0->wrong,
+   ((>>STDARG>=<<STDARG,string elem+STDARG+>>STDARG+0+c,c=/1/),
+       1->wrong;+),
+   fill+10,
+   printf+"Checked with 'was':%n",print safely+wrong,
+   printf+"Checked by bounds=on:%n",print backwards+wrong.
+'end'

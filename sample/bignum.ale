@@ -1,0 +1,46 @@
+'pragmat'title="big factorials".
+$ Store n! in base 10000 so it can outgrow a machine word.
+
+'stack'[1]D[].
+'constant'base=10000.
+
+$ D[<<D] holds the lowest four digits. The bound on m keeps products
+$ and carries in range on the signed 32-bit JS target.
+'a'multiply+>m-i-carry-x:
+   0->carry,<<D->i,
+   (nxt:i>>>D;
+        addmult+D[i]+m+carry+x,divrem+x+base+carry+D[i],incr+i,:nxt),
+   $ the remaining carry goes to new places at the top
+   (more:carry=0;
+         divrem+carry+base+carry+x,(* x->D *)D,:more).
+
+$ print the number; all places except the top one have four digits
+'a'print number-i-col:
+   >>D->i,printf+"%d"+D[i],decr+i,1->col,
+   (nxt:i<<<D,printf+"%n";
+        print4+D[i],decr+i,incr+col,
+          (col=15,0->col,printf+"%n";+),:nxt).
+'a'print4+>x:
+   (x<1000,putc+/0/;+),(x<100,putc+/0/;+),(x<10,putc+/0/;+),
+   printf+"%d"+x.
+
+$ number of decimal digits
+'f'digits+n>-x:
+   list length+D+n,decr+n,mult+n+4+n,D->x,
+   (nxt:x=0;incr+n,div+x+10+x,:nxt).
+
+'q'arg number+>ptr+n>-i-c:
+   0->n->i,string elem+STDARG+ptr+0+#,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +).
+
+'root'-n-k-d:
+   (>>STDARG<<<STDARG,52->n;
+    (arg number+>>STDARG+n,n>=0,n<=3000);
+    printf+"usage: run bignum <n>, where 0<=n<=3000%n",exit+1),
+   scratch+D,(* 1->D *)D,
+   1->k,(nxt:k>n;multiply+k,incr+k,:nxt),
+   digits+d,printf+"%d! has %d digits:%n"+n+d,print number.
+'end'

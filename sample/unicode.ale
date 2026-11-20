@@ -1,0 +1,29 @@
+'pragmat'title="Unicode code points and strings".
+'table'POINTS[]=(0x41,0xe9,0x3a9,0x6728,0x1f642).
+'stack'[1]CHARS[],[1]TEXT[].
+
+'f'utf8 bytes+>c+n>:
+   c<0x80,1->n;
+   c<0x800,2->n;
+   c<0x10000,3->n;
+   4->n.
+
+'a'row+>c-n:
+   scratch+CHARS,scratch+TEXT,
+   (* c->CHARS *)CHARS,pack string+CHARS+1+TEXT,
+   utf8 bytes+c+n,printf+"0x%x  bytes=%d  direct=%c  packed="+c+n+c,
+   print string+TEXT+>>TEXT,putc+newline.
+
+$ An accented letter can be one code point or a base plus a mark.
+'a'compare accents-n:
+   scratch+CHARS,scratch+TEXT,
+   (* /e/->CHARS *)CHARS,(* 0x301->CHARS *)CHARS,
+   pack string+CHARS+2+TEXT,string length+TEXT+>>TEXT+n,
+   printf+"%n%c has 1 code point.%n"+0xe9,
+   print string+TEXT+>>TEXT,printf+" has %d code points.%n"+n.
+
+'root'-p:
+   printf+"Unicode code points and their UTF-8 byte counts%n",
+   <<POINTS->p,(nxt:p>>>POINTS;row+POINTS[p],incr+p,:nxt),
+   compare accents.
+'end'
