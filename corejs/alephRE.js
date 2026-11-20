@@ -525,6 +525,7 @@ const //IO error codes
 
 const readArg=114;  //"r".charCodeAt(0);
 const writeArg=119; //"w".charCodeAt(0);
+const appendArg=97; //"a".charCodeAt(0);
 const tempArg=88;   //"X".charCodeAt(0); in openTemp()
 const codeA=65;     //"A".charCodeAt(0);
 
@@ -783,7 +784,9 @@ function a_openfile(file,mode,A,ptr,tmpfile=0){
    // check if we have a file with this name
    if(file.direction){ file.errno=IOERR_EOPENED; return 0; }
    file.errno=0;
-   const towrite=(mode==writeArg);
+   const append=(mode==appendArg);
+   if(append && file.type!=1){file.errno=IOERR_EDIRECTION;return 0;}
+   const towrite=(mode==writeArg||append);
    const fname=a2str(A,ptr);
    if(!fname || fname.length>96 || /[\x00-\x1f]/.test(fname)){
       file.errno=IOERR_EWRONGNAME; return 0; }
@@ -792,7 +795,8 @@ function a_openfile(file,mode,A,ptr,tmpfile=0){
       if(FD[i].path==fname) break;
       i++;
    }
-   if(i==FD.length){ // not found
+   const created=(i==FD.length);
+   if(created){
       if(!towrite){file.errno=IOERR_ENOTFOUND; return 0; }
       FD.push(
         {path:fname,idx:-2,openw:0,openr:0,changed:0,type:0,buff:null,bufflen:0,ff:null});
@@ -802,14 +806,18 @@ function a_openfile(file,mode,A,ptr,tmpfile=0){
    if(towrite){// open for writing
      if(F.openw<0){file.errno=IOERR_EREADONLY;return 0;}
      if(F.openw!=0 || F.openr>0){file.errno=IOERR_EBUSY; return 0;}
-     F.buff=null;F.changed=1; // the file is emptied
      if(file.type==1){ //charfile, write (or create)
-        if(F.type==2){file.CollectLine="";file.fpos=-1;} // direct output
+        const offset=append && F.type==0 ? F.bufflen : 0;
+        if(offset>MaxFileSize){file.errno=IOERR_EWRONGVALUE;return 0;}
+        if(F.type==2){file.CollectLine="";} // direct output
         else{
-          F.buff=new ArrayBuffer(CharBufExt,{maxByteLength:MaxFileSize});
-          F.bufflen=CharBufExt;file.buffer=new Uint8Array(F.buff);
+          const size=Math.max(CharBufExt,offset);
+          const buffer=new ArrayBuffer(size,{maxByteLength:MaxFileSize});
+          file.buffer=new Uint8Array(buffer);
+          if(offset)file.buffer.set(new Uint8Array(F.buff,0,offset));
+          F.buff=buffer;F.bufflen=size;
         }
-        file.fpos=0;
+        file.fpos=offset;
      } else {//datafile write
         if(F.type==2){file.errno=IOERR_EBUSY;return 0;}
         F.buff=new ArrayBuffer(4*1024,{maxByteLength:MaxFileSize});
@@ -824,6 +832,7 @@ function a_openfile(file,mode,A,ptr,tmpfile=0){
         }
         file.startpos=file.fpos;
      }
+     if(!append || created)F.changed=1;
      F.ff=file;F.openw++;file.direction=2;file.fidx=i;
      if(tmpfile)F.tmpfile=1;
      return 1;
@@ -951,10 +960,17 @@ function a_unlinkfile(A,ptr){
 }
 // when the program ends, close all files opened for writing
 function closeAll(){
+   let firstError='';
    FD.forEach((F)=>{
      if(F.openw>0 && F.ff){
-      a_closefile(F.ff);}
+       try{a_closefile(F.ff);}
+       catch(error){
+         console.log('closing '+F.path+':',error);
+         if(!firstError)firstError='Error closing '+F.path+': '+(error?.message??error);
+       }
+     }
    });
+   return firstError;
 }
 
 /* ************************************************************* */
@@ -978,7 +994,7 @@ function addFile(fname,idx,ro,fbuff){
    });
 }
 // when the program ends, return the changed files: deleted, written,
-// or created; skip URL and tmp files. The main thread keeps its own
+// or created; skip URL, tmp and unclosed output files. The main thread keeps its own
 // copy of all passed files, unchanged files need not be returned.
 // First return deleted files, after the rest;
 // one can delete <f> and later create another <f>
@@ -989,7 +1005,7 @@ function returnFiles(){
                rm:'yes'});
    }});
    FD.forEach((F)=>{
-     if(F.type==0 && F.idx!=-1 && F.changed && !F.tmpfile && !F.path.startsWith('/.Trash/')){
+     if(F.type==0 && F.idx!=-1 && F.changed && F.openw==0 && !F.tmpfile && !F.path.startsWith('/.Trash/')){
         try{self.postMessage({cmd:'file',job:Jobno,idx:F.idx,changed:1,
                filename:F.path,data:F.buff},[F.buff]);}
         catch(e){}// not returned; the main thread keeps the old one
@@ -1100,7 +1116,8 @@ function terminate(ret,mm){
     if(terminating)return;
     terminating=1;
     const T=(f)=>{try{f();}catch(e){console.log('terminate:',e);}};
-    T(closeAll);
+    const closeError=closeAll();
+    if(closeError && ret<=1){ret=2;mm=closeError;}
     T(()=>{self.postMessage({cmd:'exit',job:Jobno,data:ret,msg:mm});});
     if(ret!=0) T(a_PrintStackFrame);
     if(ret<=1) T(()=>{dump_Profile(a_PROFILE);});
