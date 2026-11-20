@@ -17,6 +17,7 @@ $ MEMO[<<MEMO+n] is fib(n), or -1 if not known yet
       f->MEMO[i]).
 
 'root'-k-f:
+   printf+"Counts of rule calls are reported in the top window%n",
    scratch+MEMO,0->k,(nxt:k>example;(* -1->MEMO *)MEMO,incr+k,:nxt),
    fib naive+example+f,printf+"naive:    fib(%d) = %d%n"+example+f,
    fib memo+example+f,printf+"memoized: fib(%d) = %d%n"+example+f.
