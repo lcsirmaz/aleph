@@ -1,0 +1,21 @@
+'pragmat'module=argnum,title="a number from the command line".
+$ The rule 'arg number', copied into collatz, cal, sieve, bignum, queens
+$ and life, as a module of its own (roman and caesar have variants).
+$ To use it in a program, add 'pragmat'require="argnum". to it, comment
+$ out the program's own 'arg number', and compile it together with argnum.
+$ HEADER ******************************************************
+$ convert the argument STDARG[ptr] to a positive number; fail if
+$ it is not a sequence of digits
+'q'arg number+>ptr+n>.
+
+$ BODY ********************************************************
+'pragmat'if=compile.
+'q'arg number+>ptr+n>-i-c:
+   0->n->i,string elem+STDARG+ptr+0+#,
+   (nxt:string elem+STDARG+ptr+i+c,
+          (=c= [/0/:/9/],subtr+c+/0/+c,addmult+n+10+c+n,incr+i,:nxt;
+               -);
+        +).
+'root'+.
+'pragmat'endif=compile.
+'end'

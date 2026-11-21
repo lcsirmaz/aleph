@@ -1,19 +1,19 @@
 # Tutorial entries for the load command in jsaleph/shell.js.
 # Lines starting with # are comments outside entries.
 # Lines starting with = are copied to tutorial.txt.
-# <number> { <title> | <file> | <extra files> | <list note> | <console> }
-#   <number>        1, 2, ...; also used in 'load <number>'
+# <number> { <title> | <file> | <extra files> | <list note> | <console text> }
+#   <number>        1, 2, ... consecutively; also used in 'load <number>'
+#                   and in references such as "(load 14)"
 #   <title>         one line, shown in the list and when loading
 #   <file>          the program, e.g. gcd.ale; the name without .ale is
 #                   used in 'load <name>' and in the list
-#   <files>         further files to load (modules, data), separated by
+#   <extra files>   further files to load (modules, data), separated by
 #                   spaces; they are not listed on their own
-#   <list text>     shown under the title in the list (can be empty)
+#   <list note>     shown under the title in the list (can be empty)
 #   <console text>  printed to the console after loading
-# Separate extra files with spaces. Escape |, } and \ as \|, \} and \\.
-# Mind the files passed to a program: write  run wc {story.txt\} story.txt
-# in the console text.
-# The loader prints the title and file list, then the console section.
+# Escape |, } and \ as \|, \} and \\. Mind the files passed to a program:
+# write  run wc {story.txt\} story.txt  in the console text.
+# The loader prints the number, name and title, then the console text.
 
 = ALEPH sample programs
 =
@@ -22,7 +22,8 @@
 = Files are copied to the current project. Existing files are kept.
 = The console shows how to open, compile, and run the sample. Enter
 = each command separately. Programs which use modules must be compiled
-= together with all of them. Edit the source for the fuller notes.
+= together with all of them. Most sources begin with a few comment
+= lines which tell a little more.
 =
 = For a first, quick tour of ALEPH, load these programs in this order:
 =      hello, square, args, guard, stack, wc, sort
@@ -37,7 +38,7 @@ Try:  Print a second line and inspect the compiler warning.
   run hello
 }
 
-2 { Square an integer | square.ale |  |
+2 { Square the numbers you type in | square.ale |  |
 reading numbers, a loop |
 Try:  Enter 46340 and 46341. How can a square be negative?
   edit square.ale    (optional)
@@ -54,7 +55,7 @@ Try:  Enter 12 and 13. Compare the results with bignum (load 14).
 }
 
 4 { Print command-line arguments | args.ale |  |
-STDARG, walking strings |
+the arguments in the list STDARG, walking its strings |
 Try:  Run with no arguments, with more arguments, with reversed order.
   edit args.ale    (optional)
   compile args
@@ -95,7 +96,7 @@ Try:  Compare IIII and IV. Reject non-canonical forms.
   run roman 1987 MMXXVI xiv     \|    run roman 3999 4000
 }
 
-9 { Print a calendar | cal.ale |  |
+9 { Print a calendar for a month or a whole year | cal.ale |  |
 tables, divrem, the day of the week |
 Try:  Compare Feb 1900 with Feb 2000. What weekday was July 14, 1789?
 Try:  Correct for the missing days from 1582 Oct 5 to Oct 14.
@@ -104,9 +105,11 @@ Try:  Correct for the missing days from 1582 Oct 5 to Oct 14.
   run cal 2026 11     \|    run cal 1789 07
 }
 
-10 { Trace failure through rule alternatives | guard.ale |  |
+10 { Try the rule types and trace where failure goes | guard.ale |  |
+rule types: question, predicate, action, function, and exit
 how failure in a guard or later in a rule affects alternatives |
 Try:  Put both tests in the guard. What does the call with 12 return?
+Try:  Move test+5 before test+1000. Why did it not run before?
   edit guard.ale    (optional)
   compile guard
   run guard
@@ -122,16 +125,16 @@ Try:  Enter 1 2 3, then Ctrl+D. Compare with reverse.
   run stack
 }
 
-12 { Inspect table fillings | filling.ale |  |
-blocks, repetition, labels, strings in a filling |
-Try:  Explain the warning about the two-word block.
+12 { See how a filling sets up the words of a table | filling.ale |  |
+blocks, repetition, labels, strings, and virtual addresses |
+Try:  Add the string "ABCDE" with label p8. How many words does it take?
   edit filling.ale    (optional)
   compile filling
   run filling
 }
 
 13 { List primes with the sieve of Eratosthenes | sieve.ale |  |
-a stack used as an array, with actual bounds <<P and >>P |
+a stack used as an array; <<P and >>P are its bounds |
 Try:  Change the sieve to print only twin primes.
   edit sieve.ale    (optional)
   compile sieve
@@ -192,7 +195,6 @@ Try:  With a repeating key, decrypt the output with 'run caesar KEY -d'.
 
 20 { Check palindromes | palindrome.ale |  |
 ASCII normalization, pack string, two indices |
-Try:  Check the sentence "A man, a plan, a canal: Panama!"
 Try:  Enter "Never odd or even" and "!!!" on separate lines. What remains after normalization?
   edit palindrome.ale    (optional)
   compile palindrome
@@ -210,6 +212,7 @@ Try:  Enter "SOS", then enter "... --- ..." to decode it.
 22 { Recognize a^n b^n c^n without counting | grammar.ale |  |
 passing one affix block per a, then reusing them for b and c |
 Try:  Predict whether abbccc and aaabbbccc pass.
+Try:  Why does the compiler warn that parse can have a global side effect?
   edit grammar.ale    (optional)
   compile grammar
   run grammar abc aabbcc aabc
@@ -227,7 +230,7 @@ Try:  Write a count one too high. How does the reader detect the missing value?
 24 { Save a binary search tree | treesave.ale |  |
 a binary search tree, data files, pointers |
 Try:  Load and compile treeload (load 25), then run it to see the tree's shape.
-  edit treesave.ale
+  edit treesave.ale    (optional)
   compile treesave
   run treesave pear apple plum pear
 }
@@ -240,18 +243,20 @@ Try:  Use treesave first. How does sorting its input change the tree shape?
   run treeload {tree.dat\}
 }
 
-26 { Test binary file positions | binio.ale |  |
-writing and reading numbers and pointers in a temporary file |
-Try:  Add a fourth list to the binary I/O test.
-  edit binio.ale    (optional)
-  compile binio
-  run binio
+26 { Keep a guest book in a text file | guestbook.ale |  |
+appending to a character file, then reading it back |
+Try:  Add guests in two runs. Then refuse a name already in the book.
+  edit guestbook.ale    (optional)
+  compile guestbook
+  run guestbook Ann Bob
+  attrib +sd guests.txt   (keep it; pass it to later runs)
+  run guestbook Cecil
 }
 
 = V. Variable number of affixes
 
 27 { Reverse input with variable affixes | reverse.ale |  |
-the anchor @, shift affix block |
+a variable number of affixes: the anchor @, shift affix block |
 Try:  Use 1 2 3 as in stack. Where are the values kept?
   edit reverse.ale    (optional)
   compile reverse
@@ -268,7 +273,7 @@ Try:  The last pop fails. Write a rule that only peeks.
 
 29 { Compute minimum, maximum, and mean | stats.ale |  |
 get affix blockno and forwarding blocks with @ |
-Try:  Add a rule for the median.
+Try:  Count how many numbers are above the mean.
   edit stats.ale    (optional)
   compile stats
   run stats
@@ -294,21 +299,14 @@ Try:  Limit output to 12 lines, then replace abcd with aabc. What happens?
 
 32 { Sort a stack with the quicksort module | sort.ale | quicksort.ale |
 module head and body, exported constants |
-Try:  Sort a stack with all values equal.
+Try:  Print ascending and descending in sort. Where are their values set?
+Try:  Call quicksort+<<V+>>V+V in sort. Why is quicksort not defined there?
   edit sort.ale    (optional)
   compile sort quicksort
   run sort
 }
 
-33 { Quicksort words with a comparison rule | sortcmp.ale |  |
-a recursive quicksort with a prototype and a custom comparison |
-Try:  Enter 1 for A-Z or 0 for Z-A. Then sort by length.
-  edit sortcmp.ale    (optional)
-  compile sortcmp
-  run sortcmp
-}
-
-34 { Use different comparison rules in quicksort | sortmod.ale | sortup.ale sortdown.ale qsort.ale |
+33 { Use different comparison rules in quicksort | sortmod.ale | sortup.ale sortdown.ale qsort.ale |
 qualified tags and separate definitions of qsort::qless |
 Try:  Sort even numbers before odd ones.
   edit sortmod.ale    (optional)
@@ -316,7 +314,7 @@ Try:  Sort even numbers before odd ones.
   run sortmod
 }
 
-35 { Verify quicksort with a wrapper module | sorttest.ale | checksort.ale quicksort.ale |
+34 { Verify quicksort with a wrapper module | sorttest.ale | checksort.ale quicksort.ale |
 redefining an imported rule to check every sort result |
 Try:  Make quicksort return immediately and see what the wrapper reports.
   edit sorttest.ale    (optional)
@@ -324,7 +322,7 @@ Try:  Make quicksort return immediately and see what the wrapper reports.
   run sorttest
 }
 
-36 { Count word frequencies | wordfreq.ale | qsort.ale story.txt |
+35 { Count word frequencies | wordfreq.ale | qsort.ale story.txt |
 a hash table, limited case folding, and a reusable sort module |
 Try:  Run without a file and enter "Ő ő Ű ű A a". Which counts are combined?
   edit wordfreq.ale    (optional)
@@ -332,7 +330,7 @@ Try:  Run without a file and enter "Ő ő Ű ű A a". Which counts are combined?
   run wordfreq {story.txt\} story.txt     \|    run wordfreq
 }
 
-37 { Guess a random number | guess.ale | random.ale |
+36 { Guess a random number | guess.ale | random.ale |
 drawing a pseudorandom integer with the random module |
 Try:  Always guess the midpoint of the remaining range. How many guesses does it take?
   edit guess.ale    (optional)
@@ -340,7 +338,7 @@ Try:  Always guess the midpoint of the remaining range. How many guesses does it
   run guess
 }
 
-38 { Shuffle and deal cards | cards.ale | random.ale |
+37 { Shuffle and deal cards | cards.ale | random.ale |
 Fisher-Yates shuffle, insertion sort, and Unicode suit symbols |
 Try:  Count high-card points in each hand.
   edit cards.ale    (optional)
@@ -348,7 +346,7 @@ Try:  Count high-card points in each hand.
   run cards
 }
 
-39 { Run module initializers | init.ale | outlib.ale manifest.ale |
+38 { Run module initializers | init.ale | outlib.ale manifest.ale |
 module roots, wait for, manifest constants |
 Try:  Remove wait for and try another module order.
   edit init.ale    (optional)
@@ -358,12 +356,22 @@ Try:  Remove wait for and try another module order.
 
 = VII. Applications
 
+39 { Sort words with your own comparison rule | sortcmp.ale |  |
+a recursive quicksort, a prototype, and your own comparison |
+Try:  Enter 1 for A-Z or 0 for Z-A. Then sort by length.
+  edit sortcmp.ale    (optional)
+  compile sortcmp
+  run sortcmp
+}
+
 40 { Write Towers of Hanoi moves to a file | hanoi.ale |  |
 recursion, writing a character file |
 Try:  Predict the number of moves, then count the peg pairs in hanoi.txt.
   edit hanoi.ale    (optional)
   compile hanoi
   run hanoi
+  view hanoi.txt
+  attrib +s hanoi.txt   (keep it for your next visit)
 }
 
 41 { Animate the Towers of Hanoi | towers.ale |  |
@@ -391,9 +399,13 @@ Try:  Run the cat.bf example, then type text to echo and press Ctrl+D.
   run bf     \|    run bf {cat.bf\} cat.bf
 }
 
-44 { Count n-queens solutions | queens.ale |  |
+44 { Count n-queens solutions | queens.ale | argnum.ale |
 recursive backtracking with a question to test safe positions |
 Try:  Run with 6 queens. Then change the program to draw all four solutions.
+Try:  Use the 'argnum' module. In the queens.ale source add
+        'pragmat'require="argnum".
+      comment out the rule 'arg number', and compile as
+        compile queens argnum
   edit queens.ale    (optional)
   compile queens
   run queens 8     \|    run queens 6
@@ -451,7 +463,7 @@ Try:  Predict which stack entry each call writes.
   run sideeffect
 }
 
-51 { Overload equality | overload.ale |  |
+51 { Overload the equality sign for strings | overload.ale |  |
 redefining the library rule for the equality operator |
 Try:  Compare strings while ignoring ASCII case.
   edit overload.ale    (optional)

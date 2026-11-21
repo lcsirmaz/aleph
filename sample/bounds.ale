@@ -4,6 +4,9 @@ $ bounds=on every indexing is checked while the program runs, and an
 $ index error stops the program with a message naming the rule and the
 $ list. Linking with -g (compile -X -g) adds the call stack to the
 $ message; the rule 'backtrack' prints the call stack at any time.
+$ The message gives the wrong index and the bounds (lower,upper) as
+$ virtual addresses, large numbers from 2^24 on; compare them with
+$ each other, their actual values do not matter.
 $ Usage:  run bounds        print a list backwards, correctly
 $         run bounds 1      the same with an off-by-one error
 $ Shows: the bounds pragmat, the call stack, 'was' as a guard.

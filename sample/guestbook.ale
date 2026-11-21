@@ -1,0 +1,36 @@
+'pragmat'title="guest book in a text file".
+$ Each run adds its arguments to the file guests.txt, one guest per
+$ line, then reads the whole file back and prints it with numbers.
+$ The file stays in the project, so the book grows from run to run.
+$ Usage:  run guestbook Ann Bob     add two guests, then list them all
+$         run guestbook             only list the guests
+$ Shows: the same character file opened for appending (/a/) and later
+$ for reading (/r/), put string, get char, and a missing file.
+
+'charfile'BOOK="guests.txt". $ always opened explicitly
+'table'NAME[]=("guests.txt":book).
+
+$ append each argument as a new line; the file is created if needed
+'a'add guests-p:
+   >>STDARG->p,
+   (p<<<STDARG; $ no arguments, nothing to add
+    open file+BOOK+/a/+NAME+book,
+      (nxt:p<<<STDARG,close file+BOOK;
+           put string+BOOK+STDARG+p,put char+BOOK+newline,
+           previous string+STDARG+p,:nxt);
+    printf+"Cannot write guests.txt%n",exit+1).
+
+$ print the file, a number before each line
+'a'list guests-n-c-start:
+   (open file+BOOK+/r/+NAME+book,
+      0->n,1->start,
+      (nxt:get char+BOOK+c,
+           (start=1,incr+n,printf+"%d. "+n,0->start;+),
+           print char+c,(c=newline,1->start;+),:nxt;
+       close file+BOOK),
+      (n=0,printf+"The guest book is empty.%n";
+       printf+"%d guests so far.%n"+n);
+    printf+"There is no guest book yet.%n").
+
+'root'add guests,list guests.
+'end'

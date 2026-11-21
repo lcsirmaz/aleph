@@ -37,10 +37,10 @@ $ in the reverse
     print string+B+A[idx],putc+newline,next+A+idx,:nxt).
 
 'root' printf+"sorting, enter 1 for alphabetically, 0 for reverse%n",
-       get int+STDIN+reverse, print A, quicksort+<<A+>>A+A, print A.
-'var'reverse=0.
+       get int+STDIN+alphabetic, print A, quicksort+<<A+>>A+A, print A.
+'var'alphabetic=0.
 $ sort alphabetically or in the reverse
 'q'qsort less+>x+>y-cmp:
-     compare string+B+x+B+y+cmp,(is+reverse,cmp<0;cmp>0).
+     compare string+B+x+B+y+cmp,(is+alphabetic,cmp<0;cmp>0).
 'end'
 

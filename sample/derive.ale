@@ -24,7 +24,8 @@ $ Differentiate formula trees built in the program.
               M+df+tim op+g+n2,M+n2+tim op+n1+n1,
               M+c zero+log op+f+n2,M+n2+tim op+dg+n2,
               M+f+pow op+g+n3,M+n2+tim op+n3+n2,
-              M+n1+plus op+n2+de
+              M+n1+plus op+n2+de;
+    exit+1 $ no other operator can occur
     ).
 'action'M+>left+>op+>right+res>:
   (*left->left, op->op,right->right*) expr, >>expr->res.

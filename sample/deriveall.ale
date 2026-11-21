@@ -24,7 +24,8 @@ $ Parse and differentiate a formula in x.
    [log op], M+dg+div op+g+de;
    [sin op], M+c zero+cos op+g+n1,M+dg+tim op+n1+de;
    [cos op], M+c zero+sin op+g+n1,M+dg+tim op+n1+n2,
-             M+c zero+min op+n2+de
+             M+c zero+min op+n2+de;
+   exit+1 $ no other operator can occur
    ).
 
 'a'intro: printf+

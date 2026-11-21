@@ -5,7 +5,8 @@ $ add x to z and return the sum in x
 
 $ this is the main routine. If n is not zero, decrease it,
 $ call itself recursively, then add the previous value to
-$ each affix.
+$ each affix. This rule gives a warning as the n=0 case does not
+$ visit all affixes.
 'a'rec+>n+@+>sq>-v:
    n=0;
    decr+n,rec+n+@,1->v,

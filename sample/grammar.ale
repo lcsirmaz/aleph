@@ -14,7 +14,9 @@ $ once for b and once for c, leaving the initial marker as a sentinel.
 'p'parse+@+>a:
    R+/a/,parse+/a/+@;
    expect+/b/+@,expect+/c/+@,R+newline.
-'p'expect+>ch+@+>cnt:
+$ 'mark' is never read, but the block needs it: one mark (the code
+$ of a) stands for each a, so the blocks count the a-s.
+'p'expect+>ch+@+>mark:
    R+ch,shift affix block+@,:expect;
    shift affix block+@,-;
    +.

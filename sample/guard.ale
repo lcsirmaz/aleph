@@ -1,14 +1,28 @@
 'pragmat'title="where failure goes".
+$ The rule types: a question ('q') and a predicate ('p') can fail, an
+$ action ('a') and a function ('f') always succeed, and an exit rule
+$ ('e') never returns. Questions and functions change only their out
+$ affixes; predicates and actions may change global variables, too.
 $ Predict which calls reach the second alternative of choose.
 
+'variable'tested=0.
+
+'f'twice+>n+m>: add+n+n+m.
+
 'q'choose+>n+value>:
-   n>0,n<10,10->value;
+   n>0,n<10,twice+n+value;
    20->value.
+
+'p'allowed+>n: n<100,incr+tested.
+
+'e'give up+>n:
+   printf+"%d is too big, stop after %d tests%n"+n+tested,exit+0.
 
 $ A failed guard tries the next alternative. A later failure exits choose.
 'a'test+>n-value:
-   choose+n+value,printf+"%d gives %d%n"+n+value;
-   printf+"%d fails%n"+n.
+   (allowed+n;give up+n),
+   (choose+n+value,printf+"%d gives %d%n"+n+value;
+    printf+"%d fails%n"+n).
 
-'root'test+-1,test+4,test+12.
+'root'test+-1,test+4,test+12,test+1000,test+5.
 'end'
