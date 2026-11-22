@@ -10,7 +10,7 @@ $ each other, their actual values do not matter.
 $ Usage:  run bounds        print a list backwards, correctly
 $         run bounds 1      the same with an off-by-one error
 $ Shows: the bounds pragmat, the call stack, 'was' as a guard.
-'pragmat'warning="For the call stack compile as: compile -X -g bounds".
+'pragmat'warning="For runtime error messages check the STDERR window".
 
 'stack'[1]SQ[]. $ the squares 1, 4, 9, ...
 
@@ -19,7 +19,8 @@ $ Shows: the bounds pragmat, the call stack, 'was' as a guard.
    (nxt:k>n;mult+k+k+x,(* x->SQ *)SQ,incr+k,:nxt).
 
 $ the call stack: empty unless linked with -g
-'a'where: printf+"The call stack (only if linked with -g):%n",backtrack.
+'a'where: printf+" *** at this point the rule stack is printed"
+   " to STDERR if linked with -g%n",backtrack.
 
 'pragmat'bounds=on. $ from here on, every indexing is checked
 
@@ -40,11 +41,11 @@ $ cannot go wrong even without bounds=on
         (was+SQ+p,printf+" %d"+SQ[p];printf+" (skipped)"),
         decr+p,:nxt).
 
-'root'-wrong-c:
-   0->wrong,
-   ((>>STDARG>=<<STDARG,string elem+STDARG+>>STDARG+0+c,c=/1/),
-       1->wrong;+),
-   fill+10,
-   printf+"Checked with 'was':%n",print safely+wrong,
-   printf+"Checked by bounds=on:%n",print backwards+wrong.
+'root'-wrong:
+   printf+" *** pointer handling is ", 0->wrong,
+   ((-c:>>STDARG>=<<STDARG,string elem+STDARG+>>STDARG+0+c,c=/1/),
+       1->wrong, printf+"off by 1%n";printf+"correct%n"),
+   fill+10, $ prints the call stack
+   printf+"Printing with stack pointers checked:%n",print safely+wrong,
+   printf+"Printing with stack pointers NOT checked:%n",print backwards+wrong.
 'end'

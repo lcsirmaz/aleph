@@ -2,8 +2,6 @@
 $ Printing command line arguments
 $ Usage: run args arg1, arg2, last argument
 $ Shows: manipulating stacks; counting strings in a list
-'pragmat'warning="Printing command line arguments".
-'pragmat'warning="Usage: run args <arg1> <arg2> ...".
 'f'count arguments+n>-ptr:
   0->n,>>STDARG->ptr,
     (nxt:ptr<<<STDARG;

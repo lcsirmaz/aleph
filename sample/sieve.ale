@@ -2,8 +2,8 @@
 $ List the primes up to N (default 200, at most 200000).
 $ Usage:  run sieve 1000
 $ Shows: a stack used as an array, its actual bounds <<P and >>P,
-$ extending a stack in a loop. The sandbox limits the size of a stack
-$ (to about 250000 elements), hence the upper limit for N.
+$ extending a stack in a loop. A stack size is limited to about
+$ 250000 elements, hence the upper limit for N.
 
 $ P[<<P+k] is 1 if k is still a prime candidate, 0 if crossed out
 'stack'[1]P[].

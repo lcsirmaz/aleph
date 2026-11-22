@@ -6,8 +6,8 @@ $ Euclid's algorithm in a recursive rule and a loop with a label.
    divrem+a+b+#+r,gcd rec+b+r+g.
 
 'f'gcd loop+>a+>b+g>-r:
-   (nxt:b=0,getabs+a+g;
-        divrem+a+b+#+r,b->a,r->b,:nxt).
+   b=0,getabs+a+g;
+   divrem+a+b+#+r,b->a,r->b,:gcd loop.
 
 $ lcm(a,b)=|a/gcd(a,b)*b|, and lcm(0,0)=0
 'f'lcm+>a+>b+l>-g:

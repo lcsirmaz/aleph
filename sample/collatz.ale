@@ -11,6 +11,7 @@ $ it is not a sequence of digits
         +).
 
 $ Large starting values can overflow 3n+1 on the JS target.
+'constant'max coll=max int / 3.
 'f'collatz+>n+m>-r:
    divrem+n+2+m+r,(r=0;addmult+n+3+1+m).
 

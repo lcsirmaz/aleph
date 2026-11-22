@@ -32,7 +32,7 @@
 
 1 { Print a greeting | hello.ale |  |
 the smallest program, the warning pragmat |
-Try: Print a second line and inspect the compiler warning.
+Try: Inspect the compiler warning; print a second line.
   edit hello.ale    (optional)
   compile hello
   run hello
@@ -40,6 +40,7 @@ Try: Print a second line and inspect the compiler warning.
 
 2 { Square the numbers you type in | square.ale |  |
 reading numbers, a loop |
+To quit, hit ctrl+D, or type a non-number.
 Try: Enter 46340 and 46341. How can a square be negative?
   edit square.ale    (optional)
   compile square
@@ -47,7 +48,8 @@ Try: Enter 46340 and 46341. How can a square be negative?
 }
 
 3 { Compute factorials | factorial.ale |  |
-recursion and the JS target's signed 32-bit overflow |
+recursion and the signed 32-bit overflow |
+Try: Compute factorial using a loop.
 Try: Enter 12 and 13. Compare the results with bignum (load 14).
   edit factorial.ale    (optional)
   compile factorial
@@ -56,7 +58,7 @@ Try: Enter 12 and 13. Compare the results with bignum (load 14).
 
 4 { Print command-line arguments | args.ale |  |
 the arguments in the list STDARG, walking its strings |
-Try: Run with no arguments, with more arguments, with reversed order.
+Try: Print the argument numbers as well.
   edit args.ale    (optional)
   compile args
   run args one two three     \|    run args
@@ -64,7 +66,7 @@ Try: Run with no arguments, with more arguments, with reversed order.
 
 5 { Show Unicode characters and code points | unicode.ale |  |
 code points, UTF-8 byte counts, and packed strings |
-Try: Add U+2665 and predict its UTF-8 byte count.
+Try: Add U+2665 (hexa), and character denotations /x/ to POINTS[].
   edit unicode.ale    (optional)
   compile unicode
   run unicode
@@ -82,7 +84,7 @@ Try: Enter 48 alone, then Ctrl+D. Which guard fails?
 
 7 { Trace Collatz sequences | collatz.ale |  |
 loops, a number from STDARG |
-Try: Run without arguments to find the longest run.
+Try: Guard the rule 'collatz' against overflow on 32-bit arithmetic.
   edit collatz.ale    (optional)
   compile collatz
   run collatz 27 97     \|    run collatz
@@ -90,27 +92,27 @@ Try: Run without arguments to find the longest run.
 
 8 { Convert between Roman and Arabic numerals | roman.ale |  |
 string tables, classification |
-Try: Compare IIII and IV. Reject non-canonical forms.
+Try: Compare IIII and IV. Reject non-canonical forms, such as MMCMD.
   edit roman.ale    (optional)
   compile roman
   run roman 1987 MMXXVI xiv     \|    run roman 3999 4000
 }
 
 9 { Print a calendar for a month or a whole year | cal.ale |  |
-tables, divrem, the day of the week |
+tables, divrem, exit rule, the day of the week |
 Try: Compare Feb 1900 with Feb 2000. What weekday was July 14, 1789?
-Try: Correct for the missing days from 1582 Oct 5 to Oct 14.
+Try: The date must be after Oct 1582. Make it work for earlier dates.
   edit cal.ale    (optional)
   compile cal
-  run cal 2026 11     \|    run cal 1789 07
+  run cal 2026       \|    run cal 1789 07
 }
 
 10 { Try the rule types and trace where failure goes | guard.ale |  |
 rule types: question, predicate, action, function, and exit
 how failure in a guard or later in a rule affects alternatives |
-Try: Put both tests in the guard. What does the call with 12 return?
 Try: Move test+5 before test+1000. Why did it not run before?
-  edit guard.ale    (optional)
+Try: Put parentheses around the two tests in line 13. What happens?
+  edit guard.ale
   compile guard
   run guard
 }
@@ -127,6 +129,7 @@ Try: Enter 1 2 3, then Ctrl+D. Compare with reverse.
 
 12 { See how a filling sets up the words of a table | filling.ale |  |
 blocks, repetition, labels, strings, and virtual addresses |
+Try: What happens if parentheses are added around the last filling item 'p7'?
 Try: Add the string "ABCDE" with label p8. How many words does it take?
   edit filling.ale    (optional)
   compile filling
@@ -135,6 +138,7 @@ Try: Add the string "ABCDE" with label p8. How many words does it take?
 
 13 { List primes with the sieve of Eratosthenes | sieve.ale |  |
 a stack used as an array; <<P and >>P are its bounds |
+Try: Check the error message in STDERR when the stack size exeeds the limit.
 Try: Change the sieve to print only twin primes.
   edit sieve.ale    (optional)
   compile sieve
@@ -169,20 +173,22 @@ Try: Enter three tasks with the same priority. Do they come out in input order?
 
 17 { Trace an out-of-bounds list access | bounds.ale |  |
 the bounds pragmat, backtrack, was, and linker flag -g |
-Try: Compare the failing run before and after 'compile -X -g bounds'.
+Try: Print the rule stack at different points.
+Try: Check the STDERR window for runtime errors when using argument 1.
   edit bounds.ale    (optional)
-  compile bounds
-  run bounds     \|    run bounds 1
+  compile bounds   \|    compile -X -g bounds
+  run bounds       \|    run bounds 1
 }
 
 = IV. Characters, strings, files
 
 18 { Count lines, words, and characters | wc.ale | story.txt |
 open file, get char, and counting Unicode code points |
-Try: Also report the longest line.
+Try: Edit story.txt file. Report the the longest line in each file.
+Try: Add attributes +d and +s to 'story.txt'. What do they do?
   edit wc.ale    (optional)
   compile wc
-  run wc     \|    run wc {story.txt\} story.txt
+  run wc   \|   run wc story.txt   \|   run wc {story.txt\} story.txt
 }
 
 19 { Encrypt with Caesar and Vigenere ciphers | caesar.ale |  |

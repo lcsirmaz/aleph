@@ -9,7 +9,7 @@ $ ':p1' gets the address of the last word of the block before it.
 'constant'four times = 4.
 'table'(a,b,c)T[] = (
   $ fields set by name; '83->c->b' stores 83 in both c and b;
-  $ '*2' repeats the block, p1 marks the second copy
+  $ '*2' repeats the block, p1 marks the last work in the second copy
   (81->a,83->c->b)*2:p1,
   $ values in field order a,b,c
   (204,205,206):p2,
@@ -25,7 +25,7 @@ $ ':p1' gets the address of the last word of the block before it.
   (73,74)*four times:p6,
   $ labels are constants, so they can be stored as values
   (p1,p2,p3):p7,
-  $ a single value is a one-word block
+  $ a single value is a one-word block, no warning
   p7 ).
 'constant'ca=100,cb=ca+1,cc=cb+1.
 
@@ -40,7 +40,7 @@ $ ':p1' gets the address of the last word of the block before it.
   [p7],printf+" p7";
   +.
 
-$ c is the last field, so c*T[i] is the word at address i itself
+$ c is the last field in a block, so c*T[i] is the word at address i itself
 'root'-i:
   subtr+<<T+<>T+i,(nxt:i>=>>T;
     incr+i,print int+i,print int+c*T[i],print ptr+i,print char+newline,:nxt).
