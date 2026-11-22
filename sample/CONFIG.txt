@@ -1,4 +1,4 @@
-# Tutorial entries for the load command in jsaleph/shell.js.
+# Tutorial entries for the load command in shell.js.
 # Lines starting with # are comments outside entries.
 # Lines starting with = are copied to tutorial.txt.
 # <number> { <title> | <file> | <extra files> | <list note> | <console text> }
@@ -32,7 +32,7 @@
 
 1 { Print a greeting | hello.ale |  |
 the smallest program, the warning pragmat |
-Try:  Print a second line and inspect the compiler warning.
+Try: Print a second line and inspect the compiler warning.
   edit hello.ale    (optional)
   compile hello
   run hello
@@ -40,7 +40,7 @@ Try:  Print a second line and inspect the compiler warning.
 
 2 { Square the numbers you type in | square.ale |  |
 reading numbers, a loop |
-Try:  Enter 46340 and 46341. How can a square be negative?
+Try: Enter 46340 and 46341. How can a square be negative?
   edit square.ale    (optional)
   compile square
   run square
@@ -48,7 +48,7 @@ Try:  Enter 46340 and 46341. How can a square be negative?
 
 3 { Compute factorials | factorial.ale |  |
 recursion and the JS target's signed 32-bit overflow |
-Try:  Enter 12 and 13. Compare the results with bignum (load 14).
+Try: Enter 12 and 13. Compare the results with bignum (load 14).
   edit factorial.ale    (optional)
   compile factorial
   run factorial
@@ -56,7 +56,7 @@ Try:  Enter 12 and 13. Compare the results with bignum (load 14).
 
 4 { Print command-line arguments | args.ale |  |
 the arguments in the list STDARG, walking its strings |
-Try:  Run with no arguments, with more arguments, with reversed order.
+Try: Run with no arguments, with more arguments, with reversed order.
   edit args.ale    (optional)
   compile args
   run args one two three     \|    run args
@@ -64,7 +64,7 @@ Try:  Run with no arguments, with more arguments, with reversed order.
 
 5 { Show Unicode characters and code points | unicode.ale |  |
 code points, UTF-8 byte counts, and packed strings |
-Try:  Add U+2665 and predict its UTF-8 byte count.
+Try: Add U+2665 and predict its UTF-8 byte count.
   edit unicode.ale    (optional)
   compile unicode
   run unicode
@@ -74,7 +74,7 @@ Try:  Add U+2665 and predict its UTF-8 byte count.
 
 6 { Compare two versions of Euclid's algorithm | gcd.ale |  |
 Euclid: recursion vs. a loop, guards |
-Try:  Enter 48 alone, then Ctrl+D. Which guard fails?
+Try: Enter 48 alone, then Ctrl+D. Which guard fails?
   edit gcd.ale    (optional)
   compile gcd
   run gcd
@@ -82,7 +82,7 @@ Try:  Enter 48 alone, then Ctrl+D. Which guard fails?
 
 7 { Trace Collatz sequences | collatz.ale |  |
 loops, a number from STDARG |
-Try:  Run without arguments to find the longest run.
+Try: Run without arguments to find the longest run.
   edit collatz.ale    (optional)
   compile collatz
   run collatz 27 97     \|    run collatz
@@ -90,7 +90,7 @@ Try:  Run without arguments to find the longest run.
 
 8 { Convert between Roman and Arabic numerals | roman.ale |  |
 string tables, classification |
-Try:  Compare IIII and IV. Reject non-canonical forms.
+Try: Compare IIII and IV. Reject non-canonical forms.
   edit roman.ale    (optional)
   compile roman
   run roman 1987 MMXXVI xiv     \|    run roman 3999 4000
@@ -98,8 +98,8 @@ Try:  Compare IIII and IV. Reject non-canonical forms.
 
 9 { Print a calendar for a month or a whole year | cal.ale |  |
 tables, divrem, the day of the week |
-Try:  Compare Feb 1900 with Feb 2000. What weekday was July 14, 1789?
-Try:  Correct for the missing days from 1582 Oct 5 to Oct 14.
+Try: Compare Feb 1900 with Feb 2000. What weekday was July 14, 1789?
+Try: Correct for the missing days from 1582 Oct 5 to Oct 14.
   edit cal.ale    (optional)
   compile cal
   run cal 2026 11     \|    run cal 1789 07
@@ -108,8 +108,8 @@ Try:  Correct for the missing days from 1582 Oct 5 to Oct 14.
 10 { Try the rule types and trace where failure goes | guard.ale |  |
 rule types: question, predicate, action, function, and exit
 how failure in a guard or later in a rule affects alternatives |
-Try:  Put both tests in the guard. What does the call with 12 return?
-Try:  Move test+5 before test+1000. Why did it not run before?
+Try: Put both tests in the guard. What does the call with 12 return?
+Try: Move test+5 before test+1000. Why did it not run before?
   edit guard.ale    (optional)
   compile guard
   run guard
@@ -119,7 +119,7 @@ Try:  Move test+5 before test+1000. Why did it not run before?
 
 11 { Reverse input with a stack | stack.ale |  |
 extending and unstacking a stack of integers |
-Try:  Enter 1 2 3, then Ctrl+D. Compare with reverse.
+Try: Enter 1 2 3, then Ctrl+D. Compare with reverse.
   edit stack.ale    (optional)
   compile stack
   run stack
@@ -127,7 +127,7 @@ Try:  Enter 1 2 3, then Ctrl+D. Compare with reverse.
 
 12 { See how a filling sets up the words of a table | filling.ale |  |
 blocks, repetition, labels, strings, and virtual addresses |
-Try:  Add the string "ABCDE" with label p8. How many words does it take?
+Try: Add the string "ABCDE" with label p8. How many words does it take?
   edit filling.ale    (optional)
   compile filling
   run filling
@@ -135,7 +135,7 @@ Try:  Add the string "ABCDE" with label p8. How many words does it take?
 
 13 { List primes with the sieve of Eratosthenes | sieve.ale |  |
 a stack used as an array; <<P and >>P are its bounds |
-Try:  Change the sieve to print only twin primes.
+Try: Change the sieve to print only twin primes.
   edit sieve.ale    (optional)
   compile sieve
   run sieve 1032
@@ -143,7 +143,7 @@ Try:  Change the sieve to print only twin primes.
 
 14 { Compute exact large factorials | bignum.ale |  |
 base-10000 digits on a stack, with carry propagation |
-Try:  Verify that 100! has 158 digits, then adapt the code to compute 2^1000.
+Try: Verify that 100! has 158 digits, then adapt the code to compute 2^1000.
   edit bignum.ale    (optional)
   compile bignum
   run bignum 100
@@ -151,7 +151,8 @@ Try:  Verify that 100! has 158 digits, then adapt the code to compute 2^1000.
 
 15 { Find the shortest path through a maze | maze.ale |  |
 breadth-first search with a queue and selectors for cells |
-Try:  Open one wall and see whether the shortest path gets shorter.
+Try: When printing the maze, use the 'block' character in place of #.
+Try: Open one wall and see whether the shortest path gets shorter.
   edit maze.ale    (optional)
   compile maze
   run maze
@@ -159,8 +160,8 @@ Try:  Open one wall and see whether the shortest path gets shorter.
 
 16 { Order tasks by priority | todo.ale |  |
 a binary heap, get line, and pack string |
-Try:  Enter "2 buy milk" and "1 pay rent" on two lines. Ctrl+D.
-Try:  Enter three tasks with the same priority. Do they come out in input order?
+Try: Enter "2 buy milk" and "1 pay rent" on two lines. Ctrl+D.
+Try: Enter three tasks with the same priority. Do they come out in input order?
   edit todo.ale    (optional)
   compile todo
   run todo
@@ -168,7 +169,7 @@ Try:  Enter three tasks with the same priority. Do they come out in input order?
 
 17 { Trace an out-of-bounds list access | bounds.ale |  |
 the bounds pragmat, backtrack, was, and linker flag -g |
-Try:  Compare the failing run before and after 'compile -X -g bounds'.
+Try: Compare the failing run before and after 'compile -X -g bounds'.
   edit bounds.ale    (optional)
   compile bounds
   run bounds     \|    run bounds 1
@@ -178,7 +179,7 @@ Try:  Compare the failing run before and after 'compile -X -g bounds'.
 
 18 { Count lines, words, and characters | wc.ale | story.txt |
 open file, get char, and counting Unicode code points |
-Try:  Also report the longest line.
+Try: Also report the longest line.
   edit wc.ale    (optional)
   compile wc
   run wc     \|    run wc {story.txt\} story.txt
@@ -186,8 +187,8 @@ Try:  Also report the longest line.
 
 19 { Encrypt with Caesar and Vigenere ciphers | caesar.ale |  |
 character arithmetic, character ranges |
-Try:  Encrypt a line with shift 3, then recover it with shift -3.
-Try:  With a repeating key, decrypt the output with 'run caesar KEY -d'.
+Try: Encrypt a line with shift 3, then recover it with shift -3.
+Try: With a repeating key, decrypt the output with 'run caesar KEY -d'.
   edit caesar.ale    (optional)
   compile caesar
   run caesar 3     \|    run caesar KEY
@@ -195,7 +196,7 @@ Try:  With a repeating key, decrypt the output with 'run caesar KEY -d'.
 
 20 { Check palindromes | palindrome.ale |  |
 ASCII normalization, pack string, two indices |
-Try:  Enter "Never odd or even" and "!!!" on separate lines. What remains after normalization?
+Try: Enter "Never odd or even" and "!!!" on separate lines. What remains after normalization?
   edit palindrome.ale    (optional)
   compile palindrome
   run palindrome
@@ -203,7 +204,7 @@ Try:  Enter "Never odd or even" and "!!!" on separate lines. What remains after 
 
 21 { Encode and decode Morse code | morse.ale |  |
 an index to a string table, compare string |
-Try:  Enter "SOS", then enter "... --- ..." to decode it.
+Try: Enter "SOS", then enter "... --- ..." to decode it.
   edit morse.ale    (optional)
   compile morse
   run morse
@@ -211,8 +212,8 @@ Try:  Enter "SOS", then enter "... --- ..." to decode it.
 
 22 { Recognize a^n b^n c^n without counting | grammar.ale |  |
 passing one affix block per a, then reusing them for b and c |
-Try:  Predict whether abbccc and aaabbbccc pass.
-Try:  Why does the compiler warn that parse can have a global side effect?
+Try: Predict whether abbccc and aaabbbccc pass.
+Try: Why does the compiler warn that parse can have a global side effect?
   edit grammar.ale    (optional)
   compile grammar
   run grammar abc aabbcc aabc
@@ -220,8 +221,8 @@ Try:  Why does the compiler warn that parse can have a global side effect?
 
 23 { Write and read binary records | records.ale |  |
 writing a count and numerical words to readings.dat |
-Try:  Read the file written by the first run with the second command.
-Try:  Write a count one too high. How does the reader detect the missing value?
+Try: Read the file written by the first run with the second command.
+Try: Write a count one too high. How does the reader detect the missing value?
   edit records.ale    (optional)
   compile records
   run records     \|    run records {readings.dat\} read
@@ -229,7 +230,7 @@ Try:  Write a count one too high. How does the reader detect the missing value?
 
 24 { Save a binary search tree | treesave.ale |  |
 a binary search tree, data files, pointers |
-Try:  Load and compile treeload (load 25), then run it to see the tree's shape.
+Try: Load and compile treeload (load 25), then run it to see the tree's shape.
   edit treesave.ale    (optional)
   compile treesave
   run treesave pear apple plum pear
@@ -237,7 +238,7 @@ Try:  Load and compile treeload (load 25), then run it to see the tree's shape.
 
 25 { Restore a binary search tree | treeload.ale |  |
 restoring serialized pointers at different virtual addresses |
-Try:  Use treesave first. How does sorting its input change the tree shape?
+Try: Use treesave first. How does sorting its input change the tree shape?
   edit treeload.ale    (optional)
   compile treeload
   run treeload {tree.dat\}
@@ -245,7 +246,7 @@ Try:  Use treesave first. How does sorting its input change the tree shape?
 
 26 { Keep a guest book in a text file | guestbook.ale |  |
 appending to a character file, then reading it back |
-Try:  Add guests in two runs. Then refuse a name already in the book.
+Try: Add guests in two runs. Then refuse a name already in the book.
   edit guestbook.ale    (optional)
   compile guestbook
   run guestbook Ann Bob
@@ -257,7 +258,7 @@ Try:  Add guests in two runs. Then refuse a name already in the book.
 
 27 { Reverse input with variable affixes | reverse.ale |  |
 a variable number of affixes: the anchor @, shift affix block |
-Try:  Use 1 2 3 as in stack. Where are the values kept?
+Try: Use 1 2 3 as in stack. Where are the values kept?
   edit reverse.ale    (optional)
   compile reverse
   run reverse
@@ -265,7 +266,7 @@ Try:  Use 1 2 3 as in stack. Where are the values kept?
 
 28 { Push and pop several values | pushpop.ale |  |
 @ with a stack, an index error at the end |
-Try:  The last pop fails. Write a rule that only peeks.
+Try: The last pop fails. Write a rule that only peeks.
   edit pushpop.ale    (optional)
   compile pushpop
   run pushpop
@@ -273,7 +274,7 @@ Try:  The last pop fails. Write a rule that only peeks.
 
 29 { Compute minimum, maximum, and mean | stats.ale |  |
 get affix blockno and forwarding blocks with @ |
-Try:  Count how many numbers are above the mean.
+Try: Count how many numbers are above the mean.
   edit stats.ale    (optional)
   compile stats
   run stats
@@ -281,7 +282,7 @@ Try:  Count how many numbers are above the mean.
 
 30 { Print a diagonal of Pascal's triangle | pascal.ale |  |
 running sums over repeated affix blocks |
-Try:  Predict the first number with compute+1+5+v.
+Try: Predict the first number with compute+1+5+v.
   edit pascal.ale    (optional)
   compile pascal
   run pascal
@@ -291,7 +292,7 @@ Try:  Predict the first number with compute+1+5+v.
 
 31 { Generate permutations | permute.ale | nextperm.ale |
 a separate permutation module and the macro pragmat |
-Try:  Limit output to 12 lines, then replace abcd with aabc. What happens?
+Try: Limit output to 12 lines, then replace abcd with aabc. What happens?
   edit permute.ale    (optional)
   compile permute nextperm
   run permute
@@ -299,8 +300,8 @@ Try:  Limit output to 12 lines, then replace abcd with aabc. What happens?
 
 32 { Sort a stack with the quicksort module | sort.ale | quicksort.ale |
 module head and body, exported constants |
-Try:  Print ascending and descending in sort. Where are their values set?
-Try:  Call quicksort+<<V+>>V+V in sort. Why is quicksort not defined there?
+Try: Print ascending and descending in sort. Where are their values set?
+Try: Call quicksort+<<V+>>V+V in sort. Why is quicksort not defined there?
   edit sort.ale    (optional)
   compile sort quicksort
   run sort
@@ -308,7 +309,7 @@ Try:  Call quicksort+<<V+>>V+V in sort. Why is quicksort not defined there?
 
 33 { Use different comparison rules in quicksort | sortmod.ale | sortup.ale sortdown.ale qsort.ale |
 qualified tags and separate definitions of qsort::qless |
-Try:  Sort even numbers before odd ones.
+Try: Sort even numbers before odd ones.
   edit sortmod.ale    (optional)
   compile sortmod sortup sortdown qsort
   run sortmod
@@ -316,7 +317,7 @@ Try:  Sort even numbers before odd ones.
 
 34 { Verify quicksort with a wrapper module | sorttest.ale | checksort.ale quicksort.ale |
 redefining an imported rule to check every sort result |
-Try:  Make quicksort return immediately and see what the wrapper reports.
+Try: Make quicksort return immediately and see what the wrapper reports.
   edit sorttest.ale    (optional)
   compile sorttest checksort quicksort
   run sorttest
@@ -324,7 +325,7 @@ Try:  Make quicksort return immediately and see what the wrapper reports.
 
 35 { Count word frequencies | wordfreq.ale | qsort.ale story.txt |
 a hash table, limited case folding, and a reusable sort module |
-Try:  Run without a file and enter "Ő ő Ű ű A a". Which counts are combined?
+Try: Run without a file and enter "Ő ő Ű ű A a". Which counts are combined?
   edit wordfreq.ale    (optional)
   compile wordfreq qsort
   run wordfreq {story.txt\} story.txt     \|    run wordfreq
@@ -332,7 +333,7 @@ Try:  Run without a file and enter "Ő ő Ű ű A a". Which counts are combined?
 
 36 { Guess a random number | guess.ale | random.ale |
 drawing a pseudorandom integer with the random module |
-Try:  Always guess the midpoint of the remaining range. How many guesses does it take?
+Try: Always guess the midpoint of the remaining range. How many guesses does it take?
   edit guess.ale    (optional)
   compile guess random
   run guess
@@ -340,7 +341,7 @@ Try:  Always guess the midpoint of the remaining range. How many guesses does it
 
 37 { Shuffle and deal cards | cards.ale | random.ale |
 Fisher-Yates shuffle, insertion sort, and Unicode suit symbols |
-Try:  Count high-card points in each hand.
+Try: Count high-card points in each hand.
   edit cards.ale    (optional)
   compile cards random
   run cards
@@ -348,7 +349,7 @@ Try:  Count high-card points in each hand.
 
 38 { Run module initializers | init.ale | outlib.ale manifest.ale |
 module roots, wait for, manifest constants |
-Try:  Remove wait for and try another module order.
+Try: Remove wait for and try another module order.
   edit init.ale    (optional)
   compile init outlib manifest
   run init
@@ -358,7 +359,7 @@ Try:  Remove wait for and try another module order.
 
 39 { Sort words with your own comparison rule | sortcmp.ale |  |
 a recursive quicksort, a prototype, and your own comparison |
-Try:  Enter 1 for A-Z or 0 for Z-A. Then sort by length.
+Try: Enter 1 for A-Z or 0 for Z-A. Then sort by length.
   edit sortcmp.ale    (optional)
   compile sortcmp
   run sortcmp
@@ -366,7 +367,7 @@ Try:  Enter 1 for A-Z or 0 for Z-A. Then sort by length.
 
 40 { Write Towers of Hanoi moves to a file | hanoi.ale |  |
 recursion, writing a character file |
-Try:  Predict the number of moves, then count the peg pairs in hanoi.txt.
+Try: Predict the number of moves, then count the peg pairs in hanoi.txt.
   edit hanoi.ale    (optional)
   compile hanoi
   run hanoi
@@ -376,7 +377,7 @@ Try:  Predict the number of moves, then count the peg pairs in hanoi.txt.
 
 41 { Animate the Towers of Hanoi | towers.ale |  |
 three stacks for the pegs, console drawing, and msleep |
-Try:  Start with 2 discs. Then shorten the pause.
+Try: Start with 2 discs. Then shorten the pause.
   edit towers.ale    (optional)
   compile towers
   run towers
@@ -384,8 +385,8 @@ Try:  Start with 2 discs. Then shorten the pause.
 
 42 { Evaluate integer expressions with variables | calc.ale |  |
 recursive descent, assignment, and expression error recovery |
-Try:  Enter 1/0, then x=2^10 and x+1. Does the calculator recover?
-Try:  Compare 2^3^2 and (2^3)^2. Which exponentiation happens first?
+Try: Enter 1/0, then x=2^10 and x+1. Does the calculator recover?
+Try: Compare 2^3^2 and (2^3)^2. Which exponentiation happens first?
   edit calc.ale    (optional)
   compile calc
   run calc
@@ -393,7 +394,7 @@ Try:  Compare 2^3^2 and (2^3)^2. Which exponentiation happens first?
 
 43 { Interpret Brainf*ck programs | bf.ale | cat.bf |
 an interpreter with precomputed jumps |
-Try:  Run the cat.bf example, then type text to echo and press Ctrl+D.
+Try: Run the cat.bf example, then type text to echo and press Ctrl+D.
   edit bf.ale    (optional)
   compile bf
   run bf     \|    run bf {cat.bf\} cat.bf
@@ -401,8 +402,8 @@ Try:  Run the cat.bf example, then type text to echo and press Ctrl+D.
 
 44 { Count n-queens solutions | queens.ale | argnum.ale |
 recursive backtracking with a question to test safe positions |
-Try:  Run with 6 queens. Then change the program to draw all four solutions.
-Try:  Use the 'argnum' module. In the queens.ale source add
+Try: Run with 6 queens. Then change the program to draw all four solutions.
+Try: Use the 'argnum' module. In the queens.ale source add
         'pragmat'require="argnum".
       comment out the rule 'arg number', and compile as
         compile queens argnum
@@ -413,8 +414,8 @@ Try:  Use the 'argnum' module. In the queens.ale source add
 
 45 { Animate Game of Life | life.ale |  |
 two boards with a border, neighbor offsets, and msleep |
-Try:  Start from a file instead of the built-in pattern.
-Try:  Watch the blinker return to its starting shape after two generations.
+Try: Start from a file instead of the built-in pattern.
+Try: Watch the blinker return to its starting shape after two generations.
   edit life.ale    (optional)
   compile life
   run life 6     \|    run life 2
@@ -422,7 +423,7 @@ Try:  Watch the blinker return to its starting shape after two generations.
 
 46 { Draw the Mandelbrot set | mandel.ale |  |
 fixed-point arithmetic and character shading |
-Try:  Change the bounds to zoom in.
+Try: Change the bounds to zoom in.
   edit mandel.ale    (optional)
   compile mandel
   run mandel
@@ -430,7 +431,7 @@ Try:  Change the bounds to zoom in.
 
 47 { Differentiate built-in formula trees | derive.ale |  |
 a formula as a tree with selectors |
-Try:  Add rules for sin and cos.
+Try: Add rules for sin and cos.
   edit derive.ale    (optional)
   compile derive
   run derive
@@ -438,8 +439,8 @@ Try:  Add rules for sin and cos.
 
 48 { Differentiate an input formula symbolically | deriveall.ale | formula.ale parser.ale |
 parsing and simplifying expressions with two modules |
-Try:  Use -(x^2+x) and check the parentheses.
-Try:  Run separately with (x^x^x), (x^x)^x, and x^(x^x). Which two match?
+Try: Use -(x^2+x) and check the parentheses.
+Try: Run separately with (x^x^x), (x^x)^x, and x^(x^x). Which two match?
   edit deriveall.ale    (optional)
   compile deriveall formula parser
   run deriveall x^2*sin(x)     \|    run deriveall -(x^2+x)
@@ -449,7 +450,7 @@ Try:  Run separately with (x^x^x), (x^x)^x, and x^(x^x). Which two match?
 
 49 { Get the date and time from JavaScript | date.ale |  |
 library mode, the front matter pragmat, and external rules |
-Try:  Count the days to the end of the year.
+Try: Count the days to the end of the year.
   edit date.ale    (optional)
   compile date
   run date
@@ -457,7 +458,7 @@ Try:  Count the days to the end of the year.
 
 50 { Trace side effects in indexed affixes | sideeffect.ale |  |
 how a changing index affects an inout affix |
-Try:  Predict which stack entry each call writes.
+Try: Predict which stack entry each call writes.
   edit sideeffect.ale    (optional)
   compile sideeffect
   run sideeffect
@@ -465,7 +466,7 @@ Try:  Predict which stack entry each call writes.
 
 51 { Overload the equality sign for strings | overload.ale |  |
 redefining the library rule for the equality operator |
-Try:  Compare strings while ignoring ASCII case.
+Try: Compare strings while ignoring ASCII case.
   edit overload.ale    (optional)
   compile overload
   run overload
@@ -473,7 +474,7 @@ Try:  Compare strings while ignoring ASCII case.
 
 52 { Count Fibonacci calls | profile.ale |  |
 call counts with and without memoization on the same input |
-Try:  Set the example constant to 26 and compare the two call counts.
+Try: Set the example constant to 26 and compare the two call counts.
   edit profile.ale    (optional)
   compile profile
   run profile
@@ -481,7 +482,7 @@ Try:  Set the example constant to 26 and compare the two call counts.
 
 53 { Compare a rule call with macro expansion | macro.ale |  |
 the macro pragmat, in and out affixes |
-Try:  Predict the two outputs when an input and the result share an affix.
+Try: Predict the two outputs when an input and the result share an affix.
   edit macro.ale    (optional)
   compile macro
   run macro

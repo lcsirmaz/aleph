@@ -20,6 +20,7 @@ $ consecutive string denotations are concatenated: this is one string
   "#         #         #  E#"
   "#########################":maze).
 'constant'width=25.
+'constant'block=/█/.
 
 $ one block for each square: the character and the square we came from
 'stack'[1](ch,from)G[],[1]Q[].
