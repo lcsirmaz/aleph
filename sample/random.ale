@@ -14,7 +14,7 @@ $ HEADER ******************************************************
 $ BODY ********************************************************
 'pragmat'if=compile.
 'static''variable'seed=1.
-'constant'a=16807,m=2147483647,q=127773,r=2836. $ m=a*q+r
+'constant'a=16807,m=max int,q=m/a,r=m-q*a. $ m=2^31-1
 
 'a'random+x>-hi-lo:
    divrem+seed+q+hi+lo,mult+lo+a+lo,mult+hi+r+hi,subtr+lo+hi+x,
@@ -25,10 +25,10 @@ $ BODY ********************************************************
 'a'set seed+>s:
    divrem+s+m+#+s,(s<=0,add+s+m+s;+),(s=0,1->seed;s->seed).
 
-$ milliseconds since 1970, reduced modulo 2^31-1, from javascript;
+$ milliseconds since 1970, from javascript;
 $ in the string of an external rule #1 stands for its first affix
 'pragmat'library mode=on.
-'x''f'clock+t>="#1=Date.now()%2147483647".
+'x''f'clock+t>="#1=Date.now()".
 'pragmat'library mode=off.
 
 'a'randomize-t: clock+t,set seed+t.
