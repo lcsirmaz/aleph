@@ -60,7 +60,7 @@ Modular JavaScript ALEPH &copy; 2025 Laszlo Csirmaz
   function callnext(){
      setTimeout(aCle.read,100,
      'project: '+FS.cwp().name,
-     (s,t)=>{ if(t==2&&s==''&&FS.cwp().run) SHELL('kill'); else SHELL(s); callnext(); }
+     (s,t)=>{ if(t==2&&s==''&&FS.cwp().run) SHELL('kill'); else SHELL(s); callnext(); },
      {bg:'#e8f0f8',s:1,p:'> ',x:1} // options: bg; show ^C and non-empty lines 
      );}
   callnext();
